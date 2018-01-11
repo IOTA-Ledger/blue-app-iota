@@ -148,7 +148,7 @@ static void IOTA_main(void) {
 
                     // push the response onto the response buffer.
                     os_memmove(G_io_apdu_buffer, seed, 82);
-                    tx = 82; // ---------CHECK THE SIZE IN BYTES OF KERL_INIT AND CXA_KECCAK SHIT
+                    tx = 82;
 
                     //Manually send back success 0x9000 at end
                     G_io_apdu_buffer[tx++] = 0x90;
@@ -160,11 +160,10 @@ static void IOTA_main(void) {
 
                     char seed_abbrv[12];
 
-                    /* - Convert into abbreviated seeed (first 4 and last 4 characters)
+                    // - Convert into abbreviated seeed (first 4 and last 4 characters)
                     memcpy(&seed_abbrv[0], &seed[0], 4); // first 4 chars of seed
                     memcpy(&seed_abbrv[4], "...", 3); // copy ...
                     memcpy(&seed_abbrv[7], &seed[77], 5); //copy last 4 chars + null
-                     */
                     
 
                     ui_display_debug(&seed_abbrv, 64, TYPE_STR);

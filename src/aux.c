@@ -145,13 +145,41 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
     //seed_chars[81] = '\0';
     
     //pass trints to private key func and let it handle the response
-    get_private_key(&seed_trints[0], 3, msg);
+    get_private_key(&seed_trints[0], 0, msg);
 }
 
 //write func to get private key
 void get_private_key(trint_t *seed_trints, uint32_t idx, char *msg) {
-    //currently able to store 29 - [-1][-1][-1][0][-1]
-    trint_t private_key_trints[49 * 27]; //trints are still just int8_t but encoded
-    generate_private_key_half(seed_trints, idx, &private_key_trints[0], msg);
+    // Generating public key takes about 1min per half (2min total)
+    // Set k=25 in public key code to make it about 10s total
+    
+    trint_t public_key_trints[49];
+    { // localize the memory for private key
+        //currently able to store 31 - [-1][-1][-1][0][-1]
+        trint_t private_key_trints[49 * 27]; //trints are still just int8_t but encoded
+        
+        //generate private key using level 1 for first half
+        generate_private_key_half(seed_trints, idx, &private_key_trints[0], 1, msg);
+        //use this half to generate half public key 1
+        generate_public_address_half(&private_key_trints[0], &public_key_trints[0], 1);
+        
+        //use level 2 to generate second half of private key
+        generate_private_key_half(seed_trints, idx, &private_key_trints[0], 2, msg);
+        
+        //finally level 2 to generate second half of public key (and then digests both)
+        generate_public_address_half(&private_key_trints[0], &public_key_trints[0], 2);
+    }
+    // 12s to get here if k=25, 2min otherwise
+    //now public key will hold the actual public address
+    trit_t pub_trits[243];
+    specific_49trints_to_243trits(&public_key_trints[0], &pub_trits[0]);
+    
+    tryte_t seed_trytes[81];
+    trits_to_trytes(pub_trits, seed_trytes, 243);
+    
+    trytes_to_chars(seed_trytes, msg, 81);
+    
+    //null terminate the public key
+    msg[81] = '\0';
 }
 

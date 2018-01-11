@@ -39,9 +39,6 @@ int generate_private_key(trit_t *seed_trits, uint32_t index, trint_t *private_ke
     kerl_initialize();
     kerl_absorb_trits(tmp, 243);
     
-    //trit_t private_key - (it costs 49 trints to store 243 trits)
-    //int8_t trints[54][49]; will be the format that holds the private key
-    
     int8_t level = 2;
     for (uint8_t i = 0; i < level; i++) {
         for (uint8_t j = 0; j < 27; j++) { //we do this 54 times
@@ -141,18 +138,21 @@ int add_index_to_seed_trints(int8_t *trints, uint32_t index)
 }
 
 // generates half of a private key to encoded format of trints
+// use level 1 for first half, level 2 for second half
 int generate_private_key_half(trint_t *seed_trints, uint32_t index,
-                              trint_t *private_key, char *msg)
+                              trint_t *private_key, uint8_t level, char *msg)
 {
     // Add index -- keep in mind fix index_to_seed
     add_index_to_seed_trints(&seed_trints[0], index);
     
-    //Printing seed here will show us how our add_index went
+/*    //Printing seed here will show us how our add_index went
+ * /
     trit_t trits[5];
     trint_to_trits(seed_trints[0], &trits[0], 5);
     
     snprintf(&msg[0], 64, "[%d][%d][%d][%d][%d]\n", trits[0], trits[1],
              trits[2], trits[3], trits[4]);
+ /* */
     
     kerl_initialize();
     kerl_absorb_trints(&seed_trints[0], 49);
@@ -161,48 +161,60 @@ int generate_private_key_half(trint_t *seed_trints, uint32_t index,
     kerl_initialize();
     kerl_absorb_trints(&seed_trints[0], 49);
     
-    //Set level to be 1 - only do first half of private key for now
-    int8_t level = 1;
-    for (uint8_t i = 0; i < level; i++) {
-        for (uint8_t j = 0; j < 27; j++) {
-            //27 chunks makes up half the private key
-            
-            // THIS SHOULD TAKE ROUGHLY 3 SECONDS ELSE IT HUNG
-            kerl_squeeze_trints(&private_key[j * 49], 49);
+    //level == 1 means generate first half of private key
+    for (uint8_t j = 0; j < 27; j++) {
+        //27 chunks makes up half the private key
+        
+        // THIS SHOULD TAKE ROUGHLY 3 SECONDS ELSE IT HUNG
+        kerl_squeeze_trints(&private_key[j * 49], 49);
+        
+        //the first level just store it, if second half, discard
+        //entire first half (OPTIMIZE!!!)
+        if(j == 26 && level != 1) {
+            j = 0;  //reset j so it can just go again,
+                    //overwriting first half with second half
+            level = 1; // use this as a flag to tell it to not enter infinite loop
         }
     }
     return 0;
 }
 
-int generate_public_address_half(const trit_t private_key[], trit_t address_out[])
+//Generate the public key half at a time
+//Use level 1 to generate first half, level 2 to generate second half
+int generate_public_address_half(trint_t *private_key, trint_t *address_out, uint8_t level)
 {
-    // Get digests
-    trit_t digests[243*2];
-    
-    for (uint8_t i = 0; i < 2; i++) {
-        trit_t key_fragment[243*27];
-        memcpy(key_fragment, &private_key[i*243*27], 243*27);
-        
-        for (uint8_t j = 0; j < 27; j++) {
-            //int progress = ((i*27 + j)*18519)/1000;
-            //layoutProgress(_("Generating address."), progress);
-            for (uint8_t k = 0; k < 26; k++) {
-                ////kerl_initialize();
-                kerl_absorb_trits(&key_fragment[j*243], 243);
-                kerl_squeeze_trits(&key_fragment[j*243], 243);
-            }
+    for(uint8_t j = 0; j < 27; j++) {
+        // each piece get's kerl'd 26 times(?)
+        for(uint8_t k = 0; k < 26; k++) {
+            //temp set k=25 to make this a LOT faster
+            k = 25;
+            kerl_initialize();
+            kerl_absorb_trints(&private_key[j*49], 49);
+            kerl_squeeze_trints(&private_key[j*49], 49);
         }
-        
-        ////kerl_initialize();
-        kerl_absorb_trits(key_fragment, 243*27);
-        kerl_squeeze_trits(&digests[i*243], 243);
     }
-    //layoutProgress(_("Generating address."), 1000);
     
-    // Get address
-    ////kerl_initialize();
-    kerl_absorb_trits(digests, 243*2);
-    kerl_squeeze_trits(address_out, 243);
+    //the 27th kerl generates the digests
+    kerl_initialize();
+    kerl_absorb_trints(private_key, 49*27); // re-absorb the entire private key
+    
+    // use level 1 to pass the first half of the private key, store
+    // digest in public key for now to save RAM
+    if(level == 1)
+        kerl_squeeze_trints(address_out, 49); // Store the first digest just in address_out{
+    else {
+        //done with private key, so store the second digest in private key
+        kerl_squeeze_trints(private_key, 49);
+        
+        //now get address
+        kerl_initialize();
+        //address out stores first half, private key stores second half
+        kerl_absorb_trints(address_out, 49);
+        kerl_absorb_trints(private_key, 49);
+        //finally publish the public key
+        kerl_squeeze_trints(address_out, 49);
+    }
+    
     return 0;
 }
 
