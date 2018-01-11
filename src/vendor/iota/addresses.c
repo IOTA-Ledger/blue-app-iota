@@ -26,7 +26,6 @@ int add_index_to_seed(trit_t trits[], uint32_t index)
 
 int generate_private_key(trit_t *seed_trits, uint32_t index, trint_t *private_key)
 {
-    return 0;
     trit_t tmp[243];
     memcpy(tmp, seed_trits, 243);
     
@@ -94,36 +93,66 @@ int generate_public_address(const trit_t private_key[], trit_t address_out[])
 }
 
 // TODO: make sure we can add more index than uint32
-// Just incr trit value, wrapping around
-int add_index_to_seed_trints(trint_t *trints, uint32_t index)
+// This may be an area where it's better just to have the seed in trits
+// while adding index, then convert to trints later.
+// Similarly is there no faster way to incr ??
+int add_index_to_seed_trints(int8_t *trints, uint32_t index)
 {
-    trit_t trits[5];
-    //TODO --  have it index based off of trints and not trits
-    // for now we call with index 0 so who cares
+    int8_t trits[5];
+    uint8_t send = 5;
+    
     for (uint32_t i = 0; i < index; i++) {
         // Add one
         uint8_t offset = 0;
         bool carry = true;
         while(carry && offset < 243) {
-            trits[offset] = trits[offset] + 1;
-            if (trits[offset] > 1) {
-                trits[offset] = -1;
+            if(offset % 5 == 0) {// we need a new set of trits
+                //if offset/5 == 48 we are on last trint of only 3
+                // this would be equivalent to if offset == 240;
+                send = (offset/5 == 48) ? 3 : 5;
+                
+                //before we get new trint, write old trint
+                if(offset != 0) //if this is the first trint, dont write
+                    trints[(offset/5) - 1] = trits_to_trint(&trits[0], send);
+                
+                //get new set of trits
+                trint_to_trits(trints[offset/5], &trits[0], send);
+            }
+            
+            trits[offset % 5] = trits[offset % 5] + 1;
+            if (trits[offset % 5] > 1) {
+                trits[offset % 5] = -1;
             } else {
+                //if we reach here, we are done so let's write the last trint
                 carry = false;
+                
+                //use (uint8_t) to auto truncate offset/5
+                if(offset < 5) trints[0] = trits_to_trint(&trits[0], send);
+                else trints[(uint8_t)(offset/5)] = trits_to_trint(&trits[0], send);
             }
             if (carry) {
                 offset++;
             }
+            
+            
         }
     }
     return 0;
 }
 
 // generates half of a private key to encoded format of trints
-int generate_private_key_half(trint_t *seed_trints, uint32_t index, trint_t *private_key)
+int generate_private_key_half(trint_t *seed_trints, uint32_t index,
+                              trint_t *private_key, char *msg)
 {
     // Add index -- keep in mind fix index_to_seed
     add_index_to_seed_trints(&seed_trints[0], index);
+    
+    //Printing seed here will show us how our add_index went
+    trit_t trits[5];
+    trint_to_trits(seed_trints[0], &trits[0], 5);
+    
+    snprintf(&msg[0], 64, "[%d][%d][%d][%d][%d]\n", trits[0], trits[1],
+             trits[2], trits[3], trits[4]);
     
     kerl_initialize();
     kerl_absorb_trints(&seed_trints[0], 49);

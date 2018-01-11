@@ -76,7 +76,6 @@ int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
 
 //utilize encoded format
 int kerl_squeeze_trints(trint_t *trints_out, uint16_t len) {
-/* */
     (void) len;
     
     // Convert to trits
@@ -85,6 +84,7 @@ int kerl_squeeze_trints(trint_t *trints_out, uint16_t len) {
     words_to_trints(words, &trints_out[0]);
     
     
+    //-- Setting last trit to 0
     trit_t trits[3];
     //grab and store last clump of 3 trits
     trint_to_trits(trints_out[48], &trits[0], 3);
@@ -103,15 +103,4 @@ int kerl_squeeze_trints(trint_t *trints_out, uint16_t len) {
     kerl_absorb_bytes(bytes_out,48);
     
     return 0;
-/* */
-/* *
-    trit_t tmp_trits[243];
-    //squeeze the bytes into our temp buffer
-    kerl_squeeze_trits(tmp_trits, 243);
-    
-    //use buffer to convert and return trints
-    specific_243trits_to_49trints(&tmp_trits[0], trints_out);
-    
-    return 0;
-/* */
 }

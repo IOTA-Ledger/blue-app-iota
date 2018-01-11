@@ -95,6 +95,8 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
         kerl_absorb_bytes(&bytes_in[0], 48);
     }
     
+    // A trint_t is 5 trits encoded as 1 int8_t - Used to massively
+    // reduce RAM required
     trint_t seed_trints[49];
     kerl_squeeze_trints(&seed_trints[0], 49);
     
@@ -143,13 +145,13 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
     //seed_chars[81] = '\0';
     
     //pass trints to private key func and let it handle the response
-    get_private_key(&seed_trints[0], 0, msg);
+    get_private_key(&seed_trints[0], 3, msg);
 }
 
 //write func to get private key
 void get_private_key(trint_t *seed_trints, uint32_t idx, char *msg) {
     //currently able to store 29 - [-1][-1][-1][0][-1]
     trint_t private_key_trints[49 * 27]; //trints are still just int8_t but encoded
-    generate_private_key_half(seed_trints, idx, &private_key_trints[0]);
+    generate_private_key_half(seed_trints, idx, &private_key_trints[0], msg);
 }
 
