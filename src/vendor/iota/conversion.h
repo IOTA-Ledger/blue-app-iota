@@ -2,6 +2,7 @@
 #define CONVERSION_H
 
 #include "iota_types.h"
+#include "../../aux.h"
 
 static const trit_t trits_mapping[27][3] =
        {{-1, -1, -1}, { 0, -1, -1}, {1, -1, -1},
@@ -22,6 +23,10 @@ int tryte_to_trits(const tryte_t tryte, trit_t trits_out[]);
 
 int trits_to_words(const trit_t trits_in[], int32_t words_out[]);
 int words_to_trits(const int32_t words_in[], trit_t trits_out[]);
+
+//My added trints_to_words
+int trints_to_words(trint_t *trints_in, int32_t words_out[]);
+int words_to_trints(const int32_t words_in[], trint_t *trints_out);
 
 int words_to_bytes(const int32_t words_in[], unsigned char bytes_out[], uint8_t word_len);
 int bytes_to_words(const unsigned char bytes_in[], int32_t words_out[], uint8_t word_len);

@@ -215,3 +215,122 @@ int bytes_to_words(const unsigned char bytes_in[], int32_t words_out[], uint8_t 
     }
     return 0;
 }
+
+//custom conversion straight from trints to words
+int trints_to_words(trint_t *trints_in, int32_t words_out[])
+{
+    int32_t base[13] = {0};
+    int32_t size = 13;
+    trit_t trits[5]; // on final call only left 3 trits matter
+    
+    //instead of operating on all 243 trits at once, we will hotswap
+    //5 trits at a time from our trints
+    for(int8_t x = 48; x >= 0; x--) {
+        //if this is the last send, we are only get 3 trits
+        uint8_t get = (x == 48) ? 3 : 5;
+        trint_to_trits(trints_in[x], &trits[0], get);
+        
+        // array index is get - 1
+        for (int16_t i = get-1; i >= 0; i--) {
+            // multiply
+            {
+                int32_t sz = size;
+                int32_t carry = 0;
+                
+                for (int32_t j = 0; j < sz; j++) {
+                    int64_t v = ((int64_t)base[j]&0xFFFFFFFF);// * ((int64_t)3) + ((int64_t)carry&0xFFFFFFFF);
+                    carry = (int32_t)((v >> 32) & 0xFFFFFFFF);
+                    //printf("[%i]carry: %u\n", i, carry);
+                    base[j] = (int32_t) (v & 0xFFFFFFFF);
+                }
+                
+                if (carry > 0) {
+                    printf("ERR");
+                    //base[sz] = carry;
+                    //size++;
+                }
+            }
+            
+            // add
+            {
+                int32_t tmp[12];
+                // Ignore the last trit (48 is last trint, 2 is last trit in that trint)
+                if (x == 48 & i == 2) {
+                    bigint_add_int(base, 1, tmp, 13);
+                } else {
+                    bigint_add_int(base, trits[i]+1, tmp, 13);
+                }
+                memcpy(base, tmp, 52);
+                // todo sz>size stuff
+            }
+        }
+    }
+    
+    if (bigint_cmp_bigint(HALF_3, base, 13) <= 0 ) {
+        int32_t tmp[13];
+        bigint_sub_bigint(base, HALF_3, tmp, 13);
+        memcpy(base, tmp, 52);
+    } else {
+        int32_t tmp[13];
+        bigint_sub_bigint(HALF_3, base, tmp, 13);
+        bigint_not(tmp, 13);
+        bigint_add_int(tmp, 1, base, 13);
+    }
+    
+    
+    memcpy(words_out, base, 48);
+    return 0;
+}
+
+//straight from words into trints
+int words_to_trints(const int32_t words_in[], trint_t *trints_out)
+{
+    int32_t base[13] = {0};
+    int32_t tmp[13] = {0};
+    memcpy(tmp, words_in, 48);
+    bool flip_trits = false;
+    // check if big num is negative
+    if (words_in[11] >> 31 != 0) {
+        tmp[12] = 0xFFFFFFFF;
+        bigint_not(tmp, 13);
+        if (bigint_cmp_bigint(tmp, HALF_3, 13) > 0) {
+            bigint_sub_bigint(tmp, HALF_3, base, 13);
+            flip_trits = true;
+        } else {
+            bigint_add_int(tmp, 1, base, 13);
+            bigint_sub_bigint(HALF_3, base, tmp, 13);
+            memcpy(base, tmp, 52);
+        }
+    } else {
+        // Add half_3, make sure words_in is appended with an empty int32
+        bigint_add_bigint(tmp, HALF_3, base, 13);
+    }
+    
+    
+    uint32_t rem = 0;
+    trit_t trits[5];
+    for(int8_t x = 0; x < 49; x++) { // 49 trints make up 243 trits
+        //if this is the last send, we are only passing 3 trits
+        uint8_t send = (x == 48) ? 3 : 5;
+        trits_to_trint(&trits[0], send);
+        
+        for (int16_t i = 0; i < send; i++) {
+            rem = 0;
+            for (int8_t j = 13-1; j >= 0 ; j--) {
+                uint64_t lhs = (uint64_t)(base[j] & 0xFFFFFFFF) + (uint64_t)(rem != 0 ? ((uint64_t)rem * 0xFFFFFFFF) + rem : 0);
+                uint64_t q = (lhs / 3) & 0xFFFFFFFF;
+                uint8_t r = lhs % 3;
+                
+                base[j] = q;
+                rem = r;
+            }
+            trits[i] = rem - 1;
+            if (flip_trits) {
+                trits[i] = -trits[i];
+            }
+        }
+        //we are done getting 5 (or 3 trits) - so convert into trint
+        trints_out[x] = trits_to_trint(&trits[0], send);
+    }
+    return 0;
+}

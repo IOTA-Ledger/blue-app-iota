@@ -6,6 +6,7 @@
 #include "vendor/iota/kerl.h"
 #include "vendor/iota/conversion.h"
 #include "vendor/iota/transaction.h"
+#include "vendor/iota/addresses.h"
 
 
 #include "os.h"
@@ -32,8 +33,8 @@ int8_t trits_to_trint(int8_t *trits, int8_t sz);
 int myadd_index_to_seed(trint_t trits[], uint32_t index);
 int mygenerate_private_key(trint_t *seed_trits, uint32_t index, trint_t *private_key);
 int mygenerate_public_address(const trit_t private_key[], trit_t address_out[]);
-int kerl_absorb_trints(trint_t *trints_in, uint16_t len);
-int kerl_squeeze_trints(trint_t *trints_out, uint16_t len);
+
+int trints_to_words(trint_t *trints_in, int32_t words_out[]);
 
 void do_nothing(void);
 void get_seed(unsigned char *privateKey, uint8_t sz, char *msg);
