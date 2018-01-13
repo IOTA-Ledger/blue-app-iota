@@ -18,6 +18,7 @@
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 from secp256k1 import PublicKey
+import time
 
 #define INS_GET_PUBKEY 0x02
 #define INS_BAD_PUBKEY 0x04
@@ -39,5 +40,8 @@ while True:
 
 dongle = getDongle(True)
 # 80 is magic start byte, 04 is type (GETPUBLICKEY) ignore rest of the data
+start_time = time.time()
 publicKey = dongle.exchange(bytes(("80020000FF"+bipp44_path).decode('hex')))
-print "Response: " + str(publicKey)
+elapsed_time = time.time() - start_time
+
+print "Response: %s took: %d seconds" % (str(publicKey), elapsed_time)
