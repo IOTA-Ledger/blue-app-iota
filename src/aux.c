@@ -106,12 +106,16 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
     trint_t seed_trints[49];
     // kerl_squeeze_trints(&seed_trints[0], 49);
     {
-      char test_seed[] = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSCOVMPARZEXQJFEXQ";
-      trit_t seed_trits[81 * 3] = {0};
       tryte_t seed_trytes[81] = {0};
-      chars_to_trytes(test_seed, seed_trytes, 81);
-      trytes_to_trits(seed_trytes, seed_trits, 81);
-      specific_49trints_to_243trits(seed_trints, seed_trits);
+      {
+        char test_seed[] = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSCOVMPARZEXQJFEXQ";
+        chars_to_trytes(test_seed, seed_trytes, 81);
+      }
+      {
+        trit_t seed_trits[81 * 3] = {0};
+        trytes_to_trits(seed_trytes, seed_trits, 81);
+        specific_243trits_to_49trints(seed_trits, seed_trints);
+      }
     }
 
 /* ----- This code is left here to test absorb/squeeze. (the above squeeze trints)
