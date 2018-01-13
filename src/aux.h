@@ -15,8 +15,8 @@ extern char debug_str[];
 
 void specific_243trits_to_49trints(int8_t *trits, int8_t *trints_r);
 void specific_49trints_to_243trits(int8_t *trints, int8_t *trits_r);
-void trint_to_trits(int8_t integ, int8_t *trits_r, int8_t sz);
-int8_t trits_to_trint(int8_t *trits, int8_t sz);
+void trint_to_trits(int8_t integ, int8_t *trits_r, int8_t sz) __attribute__((always_inline));
+int8_t trits_to_trint(int8_t *trits, int8_t sz) __attribute__((always_inline));
 
 int myadd_index_to_seed(trint_t trits[], uint32_t index);
 int mygenerate_private_key(trint_t *seed_trits, uint32_t index, trint_t *private_key);
