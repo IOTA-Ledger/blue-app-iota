@@ -27,24 +27,24 @@
 #include "vendor/iota/transaction.h"
 
 /*MEMORY IMPROVEMENTS: GLOBAL VARIABLES TO RE-USE EVERYWHERE
- 
+
  #DEFINE bip44path instead of hold in variable (?)
  possibly discard public key (from bip44)
- 
+
  */
 
 /* List of things I would need in memory:
  Global string to write info to - 90 (public address)
  - less if return encoded (and disp abbrv) - Could easily be 16 instead + 54 for addr
- 
+
  Private key (half) 49*27 = 1323
- 
+
  Trits 243
- 
+
  Kerl (424) (might need x2 ?)
- 
- 
- 
+
+
+
  */
 //49 * 27 stores half of private key encoded
 int8_t g_Memory[(49*27) + (243) + (32)];
@@ -56,7 +56,7 @@ unsigned char hashTainted;     // notification to restart the hash
 typedef struct internalStorage_t {
     uint8_t initialized;
     uint32_t seed_key;
-    
+
 } internalStorage_t;
 
 //N_storage_real will hold the actually address for NVRAM
@@ -164,7 +164,7 @@ static void IOTA_main(void) {
                     memcpy(&seed_abbrv[0], &seed[0], 4); // first 4 chars of seed
                     memcpy(&seed_abbrv[4], "...", 3); // copy ...
                     memcpy(&seed_abbrv[7], &seed[77], 5); //copy last 4 chars + null
-                    
+
 
                     ui_display_debug(&seed_abbrv, 64, TYPE_STR);
                 } break;
@@ -375,4 +375,3 @@ __attribute__((section(".boot"))) int main(void) {
     }
     END_TRY;
 }
-
