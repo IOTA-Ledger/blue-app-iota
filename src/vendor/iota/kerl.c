@@ -77,13 +77,13 @@ int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
 //utilize encoded format
 int kerl_squeeze_trints(trint_t *trints_out, uint16_t len) {
     (void) len;
-    
+
     // Convert to trits
     int32_t words[12];
     bytes_to_words(bytes_out, words, 12);
     words_to_trints(words, &trints_out[0]);
-    
-    
+
+
     //-- Setting last trit to 0
     trit_t trits[3];
     //grab and store last clump of 3 trits
@@ -91,16 +91,16 @@ int kerl_squeeze_trints(trint_t *trints_out, uint16_t len) {
     trits[2] = 0; //set last trit to 0
     //convert new trit set back to trint and store
     trints_out[48] = trits_to_trint(&trits[0], 3);
-    
+
     // TODO: Check if the following is needed. Seems to do nothing.
-    
+
     // Flip bytes
     for (uint8_t i = 0; i < 48; i++) {
         bytes_out[i] = bytes_out[i] ^ 0xFF;
     }
-    
+
     kerl_initialize();
     kerl_absorb_bytes(bytes_out,48);
-    
+
     return 0;
 }

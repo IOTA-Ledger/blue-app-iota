@@ -1,19 +1,7 @@
 #ifndef AUX_H
 #define AUX_H
 
-// iota-related stuff
 #include "vendor/iota/iota_types.h"
-#include "vendor/iota/kerl.h"
-#include "vendor/iota/conversion.h"
-#include "vendor/iota/transaction.h"
-#include "vendor/iota/addresses.h"
-
-
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
-#include "bagl.h"
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -561,7 +561,7 @@ c0d002a2:	af03      	add	r7, sp, #12
 c0d002a4:	2200      	movs	r2, #0
     int8_t pow3_val = 1;
     int8_t ret = 0;
-    
+
     for(int8_t i=sz-1; i>=0; i--)
 c0d002a6:	43d3      	mvns	r3, r2
 c0d002a8:	b2c9      	uxtb	r1, r1
@@ -580,7 +580,7 @@ c0d002ba:	2403      	movs	r4, #3
 c0d002bc:	436c      	muls	r4, r5
     int8_t pow3_val = 1;
     int8_t ret = 0;
-    
+
     for(int8_t i=sz-1; i>=0; i--)
     {
         ret += trits[i]*pow3_val;
@@ -593,7 +593,7 @@ c0d002c6:	18b2      	adds	r2, r6, r2
 int8_t trits_to_trint(int8_t *trits, int8_t sz) {
     int8_t pow3_val = 1;
     int8_t ret = 0;
-    
+
     for(int8_t i=sz-1; i>=0; i--)
 c0d002c8:	1e40      	subs	r0, r0, #1
 c0d002ca:	1e49      	subs	r1, r1, #1
@@ -604,7 +604,7 @@ c0d002d0:	dcf2      	bgt.n	c0d002b8 <trits_to_trint+0x18>
         ret += trits[i]*pow3_val;
         pow3_val *= 3;
     }
-    
+
     return ret;
 c0d002d2:	b250      	sxtb	r0, r2
 c0d002d4:	bdf0      	pop	{r4, r5, r6, r7, pc}
@@ -672,7 +672,7 @@ c0d0031a:	9201      	str	r2, [sp, #4]
     //if only 3 trits the largest trit column is 3^2 - never called without sz 5 or 3
     if(sz == 3)
         pow3_val = 9;
-    
+
     for(uint8_t j = 0; j<sz; j++) {
 c0d0031c:	2a01      	cmp	r2, #1
 c0d0031e:	db2b      	blt.n	c0d00378 <trint_to_trits+0x68>
@@ -691,7 +691,7 @@ c0d0032a:	4608      	mov	r0, r1
 c0d0032c:	2500      	movs	r5, #0
 c0d0032e:	462e      	mov	r6, r5
         pow3_val = 9;
-    
+
     for(uint8_t j = 0; j<sz; j++) {
         trits_r[j] = (int8_t) (integ*2/pow3_val);
 c0d00330:	b2c4      	uxtb	r4, r0
@@ -703,8 +703,8 @@ c0d0033a:	f003 f89d 	bl	c0d03478 <__aeabi_idiv>
 c0d0033e:	9900      	ldr	r1, [sp, #0]
 c0d00340:	5548      	strb	r0, [r1, r5]
 c0d00342:	194a      	adds	r2, r1, r5
-        
-        
+
+
         if(trits_r[j] > 1) trits_r[j] = 1;
 c0d00344:	0603      	lsls	r3, r0, #24
 c0d00346:	2101      	movs	r1, #1
@@ -718,7 +718,7 @@ c0d00352:	42ab      	cmp	r3, r5
 c0d00354:	dc01      	bgt.n	c0d0035a <trint_to_trits+0x4a>
 c0d00356:	7011      	strb	r1, [r2, #0]
 c0d00358:	e000      	b.n	c0d0035c <trint_to_trits+0x4c>
-        
+
         integ -= trits_r[j] * pow3_val;
 c0d0035a:	4601      	mov	r1, r0
 c0d0035c:	9a02      	ldr	r2, [sp, #8]
@@ -734,7 +734,7 @@ c0d0036c:	462b      	mov	r3, r5
     //if only 3 trits the largest trit column is 3^2 - never called without sz 5 or 3
     if(sz == 3)
         pow3_val = 9;
-    
+
     for(uint8_t j = 0; j<sz; j++) {
 c0d0036e:	1c76      	adds	r6, r6, #1
 c0d00370:	b2f5      	uxtb	r5, r6
@@ -742,7 +742,7 @@ c0d00372:	9901      	ldr	r1, [sp, #4]
 c0d00374:	428d      	cmp	r5, r1
 c0d00376:	dbdb      	blt.n	c0d00330 <trint_to_trits+0x20>
         else if(trits_r[j] < -1) trits_r[j] = -1;
-        
+
         integ -= trits_r[j] * pow3_val;
         pow3_val /= 3;
     }
@@ -764,12 +764,12 @@ c0d00384:	b08f      	sub	sp, #60	; 0x3c
 c0d00386:	9201      	str	r2, [sp, #4]
 c0d00388:	460e      	mov	r6, r1
 c0d0038a:	4605      	mov	r5, r0
-    
+
     //kerl requires 424 bytes
     kerl_initialize();
 c0d0038c:	9500      	str	r5, [sp, #0]
 c0d0038e:	f000 fb07 	bl	c0d009a0 <kerl_initialize>
-    
+
     { // localize bytes_in variable to discard it when we are done
         unsigned char bytes_in[48];
 
@@ -791,7 +791,7 @@ c0d003a4:	2530      	movs	r5, #48	; 0x30
 c0d003a6:	1baa      	subs	r2, r5, r6
 c0d003a8:	9900      	ldr	r1, [sp, #0]
 c0d003aa:	f003 fa61 	bl	c0d03870 <__aeabi_memcpy>
-        
+
         //absorb these bytes
         kerl_absorb_bytes(&bytes_in[0], 48);
 c0d003ae:	4620      	mov	r0, r4
@@ -799,7 +799,7 @@ c0d003b0:	4629      	mov	r1, r5
 c0d003b2:	f000 fb01 	bl	c0d009b8 <kerl_absorb_bytes>
 c0d003b6:	ac02      	add	r4, sp, #8
     }
-    
+
     // A trint_t is 5 trits encoded as 1 int8_t - Used to massively
     // reduce RAM required
     trint_t seed_trints[49];
@@ -810,7 +810,7 @@ c0d003bc:	f000 fb40 	bl	c0d00a40 <kerl_squeeze_trints>
 
     //null terminate seed
     //seed_chars[81] = '\0';
-    
+
     //pass trints to private key func and let it handle the response
     get_private_key(&seed_trints[0], 0, msg);
 c0d003c0:	2100      	movs	r1, #0
@@ -834,7 +834,7 @@ c0d003d8:	b0f3      	sub	sp, #460	; 0x1cc
     { // localize the memory for private key
         //currently able to store 31 - [-1][-1][-1][0][-1]
         trint_t private_key_trints[49 * 27]; //trints are still just int8_t but encoded
-        
+
         //generate private key using level 1 for first half
         generate_private_key_half(seed_trints, idx, &private_key_trints[0], 1, msg);
 c0d003da:	ab01      	add	r3, sp, #4
@@ -854,7 +854,7 @@ c0d003f2:	4628      	mov	r0, r5
 c0d003f4:	4621      	mov	r1, r4
 c0d003f6:	4632      	mov	r2, r6
 c0d003f8:	f7ff fef6 	bl	c0d001e8 <generate_public_address_half>
-        
+
         //use level 2 to generate second half of private key
         generate_private_key_half(seed_trints, idx, &private_key_trints[0], 2, msg);
 c0d003fc:	4668      	mov	r0, sp
@@ -866,7 +866,7 @@ c0d00406:	9902      	ldr	r1, [sp, #8]
 c0d00408:	462a      	mov	r2, r5
 c0d0040a:	4633      	mov	r3, r6
 c0d0040c:	f7ff feaf 	bl	c0d0016e <generate_private_key_half>
-        
+
         //finally level 2 to generate second half of public key (and then digests both)
         generate_public_address_half(&private_key_trints[0], &public_key_trints[0], 2);
 c0d00410:	4628      	mov	r0, r5
@@ -883,7 +883,7 @@ c0d0041c:	4620      	mov	r0, r4
 c0d0041e:	4629      	mov	r1, r5
 c0d00420:	f7ff ff59 	bl	c0d002d6 <specific_49trints_to_243trits>
 c0d00424:	ac04      	add	r4, sp, #16
-    
+
     tryte_t seed_trytes[81];
     trits_to_trytes(pub_trits, seed_trytes, 243);
 c0d00426:	22f3      	movs	r2, #243	; 0xf3
@@ -891,14 +891,14 @@ c0d00428:	4628      	mov	r0, r5
 c0d0042a:	4621      	mov	r1, r4
 c0d0042c:	f000 f8fd 	bl	c0d0062a <trits_to_trytes>
 c0d00430:	2551      	movs	r5, #81	; 0x51
-    
+
     trytes_to_chars(seed_trytes, msg, 81);
 c0d00432:	4620      	mov	r0, r4
 c0d00434:	9c03      	ldr	r4, [sp, #12]
 c0d00436:	4621      	mov	r1, r4
 c0d00438:	462a      	mov	r2, r5
 c0d0043a:	f000 f92b 	bl	c0d00694 <trytes_to_chars>
-    
+
     //null terminate the public key
     msg[81] = '\0';
 c0d0043e:	2000      	movs	r0, #0
@@ -2227,7 +2227,7 @@ c0d00a42:	af03      	add	r7, sp, #12
 c0d00a44:	b091      	sub	sp, #68	; 0x44
 c0d00a46:	4605      	mov	r5, r0
     (void) len;
-    
+
     // Convert to trits
     int32_t words[12];
     bytes_to_words(bytes_out, words, 12);
@@ -2242,8 +2242,8 @@ c0d00a56:	4630      	mov	r0, r6
 c0d00a58:	9502      	str	r5, [sp, #8]
 c0d00a5a:	4629      	mov	r1, r5
 c0d00a5c:	f7ff fefe 	bl	c0d0085c <words_to_trints>
-    
-    
+
+
     //-- Setting last trit to 0
     trit_t trits[3];
     //grab and store last clump of 3 trits
@@ -2268,9 +2268,9 @@ c0d00a7c:	f7ff fc10 	bl	c0d002a0 <trits_to_trint>
 c0d00a80:	9903      	ldr	r1, [sp, #12]
 c0d00a82:	9a02      	ldr	r2, [sp, #8]
 c0d00a84:	5450      	strb	r0, [r2, r1]
-    
+
     // TODO: Check if the following is needed. Seems to do nothing.
-    
+
     // Flip bytes
     for (uint8_t i = 0; i < 48; i++) {
         bytes_out[i] = bytes_out[i] ^ 0xFF;
@@ -2279,9 +2279,9 @@ c0d00a88:	7801      	ldrb	r1, [r0, #0]
 c0d00a8a:	43c9      	mvns	r1, r1
 c0d00a8c:	7001      	strb	r1, [r0, #0]
     trints_out[48] = trits_to_trint(&trits[0], 3);
-    
+
     // TODO: Check if the following is needed. Seems to do nothing.
-    
+
     // Flip bytes
     for (uint8_t i = 0; i < 48; i++) {
 c0d00a8e:	1e76      	subs	r6, r6, #1
@@ -2313,10 +2313,10 @@ c0d00aaa:	4622      	mov	r2, r4
 c0d00aac:	f001 fb0a 	bl	c0d020c4 <cx_hash>
 c0d00ab0:	2000      	movs	r0, #0
     }
-    
+
     kerl_initialize();
     kerl_absorb_bytes(bytes_out,48);
-    
+
     return 0;
 c0d00ab2:	b011      	add	sp, #68	; 0x44
 c0d00ab4:	bdf0      	pop	{r4, r5, r6, r7, pc}
