@@ -5,5 +5,5 @@
 - [ ] Creation and signing of transactions
 
 - [ ] Develop a simple web wallet application to interact with the Ledger and provide basic functionality while waiting for more advanced wallets to integrate Ledger support.
--
-[ ] Appropiate recovery features
+
+- [ ] Appropiate recovery features

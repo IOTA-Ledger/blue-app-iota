@@ -11,3 +11,7 @@ See [Ledger's documentation](http://ledger.readthedocs.io) to get more info abou
 - Inside the folder of the repo you just cloned, run `make load` while your Ledger is attached, and unlocked and watch the magic happen. Be sure to connect your Ledger and open it at the dashboard to load the app.
 
 - You can now make your first IOTA Ledger address by running: `python demo.py` and hit enter (while ledger is plugged in and the IOTA App is open).
+
+## Todos
+
+See: https://github.com/IOTA-Ledger/blue-app-iota/blob/master/TODO.md
