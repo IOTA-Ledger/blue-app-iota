@@ -15,6 +15,8 @@
 #define TYPE_INT 1
 #define TYPE_UINT 2
 #define TYPE_STR 3
+#define TOP 1
+#define BOT 2
 
 // data starts at apdu[5]
 #define APDU_HEADER_LENGTH 5
@@ -23,9 +25,11 @@
 
 #define CLA 0x80
 
-#define INS_GET_PUBKEY 0x02
-#define INS_BAD_PUBKEY 0x04
-#define INS_SIGN 0x08
+#define INS_GET_PUBKEY 0x01
+#define INS_BAD_PUBKEY 0x02
+#define INS_GOOD_PUBKEY 0x4
+#define INS_CHANGE_INDEX 0x08
+#define INS_SIGN 0x10
 
 #define P1_LAST 0x80
 #define P1_MORE 0x00

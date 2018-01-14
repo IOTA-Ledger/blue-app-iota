@@ -9,23 +9,60 @@
 #include "vendor/iota/transaction.h"
 #include "vendor/iota/addresses.h"
 
-char debug_str[64];
-
-//write_debug(&words, sizeof(words), TYPE_STR);
-//write_debug(&int_val, sizeof(int_val), TYPE_INT);
-void write_debug(void* o, unsigned int sz, uint8_t t) {
-
-    //uint32_t/int(half this) [0, 4,294,967,295] - ledger does not support long - USE %d not %i!
-    if(t == TYPE_INT) {
-            snprintf(&debug_str[0], sz, "%d", *(int32_t *) o);
-    }
-    else if(t == TYPE_UINT) {
-            snprintf(&debug_str[0], sz, "%u", *(uint32_t *) o);
-    }
-    else if(t == TYPE_STR) {
-            snprintf(&debug_str[0], sz, "%s", (char *) o);
-    }
+// Ideally include room for the null terminator
+void uint_to_str(uint32_t i, char *str, uint8_t len) {
+    snprintf(str, len, "%u", i);
 }
+// Ideally include room for null terminator
+void int_to_str(int i, char *str, uint8_t len) {
+    snprintf(str, len, "%d", i);
+}
+
+uint32_t str_to_int(char *str, uint8_t len) {
+    uint32_t num = 0;
+    //don't attempt to store more than 10 characters in a 32bit unsigned
+    if(len > 10) len = 10;
+    
+    for(uint8_t i=0; i<len; i++){
+        switch(str[i]) {
+            case '0':
+                num = (num * 10) + 0;
+                break;
+            case '1':
+                num = (num * 10) + 1;
+                break;
+            case '2':
+                num = (num * 10) + 2;
+                break;
+            case '3':
+                num = (num * 10) + 3;
+                break;
+            case '4':
+                num = (num * 10) + 4;
+                break;
+            case '5':
+                num = (num * 10) + 5;
+                break;
+            case '6':
+                num = (num * 10) + 6;
+                break;
+            case '7':
+                num = (num * 10) + 7;
+                break;
+            case '8':
+                num = (num * 10) + 8;
+                break;
+            case '9':
+                num = (num * 10) + 9;
+                break;
+                //any other char means we are done
+            default:
+                return num;
+        }
+    }
+    return num;
+}
+
 
 void specific_243trits_to_49trints(int8_t *trits, int8_t *trints_r) {
     uint8_t send = 0, count = 0;
@@ -78,8 +115,6 @@ int8_t trits_to_trint(int8_t *trits, int8_t sz) {
 
     return ret;
 }
-
-void do_nothing() {}
 
 void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
 
