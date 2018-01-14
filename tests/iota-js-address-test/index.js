@@ -6,7 +6,7 @@ const seed = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSC
 
 iota.api.getNewAddress(seed, {
   index: 0,
-  security: 1
+  security: 2
 }, (e, r) => {
   console.log(e, r);
 })
