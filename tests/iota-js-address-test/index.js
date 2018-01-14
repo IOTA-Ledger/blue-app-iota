@@ -4,6 +4,8 @@ var iota = new IOTA({
 })
 const seed = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSCOVMPARZEXQJFEXQ";
 
+iota.api.kerlTest();
+
 iota.api.getNewAddress(seed, {
   index: 0,
   security: 2

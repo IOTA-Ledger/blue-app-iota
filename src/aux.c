@@ -105,16 +105,43 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
     // reduce RAM required
     trint_t seed_trints[49];
     // kerl_squeeze_trints(&seed_trints[0], 49);
+    // {
+    //   tryte_t seed_trytes[81] = {0};
+    //   {
+    //     char test_seed[] = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSCOVMPARZEXQJFEXQ";
+    //     chars_to_trytes(test_seed, seed_trytes, 81);
+    //   }
+    //   {
+    //     trit_t seed_trits[81 * 3] = {0};
+    //     trytes_to_trits(seed_trytes, seed_trits, 81);
+    //     specific_243trits_to_49trints(seed_trits, seed_trints);
+    //   }
+    // }
+
     {
       tryte_t seed_trytes[81] = {0};
       {
-        char test_seed[] = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSCOVMPARZEXQJFEXQ";
-        chars_to_trytes(test_seed, seed_trytes, 81);
+        char test_kerl[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR";
+        chars_to_trytes(test_kerl, seed_trytes, 81);
       }
       {
         trit_t seed_trits[81 * 3] = {0};
         trytes_to_trits(seed_trytes, seed_trits, 81);
         specific_243trits_to_49trints(seed_trits, seed_trints);
+      }
+      {
+        kerl_initialize();
+        kerl_absorb_trints(seed_trints, 49);
+        kerl_squeeze_trints(seed_trints, 49);
+      }
+      {
+        trit_t seed_trits[81 * 3] = {0};
+        specific_49trints_to_243trits(seed_trints, seed_trits);
+        trits_to_trytes(seed_trits, seed_trytes, 243);
+        trytes_to_chars(seed_trytes, msg, 81);
+      }
+      {
+        msg[81] = '\0';
       }
     }
 
@@ -161,9 +188,6 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
 
     //null terminate seed
     //seed_chars[81] = '\0';
-
-    //pass trints to private key func and let it handle the response
-    get_private_key(&seed_trints[0], 0, msg);
 }
 
 //write func to get private key
