@@ -5,19 +5,20 @@
 
 static const int RADIX = 3;
 
-static const int32_t HALF_3[13] = { 0xF16B9C2D,
-                                    0xDD01633C,
-                                    0x3D8CF0EE,
-                                    0xB09A028B,
-                                    0x246CD94A,
-                                    0xF1C6D805,
-                                    0x6CEE5506,
-                                    0xDA330AA3,
-                                    0xFDE381A1,
-                                    0xFE13F810,
-                                    0xF97f039E,
-                                    0x1B3DC3CE,
-                                    0x00000001};
+static const int32_t HALF_3[12] = {
+  0xa5ce8964,
+  0x9f007669,
+  0x1484504f,
+  0x3ade00d9,
+  0x0c24486e,
+  0x50979d57,
+  0x79a4c702,
+  0x48bbae36,
+  0xa9f6808b,
+  0xaa06a805,
+  0xa87fabdf,
+  0x5e69ebef
+};
 
 static const char tryte_to_char_mapping[] = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -221,8 +222,8 @@ int bytes_to_words(const unsigned char bytes_in[], int32_t words_out[], uint8_t 
 //custom conversion straight from trints to words
 int trints_to_words(trint_t *trints_in, int32_t words_out[])
 {
-    uint32_t base[13] = {0};
-    int32_t size = 13;
+    int32_t size = 12;
+    int32_t base[12] = {0};
     trit_t trits[5]; // on final call only left 3 trits matter
 
     //instead of operating on all 243 trits at once, we will hotswap
@@ -235,19 +236,14 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
         // array index is get - 1
         for (int16_t i = get-1; i >= 0; i--) {
             // multiply
+            int32_t sz = size;
             {
-                int32_t sz = size;
                 int32_t carry = 0;
 
                 for (int32_t j = 0; j < sz; j++) {
-                  /*
-                  var v = base[j] * RADIX + carry;
-                  carry = rshift(v, 32);
-                  base[j] = (v & 0xFFFFFFFF) >>> 0;
-                  */
-                    int64_t v = base[j] * RADIX + carry;// * ((int64_t)3) + ((int64_t)carry&0xFFFFFFFF);
-                    carry = (int32_t)((v >> 32));
-                    base[j] = (int32_t) (v & 0xFFFFFFFF);
+                  int64_t v = base[j] * RADIX + carry;// * ((int64_t)3) + ((int64_t)carry&0xFFFFFFFF);
+                  carry = (int32_t)((v >> 32));
+                  base[j] = (int32_t) (v & 0xFFFFFFFF);
                 }
 
                 if (carry > 0) {
@@ -260,26 +256,29 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
             {
                 int32_t tmp[12];
                 // Ignore the last trit (48 is last trint, 2 is last trit in that trint)
-                if (x == 48 & i == 2) {
-                    bigint_add_int(base, 1, tmp, 13);
-                } else {
-                    bigint_add_int(base, trits[i]+1, tmp, 13);
+                // if (x == 48 && i == 2) {
+                //     bigint_add_int(base, 1, tmp, 12);
+                // } else {
+                //     bigint_add_int(base, trits[i]+1, tmp, 12);
+                // }
+                bigint_add_int(base, trits[i]+1, tmp, 12);
+                memcpy(base, tmp, 48);
+                if (sz > size) {
+                    size = sz;
                 }
-                memcpy(base, tmp, 52);
-                // todo sz>size stuff
             }
         }
     }
 
-    if (bigint_cmp_bigint(HALF_3, base, 13) <= 0 ) {
-        int32_t tmp[13];
-        bigint_sub_bigint(base, HALF_3, tmp, 13);
-        memcpy(base, tmp, 52);
+    if (bigint_cmp_bigint(HALF_3, base, 12) <= 0 ) {
+        int32_t tmp[12];
+        bigint_sub_bigint(base, HALF_3, tmp, 12);
+        memcpy(base, tmp, 48);
     } else {
-        int32_t tmp[13];
-        bigint_sub_bigint(HALF_3, base, tmp, 13);
-        bigint_not(tmp, 13);
-        bigint_add_int(tmp, 1, base, 13);
+        int32_t tmp[12];
+        bigint_sub_bigint(HALF_3, base, tmp, 12);
+        bigint_not(tmp, 12);
+        bigint_add_int(tmp, 1, base, 12);
     }
 
 
