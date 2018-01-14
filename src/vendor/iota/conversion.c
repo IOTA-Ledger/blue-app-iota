@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-static const int RADIX = 3;
+static const int64_t RADIX = 3;
 
 static const int32_t HALF_3[12] = {
   0xa5ce8964,
@@ -225,25 +225,32 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
     int32_t size = 12;
     int32_t base[12] = {0};
     trit_t trits[5]; // on final call only left 3 trits matter
-
     //instead of operating on all 243 trits at once, we will hotswap
     //5 trits at a time from our trints
-    for(int8_t x = 48; x >= 0; x--) {
+    for(int8_t x = 49; x >= 0; x--) {
         //if this is the last send, we are only get 3 trits
-        uint8_t get = (x == 48) ? 3 : 5;
+        uint8_t get = (x == 49) ? 3 : 5;
         trint_to_trits(trints_in[x], trits, get);
 
         // array index is get - 1
-        for (int16_t i = get-1; i >= 0; i--) {
+        for (int8_t i = get - 1; i >= 0; i--) {
+            if(i == 2 && x == 49) {
+              // Ignore the last trit
+              int32_t tmp[12];
+              bigint_add_int(base, 1, tmp, 12);
+              memcpy(base, tmp, 48);          
+              continue;
+            }
+
             // multiply
             int32_t sz = size;
             {
                 int32_t carry = 0;
 
                 for (int32_t j = 0; j < sz; j++) {
-                  int64_t v = base[j] * RADIX + carry;// * ((int64_t)3) + ((int64_t)carry&0xFFFFFFFF);
-                  carry = (int32_t)((v >> 32));
-                  base[j] = (int32_t) (v & 0xFFFFFFFF);
+                  int64_t v = ((int64_t)base[j]&0xFFFFFFFF) * ((int64_t)3) + ((int64_t)carry&0xFFFFFFFF);
+                   carry = (int32_t)((v >> 32) & 0xFFFFFFFF);
+                   base[j] = (int32_t) (v & 0xFFFFFFFF);
                 }
 
                 if (carry > 0) {
@@ -255,12 +262,6 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
             // add
             {
                 int32_t tmp[12];
-                // Ignore the last trit (48 is last trint, 2 is last trit in that trint)
-                // if (x == 48 && i == 2) {
-                //     bigint_add_int(base, 1, tmp, 12);
-                // } else {
-                //     bigint_add_int(base, trits[i]+1, tmp, 12);
-                // }
                 bigint_add_int(base, trits[i]+1, tmp, 12);
                 memcpy(base, tmp, 48);
                 if (sz > size) {
@@ -281,8 +282,18 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
         bigint_add_int(tmp, 1, base, 12);
     }
 
+    // Reverse array and do the swap32 thing.
+    int32_t tmp[12];
+    for(uint8_t i = 0; i < 12; i++) {
+      int32_t val = base[11 - i];
+      val = ((val & 0xFF) << 24) |
+          ((val & 0xFF00) << 8) |
+          ((val >> 8) & 0xFF00) |
+          ((val >> 24) & 0xFF);
+      tmp[i] = val;
+    }
 
-    memcpy(words_out, base, 48);
+    memcpy(words_out, tmp, 48);
     return 0;
 }
 
