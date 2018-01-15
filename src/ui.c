@@ -181,8 +181,15 @@ static const bagl_element_t bagl_ui_sample_blue[] = {
 
 void initUImsg() {
     if(nvram_is_init()) {//5678901234567890
-        write_display("DONT USE OTHER", 20, TYPE_STR, TOP);
-        write_display("PEOPLES SEED!", 20, TYPE_STR, BOT);
+        uint64_t spic = 4294967299;
+        uint32_t lhs = (uint32_t)(spic>> 32) & 0xFFFFFFFF;
+        uint32_t rhs = (uint32_t)(spic & 0xFFFFFFFF);
+        
+        write_display(&lhs, 20, TYPE_UINT, TOP);
+        write_display(&rhs, 20, TYPE_UINT, BOT);
+        
+        //write_display("DONT USE OTHER", 20, TYPE_STR, TOP);
+        //write_display("PEOPLES SEED!", 20, TYPE_STR, BOT);
     }
     else {
         write_display("DONT USE OTHER", 20, TYPE_STR, TOP);

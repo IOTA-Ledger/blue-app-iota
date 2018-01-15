@@ -32,11 +32,19 @@ int main(int argc, const char * argv[]) {
     
     //String converted into trits properly
     trits_to_words_u(&trits[0], &words[0]);
+    
+    words_to_trints_u(&words[0], &trints[0]);
+    specific_49trints_to_243trits(&trints[0], &trits2[0]);
+    print_243trits(&trits2[0]);
+    
     words_to_trits_u(&words[0], &trits2[0]);
+    print_243trits(&trits2[0]);
     
     trits_to_trytes(&trits2[0], &trytes2[0], 243);
     trytes_to_chars(&trytes2[0], &chars2[0], 81);
     
+    //result should be
+//"EUCGRCGLPLOEIBAAQYIUTGJHOCOBDVUHFXQKQLRRANECEXZLEOIIMZZEQNPNTDRVRKJWIMGRQAK9DEWAC"
     print(&chars2[0]);
     return 0;
 }

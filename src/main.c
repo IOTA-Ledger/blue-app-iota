@@ -189,6 +189,7 @@ static void IOTA_main(void) {
                         uint_to_str(global_seed_key, &msg[0], 11);
                         tx = 11;
                         
+                        
                         // push the response onto the response buffer.
                         os_memmove(G_io_apdu_buffer, msg, tx);
                         

@@ -441,6 +441,81 @@ int words_to_trits(const int32_t words_in[], trit_t trits_out[])
     return 0;
 }
 
+
+int words_to_trints_u(const uint32_t *words_in, trint_t *trints_out)
+{
+    uint32_t base[12] = {0};
+    uint32_t tmp[12] = {0};
+    memcpy(base, words_in, 48);
+    
+    reverse_words(base, 12);
+    
+    //base is properly reversed
+    bool flip_trits = false;
+    // check if big num is negative
+    if (base[11] >> 31 == 0) {
+        //positive two's complement
+        bigint_add_intarr_u(base, HALF_3_u, tmp, 12);
+        memcpy(base, tmp, 48);
+        
+        //this part works
+    } else {
+        //negative number
+        bigint_not_u(base, 12);
+        //***** Doesn't seem to enter here - probably because uint..
+        if(bigint_cmp_bigint_u(base, HALF_3_u, 12) > 0) {
+            bigint_sub_bigint_u(base, HALF_3_u, tmp, 12);
+            memcpy(base, tmp, 48);
+            flip_trits = true;
+        } else {
+            //bigint is between unsigned half3 and 2**384 - 3**242/2).
+            bigint_add_int_u(base, 1, tmp, 12);
+            memcpy(base, tmp, 48);
+            
+            //ta_slice returns same array (from official implementation)
+            //so just sub base from half3 but store in base
+            bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
+            memcpy(base, tmp, 48);
+        }
+    }
+    
+    // Same result up to here!!
+    
+    
+    uint32_t rem = 0;
+    trit_t trits[5];
+    for (uint8_t i = 0; i < 242; i++) {
+        rem = 0;
+        
+        for (int8_t j = 12-1; j >= 0 ; j--) {
+            uint64_t lhs = (uint64_t)(rem != 0 ? ((uint64_t)rem * 0xFFFFFFFF)
+                                      + rem : 0) + base[j];
+            //radix is 3
+            uint64_t q = (lhs / 3) & 0xFFFFFFFF;
+            uint8_t r = lhs % 3;
+            
+            base[j] = (uint32_t)q;
+            rem = r;
+        }
+        
+        trits[i%5] = rem - 1;
+        
+        if (flip_trits) {
+            trits[i%5] = -trits[i%5];
+        }
+        
+        if(i%5 == 4) // we've finished a trint, store it
+            trints_out[(uint8_t)(i/5)] = trits_to_trint(&trits[0], 5);
+    }
+    //set very last trit to 0
+    trits[2] = 0;
+    //the last trint %5 won't == 4 so store it manually
+    trints_out[48] = trits_to_trint(&trits[0], 3);
+    
+    //words_to_trints_u works (same result as official
+    return 0;
+}
+
 /*
 //utilize encoded format
 int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
