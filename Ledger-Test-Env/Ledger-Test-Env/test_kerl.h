@@ -39,5 +39,7 @@ int words_to_trints(const int32_t words_in[], trint_t *trints_out);
 int kerl_absorb_trints(trint_t *trints_in, uint16_t len);
 int kerl_squeeze_trints(trint_t *trints_out, uint16_t len);
 
+void print_words(uint32_t *words, int len);
+
 #endif /* test_kerl_h */
 

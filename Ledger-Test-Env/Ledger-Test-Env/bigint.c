@@ -57,6 +57,22 @@ int bigint_add_int_u(uint32_t bigint_in[], uint32_t int_in, uint32_t bigint_out[
     return i;
 }*/
 
+int bigint_add_intarr_u(uint32_t bigint_in[], uint32_t int_in[], uint32_t bigint_out[], uint8_t len)
+{
+    struct int_bool_pair val;
+    val.hi = false;
+    for (uint8_t i = 0; i < len; i++) {
+        val = full_add_u(bigint_in[i], int_in[i], val.hi);
+        bigint_out[i] = val.low;
+        val.low = 0;
+    }
+    
+    if (val.hi) {
+        return -1;
+    }
+    return 0;
+}
+
 int bigint_add_int_u(uint32_t bigint_in[], uint32_t int_in, uint32_t bigint_out[], uint8_t len)
 {
     struct int_bool_pair val;

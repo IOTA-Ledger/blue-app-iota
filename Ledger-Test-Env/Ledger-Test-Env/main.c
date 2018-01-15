@@ -19,7 +19,7 @@ int main(int argc, const char * argv[]) {
     tryte_t trytes[81], trytes2[81];
     trit_t trits[243], trits2[243];
     trint_t trints[49], trints2[49];
-    int32_t words[12];
+    uint32_t words[12];
     chars[81] = '\0';
     chars2[81] = '\0';
     
