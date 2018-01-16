@@ -11,7 +11,7 @@
 void gen_trits(int8_t *trits, int sz) {
     int8_t new_trits[sz];
     time_t t;
-    
+    sleep(2);
     /* Intializes random number generator */
     srand((unsigned) time(&t));
     
