@@ -242,13 +242,104 @@ uint32_t swap32(uint32_t i) {
     ((i >> 24) & 0xFF);
 }
 
+int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[])
+{
+    uint32_t base[12] = {0};
+    uint32_t size = 1;
+    trit_t trits[5];
+    
+    printf("\n\n\nTRINTS_TO_WORDS\n\n\n");
+    //it starts at the end and works backwards, so get last trit
+    trint_to_trits(trints_in[48], &trits[0], 3);
+    
+    //possibly add a case for if every val == -1
+    for (int16_t i = 242; i-- > 0;) {
+        
+        if(i%5 == 4) //we need a new trint
+            trint_to_trits(trints_in[(uint8_t)(i/5)], &trits[0], 5);
+        
+        //trit cant be negative since we add 1
+        uint8_t trit = trits[i%5] + 1;
+        uint32_t sz;
+        
+        printf("T: [%d]\n", trit);
+        
+        //printf("%d [%d]", i, trit);
+        // multiply
+        {
+            sz = size;
+            uint32_t carry = 0;
+            
+            for (int32_t j = 0; j < sz; j++) {
+                uint64_t v = base[j];
+                v = v * 3 + carry;
+                
+                carry = (uint32_t)(v >> 32);
+                //printf("[%i]carry: %u\n", i, carry);
+                base[j] = (uint32_t) (v & 0xFFFFFFFF);
+                //v holds full amount, base[j] holds up to uint32 max
+                //printf("-v:%llu", v);
+                //printf("-c:%d", carry);
+                //printf("-b:%u", base[j]);
+                //printf("-sz:%d\n", sz);
+            }
+            
+            if (carry > 0) {
+                base[sz] = carry;
+                size++;
+            }
+        }
+        
+        // add
+        {
+            uint32_t tmp[12];
+            sz = bigint_add_int_u(base, trit, tmp, 12);
+            memcpy(base, tmp, 48);
+            if(sz > size) size = sz;
+        }
+    }
+    
+    //works up to here
+    
+    if (bigint_cmp_bigint_u(HALF_3_u, base, 12) <= 0 ) {
+        uint32_t tmp[12];
+        bigint_sub_bigint_u(base, HALF_3_u, tmp, 12);
+        memcpy(base, tmp, 48);
+    } else {
+        uint32_t tmp[12];
+        bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
+        bigint_not_u(tmp, 12);
+        bigint_add_int_u(tmp, 1, base, 12);
+    }
+    
+    //reverse base
+    uint32_t base_tmp;
+    for(uint8_t i=0; i < 6; i++) {
+        base_tmp = base[i];
+        base[i] = base[11-i];
+        base[11-i] = base_tmp;
+    }
+    
+    //swap endianness
+    for(uint8_t i=0; i<12; i++) {
+        base[i] = swap32(base[i]);
+    }
+    
+    //outputs correct words according to official js
+    memcpy(words_out, base, 48);
+    return 0;
+}
+
 int trits_to_words_u(const trit_t trits_in[], uint32_t words_out[])
 {
+    printf("\n\n\nTRITS_TO_WORDS_U\n\n\n");
     uint32_t base[12] = {0};
     uint32_t size = 1;
     for (int16_t i = 242; i-- > 0;) {
         uint8_t trit = trits_in[i] + 1;
         uint32_t sz;
+        
+        printf("T: [%d]\n", trit);
         
         //printf("%d [%d]", i, trit);
         // multiply
