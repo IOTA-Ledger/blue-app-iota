@@ -9,6 +9,6 @@
 #include "main.h"
 
 int main(int argc, const char * argv[]) {
-    test_word_converter(30);
+    test_word_converter(1);
     return 0;
 }
