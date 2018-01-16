@@ -34,10 +34,10 @@ int main(int argc, const char * argv[]) {
     
     //String converted into trits properly
     
-    trints_to_words_u(&trints[0], &words[0]);
+    trints_to_words_u_mem(&trints[0], &words[0]);
     //trits_to_words_u(&trits[0], &words[0]);
     
-    words_to_trints_u(&words[0], &trints2[0]);
+    words_to_trints_u_mem(&words[0], &trints2[0]);
     print_words(&words[0], 12);
     specific_49trints_to_243trits(&trints2[0], &trits2[0]);
     print_243trits(&trits2[0]);

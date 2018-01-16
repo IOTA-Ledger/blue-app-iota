@@ -57,6 +57,22 @@ int bigint_add_int_u(uint32_t bigint_in[], uint32_t int_in, uint32_t bigint_out[
     return i;
 }*/
 
+int bigint_add_intarr_u_mem(uint32_t *bigint_in, uint32_t *int_in, uint8_t len)
+{
+    struct int_bool_pair val;
+    val.hi = false;
+    for (uint8_t i = 0; i < len; i++) {
+        val = full_add_u(bigint_in[i], int_in[i], val.hi);
+        bigint_in[i] = val.low;
+        val.low = 0;
+    }
+    
+    if (val.hi) {
+        return -1;
+    }
+    return 0;
+}
+
 int bigint_add_intarr_u(uint32_t bigint_in[], uint32_t int_in[], uint32_t bigint_out[], uint8_t len)
 {
     struct int_bool_pair val;
@@ -64,6 +80,24 @@ int bigint_add_intarr_u(uint32_t bigint_in[], uint32_t int_in[], uint32_t bigint
     for (uint8_t i = 0; i < len; i++) {
         val = full_add_u(bigint_in[i], int_in[i], val.hi);
         bigint_out[i] = val.low;
+        val.low = 0;
+    }
+    
+    if (val.hi) {
+        return -1;
+    }
+    return 0;
+}
+
+//memory optimized for add in place
+int bigint_add_int_u_mem(uint32_t *bigint_in, uint32_t int_in, uint8_t len)
+{
+    struct int_bool_pair val;
+    val.low = int_in;
+    val.hi = false;
+    for (uint8_t i = 0; i < len; i++) {
+        val = full_add_u(bigint_in[i], val.low, val.hi);
+        bigint_in[i] = val.low;
         val.low = 0;
     }
     
@@ -133,6 +167,18 @@ int bigint_add_bigint(const int32_t bigint_one[], const int32_t bigint_two[], in
     
     if (val.hi) {
         return -1;
+    }
+    return 0;
+}
+
+//subrtacts into arg1
+int bigint_sub_bigint_u_mem(uint32_t *bigint_one, const uint32_t *bigint_two, uint8_t len)
+{
+    struct int_bool_pair val;
+    val.hi = true;
+    for (uint8_t i = 0; i < len; i++) {
+        val = full_add(bigint_one[i], ~bigint_two[i], val.hi);
+        bigint_one[i] = val.low;
     }
     return 0;
 }

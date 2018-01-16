@@ -38,6 +38,9 @@ int words_to_trints(const int32_t words_in[], trint_t *trints_out);
 
 int words_to_trints_u(const uint32_t *words_in, trint_t *trints_out);
 int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[]);
+int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *words_out);
+int words_to_trints_u_mem(uint32_t *words_in, trint_t *trints_out);
+
 
 int kerl_absorb_trints(trint_t *trints_in, uint16_t len);
 int kerl_squeeze_trints(trint_t *trints_out, uint16_t len);
