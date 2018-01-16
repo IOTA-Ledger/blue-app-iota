@@ -70,7 +70,7 @@ int bigint_add_intarr_u_mem(uint32_t *bigint_in, uint32_t *int_in, uint8_t len)
     if (val.hi) {
         return -1;
     }
-    return 0;
+    return len;
 }
 
 int bigint_add_intarr_u(uint32_t bigint_in[], uint32_t int_in[], uint32_t bigint_out[], uint8_t len)
@@ -82,63 +82,94 @@ int bigint_add_intarr_u(uint32_t bigint_in[], uint32_t int_in[], uint32_t bigint
         bigint_out[i] = val.low;
         val.low = 0;
     }
-    
+
     if (val.hi) {
         return -1;
     }
-    return 0;
+    return len;
 }
 
 //memory optimized for add in place
 int bigint_add_int_u_mem(uint32_t *bigint_in, uint32_t int_in, uint8_t len)
 {
     struct int_bool_pair val;
-    val.low = int_in;
-    val.hi = false;
-    for (uint8_t i = 0; i < len; i++) {
-        val = full_add_u(bigint_in[i], val.low, val.hi);
+
+    // add to the first word without carry bit
+    val = full_add_u(bigint_in[0], int_in, false);
+    bigint_in[0] = val.low;
+
+    for (uint8_t i = 1; i < len; i++) {
+        // only continue adding, if there is a carry bit
+        if (!val.hi) {
+            return i;
+        }
+        val = full_add_u(bigint_in[i], 0, true);
         bigint_in[i] = val.low;
-        val.low = 0;
     }
-    
+
+    // detect overflow
     if (val.hi) {
         return -1;
     }
-    return 0;
+    return len;
 }
 
 int bigint_add_int_u(uint32_t bigint_in[], uint32_t int_in, uint32_t bigint_out[], uint8_t len)
 {
     struct int_bool_pair val;
-    val.low = int_in;
-    val.hi = false;
-    for (uint8_t i = 0; i < len; i++) {
-        val = full_add_u(bigint_in[i], val.low, val.hi);
+    uint8_t i;
+
+    // add to the first word without carry bit
+    val = full_add_u(bigint_in[0], int_in, false);
+    bigint_out[0] = val.low;
+
+    i = 1;
+    for (; i < len; i++) {
+        // only continue adding, if there is a carry bit
+        if (!val.hi) {
+            break;
+        }
+        val = full_add_u(bigint_in[i], 0, true);
         bigint_out[i] = val.low;
-        val.low = 0;
     }
-    
-    if (val.hi) {
+    // copy the remaining words
+    for (uint8_t j = i; j < len; j++) {
+        bigint_out[j] = bigint_in[j];
+    }
+
+    if (val.hi && i == len) {
         return -1;
     }
-    return 0;
+    return i;
 }
 
 int bigint_add_int(int32_t bigint_in[], int32_t int_in, int32_t bigint_out[], uint8_t len)
 {
     struct int_bool_pair val;
-    val.low = int_in;
-    val.hi = false;
-    for (uint8_t i = 0; i < len; i++) {
-        val = full_add(bigint_in[i], val.low, val.hi);
+    uint8_t i;
+
+    // add to the first word without carry bit
+    val = full_add(bigint_in[0], int_in, false);
+    bigint_out[0] = val.low;
+
+    i = 1;
+    for (; i < len; i++) {
+        // only continue adding, if there is a carry bit
+        if (!val.hi) {
+            break;
+        }
+        val = full_add(bigint_in[i], 0, true);
         bigint_out[i] = val.low;
-        val.low = 0;
     }
-    
-    if (val.hi) {
+    // copy the remaining words
+    for (uint8_t j = i; j < len; j++) {
+        bigint_out[j] = bigint_in[j];
+    }
+
+    if (val.hi && i == len) {
         return -1;
     }
-    return 0;
+    return i;
 }
 
 int bigint_add_bigint_u(uint32_t bigint_one[], uint32_t bigint_two[], uint32_t bigint_out[], uint8_t len)
@@ -153,7 +184,7 @@ int bigint_add_bigint_u(uint32_t bigint_one[], uint32_t bigint_two[], uint32_t b
     if (val.hi) {
         return -1;
     }
-    return 0;
+    return len;
 }
 
 int bigint_add_bigint(const int32_t bigint_one[], const int32_t bigint_two[], int32_t bigint_out[], uint8_t len)
@@ -168,7 +199,7 @@ int bigint_add_bigint(const int32_t bigint_one[], const int32_t bigint_two[], in
     if (val.hi) {
         return -1;
     }
-    return 0;
+    return len;
 }
 
 //subrtacts into arg1
