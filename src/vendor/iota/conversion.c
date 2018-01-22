@@ -7,7 +7,7 @@ static unsigned char bytes_out[48] = {0};
 
 #define INT_LENGTH 12
 
-uint32_t HALF_3_u[12] = {
+static const uint32_t HALF_3_u[12] = {
                               0xa5ce8964,
                               0x9f007669,
                               0x1484504f,
@@ -287,14 +287,13 @@ int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
         }
     }
 
-    // bigint_cmp_bigint_u seems to hang
     if (bigint_cmp_bigint_u(HALF_3_u, base, 12) <= 0 ) {
-        // bigint_sub_bigint_u_mem(base, HALF_3_u, 12);
+        bigint_sub_bigint_u_mem(base, HALF_3_u, 12);
     } else {
-        // uint32_t tmp[12];
-        // bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
-        // bigint_not_u(tmp, 12);
-        // bigint_add_int_u(tmp, 1, base, 12);
+        uint32_t tmp[12];
+        bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
+        bigint_not_u(tmp, 12);
+        bigint_add_int_u(tmp, 1, base, 12);
     }
 
     //reverse base
