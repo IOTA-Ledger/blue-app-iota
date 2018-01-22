@@ -296,6 +296,7 @@ int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
         bigint_not_u(tmp, 12);
         bigint_add_int_u(tmp, 1, base, 12);
     }
+    // hang end
 
     //reverse base
     for(uint8_t i=0; i < 6; i++) {
@@ -308,7 +309,6 @@ int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
     for(uint8_t i=0; i<12; i++) {
         base[i] = swap32(base[i]);
     }
-    // hang end
 
     //outputs correct words according to official js
     return 0;
