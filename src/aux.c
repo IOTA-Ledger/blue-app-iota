@@ -129,24 +129,24 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
         trytes_to_trits(seed_trytes, seed_trits, 81);
         specific_243trits_to_49trints(seed_trits, seed_trints);
       }
-      // {
-      //   kerl_initialize();
-      //   kerl_absorb_trints(seed_trints, 49);
-      //   kerl_squeeze_trints(seed_trints, 49);
-      // }
       {
-        // Print result of trints_to_words
-        uint32_t words[12];
-        memset(words, 0, sizeof(words));
-        trints_to_words_u_mem(seed_trints, words);
-        snprintf(msg, 81, "%u %u %u", words[0], words[1], words[2]);
+        kerl_initialize();
+        kerl_absorb_trints(seed_trints, 49);
+        kerl_squeeze_trints(seed_trints, 49);
       }
       // {
-      //   trit_t seed_trits[81 * 3] = {0};
-      //   specific_49trints_to_243trits(seed_trints, seed_trits);
-      //   trits_to_trytes(seed_trits, seed_trytes, 243);
-      //   trytes_to_chars(seed_trytes, msg, 81);
+      //   // Print result of trints_to_words
+      //   uint32_t words[12];
+      //   memset(words, 0, sizeof(words));
+      //   trints_to_words_u_mem(seed_trints, words);
+      //   snprintf(msg, 81, "%u %u %u", words[0], words[1], words[2]);
       // }
+      {
+        trit_t seed_trits[81 * 3] = {0};
+        specific_49trints_to_243trits(seed_trints, seed_trits);
+        trits_to_trytes(seed_trits, seed_trytes, 243);
+        trytes_to_chars(seed_trytes, msg, 81);
+      }
       {
         msg[81] = '\0';
       }

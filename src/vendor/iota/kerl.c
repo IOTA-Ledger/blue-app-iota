@@ -41,7 +41,7 @@ int kerl_squeeze_trits(trit_t trits_out[], uint16_t len)
     // Convert to trits
     int32_t words[12];
     bytes_to_words(bytes_out, words, 12);
-    words_to_trits(words, trits_out);
+    words_to_trints_u_mem(words, trits_out);
 
     // Last trit zero
     trits_out[242] = 0;
@@ -65,9 +65,10 @@ int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
     for (uint8_t i = 0; i < (len/49); i++) {
         // First, convert to bytes
         int32_t words[12];
+        memset(words, 0, sizeof(words));
         unsigned char bytes[48];
         //Convert straight from trints to words
-        trints_to_words(trints_in, words);
+        trints_to_words_u_mem(trints_in, words);
         words_to_bytes(words, bytes, 12);
         kerl_absorb_bytes(bytes, 48);
     }
@@ -76,12 +77,10 @@ int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
 
 //utilize encoded format
 int kerl_squeeze_trints(trint_t *trints_out, uint16_t len) {
-    (void) len;
-
     // Convert to trits
     int32_t words[12];
     bytes_to_words(bytes_out, words, 12);
-    words_to_trints(words, &trints_out[0]);
+    words_to_trints_u_mem(words, &trints_out[0]);
 
 
     //-- Setting last trit to 0
