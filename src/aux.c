@@ -136,8 +136,9 @@ void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
       // }
       {
         // Print result of trints_to_words
-        int32_t words[12];
-        trints_to_words(seed_trints, words);
+        uint32_t words[12];
+        memset(words, 0, sizeof(words));
+        trints_to_words_u_mem(seed_trints, words);
         snprintf(msg, 81, "%u %u %u", words[0], words[1], words[2]);
       }
       // {

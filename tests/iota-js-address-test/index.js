@@ -6,9 +6,9 @@ const seed = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSC
 
 iota.api.kerlTest();
 
-iota.api.getNewAddress(seed, {
-  index: 0,
-  security: 2
-}, (e, r) => {
-  console.log(e, r);
-})
+// iota.api.getNewAddress(seed, {
+//   index: 0,
+//   security: 2
+// }, (e, r) => {
+//   console.log(e, r);
+// })
