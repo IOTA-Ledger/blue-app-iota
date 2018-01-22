@@ -236,7 +236,7 @@ int bigint_sub_bigint(const int32_t bigint_one[], const int32_t bigint_two[], in
     return 0;
 }
 
-int8_t bigint_cmp_bigint_u(uint32_t bigint_one[], uint32_t bigint_two[], uint8_t len)
+int8_t bigint_cmp_bigint_u(const uint32_t bigint_one[], const uint32_t bigint_two[], uint8_t len)
 {
     for (int8_t i = len-1; i >= 0; i--) {
         if (bigint_one[i] > bigint_two[i]) {

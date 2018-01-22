@@ -287,16 +287,15 @@ int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
         }
     }
 
-    //hang start
+    // bigint_cmp_bigint_u seems to hang
     if (bigint_cmp_bigint_u(HALF_3_u, base, 12) <= 0 ) {
-        bigint_sub_bigint_u_mem(base, HALF_3_u, 12);
+        // bigint_sub_bigint_u_mem(base, HALF_3_u, 12);
     } else {
-        uint32_t tmp[12];
-        bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
-        bigint_not_u(tmp, 12);
-        bigint_add_int_u(tmp, 1, base, 12);
+        // uint32_t tmp[12];
+        // bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
+        // bigint_not_u(tmp, 12);
+        // bigint_add_int_u(tmp, 1, base, 12);
     }
-    // hang end
 
     //reverse base
     for(uint8_t i=0; i < 6; i++) {
