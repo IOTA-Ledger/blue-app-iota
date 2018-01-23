@@ -1406,60 +1406,56 @@ int words_to_bytes(const uint32_t words_in[], unsigned char bytes_out[], uint8_t
 {
 c0d005b8:	b5f0      	push	{r4, r5, r6, r7, lr}
 c0d005ba:	af03      	add	r7, sp, #12
-c0d005bc:	b082      	sub	sp, #8
-    for (uint8_t i = 0; i < word_len; i++) {
-c0d005be:	2a00      	cmp	r2, #0
-c0d005c0:	d018      	beq.n	c0d005f4 <words_to_bytes+0x3c>
-c0d005c2:	0093      	lsls	r3, r2, #2
-c0d005c4:	18c0      	adds	r0, r0, r3
-c0d005c6:	1f00      	subs	r0, r0, #4
-c0d005c8:	9001      	str	r0, [sp, #4]
-c0d005ca:	2303      	movs	r3, #3
-c0d005cc:	43d8      	mvns	r0, r3
-c0d005ce:	9000      	str	r0, [sp, #0]
-c0d005d0:	4252      	negs	r2, r2
-c0d005d2:	2400      	movs	r4, #0
-      // result[0] = (value & 0x000000ff);
-      // result[1] = (value & 0x0000ff00) >> 8;
-      // result[2] = (value & 0x00ff0000) >> 16;
-      // result[3] = (value & 0xff000000) >> 24;
-      uint32_t value = words_in[word_len-1-i];
-c0d005d4:	00a5      	lsls	r5, r4, #2
-c0d005d6:	9801      	ldr	r0, [sp, #4]
-c0d005d8:	5945      	ldr	r5, [r0, r5]
-      bytes_out[i*4+3] = (value & 0x000000ff);
-c0d005da:	9e00      	ldr	r6, [sp, #0]
-c0d005dc:	4366      	muls	r6, r4
-c0d005de:	1988      	adds	r0, r1, r6
-c0d005e0:	70c5      	strb	r5, [r0, #3]
-      bytes_out[i*4+2] = ((value & 0x0000ff00) >> 8);
-c0d005e2:	0a2b      	lsrs	r3, r5, #8
-c0d005e4:	7083      	strb	r3, [r0, #2]
-      bytes_out[i*4+1] = ((value & 0x00ff0000) >> 16);
-c0d005e6:	0c2b      	lsrs	r3, r5, #16
-c0d005e8:	7043      	strb	r3, [r0, #1]
-      bytes_out[i*4+0] = ((value & 0xff000000) >> 24);
-c0d005ea:	0e28      	lsrs	r0, r5, #24
-c0d005ec:	5588      	strb	r0, [r1, r6]
+c0d005bc:	b081      	sub	sp, #4
+    for (int8_t i = word_len - 1; i >= 0; i--) {
+c0d005be:	2300      	movs	r3, #0
+c0d005c0:	43db      	mvns	r3, r3
+c0d005c2:	32ff      	adds	r2, #255	; 0xff
+c0d005c4:	b254      	sxtb	r4, r2
+c0d005c6:	2c00      	cmp	r4, #0
+c0d005c8:	db15      	blt.n	c0d005f6 <words_to_bytes+0x3e>
+      uint32_t value = words_in[i];
+c0d005ca:	9300      	str	r3, [sp, #0]
+c0d005cc:	00a4      	lsls	r4, r4, #2
+c0d005ce:	5905      	ldr	r5, [r0, r4]
+      bytes_out[i*4+0] = (value & 0x000000ff);
+c0d005d0:	550d      	strb	r5, [r1, r4]
+      bytes_out[i*4+1] = (value & 0x0000ff00) >> 8;
+c0d005d2:	2601      	movs	r6, #1
+c0d005d4:	4326      	orrs	r6, r4
+c0d005d6:	0a2b      	lsrs	r3, r5, #8
+c0d005d8:	558b      	strb	r3, [r1, r6]
+c0d005da:	2302      	movs	r3, #2
+      bytes_out[i*4+2] = (value & 0x00ff0000) >> 16;
+c0d005dc:	4323      	orrs	r3, r4
+c0d005de:	0c2e      	lsrs	r6, r5, #16
+c0d005e0:	54ce      	strb	r6, [r1, r3]
+      bytes_out[i*4+3] = (value & 0xff000000) >> 24;
+c0d005e2:	2303      	movs	r3, #3
+c0d005e4:	4323      	orrs	r3, r4
+c0d005e6:	0e2c      	lsrs	r4, r5, #24
+c0d005e8:	54cc      	strb	r4, [r1, r3]
+c0d005ea:	9b00      	ldr	r3, [sp, #0]
     return 0;
 }
 
 int words_to_bytes(const uint32_t words_in[], unsigned char bytes_out[], uint8_t word_len)
 {
-    for (uint8_t i = 0; i < word_len; i++) {
-c0d005ee:	1e64      	subs	r4, r4, #1
-c0d005f0:	42a2      	cmp	r2, r4
-c0d005f2:	d1ef      	bne.n	c0d005d4 <words_to_bytes+0x1c>
-      bytes_out[i*4+2] = ((value & 0x0000ff00) >> 8);
-      bytes_out[i*4+1] = ((value & 0x00ff0000) >> 16);
-      bytes_out[i*4+0] = ((value & 0xff000000) >> 24);
+    for (int8_t i = word_len - 1; i >= 0; i--) {
+c0d005ec:	1e52      	subs	r2, r2, #1
+c0d005ee:	b254      	sxtb	r4, r2
+c0d005f0:	429c      	cmp	r4, r3
+c0d005f2:	4622      	mov	r2, r4
+c0d005f4:	dcea      	bgt.n	c0d005cc <words_to_bytes+0x14>
+      bytes_out[i*4+1] = (value & 0x0000ff00) >> 8;
+      bytes_out[i*4+2] = (value & 0x00ff0000) >> 16;
+      bytes_out[i*4+3] = (value & 0xff000000) >> 24;
     }
 
     return 0;
-c0d005f4:	2000      	movs	r0, #0
-c0d005f6:	b002      	add	sp, #8
-c0d005f8:	bdf0      	pop	{r4, r5, r6, r7, pc}
-	...
+c0d005f6:	2000      	movs	r0, #0
+c0d005f8:	b001      	add	sp, #4
+c0d005fa:	bdf0      	pop	{r4, r5, r6, r7, pc}
 
 c0d005fc <trints_to_words_u_mem>:
     ((i >> 8) & 0xFF00) |
