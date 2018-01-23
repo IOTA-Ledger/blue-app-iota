@@ -25,6 +25,13 @@ int kerl_finalize(unsigned char *bytes_out, uint16_t len)
     return 0;
 }
 
+uint32_t change_endianess(uint32_t i) {
+    return ((i & 0xFF) << 24) |
+    ((i & 0xFF00) << 8) |
+    ((i >> 8) & 0xFF00) |
+    ((i >> 24) & 0xFF);
+}
+
 //absorbing trits happens in 243 trit chunks
 int kerl_absorb_trits(trit_t *trits_in, uint16_t len)
 {
@@ -33,7 +40,14 @@ int kerl_absorb_trits(trit_t *trits_in, uint16_t len)
         int32_t words[12];
         unsigned char bytes[48];
         trits_to_words_u(trits_in, words);
-        words_to_bytes(words, bytes, 12);
+
+        // swap endianness on little-endian hardware
+        for(uint8_t i=0; i<12; i++) {
+            words[i] = change_endianess(words[i]);
+        }
+        memcpy(bytes, words, 48);
+        // words_to_bytes(words, bytes, 12);
+
         kerl_absorb_bytes(bytes, 48);
     }
     return 0;
@@ -46,8 +60,14 @@ int kerl_squeeze_trits(trit_t trits_out[], uint16_t len)
     int32_t words[12];
 
     kerl_finalize(bytes_out, 48);
-    
-    bytes_to_words(bytes_out, words, 12);
+
+    // swap endianness on little-endian hardware
+    memcpy(words, bytes_out, 48);
+    for(uint8_t i=0; i<12; i++) {
+        words[i] = change_endianess(words[i]);
+    }
+    // bytes_to_words(bytes_out, words, 12);
+
     words_to_trits_u(words, trits_out);
 
     // Last trit zero
@@ -76,7 +96,14 @@ int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
         unsigned char bytes[48];
         //Convert straight from trints to words
         trints_to_words_u_mem(trints_in, words);
-        words_to_bytes(words, bytes, 12);
+
+        // swap endianness on little-endian hardware
+        for(uint8_t i=0; i<12; i++) {
+            words[i] = change_endianess(words[i]);
+        }
+        memcpy(bytes, words, 48);
+        // words_to_bytes(words, bytes, 12);
+
         kerl_absorb_bytes(bytes, 48);
     }
     return 0;
@@ -90,7 +117,13 @@ int kerl_squeeze_trints(trint_t *trints_out, uint16_t len)
 
     kerl_finalize(bytes_out, 48);
 
-    bytes_to_words(bytes_out, words, 12);
+    // swap endianness on little-endian hardware
+    memcpy(words, bytes_out, 48);
+    for(uint8_t i=0; i<12; i++) {
+        words[i] = change_endianess(words[i]);
+    }
+    // bytes_to_words(bytes_out, words, 12);
+
     words_to_trints_u_mem(words, &trints_out[0]);
 
     //-- Setting last trit to 0

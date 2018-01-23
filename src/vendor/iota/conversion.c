@@ -230,13 +230,6 @@ int words_to_trints(const int32_t words_in[], trint_t *trints_out)
 }
 
 // ---- NEED ALL BELOW FOR TRITS_TO_WORDS AS WELL AS ALL _U FUNCS IN BIGINT
-//probably convert since ledger doesn't have uint64
-uint32_t swap32(uint32_t i) {
-    return ((i & 0xFF) << 24) |
-    ((i & 0xFF00) << 8) |
-    ((i >> 8) & 0xFF00) |
-    ((i >> 24) & 0xFF);
-}
 
 int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
 {
@@ -302,11 +295,6 @@ int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
         uint32_t base_tmp = base[i];
         base[i] = base[11-i];
         base[11-i] = base_tmp;
-    }
-
-    //swap endianness
-    for(uint8_t i=0; i<12; i++) {
-        base[i] = swap32(base[i]);
     }
 
     //outputs correct words according to official js
@@ -388,11 +376,6 @@ int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[])
         base[11-i] = base_tmp;
     }
 
-    //swap endianness
-    for(uint8_t i=0; i<12; i++) {
-        base[i] = swap32(base[i]);
-    }
-
     //outputs correct words according to official js
     memcpy(words_out, base, 48);
     return 0;
@@ -460,11 +443,6 @@ int trits_to_words_u(const trit_t trits_in[], uint32_t words_out[])
         base_tmp = base[i];
         base[i] = base[11-i];
         base[11-i] = base_tmp;
-    }
-
-    //swap endianness
-    for(uint8_t i=0; i<12; i++) {
-        base[i] = swap32(base[i]);
     }
 
     //outputs correct words according to official js
