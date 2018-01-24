@@ -5,7 +5,7 @@
 
 //sha3 is 424 bytes long
 cx_sha3_t sha3;
-static unsigned char bytes_out[48] = {0};
+static unsigned char sha3_bytes_out[48] = {0};
 
 int kerl_initialize(void)
 {
@@ -15,7 +15,13 @@ int kerl_initialize(void)
 
 int kerl_absorb_bytes(unsigned char *bytes_in, uint16_t len)
 {
-    cx_hash((cx_hash_t *)&sha3, CX_LAST, bytes_in, len, bytes_out);
+    cx_hash((cx_hash_t *)&sha3, CX_LAST, bytes_in, len, sha3_bytes_out);
+    return 0;
+}
+
+int kerl_finalize(unsigned char *bytes_out, uint16_t len)
+{
+    memcpy(bytes_out, sha3_bytes_out, len);
     return 0;
 }
 
@@ -36,10 +42,11 @@ int kerl_absorb_trits(trit_t *trits_in, uint16_t len)
 
 int kerl_squeeze_trits(trit_t trits_out[], uint16_t len)
 {
-    (void) len;
+    unsigned char bytes_out[48];
+    int32_t words[12];
 
-    // Convert to trits
-    int32_t words[12] = {0};
+    kerl_finalize(bytes_out, 48);
+    
     bytes_to_words(bytes_out, words, 12);
     words_to_trits_u(words, trits_out);
 
@@ -76,9 +83,13 @@ int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
 }
 
 //utilize encoded format
-int kerl_squeeze_trints(trint_t *trints_out, uint16_t len) {
-    // Convert to trits
-    uint32_t words[12];
+int kerl_squeeze_trints(trint_t *trints_out, uint16_t len)
+{
+    unsigned char bytes_out[48];
+    int32_t words[12];
+
+    kerl_finalize(bytes_out, 48);
+
     bytes_to_words(bytes_out, words, 12);
     words_to_trints_u_mem(words, &trints_out[0]);
 
