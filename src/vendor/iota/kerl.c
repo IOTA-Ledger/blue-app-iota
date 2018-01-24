@@ -32,29 +32,34 @@ uint32_t change_endianess(uint32_t i) {
     ((i >> 24) & 0xFF);
 }
 
-//absorbing trits happens in 243 trit chunks
+int kerl_absorb_trits_single(const trit_t *trits_in)
+{
+    // First, convert to bytes
+    int32_t words[12];
+    unsigned char bytes[48];
+    trits_to_words_u(trits_in, words);
+
+    // swap endianness on little-endian hardware
+    for(uint8_t i=0; i<12; i++) {
+        words[i] = change_endianess(words[i]);
+    }
+    memcpy(bytes, words, 48);
+    // words_to_bytes(words, bytes, 12);
+
+    return kerl_absorb_bytes(bytes, 48);
+}
+
 int kerl_absorb_trits(trit_t *trits_in, uint16_t len)
 {
+    //absorbing trits happens in 243 trit chunks
     for (uint8_t i = 0; i < (len/243); i++) {
-        // First, convert to bytes
-        int32_t words[12];
-        unsigned char bytes[48];
-        trits_to_words_u(trits_in, words);
-
-        // swap endianness on little-endian hardware
-        for(uint8_t i=0; i<12; i++) {
-            words[i] = change_endianess(words[i]);
-        }
-        memcpy(bytes, words, 48);
-        // words_to_bytes(words, bytes, 12);
-
-        kerl_absorb_bytes(bytes, 48);
+        kerl_absorb_trits_single(trits_in + i*243);
     }
+
     return 0;
 }
 
-
-int kerl_squeeze_trits(trit_t trits_out[], uint16_t len)
+int kerl_squeeze_trits_single(trit_t *trits_out)
 {
     unsigned char bytes_out[48];
     int32_t words[12];
@@ -73,15 +78,22 @@ int kerl_squeeze_trits(trit_t trits_out[], uint16_t len)
     // Last trit zero
     trits_out[242] = 0;
 
-    // TODO: Check if the following is needed. Seems to do nothing.
-
     // Flip bytes
     for (uint8_t i = 0; i < 48; i++) {
-        bytes_out[i] = bytes_out[i] ^ 0xFF;
+        bytes_out[i] = ~bytes_out[i];
     }
 
     kerl_initialize();
-    kerl_absorb_bytes(bytes_out,48);
+    kerl_absorb_bytes(bytes_out, 48);
+
+    return 0;
+}
+
+int kerl_squeeze_trits(trit_t *trits_out, uint16_t len)
+{
+    for (uint8_t i = 0; i < (len/243); i++) {
+        kerl_squeeze_trits_single(trits_out + i*243);
+    }
 
     return 0;
 }
