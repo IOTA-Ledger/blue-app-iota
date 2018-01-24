@@ -3,6 +3,19 @@
 #include "os.h"
 #include "cx.h"
 
+#ifndef LITTLE_ENDIAN
+#define LITTLE_ENDIAN 1234
+#endif
+
+#ifndef BIG_ENDIAN
+#define BIG_ENDIAN 4321
+#endif
+
+#ifndef BYTE_ORDER
+// TODO: adapt byte order if necessary
+#define BYTE_ORDER LITTLE_ENDIAN
+#endif
+
 //sha3 is 424 bytes long
 cx_sha3_t sha3;
 static unsigned char sha3_bytes_out[48] = {0};
@@ -32,19 +45,43 @@ uint32_t change_endianess(uint32_t i) {
     ((i >> 24) & 0xFF);
 }
 
+void words_to_bytes(const int32_t *words, unsigned char *bytes,
+                    const uint8_t num_words) {
+
+    memcpy(bytes, words, num_words * 4);
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+    // swap endianness on little-endian hardware
+    uint32_t *p = (uint32_t *)bytes;
+    for (uint8_t i = 0; i < num_words; i++) {
+        *p = change_endianess(*p);
+        p++;
+    }
+#endif // BYTE_ORDER == LITTLE_ENDIAN
+}
+
+void bytes_to_words(const unsigned char *bytes, int32_t *words,
+                    const uint8_t num_words) {
+
+    memcpy(words, bytes, num_words * 4);
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+    // swap endianness on little-endian hardware
+    uint32_t *p = words;
+    for (uint8_t i = 0; i < num_words; i++) {
+        *p = change_endianess(*p);
+        p++;
+    }
+#endif // BYTE_ORDER == LITTLE_ENDIAN
+}
+
 int kerl_absorb_trits_single(const trit_t *trits_in)
 {
     // First, convert to bytes
     int32_t words[12];
     unsigned char bytes[48];
     trits_to_words_u(trits_in, words);
-
-    // swap endianness on little-endian hardware
-    for(uint8_t i=0; i<12; i++) {
-        words[i] = change_endianess(words[i]);
-    }
-    memcpy(bytes, words, 48);
-    // words_to_bytes(words, bytes, 12);
+    words_to_bytes(words, bytes, 12);
 
     return kerl_absorb_bytes(bytes, 48);
 }
@@ -66,13 +103,7 @@ int kerl_squeeze_trits_single(trit_t *trits_out)
 
     kerl_finalize(bytes_out, 48);
 
-    // swap endianness on little-endian hardware
-    memcpy(words, bytes_out, 48);
-    for(uint8_t i=0; i<12; i++) {
-        words[i] = change_endianess(words[i]);
-    }
-    // bytes_to_words(bytes_out, words, 12);
-
+    bytes_to_words(bytes_out, words, 12);
     words_to_trits_u(words, trits_out);
 
     // Last trit zero
@@ -106,13 +137,7 @@ int kerl_absorb_trints_single(trint_t *trints_in)
 
     //Convert straight from trints to words
     trints_to_words_u_mem(trints_in, words);
-
-    // swap endianness on little-endian hardware
-    for(uint8_t i=0; i<12; i++) {
-        words[i] = change_endianess(words[i]);
-    }
-    memcpy(bytes, words, 48);
-    // words_to_bytes(words, bytes, 12);
+    words_to_bytes(words, bytes, 12);
 
     return kerl_absorb_bytes(bytes, 48);
 }
@@ -132,13 +157,7 @@ int kerl_squeeze_trints_single(trint_t *trints_out)
 
     kerl_finalize(bytes_out, 48);
 
-    // swap endianness on little-endian hardware
-    memcpy(words, bytes_out, 48);
-    for(uint8_t i=0; i<12; i++) {
-        words[i] = change_endianess(words[i]);
-    }
-    // bytes_to_words(bytes_out, words, 12);
-
+    bytes_to_words(bytes_out, words, 12);
     words_to_trints_u_mem(words, &trints_out[0]);
 
     //-- Setting last trit to 0

@@ -85,31 +85,6 @@ int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
     return 0;
 }
 
-int bytes_to_words(const unsigned char bytes_in[], uint32_t words_out[], uint8_t word_len)
-{
-    for (int8_t i = word_len - 1; i >= 0; i--) {
-        words_out[i] = 0;
-        words_out[i] |= (bytes_in[(i)*4+3] << 24) & 0xFF000000;
-        words_out[i] |= (bytes_in[(i)*4+2] << 16) & 0x00FF0000;
-        words_out[i] |= (bytes_in[(i)*4+1] <<  8) & 0x0000FF00;
-        words_out[i] |= (bytes_in[(i)*4+0] <<  0) & 0x000000FF;
-    }
-    return 0;
-}
-
-int words_to_bytes(const uint32_t words_in[], unsigned char bytes_out[], uint8_t word_len)
-{
-    for (int8_t i = word_len - 1; i >= 0; i--) {
-      uint32_t value = words_in[i];
-      bytes_out[i*4+0] = (value & 0x000000ff);
-      bytes_out[i*4+1] = (value & 0x0000ff00) >> 8;
-      bytes_out[i*4+2] = (value & 0x00ff0000) >> 16;
-      bytes_out[i*4+3] = (value & 0xff000000) >> 24;
-    }
-
-    return 0;
-}
-
 //custom conversion straight from trints to words
 int trints_to_words(trint_t *trints_in, int32_t words_out[])
 {
