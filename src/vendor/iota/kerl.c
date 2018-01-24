@@ -98,31 +98,34 @@ int kerl_squeeze_trits(trit_t *trits_out, uint16_t len)
     return 0;
 }
 
-//utilize encoded format
-int kerl_absorb_trints(trint_t *trints_in, uint16_t len)
+int kerl_absorb_trints_single(trint_t *trints_in)
 {
-    for (uint8_t i = 0; i < (len/49); i++) {
-        // First, convert to bytes
-        uint32_t words[12];
-        memset(words, 0, sizeof(words));
-        unsigned char bytes[48];
-        //Convert straight from trints to words
-        trints_to_words_u_mem(trints_in, words);
+    // First, convert to bytes
+    uint32_t words[12] = {0};
+    unsigned char bytes[48];
 
-        // swap endianness on little-endian hardware
-        for(uint8_t i=0; i<12; i++) {
-            words[i] = change_endianess(words[i]);
-        }
-        memcpy(bytes, words, 48);
-        // words_to_bytes(words, bytes, 12);
+    //Convert straight from trints to words
+    trints_to_words_u_mem(trints_in, words);
 
-        kerl_absorb_bytes(bytes, 48);
+    // swap endianness on little-endian hardware
+    for(uint8_t i=0; i<12; i++) {
+        words[i] = change_endianess(words[i]);
     }
+    memcpy(bytes, words, 48);
+    // words_to_bytes(words, bytes, 12);
+
+    return kerl_absorb_bytes(bytes, 48);
+}
+
+int kerl_absorb_trints(trint_t *trints_in, uint16_t len) {
+    for (uint8_t i = 0; i < (len / 49); i++) {
+        kerl_absorb_trints_single(trints_in + i * 49);
+    }
+
     return 0;
 }
 
-//utilize encoded format
-int kerl_squeeze_trints(trint_t *trints_out, uint16_t len)
+int kerl_squeeze_trints_single(trint_t *trints_out)
 {
     unsigned char bytes_out[48];
     int32_t words[12];
@@ -146,15 +149,22 @@ int kerl_squeeze_trints(trint_t *trints_out, uint16_t len)
     //convert new trit set back to trint and store
     trints_out[48] = trits_to_trint(&trits[0], 3);
 
-    // TODO: Check if the following is needed. Seems to do nothing.
-
     // Flip bytes
     for (uint8_t i = 0; i < 48; i++) {
-        bytes_out[i] = bytes_out[i] ^ 0xFF;
+        bytes_out[i] = ~bytes_out[i];
     }
 
     kerl_initialize();
-    kerl_absorb_bytes(bytes_out,48);
+    kerl_absorb_bytes(bytes_out, 48);
+
+    return 0;
+}
+
+int kerl_squeeze_trints(trint_t *trints_out, uint16_t len)
+{
+    for (uint8_t i = 0; i < (len / 49); i++) {
+        kerl_squeeze_trints_single(trints_out + i * 49);
+    }
 
     return 0;
 }
