@@ -38,6 +38,12 @@ void specific_243trits_to_49trints(int8_t *trits, int8_t *trints_r) {
     }
 }
 
+void trits_to_trints(const trit_t *trits, trint_t *trints, size_t num_trits) {
+    for (uint8_t i = 0; i < (num_trits / 243); i++) {
+        specific_243trits_to_49trints(trits + i * 243, trints + i * 49);
+    }
+}
+
 void specific_49trints_to_243trits(int8_t *trints, int8_t *trits_r) {
     for(uint8_t i = 0; i < 48; i++) {
         //convert 1 trint into 5 trits
@@ -45,6 +51,12 @@ void specific_49trints_to_243trits(int8_t *trints, int8_t *trits_r) {
     }
     //do one more but this will only be 3 trits
     trint_to_trits(trints[48], &trits_r[48 * 5], 3);
+}
+
+void trints_to_trits(const trint_t *trints, trit_t *trits, size_t num_trints) {
+    for (uint8_t i = 0; i < (num_trints / 49); i++) {
+        specific_49trints_to_243trits(trints + i * 49, trits + i * 243);
+    }
 }
 
 void trint_to_trits(int8_t integ, int8_t *trits_r, int8_t sz) {
