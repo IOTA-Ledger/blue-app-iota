@@ -91,124 +91,38 @@ int8_t trits_to_trint(int8_t *trits, int8_t sz) {
     return ret;
 }
 
-void do_nothing() {}
-
 void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
+  // kerl requires 424 bytes
+  kerl_initialize();
+  // {
+  //   // localize bytes_in variable to discard it when we are done
+  //   unsigned char bytes_in[48];
+  //
+  //   // kerl requires 424 bytes
+  //   kerl_initialize();
+  //
+  //   // copy our private key into bytes_in
+  //   // for now just re-use the last 16 bytes to fill bytes_in
+  //   memcpy(&bytes_in[0], privateKey, sz);
+  //   memcpy(&bytes_in[sz], privateKey, 48-sz);
+  //
+  //   // absorb these bytes
+  //   kerl_absorb_bytes(&bytes_in[0], 48);
+  // }
 
-    //kerl requires 424 bytes
-    kerl_initialize();
-
-    { // localize bytes_in variable to discard it when we are done
-        unsigned char bytes_in[48];
-
-        //kerl requires 424 bytes
-        kerl_initialize();
-
-        //copy our private key into bytes_in
-        //for now just re-use the last 16 bytes to fill bytes_in
-        memcpy(&bytes_in[0], privateKey, sz);
-        memcpy(&bytes_in[sz], privateKey, 48-sz);
-
-        //absorb these bytes
-        kerl_absorb_bytes(&bytes_in[0], 48);
-    }
-
-    // A trint_t is 5 trits encoded as 1 int8_t - Used to massively
-    // reduce RAM required
-    trint_t seed_trints[49];
-    // kerl_squeeze_trints(&seed_trints[0], 49);
-    // {
-    //   tryte_t seed_trytes[81] = {0};
-    //   {
-    //     char test_seed[] = "UTVXGSTTZVZFROBJSGHDUZIPQEGXRNAEQPQHAKB9BTSLOJVFBVNWAMSNBXCZLJTHSCOVMPARZEXQJFEXQ";
-    //     chars_to_trytes(test_seed, seed_trytes, 81);
-    //   }
-    //   {
-    //     trit_t seed_trits[81 * 3] = {0};
-    //     trytes_to_trits(seed_trytes, seed_trits, 81);
-    //     specific_243trits_to_49trints(seed_trits, seed_trints);
-    //   }
-    // }
-
-    {
-      tryte_t seed_trytes[81] = {0};
-      {
-        char test_kerl[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR";
-        chars_to_trytes(test_kerl, seed_trytes, 81);
-      }
-      {
-        trit_t seed_trits[81 * 3] = {0};
-        trytes_to_trits(seed_trytes, seed_trits, 81);
-        specific_243trits_to_49trints(seed_trits, seed_trints);
-      }
-      {
-        kerl_initialize();
-        kerl_absorb_trints(seed_trints, 49);
-        kerl_squeeze_trints(seed_trints, 49);
-      }
-      // {
-      //   // Print result of trints_to_words
-        // uint32_t words[12];
-        // memset(words, 0, sizeof(words));
-        // trints_to_words_u_mem(seed_trints, words);
-        // unsigned char bytes[48];
-        // words_to_bytes(words, bytes, 12);
-        // snprintf(msg, 81, "words: %u %u %u bytes: %u %u %u %u %u", words[0], words[1], words[2], bytes[0], bytes[1], bytes[2], bytes[3], bytes[4]);
-      // }
-      {
-        trit_t seed_trits[81 * 3] = {0};
-        specific_49trints_to_243trits(seed_trints, seed_trits);
-        trits_to_trytes(seed_trits, seed_trytes, 243);
-        // trytes_to_chars(seed_trytes, msg, 81);
-      }
-      {
-        msg[81] = '\0';
-      }
-    }
-
-/* ----- This code is left here to test absorb/squeeze. (the above squeeze trints)
-            should generate the same trits as squeeze_trits and converting after
-
- * /     // ------ TAKE OUT THE SPACE BETWEEN * AND / HERE TO UNCOMMENT IT QUICKLY
-    {
-        //testing absorb and squeeze, I get 0 -1 1 -1 -1
-        trit_t seed_trits[243];
-        specific_49trints_to_243trits(&seed_trints[0], &seed_trits[0]);
-        //absorb/squeeze via trits, then via trints, both should be same!
-        kerl_absorb_trints(&seed_trints[0], 49);
-        kerl_squeeze_trints(&seed_trints[0], 49);
-
-//        kerl_absorb_trits(seed_trits, 243);
-//        kerl_squeeze_trits(seed_trits, 243);
-
-/*      Debug trints being passed
-
- * / // --------- AND TAKE OUT SPACE HERE
-        trit_t trits[5];
-        trint_to_trits(seed_trints[0], &trits[0], 5);
-
-        //set this to seed_trits[0...5] to test abosrb/squeeze via trints
-        //set to trits[0...5] to test via trits
-        snprintf(&msg[0], 64, "[%d][%d][%d][%d][%d]\n", seed_trits[0], seed_trits[1],
-                 seed_trits[2], seed_trits[3], seed_trits[4]);
-    }
-    return; // when testing absorb/squeeze all we care about is done right here
-*/
-
-
-// TODO - delete these commented out lines, change msg to return trints - and decode DIRECTLY
-// into return buffer
-// *----------------------------------------------------*
-
-    // Convert trits to trytes
-//    tryte_t seed_trytes[81];
-//    trits_to_trytes(seed_trits, seed_trytes, 243);
-
-    //char seed_chars[82];
-    //trytes_to_chars(seed_trytes, seed_chars, 81);
-
-    //null terminate seed
-    //seed_chars[81] = '\0';
+  trint_t seed_trints[49];
+  tryte_t seed_trytes[81] = {0};
+  {
+    char test_kerl[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR";
+    chars_to_trytes(test_kerl, seed_trytes, 81);
+  }
+  {
+    trit_t seed_trits[81 * 3] = {0};
+    trytes_to_trits(seed_trytes, seed_trits, 81);
+    specific_243trits_to_49trints(seed_trits, seed_trints);
+  }
+  // kerl_squeeze_trints(&seed_trints[0], 49);
+  get_private_key(seed_trints, 0, msg);
 }
 
 //write func to get private key
