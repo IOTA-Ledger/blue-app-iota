@@ -13,6 +13,8 @@
 
 extern char debug_str[];
 
+void trits_to_trints(const trit_t *trits, trint_t *trints, size_t num_trits);
+void trints_to_trits(const trint_t *trints, trit_t *trits, size_t num_trits);
 void specific_243trits_to_49trints(int8_t *trits, int8_t *trints_r);
 void specific_49trints_to_243trits(int8_t *trints, int8_t *trits_r);
 void trint_to_trits(int8_t integ, int8_t *trits_r, int8_t sz) __attribute__((always_inline));
