@@ -2,6 +2,7 @@
 #include "conversion.h"
 #include "os.h"
 #include "cx.h"
+#include "sha3.h"
 
 #ifndef LITTLE_ENDIAN
 #define LITTLE_ENDIAN 1234
@@ -17,24 +18,28 @@
 #endif
 
 //sha3 is 424 bytes long
-cx_sha3_t sha3;
+// cx_sha3_t sha3;
+SHA3_CTX ctx;
 static unsigned char sha3_bytes_out[48] = {0};
 
 int kerl_initialize(void)
 {
-    cx_keccak_init(&sha3, 384);
+    keccak_384_Init(&ctx);
+    //cx_keccak_init(&sha3, 384);
     return 0;
 }
 
 int kerl_absorb_bytes(unsigned char *bytes_in, uint16_t len)
 {
-    cx_hash((cx_hash_t *)&sha3, CX_LAST, bytes_in, len, sha3_bytes_out);
+    //cx_hash((cx_hash_t *)&sha3, CX_LAST, bytes_in, len, sha3_bytes_out);
+    keccak_Update(&ctx, bytes_in, len);
     return 0;
 }
 
 int kerl_finalize(unsigned char *bytes_out, uint16_t len)
 {
-    memcpy(bytes_out, sha3_bytes_out, len);
+    //memcpy(bytes_out, sha3_bytes_out, len);
+    keccak_Final(&ctx, bytes_out);
     return 0;
 }
 
@@ -114,8 +119,8 @@ int kerl_squeeze_trits_single(trit_t *trits_out)
         bytes_out[i] = ~bytes_out[i];
     }
 
-    kerl_initialize();
-    kerl_absorb_bytes(bytes_out, 48);
+    keccak_384_Init(&ctx);
+    keccak_Update(&ctx, bytes_out, 48);
 
     return 0;
 }
