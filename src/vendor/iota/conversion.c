@@ -206,10 +206,13 @@ int words_to_trints(const int32_t words_in[], trint_t *trints_out)
 
 // ---- NEED ALL BELOW FOR TRITS_TO_WORDS AS WELL AS ALL _U FUNCS IN BIGINT
 
-int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
+int trints_to_bigint_mem(const trint_t *trints_in, uint32_t *base)
 {
     uint32_t size = 1;
     trit_t trits[5];
+
+    // initialize bigint to zero
+    memset(base, 0, 12 * 4);
 
     //it starts at the end and works backwards, so get last trit
     trint_to_trits(trints_in[48], &trits[0], 3);
@@ -220,9 +223,12 @@ int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
         if(i%5 == 4) //we need a new trint
             trint_to_trits(trints_in[(uint8_t)(i/5)], &trits[0], 5);
 
+        uint32_t sz;
         //trit cant be negative since we add 1
         uint8_t trit = trits[i%5] + 1;
-        uint32_t sz;
+
+        // the last trit must be 0, as it cannot be fully represented in 48bytes
+        if (i==242) { trit = 1; }
 
         // multiply
         {
@@ -263,13 +269,6 @@ int trints_to_words_u_mem(const trint_t *trints_in, uint32_t *base)
         bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
         bigint_not_u(tmp, 12);
         bigint_add_int_u(tmp, 1, base, 12);
-    }
-
-    //reverse base
-    for(uint8_t i=0; i < 6; i++) {
-        uint32_t base_tmp = base[i];
-        base[i] = base[11-i];
-        base[11-i] = base_tmp;
     }
 
     //outputs correct words according to official js
@@ -356,12 +355,15 @@ int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[])
     return 0;
 }
 
-int trits_to_words_u(const trit_t trits_in[], uint32_t words_out[])
+int trits_to_bigint(const trit_t *trits_in, uint32_t *bigint)
 {
-    uint32_t base[12] = {0};
-    uint32_t size = 1;
-    for (int16_t i = 242; i-- > 0;) {
-        uint8_t trit = trits_in[i] + 1;
+    // initialize bigint to zero
+    memset(bigint, 0, 12 * 4);
+
+    uint16_t size = 1;
+    for (uint16_t i = 242; i-- > 0;) {
+        // the last trit must be 0, as it cannot be fully represented in 48bytes
+        uint8_t trit = (i == 242 ? 0 : trits_in[i]) + 1;
         uint32_t sz;
 
         //printf("%d [%d]", i, trit);
@@ -371,12 +373,12 @@ int trits_to_words_u(const trit_t trits_in[], uint32_t words_out[])
             uint32_t carry = 0;
 
             for (int32_t j = 0; j < sz; j++) {
-                uint64_t v = base[j];
+                uint64_t v = bigint[j];
                 v = v * 3 + carry;
 
                 carry = (uint32_t)(v >> 32);
                 //printf("[%i]carry: %u\n", i, carry);
-                base[j] = (uint32_t) (v & 0xFFFFFFFF);
+                bigint[j] = (uint32_t) (v & 0xFFFFFFFF);
                 //v holds full amount, base[j] holds up to uint32 max
                 //printf("-v:%llu", v);
                 //printf("-c:%d", carry);
@@ -385,43 +387,27 @@ int trits_to_words_u(const trit_t trits_in[], uint32_t words_out[])
             }
 
             if (carry > 0) {
-                base[sz] = carry;
+                bigint[sz] = carry;
                 size++;
             }
         }
 
         // add
-        {
-            uint32_t tmp[12];
-            sz = bigint_add_int_u(base, trit, tmp, 12);
-            memcpy(base, tmp, 48);
-            if(sz > size) size = sz;
+        sz = bigint_add_int_u_mem(bigint, trit, 12);
+        if(sz > size) {
+            size = sz;
         }
     }
 
-    //works up to here
-
-    if (bigint_cmp_bigint_u(HALF_3_u, base, 12) <= 0 ) {
-        uint32_t tmp[12];
-        bigint_sub_bigint_u(base, HALF_3_u, tmp, 12);
-        memcpy(base, tmp, 48);
+    if (bigint_cmp_bigint_u(HALF_3_u, bigint, 12) <= 0 ) {
+        bigint_sub_bigint_u_mem(bigint, HALF_3_u, 12);
     } else {
         uint32_t tmp[12];
-        bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
+        bigint_sub_bigint_u(HALF_3_u, bigint, tmp, 12);
         bigint_not_u(tmp, 12);
-        bigint_add_int_u(tmp, 1, base, 12);
+        bigint_add_int_u(tmp, 1, bigint, 12);
     }
 
-    //reverse base
-    uint32_t base_tmp;
-    for(uint8_t i=0; i < 6; i++) {
-        base_tmp = base[i];
-        base[i] = base[11-i];
-        base[11-i] = base_tmp;
-    }
-
-    //outputs correct words according to official js
-    memcpy(words_out, base, 48);
     return 0;
 }
 
@@ -443,45 +429,37 @@ void print_words(uint32_t *words, int len) {
     printf("]\n\n\n");
 }
 
-int words_to_trits_u(const uint32_t words_in[], trit_t trits_out[])
+int bigint_to_trits(const uint32_t *bigint, trit_t *trits_out)
 {
     uint32_t base[12] = {0};
-    uint32_t tmp[12] = {0};
-    memcpy(base, words_in, 48);
-
-    reverse_words(base, 12);
+    memcpy(base, bigint, 12 * 4);
 
     //base is properly reversed
     bool flip_trits = false;
     // check if big num is negative
     if (base[11] >> 31 == 0) {
         //positive two's complement
-        bigint_add_intarr_u(base, HALF_3_u, tmp, 12);
-        memcpy(base, tmp, 48);
+        bigint_add_intarr_u_mem(base, HALF_3_u, 12);
 
-        //this part works
     } else {
         //negative number
         bigint_not_u(base, 12);
-        //***** Doesn't seem to enter here - probably because uint..
+
         if(bigint_cmp_bigint_u(base, HALF_3_u, 12) > 0) {
-            bigint_sub_bigint_u(base, HALF_3_u, tmp, 12);
-            memcpy(base, tmp, 48);
+            bigint_sub_bigint_u_mem(base, HALF_3_u, 12);
+
             flip_trits = true;
         } else {
             //bigint is between unsigned half3 and 2**384 - 3**242/2).
-            bigint_add_int_u(base, 1, tmp, 12);
-            memcpy(base, tmp, 48);
+            bigint_add_int_u_mem(base, 1, 12);
 
             //ta_slice returns same array (from official implementation)
             //so just sub base from half3 but store in base
+            uint32_t tmp[12];
             bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
             memcpy(base, tmp, 48);
         }
     }
-
-    // Same result up to here!!
-
 
     uint32_t rem = 0;
     for (int16_t i = 0; i < 242; i++) {
@@ -502,6 +480,8 @@ int words_to_trits_u(const uint32_t words_in[], trit_t trits_out[])
             trits_out[i] = -trits_out[i];
         }
     }
+
+    trits_out[242] = 0;
 
     //words_to_trits_u works (same result as official
     return 0;
@@ -551,11 +531,9 @@ int words_to_trits(const int32_t words_in[], trit_t trits_out[])
 }
 
 
-int words_to_trints_u_mem(uint32_t *words_in, trint_t *trints_out)
+int bigint_to_trints_mem(uint32_t *bigint_in, trint_t *trints_out)
 {
-    uint32_t *base = words_in;
-
-    reverse_words(base, 12);
+    uint32_t *base = bigint_in;
 
     //base is properly reversed
     bool flip_trits = false;
