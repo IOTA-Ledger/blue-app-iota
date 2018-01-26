@@ -91,6 +91,35 @@ int8_t trits_to_trint(int8_t *trits, int8_t sz) {
     return ret;
 }
 
+// Function to test Kerl and put the output in msg. You can just comment out the call in get_seed when in production.
+void test_kerl(char *msg) {
+  trint_t seed_trints[49];
+  tryte_t seed_trytes[81] = {0};
+  {
+    char test_kerl[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR";
+    chars_to_trytes(test_kerl, seed_trytes, 81);
+  }
+  {
+    trit_t seed_trits[81 * 3] = {0};
+    trytes_to_trits(seed_trytes, seed_trits, 81);
+    specific_243trits_to_49trints(seed_trits, seed_trints);
+  }
+  {
+    kerl_initialize();
+    kerl_absorb_trints(seed_trints, 49);
+    kerl_squeeze_trints(seed_trints, 49);
+  }
+  {
+    trit_t seed_trits[81 * 3] = {0};
+    specific_49trints_to_243trits(seed_trints, seed_trits);
+    trits_to_trytes(seed_trits, seed_trytes, 243);
+    trytes_to_chars(seed_trytes, msg, 81);
+  }
+  {
+    msg[81] = '\0';
+  }
+}
+
 void get_seed(unsigned char *privateKey, uint8_t sz, char *msg) {
   // kerl requires 424 bytes
   kerl_initialize();
