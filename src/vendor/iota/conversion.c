@@ -387,7 +387,7 @@ int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[])
 int trits_to_bigint(const trit_t *trits_in, uint32_t *bigint)
 {
     // initialize bigint to zero
-    memset(bigint, 0, 12 * 4);
+    memset(bigint, 0, INT_LENGTH * 4);
 
     uint16_t size = 1;
     for (uint16_t i = 242; i-- > 0;) {
@@ -422,19 +422,19 @@ int trits_to_bigint(const trit_t *trits_in, uint32_t *bigint)
         }
 
         // add
-        sz = bigint_add_int_u_mem(bigint, trit, 12);
+        sz = bigint_add_int_u_mem(bigint, trit, INT_LENGTH);
         if(sz > size) {
             size = sz;
         }
     }
 
-    if (bigint_cmp_bigint_u(HALF_3_u, bigint, 12) <= 0 ) {
-        bigint_sub_bigint_u_mem(bigint, HALF_3_u, 12);
+    if (bigint_cmp_bigint_u(HALF_3_u, bigint, INT_LENGTH) <= 0 ) {
+        bigint_sub_bigint_u_mem(bigint, HALF_3_u, INT_LENGTH);
     } else {
-        uint32_t tmp[12];
-        bigint_sub_bigint_u(HALF_3_u, bigint, tmp, 12);
-        bigint_not_u(tmp, 12);
-        bigint_add_int_u(tmp, 1, bigint, 12);
+        uint32_t tmp[INT_LENGTH];
+        bigint_sub_bigint_u(HALF_3_u, bigint, tmp, INT_LENGTH);
+        bigint_not_u(tmp, INT_LENGTH);
+        bigint_add_int_u(tmp, 1, bigint, INT_LENGTH);
     }
 
     return 0;
@@ -460,40 +460,40 @@ void print_words(uint32_t *words, int len) {
 
 int bigint_to_trits(const uint32_t *bigint, trit_t *trits_out)
 {
-    uint32_t base[12] = {0};
-    memcpy(base, bigint, 12 * 4);
+    uint32_t base[INT_LENGTH] = {0};
+    memcpy(base, bigint, INT_LENGTH * 4);
 
     //base is properly reversed
     bool flip_trits = false;
     // check if big num is negative
-    if (base[11] >> 31 == 0) {
+    if (base[INT_LENGTH - 1] >> 31 == 0) {
         //positive two's complement
-        bigint_add_intarr_u_mem(base, HALF_3_u, 12);
+        bigint_add_intarr_u_mem(base, HALF_3_u, INT_LENGTH);
 
     } else {
         //negative number
-        bigint_not_u(base, 12);
+        bigint_not_u(base, INT_LENGTH);
 
-        if(bigint_cmp_bigint_u(base, HALF_3_u, 12) > 0) {
-            bigint_sub_bigint_u_mem(base, HALF_3_u, 12);
+        if(bigint_cmp_bigint_u(base, HALF_3_u, INT_LENGTH) > 0) {
+            bigint_sub_bigint_u_mem(base, HALF_3_u, INT_LENGTH);
 
             flip_trits = true;
         } else {
             //bigint is between unsigned half3 and 2**384 - 3**242/2).
-            bigint_add_int_u_mem(base, 1, 12);
+            bigint_add_int_u_mem(base, 1, INT_LENGTH);
 
             //ta_slice returns same array (from official implementation)
             //so just sub base from half3 but store in base
-            uint32_t tmp[12];
-            bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
-            memcpy(base, tmp, 48);
+            uint32_t tmp[INT_LENGTH];
+            bigint_sub_bigint_u(HALF_3_u, base, tmp, INT_LENGTH);
+            memcpy(base, tmp, INT_LENGTH * 4);
         }
     }
 
     uint32_t rem = 0;
     for (int16_t i = 0; i < 242; i++) {
         rem = 0;
-        for (int8_t j = 12-1; j >= 0 ; j--) {
+        for (int8_t j = INT_LENGTH - 1; j >= 0 ; j--) {
             uint64_t lhs = (uint64_t)(rem != 0 ? ((uint64_t)rem * 0xFFFFFFFF)
                                       + rem : 0) + base[j];
             //radix is 3
