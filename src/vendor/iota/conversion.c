@@ -1,7 +1,7 @@
 #include "conversion.h"
-#include "bigint.h"
-
 #include <stdio.h>
+#include "bigint.h"
+#include "os.h"
 
 static unsigned char bytes_out[48] = {0};
 
@@ -83,6 +83,35 @@ int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
     }
 
     return 0;
+}
+
+// Converts bigint consisting of 12 words into an array of bytes.
+// It is represented using 48bytes in big-endiean, by reversing the order of the
+// words. The endianness of the host machine is taken into account.
+void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
+{
+    uint32_t *p = (uint32_t *)bytes;
+
+    // reverse word order
+    for (int8_t i = 11; i >= 0; i--) {
+        // convert byte order if necessary
+        *p++ = os_swap_u32(bigint[i]);
+    }
+}
+
+// Converts an array of 48 bytes into a bigint consisting of 12 words.
+// The bigint is represented using 48bytes in big-endiean. The endianness of the
+// host machine is taken into account.
+void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
+{
+    const uint32_t *p = (const uint32_t *)bytes;
+
+    // reverse word order
+    for (int8_t i = 11; i >= 0; i--) {
+        // convert byte order if necessary
+        bigint[i] = os_swap_u32(*p);
+        p++;
+    }
 }
 
 //custom conversion straight from trints to words
