@@ -107,6 +107,7 @@ void test_kerl(char *msg) {
   {
     kerl_initialize();
     kerl_absorb_trints(seed_trints, 49);
+    kerl_absorb_trints(seed_trints, 49);
     kerl_squeeze_trints(seed_trints, 49);
   }
   {

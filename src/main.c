@@ -144,7 +144,8 @@ static void IOTA_main(void) {
 
                     //get_keys returns 82 chars unless manually exited = 5
                     char seed[82];
-                    get_seed(privateKeyData, sizeof(privateKeyData), &seed[0]);
+                    // get_seed(privateKeyData, sizeof(privateKeyData), seed);
+                    test_kerl(seed);
 
                     // push the response onto the response buffer.
                     os_memmove(G_io_apdu_buffer, seed, 82);

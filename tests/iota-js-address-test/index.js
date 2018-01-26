@@ -10,4 +10,4 @@ iota.api.getNewAddress(seed, {
 }, (e, r) => {
   console.log('getNewAddress', e, r);
 })
-//iota.api.kerlTest();
+iota.api.kerlTest();
