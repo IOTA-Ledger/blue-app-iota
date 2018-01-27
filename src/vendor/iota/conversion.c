@@ -3,41 +3,37 @@
 #include "bigint.h"
 #include "os.h"
 
-static unsigned char bytes_out[48] = {0};
-
 #define INT_LENGTH 12
 
+// the middle of the domain described by 242 trits, i.e. \sum_{k=0}^{241} 3^k
 static const uint32_t HALF_3_u[12] = {
-                              0xa5ce8964,
-                              0x9f007669,
-                              0x1484504f,
-                              0x3ade00d9,
-                              0x0c24486e,
-                              0x50979d57,
-                              0x79a4c702,
-                              0x48bbae36,
-                              0xa9f6808b,
-                              0xaa06a805,
-                              0xa87fabdf,
-                              0x5e69ebef
-                        };
+    0xa5ce8964, 0x9f007669, 0x1484504f, 0x3ade00d9, 0x0c24486e, 0x50979d57,
+    0x79a4c702, 0x48bbae36, 0xa9f6808b, 0xaa06a805, 0xa87fabdf, 0x5e69ebef};
 
+// the two's complement of HALF_3_u, i.e. ~HALF_3_u + 1
+static const uint32_t NEG_HALF_3_u[12] = {
+    0x5a31769c, 0x60ff8996, 0xeb7bafb0, 0xc521ff26, 0xf3dbb791, 0xaf6862a8,
+    0x865b38fd, 0xb74451c9, 0x56097f74, 0x55f957fa, 0x57805420, 0xa1961410};
 
-static const int32_t HALF_3[13] = { 0xF16B9C2D,
-    0xDD01633C,
-    0x3D8CF0EE,
-    0xB09A028B,
-    0x246CD94A,
-    0xF1C6D805,
-    0x6CEE5506,
-    0xDA330AA3,
-    0xFDE381A1,
-    0xFE13F810,
-    0xF97f039E,
-    0x1B3DC3CE,
-    0x00000001};
+// TODO: remove, no longer needed
+static const int32_t HALF_3[13] = {
+    0xF16B9C2D, 0xDD01633C, 0x3D8CF0EE, 0xB09A028B, 0x246CD94A,
+    0xF1C6D805, 0x6CEE5506, 0xDA330AA3, 0xFDE381A1, 0xFE13F810,
+    0xF97f039E, 0x1B3DC3CE, 0x00000001};
 
+// representing the value of the highes trit in the feasible domain, i.e 3^242
+static const uint32_t LAST_TRIT[12] = {
+    0x4b9d12c9, 0x3e00ecd3, 0x2908a09f, 0x75bc01b2, 0x184890dc, 0xa12f3aae,
+    0xf3498e04, 0x91775c6c, 0x53ed0116, 0x540d500b, 0x50ff57bf, 0xbcd3d7df};
+
+// the two's complement of LAST_TRIT, i.e. ~LAST_TRIT + 1
+static const uint32_t NEG_LAST_TRIT[12] = {
+    0xb462ed37, 0xc1ff132c, 0xd6f75f60, 0x8a43fe4d, 0xe7b76f23, 0x5ed0c551,
+    0xcb671fb,  0x6e88a393, 0xac12fee9, 0xabf2aff4, 0xaf00a840, 0x432c2820};
+
+// available tryte chars in the correct order
 static const char tryte_to_char_mapping[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
+
 int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[], uint32_t trit_len)
 {
     if (trit_len % 3 != 0) {
@@ -114,6 +110,24 @@ void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
     }
 }
 
+static inline bool is_negative(const uint32_t *bigint)
+{
+    return (bigint[INT_LENGTH - 1] >> 31 != 0);
+}
+
+void bigint_set_last_trit_zero(uint32_t *bigint) {
+
+  if (is_negative(bigint)) {
+    if (bigint_cmp_bigint_u(bigint, NEG_HALF_3_u, INT_LENGTH) < 0) {
+      bigint_sub_bigint_u_mem(bigint, NEG_LAST_TRIT, INT_LENGTH);
+    }
+  } else {
+    if (bigint_cmp_bigint_u(bigint, HALF_3_u, INT_LENGTH) > 0) {
+      bigint_sub_bigint_u_mem(bigint, LAST_TRIT, INT_LENGTH);
+    }
+  }
+}
+
 //custom conversion straight from trints to words
 int trints_to_words(trint_t *trints_in, int32_t words_out[])
 {
@@ -187,8 +201,8 @@ int words_to_trints(const int32_t words_in[], trint_t *trints_out)
     int32_t tmp[13] = {0};
     memcpy(tmp, words_in, 48);
     bool flip_trits = false;
-    // check if big num is negative
-    if (words_in[11] >> 31 != 0) {
+
+    if (is_negative(words_in)) {
         tmp[12] = 0xFFFFFFFF;
         bigint_not(tmp, 13);
         if (bigint_cmp_bigint(tmp, HALF_3, 13) > 0) {

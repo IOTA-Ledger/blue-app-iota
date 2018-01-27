@@ -21,6 +21,9 @@ int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[], uint32_t tryt
 int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[], uint32_t trit_len);
 int words_to_trits(const int32_t words_in[], trit_t trits_out[]);
 
+// sets the 242th trit of the balanced trinary representation to 0
+void bigint_set_last_trit_zero(uint32_t *bigint);
+
 // Converts bigint consisting of 12 words into an array of bytes.
 void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes);
 // Converts an array of 48 bytes into a bigint consisting of 12 words.
