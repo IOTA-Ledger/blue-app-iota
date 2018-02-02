@@ -22,7 +22,6 @@
 
 #include "sha3.h"
 #include "macros.h"
-#include "os.h"
 
 #define I64(x) x##LL
 #define ROTL64(qword, n) ((qword) << (n) ^ ((qword) >> (64 - (n))))
@@ -359,9 +358,7 @@ void keccak_Final(SHA3_CTX *ctx, unsigned char* result)
 		ctx->rest = SHA3_FINALIZED; /* mark context as finalized */
 	}
 
-	if(!(block_size > digest_length)) {
-		THROW(INVALID_PARAMETER);
-	}
+  assert(block_size > digest_length);
 	if (result) me64_to_le_str(result, ctx->hash, digest_length);
 	MEMSET_BZERO(ctx, sizeof(SHA3_CTX));
 }

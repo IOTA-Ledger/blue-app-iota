@@ -1,7 +1,7 @@
 #include "kerl.h"
 #include <assert.h>
 #include "conversion.h"
-#include "os.h"
+#include "common.h"
 
 cx_sha3_t sha3;
 

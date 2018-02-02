@@ -1,7 +1,7 @@
 #include "conversion.h"
 #include <stdio.h>
 #include "bigint.h"
-#include "os.h"
+#include "common.h"
 
 #define INT_LENGTH 12
 
