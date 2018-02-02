@@ -47,6 +47,39 @@ int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[], uint32_t trit
     return 0;
 }
 
+void chars_to_bigints(const char *chars, uint32_t *bigints, uint16_t chars_len)
+{
+    for (uint16_t i = 0; i < chars_len / 81; i++) {
+        trit_t trits[243];
+        {
+            tryte_t trytes[81];
+            chars_to_trytes(chars + i * 81, trytes, 81);
+            trytes_to_trits(trytes, trits, 81);
+        }
+
+        // bigint can only handle 242 trits
+        trits[242] = 0;
+        trits_to_bigint(trits, bigints + i * 12);
+    }
+}
+
+void bigints_to_chars(const uint32_t *bigints, char *chars, uint16_t bigint_len)
+{
+    for (uint16_t i = 0; i < bigint_len / 12; i++) {
+        tryte_t trytes[81];
+        {
+            trit_t trits[243];
+            bigint_to_trits(bigints + i * 12, trits);
+            trits_to_trytes(trits, trytes, 243);
+        }
+
+        trytes_to_chars(trytes, chars + i * 81, 81);
+    }
+
+    // make zero termnated
+    chars[(bigint_len / 12) * 81] = '\0';
+}
+
 int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[], uint32_t tryte_len)
 {
     for (uint32_t i = 0; i < tryte_len; i++) {

@@ -15,6 +15,9 @@ static const trit_t trits_mapping[27][3] =
     {-1,  0,  1}, { 0,  0,  1}, {1,  0,  1},
     {-1,  1,  1}, { 0,  1,  1}, {1,  1,  1}};
 
+void chars_to_bigints(const char *chars, uint32_t *bigint, uint16_t chars_len);
+void bigints_to_chars(const uint32_t *bigint, char *chars, uint16_t bigint_len);
+
 int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len);
 int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len);
 int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[], uint32_t tryte_len);
