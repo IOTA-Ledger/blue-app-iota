@@ -172,7 +172,7 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
                 } else {
                     bigint_add_int(base, trits[i]+1, tmp, 13);
                 }
-                memcpy(base, tmp, 52);
+                os_memcpy(base, tmp, 52);
                 // todo sz>size stuff
             }
         }
@@ -181,7 +181,7 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
     if (bigint_cmp_bigint(HALF_3, base, 13) <= 0 ) {
         int32_t tmp[13];
         bigint_sub_bigint(base, HALF_3, tmp, 13);
-        memcpy(base, tmp, 52);
+        os_memcpy(base, tmp, 52);
     } else {
         int32_t tmp[13];
         bigint_sub_bigint(HALF_3, base, tmp, 13);
@@ -190,7 +190,7 @@ int trints_to_words(trint_t *trints_in, int32_t words_out[])
     }
 
 
-    memcpy(words_out, base, 48);
+    os_memcpy(words_out, base, 48);
     return 0;
 }
 
@@ -199,7 +199,7 @@ int words_to_trints(const int32_t words_in[], trint_t *trints_out)
 {
     int32_t base[13] = {0};
     int32_t tmp[13] = {0};
-    memcpy(tmp, words_in, 48);
+    os_memcpy(tmp, words_in, 48);
     bool flip_trits = false;
 
     if (is_negative(words_in)) {
@@ -211,7 +211,7 @@ int words_to_trints(const int32_t words_in[], trint_t *trints_out)
         } else {
             bigint_add_int(tmp, 1, base, 13);
             bigint_sub_bigint(HALF_3, base, tmp, 13);
-            memcpy(base, tmp, 52);
+            os_memcpy(base, tmp, 52);
         }
     } else {
         // Add half_3, make sure words_in is appended with an empty int32
@@ -367,7 +367,7 @@ int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[])
         {
             uint32_t tmp[12];
             sz = bigint_add_int_u(base, trit, tmp, 12);
-            memcpy(base, tmp, 48);
+            os_memcpy(base, tmp, 48);
             if(sz > size) size = sz;
         }
     }
@@ -377,7 +377,7 @@ int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[])
     if (bigint_cmp_bigint_u(HALF_3_u, base, 12) <= 0 ) {
         uint32_t tmp[12];
         bigint_sub_bigint_u(base, HALF_3_u, tmp, 12);
-        memcpy(base, tmp, 48);
+        os_memcpy(base, tmp, 48);
     } else {
         uint32_t tmp[12];
         bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
@@ -394,7 +394,7 @@ int trints_to_words_u(const trint_t trints_in[], uint32_t words_out[])
     }
 
     //outputs correct words according to official js
-    memcpy(words_out, base, 48);
+    os_memcpy(words_out, base, 48);
     return 0;
 }
 
@@ -534,7 +534,7 @@ int words_to_trits(const int32_t words_in[], trit_t trits_out[])
 {
     int32_t base[13] = {0};
     int32_t tmp[13] = {0};
-    memcpy(tmp, words_in, 48);
+    os_memcpy(tmp, words_in, 48);
     bool flip_trits = false;
     // check if big num is negative
     if (words_in[11] >> 31 != 0) {
@@ -546,7 +546,7 @@ int words_to_trits(const int32_t words_in[], trit_t trits_out[])
         } else {
             bigint_add_int(tmp, 1, base, 13);
             bigint_sub_bigint(HALF_3, base, tmp, 13);
-            memcpy(base, tmp, 52);
+            os_memcpy(base, tmp, 52);
         }
     } else {
         // Add half_3, make sure words_in is appended with an empty int32
@@ -601,7 +601,7 @@ int bigint_to_trints_mem(uint32_t *bigint_in, trint_t *trints_out)
             //so just sub base from half3 but store in base
             uint32_t tmp[12];
             bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
-            memcpy(base, tmp, 48);
+            os_memcpy(base, tmp, 48);
         }
     }
 
@@ -646,7 +646,7 @@ int words_to_trints_u(const uint32_t *words_in, trint_t *trints_out)
 {
     uint32_t base[12] = {0};
     uint32_t tmp[12] = {0};
-    memcpy(base, words_in, 48);
+    os_memcpy(base, words_in, 48);
 
     reverse_words(base, 12);
 
@@ -656,7 +656,7 @@ int words_to_trints_u(const uint32_t *words_in, trint_t *trints_out)
     if (base[11] >> 31 == 0) {
         //positive two's complement
         bigint_add_intarr_u(base, HALF_3_u, tmp, 12);
-        memcpy(base, tmp, 48);
+        os_memcpy(base, tmp, 48);
 
         //this part works
     } else {
@@ -665,17 +665,17 @@ int words_to_trints_u(const uint32_t *words_in, trint_t *trints_out)
         //***** Doesn't seem to enter here - probably because uint..
         if(bigint_cmp_bigint_u(base, HALF_3_u, 12) > 0) {
             bigint_sub_bigint_u(base, HALF_3_u, tmp, 12);
-            memcpy(base, tmp, 48);
+            os_memcpy(base, tmp, 48);
             flip_trits = true;
         } else {
             //bigint is between unsigned half3 and 2**384 - 3**242/2).
             bigint_add_int_u(base, 1, tmp, 12);
-            memcpy(base, tmp, 48);
+            os_memcpy(base, tmp, 48);
 
             //ta_slice returns same array (from official implementation)
             //so just sub base from half3 but store in base
             bigint_sub_bigint_u(HALF_3_u, base, tmp, 12);
-            memcpy(base, tmp, 48);
+            os_memcpy(base, tmp, 48);
         }
     }
 
