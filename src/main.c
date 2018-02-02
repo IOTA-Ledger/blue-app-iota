@@ -142,10 +142,23 @@ static void IOTA_main(void) {
                     cx_ecdsa_init_public_key(CX_CURVE_256K1, NULL, 0, &publicKey);
                     cx_ecfp_generate_pair(CX_CURVE_256K1, &publicKey, &privateKey, 1);
 
-                    //get_keys returns 82 chars unless manually exited = 5
+                    // the seed in 48 bytes bigint representation
+                    uint32_t seed_bigint[12];
+                    get_seed(privateKeyData, sizeof(privateKeyData), seed_bigint);
+
+                    uint32_t address[12];
+                    {
+                        // security level 1 for now, to save memory and runtime
+                        const uint8_t security = 1;
+                        uint32_t private_key[12 * 27 * security];
+
+                        generate_private_key(seed_bigint, 0, security, private_key);
+                        generate_public_address(private_key, security, address);
+                    }
+
+                    // why is this called seed?
                     char seed[82];
-                    // get_seed(privateKeyData, sizeof(privateKeyData), seed);
-                    test_kerl(seed);
+                    bigints_to_chars(address, seed, 12);
 
                     // push the response onto the response buffer.
                     os_memmove(G_io_apdu_buffer, seed, 82);
