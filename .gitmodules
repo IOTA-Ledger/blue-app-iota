@@ -1,0 +1,3 @@
+[submodule "tests/kerl-spec"]
+	path = tests/kerl-spec
+	url = https://github.com/iotaledger/kerl
