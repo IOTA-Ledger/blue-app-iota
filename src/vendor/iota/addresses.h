@@ -3,15 +3,12 @@
 
 #include "iota_types.h"
 
-int add_index_to_seed(trit_t trits[], uint32_t index);
-int generate_private_key(trit_t *seed_trits, uint32_t index, trint_t *private_key);
-int generate_public_address(const trit_t private_key[], trit_t address_out[]);
+#define MAX_SECURITY 3
 
-//Generate based on trints
-int add_index_to_seed_trints(int8_t *trints, uint32_t index);
-int generate_private_key_half(trint_t *seed_trints, uint32_t index,
-                              trint_t *private_key, uint8_t level, char *msg);
-int generate_public_address_half(trint_t *private_key,
-                                 trint_t *address_out, uint8_t level);
+void generate_private_key(const uint32_t *seed_bigint, uint32_t index,
+                          uint8_t security, uint32_t *key);
+
+void generate_public_address(const uint32_t *key, uint8_t security,
+                             uint32_t *address);
 
 #endif // ADDRESSES_H

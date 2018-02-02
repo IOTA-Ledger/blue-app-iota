@@ -27,8 +27,7 @@ int mygenerate_public_address(const trit_t private_key[], trit_t address_out[]);
 int trints_to_words(trint_t *trints_in, int32_t words_out[]);
 
 void do_nothing(void);
-void get_seed(unsigned char *privateKey, uint8_t sz, char *msg);
-void get_private_key(trit_t *seed_trits, uint32_t idx, char* msg);
+void get_seed(unsigned char *privateKey, uint8_t sz, uint32_t *seed_bigint);
 void write_debug(void* o, unsigned int sz, uint8_t t);
 
 
