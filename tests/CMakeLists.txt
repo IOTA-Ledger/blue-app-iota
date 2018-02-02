@@ -33,3 +33,7 @@ add_library(iota-ledger SHARED
 add_executable(conversion_test conversion_test.c)
 target_link_libraries(conversion_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(conversion_test ${CMAKE_CURRENT_BINARY_DIR}/conversion_test)
+
+add_executable(kerl_test kerl_test.c hash_file.c)
+target_link_libraries(kerl_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(kerl_test ${CMAKE_CURRENT_BINARY_DIR}/kerl_test)
