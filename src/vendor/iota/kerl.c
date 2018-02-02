@@ -24,6 +24,13 @@ int kerl_absorb_bytes(const unsigned char *bytes_in, uint16_t len)
     return 0;
 }
 
+static void filp_hash_bytes(unsigned char *bytes)
+{
+    for (uint8_t i = 0; i < 48; i++) {
+        bytes[i] = ~bytes[i];
+    }
+}
+
 // only 48 bytes can be squeezed at a time
 int kerl_squeeze_bytes(unsigned char *bytes_out)
 {
@@ -33,9 +40,7 @@ int kerl_squeeze_bytes(unsigned char *bytes_out)
     os_memcpy(bytes_out, md_value, 48);
 
     // flip bytes for multiple squeeze
-    for (uint8_t i = 0; i < 48; i++) {
-        md_value[i] = ~md_value[i];
-    }
+    filp_hash_bytes(md_value);
 
     kerl_initialize();
     kerl_absorb_bytes(md_value, 48);
