@@ -85,21 +85,22 @@ void calculate_standard_bundle_hash(const char from_addr[], const char to_addr[]
     }
 
     while(!valid_bundle) {
-        kerl_initialize();
+        cx_sha3_t sha3;
+        kerl_initialize(&sha3);
 
         // A standard bundle contains 4 transactions and is security level 2
         trit_t bundle_essence_trits[162*3];
         get_bundle_essence_trits(to_addr, transaction_amount, obsolete_tag_char, timestamp, 0, 3, bundle_essence_trits);
-        kerl_absorb_trits(bundle_essence_trits, 486);
+        kerl_absorb_trits(&sha3, bundle_essence_trits, 486);
         get_bundle_essence_trits(from_addr, -balance, tag, timestamp, 1, 3, bundle_essence_trits);
-        kerl_absorb_trits(bundle_essence_trits, 486);
+        kerl_absorb_trits(&sha3, bundle_essence_trits, 486);
         get_bundle_essence_trits(from_addr, 0, tag, timestamp, 2, 3, bundle_essence_trits);
-        kerl_absorb_trits(bundle_essence_trits, 486);
+        kerl_absorb_trits(&sha3, bundle_essence_trits, 486);
         get_bundle_essence_trits(remainder_addr, balance-transaction_amount, tag, timestamp, 3, 3, bundle_essence_trits);
-        kerl_absorb_trits(bundle_essence_trits, 486);
+        kerl_absorb_trits(&sha3, bundle_essence_trits, 486);
 
         trit_t trits_out[243];
-        kerl_squeeze_trits(trits_out, 243);
+        kerl_squeeze_trits(&sha3, trits_out, 243);
         trits_to_trytes(trits_out, bundle_hash_out, 243);
 
         tryte_t normalized_hash[81];
@@ -163,9 +164,11 @@ void generate_signature_fragment(tryte_t normalized_bundle_hash_fragment[], trit
     memcpy(signature_fragment, private_key_fragment, 6561);
     for (int8_t j = 0; j < 27; j++) {
         for (int8_t k = 13 - normalized_bundle_hash_fragment[j]; k-- > 0; ) {
-            kerl_initialize();
-            kerl_absorb_trits(&signature_fragment[j*243], 243);
-            kerl_squeeze_trits(&signature_fragment[j*243], 243);
+            cx_sha3_t sha3;
+
+            kerl_initialize(&sha3);
+            kerl_absorb_trits(&sha3, &signature_fragment[j*243], 243);
+            kerl_squeeze_trits(&sha3, &signature_fragment[j*243], 243);
         }
     }
 }

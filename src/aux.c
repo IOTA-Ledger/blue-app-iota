@@ -105,10 +105,11 @@ void test_kerl(char *msg) {
     specific_243trits_to_49trints(seed_trits, seed_trints);
   }
   {
-    kerl_initialize();
-    kerl_absorb_trints(seed_trints, 49);
-    kerl_absorb_trints(seed_trints, 49);
-    kerl_squeeze_trints(seed_trints, 49);
+    cx_sha3_t sha3;
+    kerl_initialize(&sha3);
+    kerl_absorb_trints(&sha3, seed_trints, 49);
+    kerl_absorb_trints(&sha3, seed_trints, 49);
+    kerl_squeeze_trints(&sha3, seed_trints, 49);
   }
   {
     trit_t seed_trits[81 * 3] = {0};

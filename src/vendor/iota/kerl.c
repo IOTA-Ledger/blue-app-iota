@@ -3,24 +3,25 @@
 #include "conversion.h"
 #include "common.h"
 
-cx_sha3_t sha3;
-
-int kerl_initialize(void)
+int kerl_initialize(cx_sha3_t *sha3)
 {
-    cx_keccak_init((cx_hash_t *)&sha3, 384);
+    cx_keccak_init((cx_hash_t *)sha3, 384);
     return 0;
 }
 
 static void kerl_hash_bytes(const unsigned char *bytes_in, uint16_t in_len,
                             unsigned char *bytes_out)
 {
+    cx_sha3_t sha3;
+
     cx_keccak_init((cx_hash_t *)&sha3, 384);
     cx_hash((cx_hash_t *)&sha3, CX_LAST, bytes_in, in_len, bytes_out);
 }
 
-int kerl_absorb_bytes(const unsigned char *bytes_in, uint16_t len)
+static int kerl_absorb_bytes(cx_sha3_t *sha3, const unsigned char *bytes_in,
+                              uint16_t len)
 {
-    cx_hash((cx_hash_t *)&sha3, 0, bytes_in, len, NULL);
+    cx_hash((cx_hash_t *)sha3, 0, bytes_in, len, NULL);
     return 0;
 }
 
@@ -32,43 +33,44 @@ static void filp_hash_bytes(unsigned char *bytes)
 }
 
 // only 48 bytes can be squeezed at a time
-int kerl_squeeze_bytes(unsigned char *bytes_out)
+int kerl_squeeze_bytes(cx_sha3_t *sha3, unsigned char *bytes_out)
 {
     unsigned char md_value[48];
 
-    cx_hash((cx_hash_t *)&sha3, CX_LAST, md_value, 0, md_value);
+    cx_hash((cx_hash_t *)sha3, CX_LAST, md_value, 0, md_value);
     os_memcpy(bytes_out, md_value, 48);
 
     // flip bytes for multiple squeeze
     filp_hash_bytes(md_value);
 
-    kerl_initialize();
-    kerl_absorb_bytes(md_value, 48);
+    kerl_initialize(sha3);
+    kerl_absorb_bytes(sha3, md_value, 48);
 
     return 0;
 }
 
-int kerl_absorb_bigints(const uint32_t *bigint_in, uint16_t len)
+int kerl_absorb_bigints(cx_sha3_t *sha3, const uint32_t *bigint_in,
+                        uint16_t len)
 {
     // absorbing happens in 12 word bigint chunks
     for (uint16_t i = 0; i < (len / 12); i++) {
         unsigned char bytes[12 * 4];
         bigint_to_bytes(bigint_in + i * 12, bytes);
 
-        kerl_absorb_bytes(bytes, 48);
+        kerl_absorb_bytes(sha3, bytes, 48);
     }
 
     return 0;
 }
 
-int kerl_squeeze_bigints(uint32_t *bigint_out, uint16_t len)
+int kerl_squeeze_bigints(cx_sha3_t *sha3, uint32_t *bigint_out, uint16_t len)
 {
     uint32_t *chunk = bigint_out;
 
     // absorbing happens in 12 word bigint chunks
     for (uint16_t i = 0; i < (len / 12); i++) {
         unsigned char bytes[12 * 4];
-        kerl_squeeze_bytes(bytes);
+        kerl_squeeze_bytes(sha3, bytes);
         bytes_to_bigint(bytes, chunk);
 
         bigint_set_last_trit_zero(chunk);
@@ -79,7 +81,7 @@ int kerl_squeeze_bigints(uint32_t *bigint_out, uint16_t len)
     return 0;
 }
 
-int kerl_absorb_trits_single(const trit_t *trits_in)
+int kerl_absorb_trits_single(cx_sha3_t *sha3,const trit_t *trits_in)
 {
     unsigned char bytes[12 * 4];
     uint32_t bigint[12];
@@ -88,25 +90,25 @@ int kerl_absorb_trits_single(const trit_t *trits_in)
     trits_to_bigint(trits_in, bigint);
     bigint_to_bytes(bigint, bytes);
 
-    return kerl_absorb_bytes(bytes, 12 * 4);
+    return kerl_absorb_bytes(sha3, bytes, 12 * 4);
 }
 
-int kerl_absorb_trits(const trit_t *trits_in, uint16_t len)
+int kerl_absorb_trits(cx_sha3_t *sha3,const trit_t *trits_in, uint16_t len)
 {
     // absorbing trits happens in 243 trit chunks
     for (uint8_t i = 0; i < (len / 243); i++) {
-        kerl_absorb_trits_single(trits_in + i * 243);
+        kerl_absorb_trits_single(sha3, trits_in + i * 243);
     }
 
     return 0;
 }
 
-int kerl_squeeze_trits_single(trit_t *trits_out)
+int kerl_squeeze_trits_single(cx_sha3_t *sha3, trit_t *trits_out)
 {
     unsigned char bytes[12 * 4];
     uint32_t bigint[12];
 
-    kerl_squeeze_bytes(bytes);
+    kerl_squeeze_bytes(sha3, bytes);
     bytes_to_bigint(bytes, bigint);
 
     bigint_to_trits(bigint, trits_out);
@@ -117,16 +119,16 @@ int kerl_squeeze_trits_single(trit_t *trits_out)
     return 0;
 }
 
-int kerl_squeeze_trits(trit_t *trits_out, uint16_t len)
+int kerl_squeeze_trits(cx_sha3_t *sha3, trit_t *trits_out, uint16_t len)
 {
     for (uint8_t i = 0; i < (len / 243); i++) {
-        kerl_squeeze_trits_single(trits_out + i * 243);
+        kerl_squeeze_trits_single(sha3, trits_out + i * 243);
     }
 
     return 0;
 }
 
-int kerl_absorb_trints_single(const trint_t *trints_in)
+int kerl_absorb_trints_single(cx_sha3_t *sha3, const trint_t *trints_in)
 {
     unsigned char bytes[12 * 4];
     uint32_t bigint[12];
@@ -135,24 +137,24 @@ int kerl_absorb_trints_single(const trint_t *trints_in)
     trints_to_bigint_mem(trints_in, bigint);
     bigint_to_bytes(bigint, bytes);
 
-    return kerl_absorb_bytes(bytes, 12 * 4);
+    return kerl_absorb_bytes(sha3, bytes, 12 * 4);
 }
 
-int kerl_absorb_trints(const trint_t *trints_in, uint16_t len)
+int kerl_absorb_trints(cx_sha3_t *sha3, const trint_t *trints_in, uint16_t len)
 {
     for (uint8_t i = 0; i < (len / 49); i++) {
-        kerl_absorb_trints_single(trints_in + i * 49);
+        kerl_absorb_trints_single(sha3, trints_in + i * 49);
     }
 
     return 0;
 }
 
-int kerl_squeeze_trints_single(trint_t *trints_out)
+int kerl_squeeze_trints_single(cx_sha3_t *sha3, trint_t *trints_out)
 {
     unsigned char bytes[12 * 4];
     uint32_t bigint[12];
 
-    kerl_squeeze_bytes(bytes);
+    kerl_squeeze_bytes(sha3, bytes);
     bytes_to_bigint(bytes, bigint);
 
     bigint_to_trints_mem(bigint, trints_out);
@@ -168,10 +170,10 @@ int kerl_squeeze_trints_single(trint_t *trints_out)
     return 0;
 }
 
-int kerl_squeeze_trints(trint_t *trints_out, uint16_t len)
+int kerl_squeeze_trints(cx_sha3_t *sha3, trint_t *trints_out, uint16_t len)
 {
     for (uint8_t i = 0; i < (len / 49); i++) {
-        kerl_squeeze_trints_single(trints_out + i * 49);
+        kerl_squeeze_trints_single(sha3, trints_out + i * 49);
     }
 
     return 0;
