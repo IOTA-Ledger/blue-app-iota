@@ -27,6 +27,8 @@ typedef SHA3_CTX cx_sha3_t;
 typedef SHA3_CTX cx_hash_t;
 
 static inline void cx_keccak_init(SHA3_CTX* hash, int size) {
+        (void)size; // unused
+
         keccak_384_Init(hash);
 }
 
