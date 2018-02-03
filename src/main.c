@@ -47,7 +47,6 @@
 
  */
 //49 * 27 stores half of private key encoded
-int8_t g_Memory[(49*27) + (243) + (32)];
 
 cx_sha256_t hash;
 unsigned char hashTainted;     // notification to restart the hash
@@ -116,37 +115,35 @@ static void IOTA_main(void) {
 
                 // Get current public key
                 case INS_GET_PUBKEY: {
-                    //sizeof = 76 publicKey, 40 privateKey
-                    cx_ecfp_public_key_t publicKey;
-                    cx_ecfp_private_key_t privateKey;
 
                     if (rx < APDU_HEADER_LENGTH + BIP44_BYTE_LENGTH) {
                         hashTainted = 1;
                         THROW(0x6D09);
                     }
 
-                    /** BIP44 path, used to derive the private key from the mnemonic by calling os_perso_derive_node_bip32. */
-                    unsigned char * bip44_in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
-
-                    unsigned int bip44_path[BIP44_PATH_LEN];
-                    uint32_t i;
-                    for (i = 0; i < BIP44_PATH_LEN; i++) {
-                        bip44_path[i] = (bip44_in[0] << 24) | (bip44_in[1] << 16) | (bip44_in[2] << 8) | (bip44_in[3]);
-                        bip44_in += 4;
-                    }
                     unsigned char privateKeyData[32];
-                    os_perso_derive_node_bip32(CX_CURVE_256K1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
-                    cx_ecdsa_init_private_key(CX_CURVE_256K1, privateKeyData, 32, &privateKey);
+                    {
+                        /** BIP44 path, used to derive the private key from the mnemonic by calling
+                         * os_perso_derive_node_bip32. */
+                        unsigned char* bip44_in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
-                    // generate the public key. (stored in publicKey.W)
-                    cx_ecdsa_init_public_key(CX_CURVE_256K1, NULL, 0, &publicKey);
-                    cx_ecfp_generate_pair(CX_CURVE_256K1, &publicKey, &privateKey, 1);
+                        unsigned int bip44_path[BIP44_PATH_LEN];
+                        for (uint32_t i = 0; i < BIP44_PATH_LEN; i++) {
+                            bip44_path[i] = (bip44_in[0] << 24) | (bip44_in[1] << 16) |
+                                            (bip44_in[2] << 8) | (bip44_in[3]);
+                            bip44_in += 4;
+                        }
+
+                        os_perso_derive_node_bip32(CX_CURVE_256K1, bip44_path, BIP44_PATH_LEN,
+                                                   privateKeyData, NULL);
+                    }
 
                     // the seed in 48 bytes bigint representation
                     uint32_t seed_bigint[12];
                     get_seed(privateKeyData, sizeof(privateKeyData), seed_bigint);
 
-                    uint32_t address[12];
+
+                    uint32_t address[12] = {0};
                     {
                         // security level 1 for now, to save memory and runtime
                         const uint8_t security = 1;
