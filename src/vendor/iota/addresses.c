@@ -52,6 +52,7 @@ void generate_private_key(const uint32_t *seed_bigint, uint32_t idx,
     // work on temporary bigint, so that seed_bigint is not destroyed
     uint32_t bigint[12];
     bigint_add_int_u(seed_bigint, idx, bigint, 12);
+    bigint_set_last_trit_zero(bigint);
 
     kerl_initialize(&sha3);
 
