@@ -105,6 +105,37 @@ static void test_random_bigints_via_chars(void **state)
     }
 }
 
+static void test_trits(const trit_t *in_trits)
+{
+    uint32_t in_bigint[NUM_HASH_BIGINTS];
+    trits_to_bigint(in_trits, in_bigint);
+
+    unsigned char bytes[NUM_HASH_BYTES];
+    bigint_to_bytes(in_bigint, bytes);
+
+    uint32_t out_bigint[NUM_HASH_BIGINTS];
+    bytes_to_bigint(bytes, out_bigint);
+
+    trit_t out_trits[NUM_HASH_TRITS];
+    bigint_to_trits(out_bigint, out_trits);
+
+    assert_memory_equal(in_trits, in_trits, NUM_HASH_TRITS * sizeof(trit_t));
+}
+
+static void test_all_neg_one(void **state)
+{
+    (void)state;  // unused
+
+    trit_t in_trits[NUM_HASH_TRITS];
+    for (int i = 0; i < 242; i++) {
+        in_trits[i] = -1;
+    }
+    // ignore the last trit
+    in_trits[242] = 0;
+
+    test_trits(in_trits);
+}
+
 static void test_random_trits(void **state)
 {
     (void)state;  // unused
@@ -114,20 +145,7 @@ static void test_random_trits(void **state)
         trit_t in_trits[NUM_HASH_TRITS];
         random_trits(in_trits);
 
-        uint32_t in_bigint[NUM_HASH_BIGINTS];
-        trits_to_bigint(in_trits, in_bigint);
-
-        unsigned char bytes[NUM_HASH_BYTES];
-        bigint_to_bytes(in_bigint, bytes);
-
-        uint32_t out_bigint[NUM_HASH_BIGINTS];
-        bytes_to_bigint(bytes, out_bigint);
-
-        trit_t out_trits[NUM_HASH_TRITS];
-        bigint_to_trits(out_bigint, out_trits);
-
-        assert_memory_equal(in_trits, out_trits,
-                            NUM_HASH_TRITS * sizeof(trit_t));
+        test_trits(in_trits);
     }
 }
 
@@ -137,6 +155,7 @@ int main(void)
         cmocka_unit_test(test_single_byte_via_trits),
         cmocka_unit_test(test_random_bigints_via_trits),
         cmocka_unit_test(test_random_bigints_via_chars),
+        cmocka_unit_test(test_all_neg_one),
         cmocka_unit_test(test_random_trits)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);

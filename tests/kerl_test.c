@@ -102,6 +102,32 @@ static void test_peter_seed(void **state)
         kerl);
 }
 
+static void test_243_neg_one(void **state)
+{
+    void (*kerl)(const char *, size_t, const char *) = *state;
+
+    test_kerl(
+        "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+        "NNNNNNNNNNN",
+        243,
+        "NXOQOASTBGO9BF9YZRFHTALRUVRLRYPKDUIZJJLKLVTSMERZQBAQOSMGUE9LIDPXJJWAAB"
+        "TIYNTURURTD",
+        kerl);
+}
+
+static void test_242_neg_one(void **state)
+{
+    void (*kerl)(const char *, size_t, const char *) = *state;
+
+    test_kerl(
+        "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+        "NNNNNNNNNNW",
+        243,
+        "NXOQOASTBGO9BF9YZRFHTALRUVRLRYPKDUIZJJLKLVTSMERZQBAQOSMGUE9LIDPXJJWAAB"
+        "TIYNTURURTD",
+        kerl);
+}
+
 static void test_input_with_243trits(void **state)
 {
     void (*kerl)(const char *, size_t, const char *) = *state;
@@ -185,6 +211,10 @@ int main(void)
     const struct CMUnitTest tests[] = {
         cmocka_unit_test_prestate(test_peter_seed, trit_kerl),
         cmocka_unit_test_prestate(test_peter_seed, bigint_kerl),
+        cmocka_unit_test_prestate(test_243_neg_one, trit_kerl),
+        cmocka_unit_test_prestate(test_243_neg_one, bigint_kerl),
+        cmocka_unit_test_prestate(test_242_neg_one, trit_kerl),
+        cmocka_unit_test_prestate(test_242_neg_one, bigint_kerl),
         cmocka_unit_test_prestate(test_input_with_243trits, trit_kerl),
         cmocka_unit_test_prestate(test_input_with_243trits, bigint_kerl),
         cmocka_unit_test_prestate(test_output_with_more_than_243trits,

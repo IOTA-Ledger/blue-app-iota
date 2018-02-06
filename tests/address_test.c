@@ -57,6 +57,52 @@ static void test_peter_seed(void **state)
     test_address(seed, idx, address[idx]);
 }
 
+static void test_242trits_overflow_seed(void **state)
+{
+    const char *seed =
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+        "MMMMMMMMMMD";
+    const char *address[] = {
+        "VSSIPYVZYLPSMIB9HFPIM9ONASKJHETXRMJNIBRBZNJRWIMD9WVITVUC9FZHIZHGLBKAY9"
+        "HAPGIZVQOQA",
+        "MDWYEJJHJDIUVPKDY9EACGDJUOP9TLYDWETUBOYCBLYXYYYJYUXYUTCTPTDGJYFKMQMCNZ"
+        "DQPTBE9AFIW",
+        "BRCRVAASDLAZPTSHELUSJGNEWQSCLY9WHEARHXSJBQFNSMTES9OQULMXNNLWSZDE9K9HOW"
+        "QHPMTVNHEMD",
+        "BVTCAAJ9KVBYCDXUATNBFOIOVALZZJCVEMWSWHHKBLCQ9BXRFZPN9ER9WXUROWIJVRWREW"
+        "JNAWTOGH9OW",
+        "BPBX9PPTMYXBYSELTKUJVROKMFLCSQMCGKMMYMXSFPQNDWRQ9RWJBEEERFAO9ZHWGTKTWE"
+        "BMCDBRUUAHC"};
+
+    uint32_t idx = (uintptr_t)*state;
+    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
+
+    test_address(seed, idx, address[idx]);
+}
+
+static void test_243trits_overflow_seed(void **state)
+{
+    const char *seed =
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+        "MMMMMMMMMMM";
+    const char *address[] = {
+        "VSSIPYVZYLPSMIB9HFPIM9ONASKJHETXRMJNIBRBZNJRWIMD9WVITVUC9FZHIZHGLBKAY9"
+        "HAPGIZVQOQA",
+        "MDWYEJJHJDIUVPKDY9EACGDJUOP9TLYDWETUBOYCBLYXYYYJYUXYUTCTPTDGJYFKMQMCNZ"
+        "DQPTBE9AFIW",
+        "BRCRVAASDLAZPTSHELUSJGNEWQSCLY9WHEARHXSJBQFNSMTES9OQULMXNNLWSZDE9K9HOW"
+        "QHPMTVNHEMD",
+        "BVTCAAJ9KVBYCDXUATNBFOIOVALZZJCVEMWSWHHKBLCQ9BXRFZPN9ER9WXUROWIJVRWREW"
+        "JNAWTOGH9OW",
+        "BPBX9PPTMYXBYSELTKUJVROKMFLCSQMCGKMMYMXSFPQNDWRQ9RWJBEEERFAO9ZHWGTKTWE"
+        "BMCDBRUUAHC"};
+
+    uint32_t idx = (uintptr_t)*state;
+    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
+
+    test_address(seed, idx, address[idx]);
+}
+
 static void test_n_addresses_for_seed(void **state)
 {
     (void)state;  // unused
@@ -79,6 +125,16 @@ int main(void)
         cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)2),
         cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)3),
         cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)0),
+        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)1),
+        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)2),
+        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)3),
+        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)0),
+        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)1),
+        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)2),
+        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)3),
+        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)4),
         cmocka_unit_test(test_n_addresses_for_seed)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
