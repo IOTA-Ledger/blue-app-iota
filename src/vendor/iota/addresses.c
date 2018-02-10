@@ -1,219 +1,162 @@
 #include "addresses.h"
+#include "common.h"
+#include "bigint.h"
+#include "conversion.h"
 #include "kerl.h"
-#include "../../aux.h"
 
-// TODO: make sure we can add more index than uint32
-int add_index_to_seed(trit_t trits[], uint32_t index)
+static void key_digests(const uint32_t *key, uint8_t security,
+                        uint32_t *digests)
 {
-    for (uint32_t i = 0; i < index; i++) {
-        // Add one
-        uint8_t offset = 0;
-        bool carry = true;
-        while(carry && offset < 243) {
-            trits[offset] = trits[offset] + 1;
-            if (trits[offset] > 1) {
-                trits[offset] = -1;
-            } else {
-                carry = false;
+    for (uint8_t l = 0; l < security; l++) {
+        const uint32_t *p = key + (l * 12 * 27);
+        cx_sha3_t digest_sha3;
+
+        kerl_initialize(&digest_sha3);
+
+        for (uint8_t i = 0; i < 27; i++) {
+            cx_sha3_t round_sha3;
+            uint32_t buffer[12];
+
+            os_memcpy(buffer, p, 12 * 4);
+            p += 12;
+
+            for (int k = 0; k < 26; k++) {
+                kerl_initialize(&round_sha3);
+                kerl_absorb_bigints(&round_sha3, buffer, 12);
+                kerl_squeeze_bigints(&round_sha3, buffer, 12);
             }
-              if (carry) {
-                offset++;
-            }
+
+            // basorb buffer directly to avoid storing the digest fragment
+            kerl_absorb_bigints(&digest_sha3, buffer, 12);
         }
+
+        kerl_squeeze_bigints(&digest_sha3, digests, 12);
+        digests += 12;
     }
-    return 0;
 }
 
-int generate_private_key(trit_t *seed_trits, uint32_t index, trint_t *private_key)
+static void digests_address(const uint32_t *digests, uint8_t security,
+                            uint32_t *address)
 {
-    trit_t tmp[243];
-    memcpy(tmp, seed_trits, 243);
+    cx_sha3_t sha3;
 
-    // Add index
-    add_index_to_seed(tmp, index);
-
-    kerl_initialize();
-    kerl_absorb_trits(tmp, 243);
-    kerl_squeeze_trits(tmp, 243);
-
-    kerl_initialize();
-    kerl_absorb_trits(tmp, 243);
-
-    int8_t level = 2;
-    for (uint8_t i = 0; i < level; i++) {
-        for (uint8_t j = 0; j < 27; j++) { //we do this 54 times
-            // each of the 54 times we have 81 trytes (243 trits)
-
-            // squeeze out 243 trits, but store it much more efficiently
-            // we need 49 bytes to store 243 trits (5 trits per byte)
-            kerl_squeeze_trits(&tmp[0], 243);
-
-            //each call stores 49 trints into buffer (so j*49), each loop in i stores 27 j's (*49)
-            specific_243trits_to_49trints(&tmp[0], &private_key[i*27*49 +j*49]);
-        }
-    }
-    return 0;
+    kerl_initialize(&sha3);
+    kerl_absorb_bigints(&sha3, digests, 12 * security);
+    kerl_squeeze_bigints(&sha3, address, 12);
 }
 
-int generate_public_address(const trit_t private_key[], trit_t address_out[])
+void generate_private_key(const uint32_t *seed_bigint, uint32_t idx,
+                          uint8_t security, uint32_t *key)
 {
-    //We now have trints[54][49] - 54 sets of 243 trits
-    //digest it in groups of 2
-    // Get digests
-    trit_t digests[243*2];
+    cx_sha3_t sha3;
+    // work on temporary bigint, so that seed_bigint is not destroyed
+    uint32_t bigint[12];
+    bigint_add_int_u(seed_bigint, idx, bigint, 12);
+    bigint_set_last_trit_zero(bigint);
 
-    for (uint8_t i = 0; i < 2; i++) {
-        trit_t key_fragment[243*27];
-        memcpy(key_fragment, &private_key[i*243*27], 243*27);
+    kerl_initialize(&sha3);
 
-        for (uint8_t j = 0; j < 27; j++) {
-			//int progress = ((i*27 + j)*18519)/1000;
-			//layoutProgress(_("Generating address."), progress);
-            for (uint8_t k = 0; k < 26; k++) {
-                kerl_initialize();
-                kerl_absorb_trits(&key_fragment[j*243], 243);
-                kerl_squeeze_trits(&key_fragment[j*243], 243);
-            }
+    kerl_absorb_bigints(&sha3, bigint, 12);
+    kerl_squeeze_bigints(&sha3, bigint, 12);
+
+    kerl_initialize(&sha3);
+    kerl_absorb_bigints(&sha3, bigint, 12);
+
+    uint32_t *p = key;
+    for (uint8_t l = 1; l <= security; l++) {
+        for (uint8_t i = 0; i < 27; i++) {
+            kerl_squeeze_bigints(&sha3, p, 12);
+            p += 12;
         }
-
-        kerl_initialize();
-        kerl_absorb_trits(key_fragment, 243*27);
-        kerl_squeeze_trits(&digests[i*243], 243);
     }
-	//layoutProgress(_("Generating address."), 1000);
-
-    // Get address
-    kerl_initialize();
-    kerl_absorb_trits(digests, 243*2);
-    kerl_squeeze_trits(address_out, 243);
-    return 0;
 }
 
-// TODO: make sure we can add more index than uint32
-// This may be an area where it's better just to have the seed in trits
-// while adding index, then convert to trints later.
-// Similarly is there no faster way to incr ??
-int add_index_to_seed_trints(int8_t *trints, uint32_t index)
+void generate_public_address(const uint32_t *private_key, uint8_t security,
+                             uint32_t *address)
 {
-    int8_t trits[5];
-    uint8_t send = 5;
+    uint32_t digests[12 * security];
 
-    for (uint32_t i = 0; i < index; i++) {
-        // Add one
-        uint8_t offset = 0;
-        bool carry = true;
-        while(carry && offset < 243) {
-            if(offset % 5 == 0) {// we need a new set of trits
-                //if offset/5 == 48 we are on last trint of only 3
-                // this would be equivalent to if offset == 240;
-                send = (offset/5 == 48) ? 3 : 5;
-
-                //before we get new trint, write old trint
-                if(offset != 0) //if this is the first trint, dont write
-                    trints[(offset/5) - 1] = trits_to_trint(&trits[0], send);
-
-                //get new set of trits
-                trint_to_trits(trints[offset/5], &trits[0], send);
-            }
-
-            trits[offset % 5] = trits[offset % 5] + 1;
-            if (trits[offset % 5] > 1) {
-                trits[offset % 5] = -1;
-            } else {
-                //if we reach here, we are done so let's write the last trint
-                carry = false;
-
-                //use (uint8_t) to auto truncate offset/5
-                if(offset < 5) trints[0] = trits_to_trint(&trits[0], send);
-                else trints[(uint8_t)(offset/5)] = trits_to_trint(&trits[0], send);
-            }
-            if (carry) {
-                offset++;
-            }
-
-
-        }
-    }
-    return 0;
+    key_digests(private_key, security, digests);
+    digests_address(digests, security, address);
 }
 
-// generates half of a private key to encoded format of trints
-// use level 1 for first half, level 2 for second half
-int generate_private_key_half(trint_t *seed_trints, uint32_t index,
-                              trint_t *private_key, uint8_t level, char *msg)
-{
-    // Add index -- keep in mind fix index_to_seed
-    add_index_to_seed_trints(&seed_trints[0], index);
 
-/*    //Printing seed here will show us how our add_index went
- * /
-    trit_t trits[5];
-    trint_to_trits(seed_trints[0], &trits[0], 5);
+//------- ONLY USES FUNCTIONS FROM HERE DOWN
 
-    snprintf(&msg[0], 64, "[%d][%d][%d][%d][%d]\n", trits[0], trits[1],
-             trits[2], trits[3], trits[4]);
- /* */
-
-    kerl_initialize();
-    kerl_absorb_trints(&seed_trints[0], 49);
-    kerl_squeeze_trints(&private_key[0], 49);
-
-    kerl_initialize();
-    kerl_absorb_trints(&seed_trints[0], 49);
-
-    //level == 1 means generate first half of private key
-    for (uint8_t j = 0; j < 27; j++) {
-        //27 chunks makes up half the private key
-
-        // THIS SHOULD TAKE ROUGHLY 3 SECONDS ELSE IT HUNG
-        kerl_squeeze_trints(&private_key[j * 49], 49);
-
-        //the first level just store it, if second half, discard
-        //entire first half (OPTIMIZE!!!)
-        if(j == 26 && level != 1) {
-            j = 0;  //reset j so it can just go again,
-                    //overwriting first half with second half
-            level = 1; // use this as a flag to tell it to not enter infinite loop
-        }
-    }
-    return 0;
+static void digest_addr(cx_sha3_t *digest_sha3, cx_sha3_t *addr_sha3) {
+    uint32_t digest[12];
+    kerl_squeeze_bigints(digest_sha3, digest, 12);
+    
+    //keep a running absorb on all digest chunks
+    kerl_absorb_bigints(addr_sha3, digest, 12);
+    
+    //reset digest sha for next digest
+    kerl_initialize(digest_sha3);
 }
 
-//Generate the public key half at a time
-//Use level 1 to generate first half, level 2 to generate second half
-int generate_public_address_half(trint_t *private_key, trint_t *address_out, uint8_t level)
+static void digest_single_chunk(const uint32_t *key, cx_sha3_t *digest_sha3)
 {
-    for(uint8_t j = 0; j < 27; j++) {
-        // each piece get's kerl'd 26 times(?)
-        for(uint8_t k = 0; k < 26; k++) {
-            //temp set k=25 to make this a LOT faster
-            //k = 25;
-            kerl_initialize();
-            kerl_absorb_trints(&private_key[j*49], 49);
-            kerl_squeeze_trints(&private_key[j*49], 49);
+    cx_sha3_t round_sha3;
+    uint32_t buffer[12];
+    
+    os_memcpy(buffer, key, 12 * 4);
+    
+    for (int k = 0; k < 26; k++) {
+        kerl_initialize(&round_sha3);
+        kerl_absorb_bigints(&round_sha3, buffer, 12);
+        kerl_squeeze_bigints(&round_sha3, buffer, 12);
+    }
+    
+    // asorb buffer directly to avoid storing the digest fragment
+    kerl_absorb_bigints(digest_sha3, buffer, 12);
+}
+
+//initialize the sha3 instance for generating private key
+void init_shas(const uint32_t *seed_bigint, uint32_t idx, cx_sha3_t *key_sha,
+                      cx_sha3_t *digest_sha, cx_sha3_t *addr_sha) {
+    //use temp bigint so seed not destroyed
+    uint32_t bigint[12];
+    bigint_add_int_u(seed_bigint, idx, bigint, 12);
+    bigint_set_last_trit_zero(bigint);
+    
+    kerl_initialize(key_sha);
+    kerl_absorb_bigints(key_sha, bigint, 12);
+    kerl_squeeze_bigints(key_sha, bigint, 12);
+    
+    kerl_initialize(key_sha);
+    kerl_absorb_bigints(key_sha, bigint, 12);
+    
+    kerl_initialize(digest_sha);
+    kerl_initialize(addr_sha);
+}
+
+//create a couple instances of sha3 and keep them running.
+void get_public_addr(uint32_t *seed_bigint, uint32_t idx, uint8_t security,
+                   uint32_t *address) {
+    //sha size is 424 bytes
+    cx_sha3_t key_sha, digest_sha, addr_sha;
+    
+    //init private key sha, digest sha and addr sha
+    init_shas(seed_bigint, idx, &key_sha, &digest_sha, &addr_sha);
+    
+    
+    //only store a single fragment of the private key at a time and use it to completion
+    //before moving onto next fragment to store memory
+    uint32_t key_f[12];
+    
+    for(uint8_t i=0; i<security; i++) {
+        for(uint8_t j=0; j<27; j++) {
+            //generate every private key frag, and absorb them
+            kerl_squeeze_bigints(&key_sha, key_f, 12);
+            digest_single_chunk(key_f, &digest_sha);
         }
+        
+        digest_addr(&digest_sha, &addr_sha);
     }
-
-    //the 27th kerl generates the digests
-    kerl_initialize();
-    kerl_absorb_trints(private_key, 49*27); // re-absorb the entire private key
-
-    // use level 1 to pass the first half of the private key, store
-    // digest in public key for now to save RAM
-    if(level == 1)
-        kerl_squeeze_trints(address_out, 49); // Store the first digest just in address_out{
-    else {
-        //done with private key, so store the second digest in private key
-        kerl_squeeze_trints(private_key, 49);
-
-        //now get address
-        kerl_initialize();
-        //address out stores first half, private key stores second half
-        kerl_absorb_trints(address_out, 49);
-        kerl_absorb_trints(private_key, 49);
-        //finally publish the public key
-        kerl_squeeze_trints(address_out, 49);
-    }
-
-    return 0;
+    
+    //squeeze_key_frag(&key_sha, key);
+    //digest_chunk(key, &digest_sha, &addr_sha);
+    
+    //one final squeeze for address
+    kerl_squeeze_bigints(&addr_sha, address, 12);
 }

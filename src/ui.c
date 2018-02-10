@@ -180,7 +180,7 @@ static const bagl_element_t bagl_ui_sample_blue[] = {
  --------------------------------------------------------- */
 
 void initUImsg() {
-    if(nvram_is_init()) {//5678901234567890
+    if(nvram_is_init()) {
         write_display("DONT USE OTHER", 20, TYPE_STR, TOP);
         write_display("PEOPLES SEED!", 20, TYPE_STR, BOT);
     }
@@ -190,6 +190,7 @@ void initUImsg() {
     }
 }
 
+//ui_display_debug(top, szof(top), TYPE_TOP, bot, szof(bot) TYPE_BOT);
 void ui_display_debug(void *o, uint8_t sz, uint8_t t, void *o2,
                       uint8_t sz2, uint8_t t2) {
     write_display(o, sz, t, TOP);
