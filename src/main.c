@@ -26,14 +26,6 @@
 #include "vendor/iota/addresses.h"
 #include "vendor/iota/transaction.h"
 
-/*MEMORY IMPROVEMENTS: GLOBAL VARIABLES TO RE-USE EVERYWHERE
-
- #DEFINE bip44path instead of hold in variable (?)
- possibly discard public key (from bip44)
-
- */
-
-
 cx_sha256_t hash;
 unsigned char hashTainted;     // notification to restart the hash
 

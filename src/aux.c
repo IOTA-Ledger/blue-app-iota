@@ -9,11 +9,12 @@
 #include "vendor/iota/transaction.h"
 #include "vendor/iota/addresses.h"
 
-// Ideally include room for the null terminator
+
+//functions for reading from input buffer
 void uint_to_str(uint32_t i, char *str, uint8_t len) {
     snprintf(str, len, "%u", i);
 }
-// Ideally include room for null terminator
+
 void int_to_str(int i, char *str, uint8_t len) {
     snprintf(str, len, "%d", i);
 }
