@@ -3,6 +3,7 @@
 #include "aux.h"
 
 char top_str[21];
+char mid_str[21];
 char bot_str[21];
 
 //write_display(&words, sizeof(words), TYPE_STR);
@@ -13,7 +14,8 @@ void write_display(void* o, uint8_t sz, uint8_t t, uint8_t p) {
     char *c_ptr = NULL;
     
     if(p == TOP) c_ptr = &top_str[0];
-    else c_ptr = &bot_str[0];
+    else if(p == BOT) c_ptr = &bot_str[0];
+    else c_ptr = &mid_str[0];
     
     //NULL value sets line blank
     if(o == NULL) {
@@ -65,6 +67,17 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
         {BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
             BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         top_str,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+    {
+        {BAGL_LABELINE, 0x01, 0, 18, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+            BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        mid_str,
         0,
         0,
         0,
@@ -181,20 +194,26 @@ static const bagl_element_t bagl_ui_sample_blue[] = {
 
 void initUImsg() {
     if(nvram_is_init()) {
-        write_display("DONT USE OTHER", 20, TYPE_STR, TOP);
-        write_display("PEOPLES SEED!", 20, TYPE_STR, BOT);
+        write_display(NULL, 20, TYPE_STR, TOP);
+        write_display("Welcome to IOTA", 20, TYPE_STR, MID);
+        write_display(NULL, 20, TYPE_STR, BOT);
     }
     else {
-        write_display("DONT USE OTHER", 20, TYPE_STR, TOP);
-        write_display("PEOPLES SEED!", 20, TYPE_STR, BOT);
+        write_display(NULL, 20, TYPE_STR, TOP);
+        write_display("Welcome to IOTA", 20, TYPE_STR, MID);
+        write_display(NULL, 20, TYPE_STR, BOT);
     }
 }
 
-//ui_display_debug(top, szof(top), TYPE_TOP, bot, szof(bot) TYPE_BOT);
-void ui_display_debug(void *o, uint8_t sz, uint8_t t, void *o2,
-                      uint8_t sz2, uint8_t t2) {
+//ui_display_debug(top, szof(top), TYPE_TOP,
+//                  mid, szof(mid), TYPE_MID,
+//                  bot, szof(bot) TYPE_BOT);
+void ui_display_debug(void *o, uint8_t sz, uint8_t t,
+                      void *o2, uint8_t sz2, uint8_t t2,
+                      void *o3, uint8_t sz3, uint8_t t3) {
     write_display(o, sz, t, TOP);
-    write_display(o2, sz2, t2, BOT);
+    write_display(o2, sz2, t2, MID);
+    write_display(o3, sz3, t3, BOT);
     
     UX_DISPLAY(bagl_ui_nanos_screen, NULL);
 }

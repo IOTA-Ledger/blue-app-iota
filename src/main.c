@@ -113,14 +113,11 @@ static void IOTA_main(void) {
                          -----------------------------------------------
                          ----------------------------------------------- */
                     case INS_GET_PUBKEY: {
+                        //we only care about privateKeyData, we will be discarding
+                        //everything else, and using this to generate our iota seed
                         unsigned char privateKeyData[32];
                         { // Localize public key (since we discard it anyways)
                             //private key and bip44path
-
-                            //sizeof = 76 publicKey, 40 privateKey
-                            //------ TODO REMOVE -- NOT NEEDED IF ONLY DATA IS USED
-                            //cx_ecfp_public_key_t publicKey;
-                            //cx_ecfp_private_key_t privateKey;
 
                             if (rx < APDU_HEADER_LENGTH + BIP44_BYTE_LENGTH) {
                                 hashTainted = 1;
@@ -138,34 +135,28 @@ static void IOTA_main(void) {
                             }
 
                             os_perso_derive_node_bip32(CX_CURVE_256K1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
-
-                            /* REMOVE THIS PORTION
-                            cx_ecdsa_init_private_key(CX_CURVE_256K1, privateKeyData, 32, &privateKey);
-
-                            // generate the public key. (stored in publicKey.W)
-                            cx_ecdsa_init_public_key(CX_CURVE_256K1, NULL, 0, &publicKey);
-                            cx_ecfp_generate_pair(CX_CURVE_256K1, &publicKey, &privateKey, 1);
-                        */}
+                            
+                        }
+                        
                         // the seed in 48 bytes bigint representation
                         uint32_t seed_bigint[12];
                         get_seed(privateKeyData, sizeof(privateKeyData), seed_bigint);
 
-                        uint32_t address[12] = {0};
+                        uint32_t addr_bigint[12] = {0};
+                        
                         {
-                            // security level 1 for now, to save memory and runtime
+                            //set the security of our seed
                             const uint8_t security = 2;
-                            //uint32_t private_key[12 * 27 * security];
+                            const uint32_t idx = 0;
 
-                            //generate_private_key(seed_bigint, 24981, security, private_key);
-                            get_public_addr(seed_bigint, 0, security, address);
-                            //generate_public_address(private_key, security, address);
+                            get_public_addr(seed_bigint, idx, security, addr_bigint);
                         }
-                        char key[82];
-                        //change privatekey with seed_bigint
-                        bigints_to_chars(address, key, 12);
+                        //convert the bigint address into character address
+                        char address[82];
+                        bigints_to_chars(addr_bigint, address, 12);
 
                         // push the response onto the response buffer.
-                        os_memmove(G_io_apdu_buffer, key, 82);
+                        os_memmove(G_io_apdu_buffer, address, 82);
 
                         tx = 82;
                         //Manually send back success 0x9000 at end
@@ -177,18 +168,16 @@ static void IOTA_main(void) {
                         flags |= IO_ASYNCH_REPLY;
 
 
-                        char key_abbrv[12];
+                        char addr_abbrv[12];
 
                         // - Convert into abbreviated seeed (first 4 and last 4 characters)
-                        memcpy(&key_abbrv[0], &key[0], 4); // first 4 chars of seed
-                        memcpy(&key_abbrv[4], "...", 3); // copy ...
-                        memcpy(&key_abbrv[7], &key[77], 5); //copy last 4 chars + null
+                        memcpy(&addr_abbrv[0], &address[0], 4); // first 4 chars of seed
+                        memcpy(&addr_abbrv[4], "...", 3); // copy ...
+                        memcpy(&addr_abbrv[7], &address[77], 5); //copy last 4 chars + null
 
-                        cx_sha3_t sha3;
-
-                        unsigned int jj = sizeof(sha3);
-
-                        ui_display_debug(&key_abbrv[0], 12, TYPE_STR, &jj, 6, TYPE_UINT);
+                        ui_display_debug(NULL, 0, 0,
+                                         &addr_abbrv[0], 12, TYPE_STR,
+                                         NULL, 0, 0);
                     } break;
 
 
@@ -219,7 +208,9 @@ static void IOTA_main(void) {
 
                         flags |= IO_ASYNCH_REPLY;
 
-                        ui_display_debug(&msg[0], 11, TYPE_STR, NULL, 0, 0);
+                        ui_display_debug(NULL, 0, 0,
+                                         &msg[0], 11, TYPE_STR,
+                                         NULL, 0, 0);
                     } break;
 
                         /* ---------------------------------------------
@@ -255,7 +246,9 @@ static void IOTA_main(void) {
 
                         flags |= IO_ASYNCH_REPLY;
                         //Nothing to display, this is purely behind the scenes
-                        ui_display_debug(&msg[0], 11, TYPE_STR, NULL, 0, 0);
+                        ui_display_debug(NULL, 0, 0,
+                                         &msg[0], 11, TYPE_STR,
+                                         NULL, 0, 0);
                     } break;
 
                         /* ---------------------------------------------
@@ -305,7 +298,9 @@ static void IOTA_main(void) {
 
                         flags |= IO_ASYNCH_REPLY;
                         //Nothing to display, this is purely behind the scenes
-                        ui_display_debug(&new_index, 11, TYPE_INT, NULL, 0, 0);
+                        ui_display_debug(NULL, 0, 0,
+                                         &msg[0], 11, TYPE_STR,
+                                         NULL, 0, 0);
                     } break;
 
                         /* ---------------------------------------------
