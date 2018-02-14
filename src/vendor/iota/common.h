@@ -4,6 +4,7 @@
 #ifdef NO_BOLOS
 
 #include <string.h>
+#include <stdbool.h>
 #include "sha3.h"
 
 /* ----------------------------------------------------------------------- */
@@ -46,6 +47,31 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
                 keccak_Update(hash, in, len);
                 keccak_Final(hash, out);
         }
+}
+
+static inline int cx_math_cmp(const uint8_t *a, const uint8_t *b,
+                              unsigned int len) {
+        return memcmp(a, b, len);
+}
+
+static inline int cx_math_add(uint8_t *r, const uint8_t *a, const uint8_t *b,
+                              unsigned int len) {
+        bool carry = false;
+        for(unsigned int i=len; i-- > 0;) {
+                const uint16_t summand = carry ? b[i] + (uint16_t)1 : b[i];
+                carry = __builtin_add_overflow(a[i], summand, &r[i]);
+        }
+        return carry;
+}
+
+static inline int cx_math_sub(uint8_t *r, const uint8_t *a, const uint8_t *b,
+                              unsigned int len) {
+        bool borrow = false;
+        for(unsigned int i=len; i-- > 0;) {
+                const uint16_t subtrahend = borrow ? b[i] + (uint16_t)1 : b[i];
+                borrow = __builtin_sub_overflow(a[i], subtrahend, &r[i]);
+        }
+        return borrow;
 }
 
 #else // ifdef NO_BOLOS
