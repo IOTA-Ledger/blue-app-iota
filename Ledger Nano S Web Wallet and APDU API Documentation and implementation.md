@@ -74,7 +74,7 @@ The Ledger should NEVER decrease the index, and should not accept a command doin
 
 Also, mathematical safety guards should be applied, to guard against integer overflows, i.e an adversary shouldn't be able to increase the index by `X` = `MAX_INT` such that current `index` + `X` overflows back to zero.
 
-If the index does increase by `X > MAX_INT`, I suggest we should just warn the user that he used up all possible addresses, and that he should create a new Ledger recovery seed. This will probably never happen in real life. For instance, if we use a `uint32` then we've got 2^32^-1 possible addresses (translated in decimal to *4294967295 addresses*)
+If the index does increase by `X > MAX_INT`, I suggest we should just warn the user that he used up all possible addresses, and that he should create a new Ledger recovery seed. This will probably never happen in real life. For instance, if we use a `uint32` then we've got 2<sup>32</sup>-1 possible addresses (translated in decimal to *4294967295 addresses*)
 
 ## Remove account
 
