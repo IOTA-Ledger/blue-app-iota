@@ -35,8 +35,8 @@ int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len);
 int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len);
 
 //trits > bigint
-int trits_to_bigint(const trit_t *trits_in, uint32_t *bigint);
-int bigint_to_trits(const uint32_t *bigint, trit_t *trits_out);
+void trits_to_bigint(const trit_t *trits, uint32_t *bigint);
+void bigint_to_trits(const uint32_t *bigint, trit_t *trits);
 
 //misc
 // sets the 242th trit of the balanced trinary representation to 0
