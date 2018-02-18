@@ -24,7 +24,7 @@ static void digest_single_chunk(const unsigned char *key, cx_sha3_t *digest_sha3
     for (int k = 0; k < 26; k++) {
         kerl_initialize(&round_sha3);
         kerl_absorb_chunk(&round_sha3, buffer);
-        kerl_squeeze_chunk(&round_sha3, buffer);
+        kerl_squeeze_final_chunk(&round_sha3, buffer);
     }
 
     // asorb buffer directly to avoid storing the digest fragment
@@ -42,7 +42,7 @@ void init_shas(const unsigned char *seed_bytes, uint32_t idx, cx_sha3_t *key_sha
 
     kerl_initialize(key_sha);
     kerl_absorb_chunk(key_sha, bytes);
-    kerl_squeeze_chunk(key_sha, bytes);
+    kerl_squeeze_final_chunk(key_sha, bytes);
 
     kerl_initialize(key_sha);
     kerl_absorb_chunk(key_sha, bytes);
@@ -77,5 +77,5 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
     }
 
     //one final squeeze for address
-    kerl_squeeze_chunk(&addr_sha, address_bytes);
+    kerl_squeeze_final_chunk(&addr_sha, address_bytes);
 }
