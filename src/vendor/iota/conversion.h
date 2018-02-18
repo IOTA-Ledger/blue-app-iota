@@ -1,45 +1,48 @@
+/** @file conversion.h
+ *  @brief Function for binary-ternary conversion.
+ */
+
 #ifndef CONVERSION_H
 #define CONVERSION_H
 
+#include <stddef.h>
+#include <stdint.h>
 #include "iota_types.h"
-#include "aux.h"
 
-static const trit_t trits_mapping[27][3] =
-{{-1, -1, -1}, { 0, -1, -1}, {1, -1, -1},
-    {-1,  0, -1}, { 0,  0, -1}, {1,  0, -1},
-    {-1,  1, -1}, { 0,  1, -1}, {1,  1, -1},
-    {-1, -1,  0}, { 0, -1,  0}, {1, -1,  0},
-    {-1,  0,  0}, { 0,  0,  0}, {1,  0,  0},
-    {-1,  1,  0}, { 0,  1,  0}, {1,  1,  0},
-    {-1, -1,  1}, { 0, -1,  1}, {1, -1,  1},
-    {-1,  0,  1}, { 0,  0,  1}, {1,  0,  1},
-    {-1,  1,  1}, { 0,  1,  1}, {1,  1,  1}};
+/** @brief Converts a balanced ternary number in base-27 encoding into a
+ *         big-enadian binary integer.
+ *  The input must consist of multiples of 81-char chunks, each chunk is
+ *  converted into a big-endian 48-byte integer
+ *  @param chars base-27 encoded ternary number
+ *  @param bytes target byte array
+ *  @param chars_len length of the input
+ */
+void chars_to_bytes(const char *chars, unsigned char *bytes, size_t chars_len);
 
+/** @brief Converts a big-enadian binary integer into a balanced ternary number
+ *         in base-27 encoding.
+ *  The input must consist of one or more big-endian 48-byte integers, each
+ *  integer is sequentially converted into 81 chars and zero-terminated in the end.
+ *  @param bytes input big-endian 48-byte integers
+ *  @param chars zero-terminated base-27 encoded ternary representation
+ *  @param bytes_len number of input bytes
+ */
+void bytes_to_chars(const unsigned char *bytes, char *chars, size_t bytes_len);
 
-//bytes > bigints
-// Converts bigint consisting of 12 words into an array of bytes.
-void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes);
-// Converts an array of 48 bytes into a bigint consisting of 12 words.
-void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint);
+/** @brief Sets the 243th trit to zero.
+ *  If the byte array represents a balanced ternary number which has the
+ *  243th trit set to +1/-1, the number is adapted to the corresponding
+ *  binary where this trit is 0.
+ *  @param bytes array consisting of 48 bytes.
+ */
+void bytes_set_last_trit_zero(unsigned char *bytes);
 
-//chars > bigints
-void chars_to_bigints(const char *chars, uint32_t *bigints, uint16_t chars_len);
-void bigints_to_chars(const uint32_t *bigints, char *chars, uint16_t bigint_len);
-
-//trytes > trits
-int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[], uint32_t tryte_len);
-int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[], uint32_t trit_len);
-
-//chars > trytes
-int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len);
-int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len);
-
-//trits > bigint
-int trits_to_bigint(const trit_t *trits_in, uint32_t *bigint);
-int bigint_to_trits(const uint32_t *bigint, trit_t *trits_out);
-
-//misc
-// sets the 242th trit of the balanced trinary representation to 0
-void bigint_set_last_trit_zero(uint32_t *bigint);
+/** @brief Adds a single integer to a 48-byte big-enadian integer.
+ *  The bytes are changed in such a way, that they are still a vaild big-endian
+ *  binary representation of a ternary number, i.e. the 243th trit is set to 0.
+ *  @param bytes input big-endian 48-byte integer
+ *  @param summand unsigned number to add
+ */
+void bytes_add_u32_mem(unsigned char *bytes, uint32_t summand);
 
 #endif // CONVERSION_H

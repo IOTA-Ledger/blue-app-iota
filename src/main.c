@@ -127,25 +127,24 @@ static void IOTA_main(void) {
                             }
 
                             os_perso_derive_node_bip32(CX_CURVE_256K1, bip44_path, BIP44_PATH_LEN, privateKeyData, NULL);
-                            
-                        }
-                        
-                        // the seed in 48 bytes bigint representation
-                        uint32_t seed_bigint[12];
-                        get_seed(privateKeyData, sizeof(privateKeyData), seed_bigint);
 
-                        uint32_t addr_bigint[12] = {0};
-                        
+                        }
+
+                        // the seed in 48 bytes representation
+                        unsigned char seed_bytes[48];
+                        get_seed(privateKeyData, sizeof(privateKeyData), seed_bytes);
+
+                        unsigned char addr_bytes[48];
                         {
                             //set the security of our seed
                             const uint8_t security = 2;
                             const uint32_t idx = 0;
 
-                            get_public_addr(seed_bigint, idx, security, addr_bigint);
+                            get_public_addr(seed_bytes, idx, security, addr_bytes);
                         }
                         //convert the bigint address into character address
                         char address[82];
-                        bigints_to_chars(addr_bigint, address, 12);
+                        bytes_to_chars(addr_bytes, address, 48);
 
                         // push the response onto the response buffer.
                         os_memmove(G_io_apdu_buffer, address, 82);

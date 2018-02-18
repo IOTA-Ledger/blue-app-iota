@@ -23,7 +23,7 @@ uint32_t str_to_int(char *str, uint8_t len) {
     uint32_t num = 0;
     //don't attempt to store more than 10 characters in a 32bit unsigned
     if(len > 10) len = 10;
-    
+
     for(uint8_t i=0; i<len; i++){
         switch(str[i]) {
             case '0':
@@ -64,7 +64,7 @@ uint32_t str_to_int(char *str, uint8_t len) {
     return num;
 }
 
-void get_seed(unsigned char *privateKey, uint8_t sz, uint32_t *seed_bigint) {
+void get_seed(const unsigned char *privateKey, uint8_t sz, unsigned char *seed_bytes) {
     // {
     //   // localize bytes_in variable to discard it when we are done
     //   unsigned char bytes_in[48];
@@ -80,9 +80,8 @@ void get_seed(unsigned char *privateKey, uint8_t sz, uint32_t *seed_bigint) {
     //   // absorb these bytes
     //   kerl_absorb_bytes(&bytes_in[0], 48);
     // }
-    
+
     // override for testing purposes
     const char test_seed[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR";
-    chars_to_bigints(test_seed, seed_bigint, 81);
+    chars_to_bytes(test_seed, seed_bytes, 81);
 }
-
