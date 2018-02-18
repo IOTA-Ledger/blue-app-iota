@@ -2,6 +2,9 @@
 #include "conversion.h"
 #include "common.h"
 
+// number of bytes in one keccak hash
+#define NUM_HASH_BYTES 48
+
 void kerl_initialize(cx_sha3_t *sha3) { cx_keccak_init(sha3, 384); }
 
 void kerl_absorb_bytes(cx_sha3_t *sha3, const unsigned char *bytes,
@@ -12,19 +15,25 @@ void kerl_absorb_bytes(cx_sha3_t *sha3, const unsigned char *bytes,
 
 void kerl_absorb_chunk(cx_sha3_t *sha3, const unsigned char *bytes)
 {
-    kerl_absorb_bytes(sha3, bytes, 48);
+    kerl_absorb_bytes(sha3, bytes, NUM_HASH_BYTES);
+}
+
+void kerl_squeeze_final_chunk(cx_sha3_t *sha3, unsigned char *bytes_out)
+{
+    cx_hash((cx_hash_t *)sha3, CX_LAST, bytes_out, 0, bytes_out);
+    bytes_set_last_trit_zero(bytes_out);
 }
 
 static inline void flip_hash_bytes(unsigned char *bytes)
 {
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < NUM_HASH_BYTES; i++) {
         bytes[i] = ~bytes[i];
     }
 }
 
 void kerl_squeeze_chunk(cx_sha3_t *sha3, unsigned char *bytes_out)
 {
-    unsigned char hash[48];
+    unsigned char hash[NUM_HASH_BYTES];
 
     cx_hash((cx_hash_t *)sha3, CX_LAST, hash, 0, hash);
 
@@ -43,8 +52,8 @@ void kerl_squeeze_bytes(cx_sha3_t *sha3, unsigned char *bytes, unsigned int len)
     unsigned char *chunk = bytes;
 
     // absorbing happens in 48 word bigint chunks
-    for (unsigned int i = 0; i < (len / 48); i++) {
+    for (unsigned int i = 0; i < (len / NUM_HASH_BYTES); i++) {
         kerl_squeeze_chunk(sha3, chunk);
-        chunk += 48;
+        chunk += NUM_HASH_BYTES;
     }
 }
