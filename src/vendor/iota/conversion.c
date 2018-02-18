@@ -3,6 +3,7 @@
 #include "common.h"
 
 #define INT_LENGTH 12
+// base of the ternary system
 #define BASE 3
 
 // the middle of the domain described by 242 trits, i.e. \sum_{k=0}^{241} 3^k
@@ -20,79 +21,18 @@ static const uint32_t LAST_TRIT[12] = {
     0x4b9d12c9, 0x3e00ecd3, 0x2908a09f, 0x75bc01b2, 0x184890dc, 0xa12f3aae,
     0xf3498e04, 0x91775c6c, 0x53ed0116, 0x540d500b, 0x50ff57bf, 0xbcd3d7df};
 
+static const trit_t trits_mapping[27][3] = {
+    {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
+    {-1, 1, -1},  {0, 1, -1},  {1, 1, -1},  {-1, -1, 0}, {0, -1, 0}, {1, -1, 0},
+    {-1, 0, 0},   {0, 0, 0},   {1, 0, 0},   {-1, 1, 0},  {0, 1, 0},  {1, 1, 0},
+    {-1, -1, 1},  {0, -1, 1},  {1, -1, 1},  {-1, 0, 1},  {0, 0, 1},  {1, 0, 1},
+    {-1, 1, 1},   {0, 1, 1},   {1, 1, 1}};
+
 // available tryte chars in the correct order
 static const char tryte_to_char_mapping[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
 
-/* --------------------- bytes > bigints and back */
-// used by kerl
-
-// Converts bigint consisting of 12 words into an array of bytes.
-// It is represented using 48bytes in big-endiean, by reversing the order of the
-// words. The endianness of the host machine is taken into account.
-void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
-{
-    uint32_t *p = (uint32_t *)bytes;
-
-    // reverse word order
-    for (int8_t i = 11; i >= 0; i--) {
-        // convert byte order if necessary
-        *p++ = os_swap_u32(bigint[i]);
-    }
-}
-
-// Converts an array of 48 bytes into a bigint consisting of 12 words.
-// The bigint is represented using 48bytes in big-endiean. The endianness of the
-// host machine is taken into account.
-void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
-{
-    const uint32_t *p = (const uint32_t *)bytes;
-
-    // reverse word order
-    for (int8_t i = 11; i >= 0; i--) {
-        // convert byte order if necessary
-        bigint[i] = os_swap_u32(*p);
-        p++;
-    }
-}
-/* --------------------- END bytes > bigint */
-
-/* --------------------- chars > bigints and back */
-void chars_to_bigints(const char *chars, uint32_t *bigints, uint16_t chars_len)
-{
-    for (uint16_t i = 0; i < chars_len / 81; i++) {
-        trit_t trits[243];
-        {
-            tryte_t trytes[81];
-            chars_to_trytes(chars + i * 81, trytes, 81);
-            trytes_to_trits(trytes, trits, 81);
-        }
-
-        // bigint can only handle 242 trits
-        trits[242] = 0;
-        trits_to_bigint(trits, bigints + i * 12);
-    }
-}
-
-void bigints_to_chars(const uint32_t *bigints, char *chars, uint16_t bigint_len)
-{
-    for (uint16_t i = 0; i < bigint_len / 12; i++) {
-        tryte_t trytes[81];
-        {
-            trit_t trits[243];
-            bigint_to_trits(bigints + i * 12, trits);
-            trits_to_trytes(trits, trytes, 243);
-        }
-
-        trytes_to_chars(trytes, chars + i * 81, 81);
-    }
-
-    // make zero termnated
-    chars[(bigint_len / 12) * 81] = '\0';
-}
-/* --------------------- END chars > bigints */
-
 /* --------------------- trits > trytes and back */
-// used for bigints to chars and back
+// used for bytes to chars and back
 int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
                     uint32_t tryte_len)
 {
@@ -122,6 +62,7 @@ int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
 /* --------------------- END trits > trytes */
 
 /* --------------------- trytes > chars and back */
+// used for bytes to chars and back
 int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len)
 {
     for (uint8_t i = 0; i < len; i++) {
@@ -148,9 +89,18 @@ int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
 }
 /* --------------------- END trytes > chars */
 
-static int longint_cmp(const uint32_t *a, const uint32_t *b)
+/** @brief Returns true, if the long little-endian integer represents a negative
+ *         number in two's complement.
+ */
+static inline bool bigint_is_negative(const uint32_t *bigint)
 {
-    for (uint i = 12; i-- > 0;) {
+    // whether the most significant bit of the most significant byte is set
+    return (bigint[12 - 1] >> (sizeof(bigint[0]) * 8 - 1) != 0);
+}
+
+static int bigint_cmp(const uint32_t *a, const uint32_t *b)
+{
+    for (unsigned int i = 12; i-- > 0;) {
         if (a[i] < b[i]) {
             return -1;
         }
@@ -170,46 +120,37 @@ static inline bool addcarry_u32(uint32_t *r, uint32_t a, uint32_t b, bool c_in)
     return carry;
 }
 
-static bool longint_add(uint32_t *r, const uint32_t *a, const uint32_t *b)
+static bool bigint_add(uint32_t *r, const uint32_t *a, const uint32_t *b)
 {
     bool carry = false;
-    for (uint i = 0; i < 12; i++) {
+    for (unsigned int i = 0; i < 12; i++) {
         carry = addcarry_u32(&r[i], a[i], b[i], carry);
     }
 
     return carry;
 }
 
-static bool longint_sub(uint32_t *r, const uint32_t *a, const uint32_t *b)
+static bool bigint_sub(uint32_t *r, const uint32_t *a, const uint32_t *b)
 {
     bool carry = true;
-    for (uint i = 0; i < 12; i++) {
+    for (unsigned int i = 0; i < 12; i++) {
         carry = addcarry_u32(&r[i], a[i], ~b[i], carry);
     }
 
     return carry;
 }
 
-/** @brief Returns true, if the long little-endian integer represents a negative
- *         number in two's complement.
- */
-static inline bool longint_is_negative(const uint32_t *a)
-{
-    // whether the most significant bit of the most significant byte is set
-    return (a[12 - 1] >> (sizeof(a[0]) * 8 - 1) != 0);
-}
-
 /** @brief adds a single 32-bit integer to a long little-endian integer.
  *  @return index of the most significant word which changed during the addition
  */
-uint longint_add_u32_mem(uint32_t *a, uint32_t summand)
+unsigned int bigint_add_u32_mem(uint32_t *a, uint32_t summand)
 {
     bool carry = addcarry_u32(&a[0], a[0], summand, false);
     if (carry == false) {
         return 0;
     }
 
-    for (uint i = 1; i < 12; i++) {
+    for (unsigned int i = 1; i < 12; i++) {
         carry = addcarry_u32(&a[i], a[i], 0, true);
         if (carry == false) {
             return i;
@@ -226,12 +167,12 @@ uint longint_add_u32_mem(uint32_t *a, uint32_t summand)
  *  @return the carry (one word) of the multiplication up to the byte which has
             the index specified in msb_index.
  */
-static uint32_t longint_mult_byte_mem(uint32_t *a, uint8_t factor,
-                                      uint ms_index)
+static uint32_t bigint_mult_byte_mem(uint32_t *a, uint8_t factor,
+                                     unsigned int ms_index)
 {
     uint32_t carry = 0;
 
-    for (uint i = 0; i <= ms_index; i++) {
+    for (unsigned int i = 0; i <= ms_index; i++) {
         const uint64_t v = (uint64_t)factor * a[i] + carry;
 
         carry = v >> 32;
@@ -244,11 +185,11 @@ static uint32_t longint_mult_byte_mem(uint32_t *a, uint8_t factor,
 /** @brief devides a long big-endian integer by a single 8-bit integer.
  *  @return remainder of the integer division.
  */
-static uint32_t longint_div_byte_mem(uint32_t *a, uint8_t divisor)
+static uint32_t bigint_div_byte_mem(uint32_t *a, uint8_t divisor)
 {
     uint32_t remainder = 0;
 
-    for (uint i = 12; i-- > 0;) {
+    for (unsigned int i = 12; i-- > 0;) {
         const uint64_t v = (uint64_t)0x100000000 * remainder + a[i];
 
         remainder = v % divisor;
@@ -258,18 +199,39 @@ static uint32_t longint_div_byte_mem(uint32_t *a, uint8_t divisor)
     return remainder;
 }
 
-/* --------------------- trits > bigint and back */
-void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
+/** @brief Changes number to the corresponding representation of the number
+ *         with the 242th trit set to 0.
+ * @return true, if the number was changed, false otherwise.
+ */
+static bool bigint_set_last_trit_zero(uint32_t *bigint)
 {
-    uint ms_index = 0;  // initialy there is no most significant word > 0
+    if (bigint_is_negative(bigint)) {
+        if (bigint_cmp(bigint, NEG_HALF_3) < 0) {
+            bigint_add(bigint, bigint, LAST_TRIT);
+            return true;
+        }
+    }
+    else {
+        if (bigint_cmp(bigint, HALF_3) > 0) {
+            bigint_sub(bigint, bigint, LAST_TRIT);
+            return true;
+        }
+    }
+    return false;
+}
+
+/* --------------------- trits > bigint and back */
+static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
+{
+    unsigned int ms_index = 0;  // initialy there is no most significant word >0
     os_memset(bigint, 0, 12 * sizeof(bigint[0]));
 
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
-    for (uint i = 242; i-- > 0;) {
+    for (unsigned int i = 242; i-- > 0;) {
         // convert to non-balanced ternary
         const uint8_t trit = trits[i] + 1;
 
-        const uint32_t carry = longint_mult_byte_mem(bigint, BASE, ms_index);
+        const uint32_t carry = bigint_mult_byte_mem(bigint, BASE, ms_index);
         if (carry > 0) {
             // if there is carry we need to use the next higher byte
             bigint[++ms_index] = carry;
@@ -280,42 +242,40 @@ void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
             continue;
         }
 
-        const uint last_changed_index = longint_add_u32_mem(bigint, trit);
+        const unsigned int last_changed_index =
+            bigint_add_u32_mem(bigint, trit);
         if (last_changed_index > ms_index) {
             ms_index = last_changed_index;
         }
     }
 
     // convert to balanced ternary using two's complement
-    if (longint_cmp(bigint, HALF_3) >= 0) {
-        longint_sub(bigint, bigint, HALF_3);
+    if (bigint_cmp(bigint, HALF_3) >= 0) {
+        bigint_sub(bigint, bigint, HALF_3);
     }
     else {
         // equivalent to bytes := ~(HALF_3 - bytes) + 1
-        longint_add(bigint, NEG_HALF_3, bigint);
+        bigint_add(bigint, NEG_HALF_3, bigint);
     }
 }
 
-void bigint_to_trits(const uint32_t *bigint, trit_t *trits)
+static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
 {
-    uint32_t tmp[12];
-    os_memcpy(tmp, bigint, sizeof(tmp));
-
     // the two's complement represention is only correct, if the number fits
     // into 48 bytes, i.e. has the 243th trit set to 0
-    bigint_set_last_trit_zero(tmp);
+    bigint_set_last_trit_zero(bigint);
 
     // convert to the (positive) number representing non-balanced ternary
-    if (longint_is_negative(tmp)) {
-        longint_sub(tmp, tmp, NEG_HALF_3);
+    if (bigint_is_negative(bigint)) {
+        bigint_sub(bigint, bigint, NEG_HALF_3);
     }
     else {
-        longint_add(tmp, tmp, HALF_3);
+        bigint_add(bigint, bigint, HALF_3);
     }
 
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
-    for (uint i = 0; i < 242; i++) {
-        const uint32_t rem = longint_div_byte_mem(tmp, BASE);
+    for (unsigned int i = 0; i < 242; i++) {
+        const uint32_t rem = bigint_div_byte_mem(bigint, BASE);
         trits[i] = rem - 1;  // convert back to balanced
     }
     // set the last trit to zero for consistency
@@ -323,20 +283,99 @@ void bigint_to_trits(const uint32_t *bigint, trit_t *trits)
 }
 /* --------------------- END trits > bigint */
 
-/* --------------------- misc functions */
-
-// used in kerl
-void bigint_set_last_trit_zero(uint32_t *bigint)
+/** @brief Converts bigint consisting of 12 words into an array of bytes.
+ *  It is represented using 48bytes in big-endiean, by reversing the order of
+ *  the words. The endianness of the host machine is taken into account.
+ */
+static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
 {
-    if (longint_is_negative(bigint)) {
-        if (longint_cmp(bigint, NEG_HALF_3) < 0) {
-            longint_add(bigint, bigint, LAST_TRIT);
-        }
-    }
-    else {
-        if (longint_cmp(bigint, HALF_3) > 0) {
-            longint_sub(bigint, bigint, LAST_TRIT);
-        }
+    uint32_t *p = (uint32_t *)bytes;
+
+    // reverse word order
+    for (unsigned int i = 12; i-- > 0;) {
+        // convert byte order if necessary
+        *p++ = os_swap_u32(bigint[i]);
     }
 }
-/* --------------------- END misc */
+
+/** @brief Converts an array of 48 bytes into a bigint consisting of 12 words.
+ *  The bigint is represented using 48bytes in big-endiean. The endianness of
+ * the host machine is taken into account.
+ */
+static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
+{
+    const uint32_t *p = (const uint32_t *)bytes;
+
+    // reverse word order
+    for (unsigned int i = 12; i-- > 0;) {
+        // convert byte order if necessary
+        bigint[i] = os_swap_u32(*p);
+        p++;
+    }
+}
+
+static inline void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
+{
+    uint32_t bigint[12];
+    trits_to_bigint(trits, bigint);
+    bigint_to_bytes(bigint, bytes);
+}
+
+void chars_to_bytes(const char *chars, unsigned char *bytes, size_t chars_len)
+{
+    for (unsigned int i = 0; i < chars_len / 81; i++) {
+        trit_t trits[243];
+        {
+            tryte_t trytes[81];
+            chars_to_trytes(chars + i * 81, trytes, 81);
+            trytes_to_trits(trytes, trits, 81);
+            // bigint can only handle 242 trits
+            trits[242] = 0;
+        }
+        trits_to_bytes(trits, bytes + i * 48);
+    }
+}
+
+static inline void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
+{
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    bigint_to_trits_mem(bigint, trits);
+}
+
+void bytes_to_chars(const unsigned char *bytes, char *chars, size_t bytes_len)
+{
+    for (unsigned int i = 0; i < bytes_len / 48; i++) {
+        tryte_t trytes[81];
+        {
+            trit_t trits[243];
+            bytes_to_trits(bytes + i * 48, trits);
+            trits_to_trytes(trits, trytes, 243);
+        }
+        trytes_to_chars(trytes, chars + i * 81, 81);
+    }
+
+    // make zero termnated
+    chars[(bytes_len / 48) * 81] = '\0';
+}
+
+void bytes_set_last_trit_zero(unsigned char *bytes)
+{
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    if (bigint_set_last_trit_zero(bigint)) {
+        bigint_to_bytes(bigint, bytes);
+    }
+}
+
+void bytes_add_u32_mem(unsigned char *bytes, uint32_t summand)
+{
+    if (summand > 0) {
+        uint32_t bigint[12];
+
+        bytes_to_bigint(bytes, bigint);
+        bigint_add_u32_mem(bigint, summand);
+        bigint_set_last_trit_zero(bigint);
+        bigint_to_bytes(bigint, bytes);
+    }
+}
