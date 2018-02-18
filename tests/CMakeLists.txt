@@ -23,7 +23,6 @@ add_definitions(
 
 add_library(iota-ledger SHARED
     "../src/vendor/iota/addresses.c"
-    "../src/vendor/iota/bigint.c"
     "../src/vendor/iota/conversion.c"
     "../src/vendor/iota/kerl.c"
     "../src/vendor/trezor-crypto/sha3.c"

@@ -17,13 +17,13 @@ static void seed_address(const char *seed_chars, uint32_t idx, uint8_t security,
         return;
     }
 
-    uint32_t seed_bigint[NUM_HASH_BIGINTS];
-    chars_to_bigints(seed_chars, seed_bigint, NUM_HASH_TRYTES);
+    unsigned char seed_bytes[NUM_HASH_BYTES];
+    chars_to_bytes(seed_chars, seed_bytes, NUM_HASH_TRYTES);
 
-    uint32_t address_bigint[NUM_HASH_BIGINTS];
-    get_public_addr(seed_bigint, idx, security, address_bigint);
+    unsigned char address_bytes[NUM_HASH_BYTES];
+    get_public_addr(seed_bytes, idx, security, address_bytes);
 
-    bigints_to_chars(address_bigint, address_chars, NUM_HASH_BIGINTS);
+    bytes_to_chars(address_bytes, address_chars, NUM_HASH_BYTES);
 }
 
 static void test_address(const char *seed, uint32_t idx, const char *expected)
