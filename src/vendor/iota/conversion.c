@@ -112,6 +112,13 @@ int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
 }
 /* --------------------- END trytes > chars */
 
+void chars_to_trits(const char *chars, trit_t *trits)
+{
+    tryte_t trytes[81];
+    chars_to_trytes(chars, trytes, 81);
+    trytes_to_trits(trytes, trits, 81);
+}
+
 /** @brief Returns true, if the long little-endian integer represents a negative
  *         number in two's complement.
  */
@@ -348,13 +355,10 @@ void chars_to_bytes(const char *chars, unsigned char *bytes, size_t chars_len)
 {
     for (unsigned int i = 0; i < chars_len / 81; i++) {
         trit_t trits[243];
-        {
-            tryte_t trytes[81];
-            chars_to_trytes(chars + i * 81, trytes, 81);
-            trytes_to_trits(trytes, trits, 81);
-            // bigint can only handle 242 trits
-            trits[242] = 0;
-        }
+        chars_to_trits(chars + i * 81, trits);
+        // bigint can only handle 242 trits
+        trits[242] = 0;
+
         trits_to_bytes(trits, bytes + i * 48);
     }
 }
