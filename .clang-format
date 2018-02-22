@@ -1,0 +1,33 @@
+Language: Cpp
+# BasedOnStyle
+
+TabWidth: 8
+UseTab: Never
+IndentWidth: 4
+ColumnLimit: 80
+MaxEmptyLinesToKeep: 2
+
+# Break after function definitions and else 
+BreakBeforeBraces: Stroustrup
+
+AlignAfterOpenBracket: true
+AlignEscapedNewlinesLeft: false
+AlignOperands: true
+AlwaysBreakAfterReturnType: None
+BinPackArguments: true
+BinPackParameters: true
+DerivePointerAlignment: false
+PointerAlignment: Right
+SortIncludes: false
+SpaceInEmptyParentheses: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Never allow single line statements
+AllowShortFunctionsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
