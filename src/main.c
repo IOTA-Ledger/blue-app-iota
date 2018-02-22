@@ -57,7 +57,9 @@ static void IOTA_main(void) {
     //initialize the UI
     initUImsg();
 
-
+    char addr_abbrv[12];
+    unsigned int tx_mask = 0;
+    uint32_t idx = 0;
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
     // goal is to retrieve APDU.
@@ -94,10 +96,67 @@ static void IOTA_main(void) {
 
                 // check second byte for instruction
                 switch (G_io_apdu_buffer[1]) {
+                  //upon return G_io_apdu_buffer is null terminated (though python
+                  //will still display garbage characters after the null termination)
+                  case INS_GET_MULTI_SEND: {
+                    uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
+                    unsigned char *in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
-                        //upon return G_io_apdu_buffer is null terminated (though python
-                        //will still display garbage characters after the null termination)
+                    tx_mask = tx_mask | G_io_apdu_buffer[APDU_TX_TYPE];
 
+                    if(G_io_apdu_buffer[APDU_TX_TYPE] == TX_ADDR) {
+                        if(len == 81) {
+                            // - Convert into abbreviated seeed (first 4 and last 4 characters)
+                            memcpy(&addr_abbrv[0], in, 4); // first 4 chars of seed
+                            memcpy(&addr_abbrv[4], "...", 3); // copy ...
+                            memcpy(&addr_abbrv[7], in+len-4, 4); //copy last 4 chars + null
+
+                            addr_abbrv[11] = '\0';
+                        }
+                        //we weren't given outgoing address, we were given input idx
+                        else {
+                            idx = str_to_int(in, len);
+                            unsigned char seed_bytes[48];
+                            get_seed(NULL /*TODO*/, 0, seed_bytes);
+
+                            unsigned char addr_bytes[48];
+                            {
+                                //set the security of our seed
+                                const uint8_t security = 2;
+                                const uint32_t idx = 0;
+
+                                get_public_addr(seed_bytes, idx, security, addr_bytes);
+                            }
+                            //convert the bigint address into character address
+                            char address[82];
+                            bytes_to_chars(addr_bytes, address, 48);
+
+                            // - Convert into abbreviated seeed (first 4 and last 4 characters)
+                            memcpy(&addr_abbrv[0], &address[0], 4); // first 4 chars of seed
+                            memcpy(&addr_abbrv[4], "...", 3); // copy ...
+                            memcpy(&addr_abbrv[7], &address[81-4], 4); //copy last 4 chars + null
+                            addr_abbrv[11] = '\0';
+                        }
+                    }
+
+
+                    // push the response onto the response buffer.
+                    os_memmove(G_io_apdu_buffer, addr_abbrv, 12);
+
+                    tx = 12;
+                    //Manually send back success 0x9000 at end
+                    G_io_apdu_buffer[tx++] = 0x90;
+                    G_io_apdu_buffer[tx++] = 0x00;
+
+                    //send back response
+                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
+
+                    flags |= IO_ASYNCH_REPLY;
+
+                    ui_display_debug(addr_abbrv, 12, TYPE_STR,
+                                     NULL, 0, 0,
+                                     &tx_mask, 10, TYPE_UINT);
+                } break;
 
                         /* ---------------------------------------------
                          -----------------------------------------------
@@ -300,23 +359,23 @@ static void IOTA_main(void) {
                          -----------------------------------------------
                          ----------------------------------------------- */
                     case INS_SIGN: {
-                        //check third byte for instruction type
-                        if ((G_io_apdu_buffer[2] != P1_MORE) &&
-                            (G_io_apdu_buffer[2] != P1_LAST)) {
-                            THROW(0x6A86);
-                        }
+                      //check third byte for instruction type
+                      /*if ((G_io_apdu_buffer[2] != P1_MORE) &&
+                          (G_io_apdu_buffer[2] != P1_LAST)) {
+                          THROW(0x6A86);
+                      }*/
 
-                        //if first part reset hash and all other tmp var's
-                        if (hashTainted) {
-                            cx_sha256_init(&hash);
-                            hashTainted = 0;
-                        }
+                      //if first part reset hash and all other tmp var's
+                      if (hashTainted) {
+                          cx_sha256_init(&hash);
+                          hashTainted = 0;
+                      }
 
-                        // Position 5 is the start of the real data, pos 4 is
-                        // the length of the data, flag off end with nullchar
-                        G_io_apdu_buffer[5 + G_io_apdu_buffer[4]] = '\0';
+                      // Position 5 is the start of the real data, pos 4 is
+                      // the length of the data, flag off end with nullchar
+                      G_io_apdu_buffer[5 + G_io_apdu_buffer[4]] = '\0';
 
-                        flags |= IO_ASYNCH_REPLY;
+                      flags |= IO_ASYNCH_REPLY;
                     } break;
 
                     case 0xFF: // return to dashboard
