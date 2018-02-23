@@ -1,11 +1,11 @@
 #ifndef AUX_H
 #define AUX_H
 
-#include "vendor/iota/iota_types.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "iota/iota_types.h"
 
 #define TYPE_INT 1
 #define TYPE_UINT 2
