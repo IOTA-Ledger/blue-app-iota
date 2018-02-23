@@ -253,7 +253,7 @@ static bool bigint_set_last_trit_zero(uint32_t *bigint)
 /* --------------------- trits > bigint and back */
 static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
 {
-    unsigned int ms_index = 0;  // initialy there is no most significant word >0
+    unsigned int ms_index = 0; // initialy there is no most significant word >0
     os_memset(bigint, 0, 12 * sizeof(bigint[0]));
 
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
@@ -306,10 +306,37 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
     for (unsigned int i = 0; i < 242; i++) {
         const uint32_t rem = bigint_div_byte_mem(bigint, BASE);
-        trits[i] = rem - 1;  // convert back to balanced
+        trits[i] = rem - 1; // convert back to balanced
     }
     // set the last trit to zero for consistency
     trits[242] = 0;
+}
+
+bool int64_to_trits(int64_t value, trit_t *trits, size_t num_trits)
+{
+    const bool is_negative = value < 0;
+    if (is_negative) {
+        value = -value;
+    }
+
+    os_memset(trits, 0, num_trits);
+
+    for (unsigned int i = 0; i < num_trits; i++) {
+        if (value == 0) {
+            return false;
+        }
+
+        int rem = value % BASE;
+        value = value / BASE;
+        if (rem > 1) {
+            rem = -1;
+            value += 1;
+        }
+
+        trits[i] = is_negative ? -rem : rem;
+    }
+
+    return value != 0;
 }
 /* --------------------- END trits > bigint */
 

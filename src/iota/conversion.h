@@ -9,6 +9,15 @@
 #include <stdint.h>
 #include "iota_types.h"
 
+/** @brief Converts a single signed integer into its ternary representation.
+ *  @param value signed integer to convert
+ *  @param trits target trit array
+ *  @param num_trits number of trits to convert
+ *  @return true, if an overflow occured and the given integer could not be
+            completely represented with this number of trits, false otherwise.
+ */
+bool int64_to_trits(int64_t value, trit_t *trits, size_t num_trits);
+
 /** @brief Converts a balanced ternary number in base-27 encoding into a
  *         big-enadian binary integer.
  *  The input must consist of multiples of 81-char chunks, each chunk is
