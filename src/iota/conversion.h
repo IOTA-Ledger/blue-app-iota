@@ -1,5 +1,5 @@
 /** @file conversion.h
- *  @brief Function for binary-ternary conversion.
+ *  @brief Function for ternary related conversions.
  */
 
 #ifndef CONVERSION_H
@@ -25,6 +25,14 @@ void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len);
             completely represented with this number of trits, false otherwise.
  */
 bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
+
+/** @brief Converts a balanced ternary number into a big-enadian binary integer.
+ *  The input must consist of exactly one 243-trit chunk and is converted into
+ *  one big-endian 48-byte integer.
+ *  @param trits trit array consisting of exectly 243 trits
+ *  @param bytes target byte array
+ */
+void trits_to_bytes(const trit_t *trits, unsigned char *bytes);
 
 /** @brief Converts a balanced ternary number in base-27 encoding into a
  *         big-enadian binary integer.
