@@ -64,10 +64,10 @@ static void IOTA_main(void)
 
     uint32_t total_bal = 0;
     uint32_t total_send = 0;
-    
+
     uint8_t our_last = 0;
     uint8_t real_last = 0;
-    
+
     bool at_end = false;
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
@@ -175,58 +175,57 @@ static void IOTA_main(void)
                     } break;
                     /* -------------------- TX TAG ------------------- */
                     case TX_TAG: {
-                        
+
                     } break;
                     /* -------------------- TX TIME ------------------- */
                     case TX_TIME: {
-                        
+
                     } break;
                     /* -------------------- TX CUR ------------------- */
                     case TX_CUR: {
                         uint32_t c = str_to_int(in, len);
-                        
-                        //TODO: handle incrementing cur_idx in tx_mask == FULL
+
+                        // TODO: handle incrementing cur_idx in tx_mask == FULL
                         our_last++;
-                        
+
                     } break;
                     /* -------------------- TX LAST ------------------- */
                     case TX_LAST: {
                         uint32_t l = str_to_int(in, len);
-                        
-                        //record the last index
-                        if(real_last == 0)
+
+                        // record the last index
+                        if (real_last == 0)
                             real_last = (uint8_t)l;
                         else {
-                            //if the last index ever differs, throw exception
-                            if(real_last != l)
+                            // if the last index ever differs, throw exception
+                            if (real_last != l)
                                 THROW(LAST_IDX_ERROR);
                         }
                     } break;
-                    
+
                     // Unknown TX type
                     default:
                         THROW(UNKNOWN_TX_TYPE);
                         break;
                     }
-                    
-                    //entire bundle is complete
-                    if(G_io_apdu_buffer[APDU_MORE] == TX_END) {
-                        //verify the last transaction is fully created
-                        if(tx_mask != TX_FULL)
+
+                    // entire bundle is complete
+                    if (G_io_apdu_buffer[APDU_MORE] == TX_END) {
+                        // verify the last transaction is fully created
+                        if (tx_mask != TX_FULL)
                             THROW(INCOMPLETE_TX);
-                        
-                        //if cur is 1 less than last, we create final with
-                        //our own change address
-                        if(our_last == real_last-1)
+
+                        // if cur is 1 less than last, we create final with
+                        // our own change address
+                        if (our_last == real_last - 1)
                             total_bal = 123;
-                        
+
                         at_end = true;
                     }
-                    
-                    //tx is complete, but bundle is not, reset mask for next tx
-                    if (tx_mask == TX_FULL)
-                    {
-                        //reset tx_mask
+
+                    // tx is complete, but bundle is not, reset mask for next tx
+                    if (tx_mask == TX_FULL) {
+                        // reset tx_mask
                         tx_mask = 0;
                     }
 
@@ -242,15 +241,12 @@ static void IOTA_main(void)
                     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
 
                     flags |= IO_ASYNCH_REPLY;
-                    
-                    if(at_end)
-                    {
+
+                    if (at_end) {
                         ui_gen_warning(total_bal, total_send, addr_abbrv);
                     }
-                    else
-                    {
-                        ui_display_debug(&total_send, 10, TYPE_UINT,
-                                         NULL, 0, 0,
+                    else {
+                        ui_display_debug(&total_send, 10, TYPE_UINT, NULL, 0, 0,
                                          &total_bal, 10, TYPE_UINT);
                     }
                 } break;

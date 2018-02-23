@@ -236,28 +236,25 @@ void ui_gen_warning(uint64_t b, uint64_t o, const char *a)
     out = o;
     memcpy(addr, a, 12);
     ui_state = 0;
-    
+
     ui_continue_warning();
 }
 
 void ui_continue_warning()
 {
     write_display("&is_spicy", 20, TYPE_STR, TOP);
-    
-    if(ui_state == 0)
-    {
+
+    if (ui_state == 0) {
         write_display("Total Balance:", 20, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
         write_display(&bal, 20, TYPE_UINT, BOT);
     }
-    else if(ui_state == 1)
-    {
+    else if (ui_state == 1) {
         write_display("Send Amt:", 20, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
         write_display(&out, 20, TYPE_UINT, BOT);
     }
-    else if(ui_state == 2)
-    {
+    else if (ui_state == 2) {
         write_display("Dest Address:", 20, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
         write_display(addr, 20, TYPE_STR, BOT);
@@ -265,7 +262,7 @@ void ui_continue_warning()
     else {
         write_display("NO_UI", 20, TYPE_STR, BOT);
     }
-    
+
     UX_DISPLAY(bagl_ui_nanos_screen, NULL);
 }
 
@@ -293,8 +290,8 @@ unsigned int bagl_ui_nanos_screen_button(unsigned int button_mask,
     case BUTTON_EVT_RELEASED | BUTTON_RIGHT: // EXIT
         ui_state++;
         ui_continue_warning();
-            
-        if(ui_state == 3)
+
+        if (ui_state == 3)
             io_seproxyhal_touch_exit(NULL);
         break;
     }
