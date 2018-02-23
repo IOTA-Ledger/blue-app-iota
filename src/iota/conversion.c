@@ -57,9 +57,9 @@ static const char tryte_to_char_mapping[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
 /* --------------------- trits > trytes and back */
 // used for bytes to chars and back
 int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
-                    uint32_t tryte_len)
+                    unsigned int tryte_len)
 {
-    for (uint32_t i = 0; i < tryte_len; i++) {
+    for (unsigned int i = 0; i < tryte_len; i++) {
         int8_t idx = (int8_t)trytes_in[i] + 13;
         trits_out[i * 3 + 0] = trits_mapping[idx][0];
         trits_out[i * 3 + 1] = trits_mapping[idx][1];
@@ -69,14 +69,14 @@ int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
 }
 
 int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
-                    uint32_t trit_len)
+                    unsigned int trit_len)
 {
     if (trit_len % 3 != 0) {
         return -1;
     }
-    uint32_t tryte_len = trit_len / 3;
+    unsigned int tryte_len = trit_len / 3;
 
-    for (uint32_t i = 0; i < tryte_len; i++) {
+    for (unsigned int i = 0; i < tryte_len; i++) {
         trytes_out[i] = trits_in[i * 3 + 0] + trits_in[i * 3 + 1] * 3 +
                         trits_in[i * 3 + 2] * 9;
     }
@@ -86,9 +86,10 @@ int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
 
 /* --------------------- trytes > chars and back */
 // used for bytes to chars and back
-int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len)
+int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
+                    unsigned int len)
 {
-    for (uint8_t i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len; i++) {
         if (chars_in[i] == '9') {
             trytes_out[i] = 0;
         }
@@ -102,9 +103,10 @@ int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len)
     return 0;
 }
 
-int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
+int trytes_to_chars(const tryte_t trytes_in[], char chars_out[],
+                    unsigned int len)
 {
-    for (uint16_t i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len; i++) {
         chars_out[i] = tryte_to_char_mapping[trytes_in[i] + 13];
     }
 
@@ -112,11 +114,11 @@ int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
 }
 /* --------------------- END trytes > chars */
 
-void chars_to_trits(const char *chars, trit_t *trits)
+void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
 {
-    tryte_t trytes[81];
-    chars_to_trytes(chars, trytes, 81);
-    trytes_to_trits(trytes, trits, 81);
+    tryte_t trytes[chars_len];
+    chars_to_trytes(chars, trytes, chars_len);
+    trytes_to_trits(trytes, trits, chars_len);
 }
 
 /** @brief Returns true, if the long little-endian integer represents a negative
@@ -312,7 +314,7 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     trits[242] = 0;
 }
 
-bool int64_to_trits(int64_t value, trit_t *trits, size_t num_trits)
+bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits)
 {
     const bool is_negative = value < 0;
     if (is_negative) {
@@ -378,11 +380,12 @@ static inline void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
     bigint_to_bytes(bigint, bytes);
 }
 
-void chars_to_bytes(const char *chars, unsigned char *bytes, size_t chars_len)
+void chars_to_bytes(const char *chars, unsigned char *bytes,
+                    unsigned int chars_len)
 {
     for (unsigned int i = 0; i < chars_len / 81; i++) {
         trit_t trits[243];
-        chars_to_trits(chars + i * 81, trits);
+        chars_to_trits(chars + i * 81, trits, 81);
         // bigint can only handle 242 trits
         trits[242] = 0;
 
@@ -397,7 +400,8 @@ static inline void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
     bigint_to_trits_mem(bigint, trits);
 }
 
-void bytes_to_chars(const unsigned char *bytes, char *chars, size_t bytes_len)
+void bytes_to_chars(const unsigned char *bytes, char *chars,
+                    unsigned int bytes_len)
 {
     for (unsigned int i = 0; i < bytes_len / 48; i++) {
         tryte_t trytes[81];
