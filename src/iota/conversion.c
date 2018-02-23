@@ -373,7 +373,7 @@ static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
     }
 }
 
-static inline void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
+void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
 {
     uint32_t bigint[12];
     trits_to_bigint(trits, bigint);
