@@ -30,6 +30,7 @@ void ui_idle(void);
 void ui_display_debug(void *o, uint8_t sz, uint8_t t,
                       void *o2, uint8_t sz2, uint8_t t2,
                       void *o3, uint8_t sz3, uint8_t t3);
+void ui_gen_warning(uint64_t bal, uint64_t out, const char *addr);
 
 #endif // UI_H
 

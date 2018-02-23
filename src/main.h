@@ -28,6 +28,11 @@
 
 #define CLA 0x80
 
+// Error codes
+#define INCOMPLETE_TX 0x6D18
+#define UNKNOWN_TX_TYPE 0x6D00
+#define LAST_IDX_ERROR 0x6D04
+
 // IOTA-Related APIs
 #define INS_GET_PUBKEY 0x01
 #define INS_BAD_PUBKEY 0x02

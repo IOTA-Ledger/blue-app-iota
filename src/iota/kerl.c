@@ -5,7 +5,10 @@
 // number of bytes in one keccak hash
 #define NUM_HASH_BYTES 48
 
-void kerl_initialize(cx_sha3_t *sha3) { cx_keccak_init(sha3, 384); }
+void kerl_initialize(cx_sha3_t *sha3)
+{
+    cx_keccak_init(sha3, 384);
+}
 
 void kerl_absorb_bytes(cx_sha3_t *sha3, const unsigned char *bytes,
                        unsigned int len)

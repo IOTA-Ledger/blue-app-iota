@@ -46,33 +46,43 @@ start_time = time.time()
 #publicKey = dongle.exchange(bytes(("80010000FF"+bipp44_path).decode('hex')))
 #80 20 01
 #address
-#publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-#    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ"));
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
+    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ"));
 
-publicKey = dongle.exchange(bytes("8020000110".decode('hex') +
-    "8971"));
-
-print str(publicKey);
+#publicKey = dongle.exchange(bytes("8020000110".decode('hex') +
+#    "8971"));
+print "Addr: " + str(publicKey);
 #value
-time.sleep(1);
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "VALUE"));
-print str(publicKey);
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-1489"));
+print "Val: " + str(publicKey);
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-48"));
+print "Val: " + str(publicKey);
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "80"));
+print "Val: " + str(publicKey);
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-12"));
+print "Val: " + str(publicKey);
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "14"));
+print "Val: " + str(publicKey);
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "18"));
+print "Val: " + str(publicKey);
 #tag
-time.sleep(1);
 publicKey = dongle.exchange(bytes("80200004FF".decode('hex') + "TAG"));
-print str(publicKey);
+print "Tag: " + str(publicKey);
 #time
-time.sleep(1);
 publicKey = dongle.exchange(bytes("80200008FF".decode('hex') + "TIME"));
-print str(publicKey);
+print "Time: " + str(publicKey);
 #cur
-time.sleep(1);
-publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "CUR"));
-print str(publicKey);
+publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "3"));
+print "Cur: " + str(publicKey);
 #last
+publicKey = dongle.exchange(bytes("80200120FF".decode('hex') + "4"));
+print "Last: " + str(publicKey);
 time.sleep(1);
-publicKey = dongle.exchange(bytes("80200120FF".decode('hex') + "LAST"));
-print str(publicKey);
 
 
 elapsed_time = time.time() - start_time
