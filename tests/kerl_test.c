@@ -7,8 +7,8 @@
 
 #include "hash_file.h"
 #include "test_constants.h"
-#include "vendor/iota/conversion.h"
-#include "vendor/iota/kerl.h"
+#include "iota/conversion.h"
+#include "iota/kerl.h"
 
 static void kerl(const char *input, const size_t squeeze_num_trits,
                  char *output)
@@ -41,7 +41,7 @@ static void test_kerl(const char *input, const size_t length,
 
 static void test_peter_seed(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     test_kerl(
         "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETER"
@@ -53,7 +53,7 @@ static void test_peter_seed(void **state)
 
 static void test_243_neg_one(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     test_kerl(
         "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
@@ -65,7 +65,7 @@ static void test_243_neg_one(void **state)
 
 static void test_242_neg_one(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     test_kerl(
         "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
@@ -77,7 +77,7 @@ static void test_242_neg_one(void **state)
 
 static void test_input_with_243trits(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     test_kerl(
         "EMIDYNHBWMBCXVDEFOFWINXTERALUKYYPPHKP9JJFGJEIUY9MUDVNFZHMMWZUYUSWAIOWE"
@@ -89,7 +89,7 @@ static void test_input_with_243trits(void **state)
 
 static void test_output_with_more_than_243trits(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     test_kerl(
         "9MIDYNHBWMBCXVDEFOFWINXTERALUKYYPPHKP9JJFGJEIUY9MUDVNFZHMMWZUYUSWAIOWE"
@@ -102,7 +102,7 @@ static void test_output_with_more_than_243trits(void **state)
 
 static void test_input_output_with_more_than_243trits(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     test_kerl(
         "G9JYBOMPUXHYHKSNRNMMSSZCSHOFYOYNZRSZMAAYWDYEIMVVOGKPJBVBM9TDPULSFUNMTV"
@@ -116,7 +116,7 @@ static void test_input_output_with_more_than_243trits(void **state)
 
 static void test_generate_trytes_and_hashes(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     void test(char *hashes[])
     {
@@ -128,7 +128,7 @@ static void test_generate_trytes_and_hashes(void **state)
 
 static void test_generate_multi_trytes_and_hash(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     void test(char *hashes[])
     {
@@ -140,7 +140,7 @@ static void test_generate_multi_trytes_and_hash(void **state)
 
 static void test_generate_trytes_and_multi_squeeze(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     void test(char *hashes[])
     {

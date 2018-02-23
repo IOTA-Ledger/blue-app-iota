@@ -4,8 +4,8 @@
 #include <cmocka.h>
 #include "hash_file.h"
 #include "test_constants.h"
-#include "vendor/iota/addresses.h"
-#include "vendor/iota/conversion.h"
+#include "iota/addresses.h"
+#include "iota/conversion.h"
 
 #define MAX_SECURITY 3
 
@@ -105,7 +105,7 @@ static void test_243trits_overflow_seed(void **state)
 
 static void test_n_addresses_for_seed(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     void test(char *hashes[])
     {

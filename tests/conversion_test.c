@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <cmocka.h>
 #include "test_constants.h"
-#include "vendor/iota/conversion.h"
+#include "iota/conversion.h"
 
 #define NUM_RANDOM_TESTS 10000
 
@@ -38,7 +38,7 @@ static void assert_bytes_equal(unsigned char *actual, unsigned char *expected)
 
 static void test_random_bytes_via_chars(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     srand(2);
     for (uint i = 0; i < NUM_RANDOM_TESTS; i++) {
@@ -80,7 +80,7 @@ static void test_chars_via_bytes(const char *input)
 
 static void test_all_zero(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     static const char ZERO_CHARS[NUM_HASH_TRYTES] =
         "9999999999999999999999999999999999999999999999999999999999999999999999"
@@ -100,7 +100,7 @@ static void test_all_zero(void **state)
 
 static void test_all_neg_one(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     static const char NEG_ONE_CHARS[NUM_HASH_TRYTES] =
         "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
@@ -111,7 +111,7 @@ static void test_all_neg_one(void **state)
 
 static void test_random_chars_via_bytes(void **state)
 {
-    (void)state;  // unused
+    (void)state; // unused
 
     srand(2);
     for (uint i = 0; i < NUM_RANDOM_TESTS; i++) {

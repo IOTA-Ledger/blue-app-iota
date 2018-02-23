@@ -10,7 +10,8 @@ include_directories(${CMOCKA_INCLUDE_DIR})
 
 include_directories(
     "../src"
-    "../src/vendor/trezor-crypto"
+    "../src/iota"
+    "../src/keccak"
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow")
@@ -22,10 +23,10 @@ add_definitions(
 )
 
 add_library(iota-ledger SHARED
-    "../src/vendor/iota/addresses.c"
-    "../src/vendor/iota/conversion.c"
-    "../src/vendor/iota/kerl.c"
-    "../src/vendor/trezor-crypto/sha3.c"
+    "../src/iota/addresses.c"
+    "../src/iota/conversion.c"
+    "../src/iota/kerl.c"
+    "../src/keccak/sha3.c"
     "../src/aux.c"
 )
 
