@@ -8,6 +8,62 @@
 
 #define NUM_RANDOM_TESTS 10000
 
+static void test_int64_to_trits_zero(void **state)
+{
+    (void)state; // unused
+
+    static const int64_t input_value = 0;
+    static const trit_t expected_trits[42] = {0};
+
+    trit_t trits_out[42];
+    bool result = int64_to_trits(input_value, trits_out, 42);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 42);
+}
+
+static void test_int64_to_trits_one(void **state)
+{
+    (void)state; // unused
+
+    static const int64_t input_value = 6078832729528464400;
+    trit_t expected_trits[40];
+    memset(expected_trits, 1, 40);
+
+    trit_t trits_out[40];
+    bool result = int64_to_trits(input_value, trits_out, 40);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 40);
+}
+
+static void test_int64_to_trits_neg_one(void **state)
+{
+    (void)state; // unused
+
+    static const int64_t input_value = -6078832729528464400;
+    trit_t expected_trits[40];
+    memset(expected_trits, -1, 40);
+
+    trit_t trits_out[40];
+    bool result = int64_to_trits(input_value, trits_out, 40);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 40);
+}
+
+static void test_int64_to_trits_overflow(void **state)
+{
+    (void)state; // unused
+
+    static const int64_t input_value = 6078832729528464401;
+
+    trit_t trits_out[40];
+    bool result = int64_to_trits(input_value, trits_out, 40);
+
+    assert_true(result);
+}
+
 static void random_bytes(unsigned char *bytes)
 {
     for (int i = 0; i < NUM_HASH_BYTES; i++) {
@@ -125,7 +181,12 @@ static void test_random_chars_via_bytes(void **state)
 int main(void)
 {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_all_zero), cmocka_unit_test(test_all_neg_one),
+        cmocka_unit_test(test_int64_to_trits_zero),
+        cmocka_unit_test(test_int64_to_trits_one),
+        cmocka_unit_test(test_int64_to_trits_neg_one),
+        cmocka_unit_test(test_int64_to_trits_overflow),
+        cmocka_unit_test(test_all_zero),
+        cmocka_unit_test(test_all_neg_one),
         cmocka_unit_test(test_random_bytes_via_chars),
         cmocka_unit_test(test_random_chars_via_bytes)};
 
