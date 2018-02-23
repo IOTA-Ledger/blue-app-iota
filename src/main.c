@@ -21,10 +21,10 @@
 
 
 // iota-related stuff
-#include "vendor/iota/kerl.h"
-#include "vendor/iota/conversion.h"
-#include "vendor/iota/addresses.h"
-#include "vendor/iota/transaction.h"
+#include "iota/kerl.h"
+#include "iota/conversion.h"
+#include "iota/addresses.h"
+#include "iota/transaction.h"
 
 cx_sha256_t hash;
 unsigned char hashTainted;     // notification to restart the hash
