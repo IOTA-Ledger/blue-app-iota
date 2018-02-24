@@ -78,11 +78,11 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
 
         // save as much memory as humanly possible
         if (i == 0)
-            kerl_squeeze_chunk(&digest_sha, digest);
+            kerl_squeeze_final_chunk(&digest_sha, digest);
         else if (i == 1) // temp store
-            kerl_squeeze_chunk(&digest_sha, address_bytes);
+            kerl_squeeze_final_chunk(&digest_sha, address_bytes);
         else // the last chunk can go into key_f (won't need key_f again)
-            kerl_squeeze_chunk(&digest_sha, key_f);
+            kerl_squeeze_final_chunk(&digest_sha, key_f);
 
         // reset digest sha for next digest
         kerl_initialize(&digest_sha);
