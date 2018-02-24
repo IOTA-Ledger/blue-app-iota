@@ -52,17 +52,12 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
     // init private key sha, digest sha
     init_shas(seed_bytes, idx, &key_sha, &digest_sha);
 
+    // buffer for the digests of each security level
+    unsigned char digest[48 * security];
 
-    // only store a single fragment of the private key at a time and use it to
-    // completion  before moving onto next fragment to store memory
-    unsigned char key_f[48];
-
-    // ---- If we limit the security level to 2 (for whatever reason)
-    // we can cut out 48 more bytes with digest[48]
-
-    // max security is 3, so digest can store first chunk, address_bytes can
-    // store second, and key_f can store third
-    unsigned char digest[48];
+    // only store a single fragment of the private key at a time
+    // use last chunk of buffer, as this is only used after the key is generated
+    unsigned char *key_f = digest + 48 * (security - 1);
 
     for (uint8_t i = 0; i < security; i++) {
         for (uint8_t j = 0; j < 27; j++) {
@@ -75,29 +70,14 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
             // our key_f
             kerl_absorb_cheat(&key_sha, key_f);
         }
-
-        // save as much memory as humanly possible
-        if (i == 0)
-            kerl_squeeze_final_chunk(&digest_sha, digest);
-        else if (i == 1) // temp store
-            kerl_squeeze_final_chunk(&digest_sha, address_bytes);
-        else // the last chunk can go into key_f (won't need key_f again)
-            kerl_squeeze_final_chunk(&digest_sha, key_f);
+        kerl_squeeze_final_chunk(&digest_sha, digest + 48 * i);
 
         // reset digest sha for next digest
         kerl_initialize(&digest_sha);
     }
 
-    // digest_sha will be reused - and is already reinitialized for final
-    // address go through and absorb chunks from each different piece of memory
-    for (uint8_t i = 0; i < security; i++) {
-        if (i == 0)
-            kerl_absorb_chunk(&digest_sha, digest);
-        else if (i == 1)
-            kerl_absorb_chunk(&digest_sha, address_bytes);
-        else
-            kerl_absorb_chunk(&digest_sha, key_f);
-    }
+    // absorb the digest for each security
+    kerl_absorb_bytes(&digest_sha, digest, 48 * security);
 
     // one final squeeze for address
     kerl_squeeze_final_chunk(&digest_sha, address_bytes);
