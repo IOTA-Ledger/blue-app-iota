@@ -55,7 +55,8 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
 
     for (uint8_t i = 0; i < security; i++) {
         for (uint8_t j = 0; j < 27; j++) {
-            unsigned char state[48];
+            // use address output array as a temp Kerl state storage
+            unsigned char *state = address_bytes;
 
             // the state takes only 48bytes and allows us to reuse key_sha
             kerl_state_squeeze_chunk(&key_sha, state, key_f);
