@@ -70,7 +70,7 @@ void kerl_absorb_cheat(cx_sha3_t *sha3, unsigned char *bytes_in)
 {
     // flip bytes for multiple squeeze
     flip_hash_bytes(bytes_in);
-    
+
     kerl_initialize(sha3);
     kerl_absorb_chunk(sha3, bytes_in);
 }

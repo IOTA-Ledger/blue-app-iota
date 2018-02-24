@@ -28,7 +28,7 @@ void addEntry(cx_sha3_t *bundle_sha, unsigned char *address_bytes,
 }
 
 static void normalize_hash(const unsigned char *hash_bytes,
-                                unsigned char *normalize_hash)
+                           unsigned char *normalize_hash)
 {
     // TODO
     os_memcpy(hash_bytes, normalize_hash, 48);
