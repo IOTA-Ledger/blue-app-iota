@@ -57,18 +57,23 @@ static void IOTA_main(void)
     initUImsg();
 
     char addr_abbrv[12];
-    unsigned int tx_mask = 0;
+    unsigned char tx_mask = 0;
 
-    char bundle_address[82];
-    uint32_t bundle_idx = 0;
+    //bundleBytes holds all of the bundle information in byte format
+    unsigned char *bundle_bytes = NULL;
+    
+    //we don't care about address
+    char tx_address[82];
+    char tx_tag[27];
+    uint32_t tx_idx = 0;
 
     uint32_t total_bal = 0;
-    uint32_t total_send = 0;
+    uint32_t send_amt = 0;
 
-    uint8_t our_last = 0;
-    uint8_t real_last = 0;
+    uint8_t last_index = 0;
+    uint8_t our_index = 0;
 
-    bool at_end = false;
+    bool broadcast_complete = false;
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
     // goal is to retrieve APDU.
@@ -112,29 +117,26 @@ static void IOTA_main(void)
                 // termination)
                 case INS_GET_MULTI_SEND: {
                     uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
-                    unsigned char *in = G_io_apdu_buffer + APDU_HEADER_LENGTH;
+                    unsigned char *msg = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
                     tx_mask = tx_mask | G_io_apdu_buffer[APDU_TX_TYPE];
+                    
+                    //make sure the very first piece of information we receive is last idx
+                    if(G_io_apdu_buffer[APDU_TX_TYPE] != TX_LAST && last_index == 0)
+                        THROW(LAST_IDX_ERROR);
 
                     switch (G_io_apdu_buffer[APDU_TX_TYPE]) {
                     /* --------------- TX ADDR ------------------ */
                     case TX_ADDR: {
                         // if length is 81, we are provided an outgoing address
                         if (len == 81) {
-                            // - Convert into abbreviated seeed (first 4 and
-                            // last 4 characters)
-                            memcpy(&addr_abbrv[0], in,
-                                   4); // first 4 chars of seed
-                            memcpy(&addr_abbrv[4], "...", 3); // copy ...
-                            memcpy(&addr_abbrv[7], in + len - 4,
-                                   4); // copy last 4 chars + null
-
-                            addr_abbrv[11] = '\0';
+                            //convert address char into address bytes
+                            //chars_to_bytes(msg, bundle_bytes+(our_index * 48*2), 81);
                         }
                         // we weren't given outgoing address, we were given
                         // input idx
                         else {
-                            bundle_idx = str_to_int(in, len);
+                            tx_idx = str_to_int(msg, len);
                             unsigned char seed_bytes[48];
                             get_seed(NULL /*TODO*/, 0, seed_bytes);
 
@@ -149,14 +151,14 @@ static void IOTA_main(void)
                             }
                             // convert the bigint address into character address
                             char address[82];
-                            bytes_to_chars(addr_bytes, address, 48);
+                            bytes_to_chars(addr_bytes, tx_address, 48);
 
                             // - Convert into abbreviated seeed (first 4 and
                             // last 4 characters)
-                            memcpy(&addr_abbrv[0], &address[0],
+                            memcpy(&addr_abbrv[0], &tx_address[0],
                                    4); // first 4 chars of seed
                             memcpy(&addr_abbrv[4], "...", 3); // copy ...
-                            memcpy(&addr_abbrv[7], &address[81 - 4],
+                            memcpy(&addr_abbrv[7], &tx_address[81 - 4],
                                    4); // copy last 4 chars + null
                             addr_abbrv[11] = '\0';
                         }
@@ -165,12 +167,12 @@ static void IOTA_main(void)
                     case TX_VAL: {
                         // if it's a negative amount coming in, add it as our
                         // balance
-                        if (in[0] == '-') {
-                            total_bal += str_to_int(in + 1, len);
+                        if (msg[0] == '-') {
+                            total_bal += str_to_int(msg + 1, len);
                         }
                         // if positive it is outgoing balance
                         else {
-                            total_send += str_to_int(in, len);
+                            send_amt += str_to_int(msg, len);
                         }
                     } break;
                     /* -------------------- TX TAG ------------------- */
@@ -183,24 +185,29 @@ static void IOTA_main(void)
                     } break;
                     /* -------------------- TX CUR ------------------- */
                     case TX_CUR: {
-                        uint32_t c = str_to_int(in, len);
+                        uint32_t c = str_to_int(msg, len);
 
                         // TODO: handle incrementing cur_idx in tx_mask == FULL
-                        our_last++;
+                        our_index++;
 
                     } break;
                     /* -------------------- TX LAST ------------------- */
                     case TX_LAST: {
-                        uint32_t l = str_to_int(in, len);
-
-                        // record the last index
-                        if (real_last == 0)
-                            real_last = (uint8_t)l;
-                        else {
-                            // if the last index ever differs, throw exception
-                            if (real_last != l)
-                                THROW(LAST_IDX_ERROR);
+                        //make sure we haven't received a last_index before
+                        if(last_index != 0)
+                            THROW(LAST_IDX_ERROR);
+                        
+                        last_index = str_to_int(msg, len);
+                        //2 is minimum (indexed from 0, that means 2 input 1 output, no change)
+                        if(last_index < 2) {
+                            last_index = 0;
+                            THROW(LAST_IDX_ERROR);
                         }
+                        
+                        //allocate the space required for all of these tx's
+                        //unsigned char allBytes[last_index*2*48];
+                        //bundle_bytes = allBytes;
+                        //bundle_bytes[last_index*2*48] = 'T';
                     } break;
 
                     // Unknown TX type
@@ -215,24 +222,28 @@ static void IOTA_main(void)
                         if (tx_mask != TX_FULL)
                             THROW(INCOMPLETE_TX);
 
-                        // if cur is 1 less than last, we create final with
+                        // if our index is 1 less than last, we create final with
                         // our own change address
-                        if (our_last == real_last - 1)
+                        if (our_index == last_index - 1)
                             total_bal = 123;
 
-                        at_end = true;
+                        broadcast_complete = true;
                     }
 
                     // tx is complete, but bundle is not, reset mask for next tx
                     if (tx_mask == TX_FULL) {
                         // reset tx_mask
                         tx_mask = 0;
+                        
+                        //commented out for testing purposes, incrementing idx should
+                        //be handled here
+                        //our_index++;
                     }
 
                     // push the response onto the response buffer.
-                    os_memmove(G_io_apdu_buffer, addr_abbrv, 12);
+                    os_memmove(G_io_apdu_buffer, tx_address, 82);
 
-                    tx = 12;
+                    tx = 82;
                     // Manually send back success 0x9000 at end
                     G_io_apdu_buffer[tx++] = 0x90;
                     G_io_apdu_buffer[tx++] = 0x00;
@@ -242,11 +253,12 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
 
-                    if (at_end) {
-                        ui_gen_warning(total_bal, total_send, addr_abbrv);
+                    if (broadcast_complete) {
+                        ui_gen_warning(total_bal, send_amt, addr_abbrv);
                     }
                     else {
-                        ui_display_debug(&total_send, 10, TYPE_UINT, NULL, 0, 0,
+                        ui_display_debug(&send_amt, 10, TYPE_UINT,
+                                         NULL, 0, 0,
                                          &total_bal, 10, TYPE_UINT);
                     }
                 } break;

@@ -1,7 +1,7 @@
 #include "conversion.h"
 #include "kerl.h"
 
-static inline void absorb_trits(cx_sha3_t *sha, const *trit_t trits)
+static inline void absorb_trits(cx_sha3_t *sha, const trit_t *trits)
 {
     unsigned char bytes[48];
     trits_to_bytes(trits, bytes);
@@ -27,7 +27,7 @@ void addEntry(cx_sha3_t *bundle_sha, unsigned char *address_bytes,
     absorb_trits(bundle_sha, bundle_essence_trits);
 }
 
-static void void normalize_hash(const unsigned char *hash_bytes,
+static void normalize_hash(const unsigned char *hash_bytes,
                                 unsigned char *normalize_hash)
 {
     // TODO
