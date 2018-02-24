@@ -9,6 +9,10 @@
 
 #define MAX_SECURITY 3
 
+// for purely coincidental reasons this seed was intialy used in the development
+const char PETER_SEED[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPE"
+                          "TERPETERPETERPETERPETERPETERR";
+
 static void seed_address(const char *seed_chars, uint32_t idx, uint8_t security,
                          char *address_chars)
 {
@@ -26,19 +30,37 @@ static void seed_address(const char *seed_chars, uint32_t idx, uint8_t security,
     bytes_to_chars(address_bytes, address_chars, NUM_HASH_BYTES);
 }
 
-static void test_address(const char *seed, uint32_t idx, const char *expected)
+static void test_address(const char *seed, uint32_t idx, uint8_t security,
+                         const char *expected)
 {
     char output[MAX_NUM_TRYTES + 1];
-    seed_address(seed, idx, 2, output);
+    seed_address(seed, idx, security, output);
 
     assert_string_equal(output, expected);
 }
 
-static void test_peter_seed(void **state)
+static void test_security_level_one(void **state)
 {
-    const char *seed =
-        "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETER"
-        "PETERPETERR";
+    const char *address[] = {
+        "WLRSPFNMBJRWS9DFXCGIROJCZCPJQG9PMOO9CUZNQXTLLQAYXGXT9LECGEQ9MQIWIBGQRE"
+        "FHULPOETHNZ",
+        "UMDTJXHIFVYVCHXKZNMQWMDHNLVQNMJMRULXUFRLNFVVUMKYZOAETVQOWSDUAKTXVNDSVA"
+        "JCASTRQNV9D",
+        "LHWIEGUADQXNMRKQSBDJOAFMBIFKHHZXYEFOU9WFRMBGODSNJAPGFHOUOSGDICSFVA9KOU"
+        "PPCMLAHPHAW",
+        "GDTLKEWSSLKLQYF9UYSFM9XOVWZYMPMCQOCJMCYJFEESUHBAFPCLNGOLMDHZSXX9WSSFUN"
+        "DORMGADKIEA",
+        "DJJTBISBQNSJTYYVRRXFQVTGHTNGOEJSVOXIJKW9NBHOZBZIUASYVI9FA9YYR9KVNQP9OL"
+        "LUFGSZAZDDA"};
+
+    uint32_t idx = (uintptr_t)*state;
+    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
+
+    test_address(PETER_SEED, idx, 1, address[idx]);
+}
+
+static void test_security_level_two(void **state)
+{
     const char *address[] = {
         "GUIOZDLUNXIGC9DCV9ZIEDBWRHHPILAYOYRVPTFPRAUZWLWDIXBSPCZGENHWDFHMQGCTOK"
         "MXITVVDMEFB",
@@ -54,7 +76,27 @@ static void test_peter_seed(void **state)
     uint32_t idx = (uintptr_t)*state;
     assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
 
-    test_address(seed, idx, address[idx]);
+    test_address(PETER_SEED, idx, 2, address[idx]);
+}
+
+static void test_security_level_three(void **state)
+{
+    const char *address[] = {
+        "GL9YTIZWBXCPSCBRAVAUBMNNCHIHZWABOYQ9NBXOMZCNCCZPQWTMRBKKJDZWUIWRUXHZVE"
+        "XBCGYBMEMQX",
+        "PROKBRGUUTYILP9KB9QVTXDODVRRWHP9IITVHYCYHWRDZFLIPRVARUXWURXDTUWNPWDFGT"
+        "NSLXYUTWQTW",
+        "AYVJGXBZOGIKYOCSDAMFNBZVSBKEVB9YNYD9EWONVIYPPYKWKWYXPBZSBEIZTRBZ9SDXYR"
+        "IGWOERSSRDA",
+        "PDBLCSZPTJTAVBBBHOYKVHETZG9RTLUIHAIPWJ9VNYPNXLYNCTCIIECH9OJHXOSGCORBR9"
+        "OJCMCUQWWUX",
+        "FDEBHWMDYRZCMJULJRUDTUCNCYMHJBYGUOTSIKQUANCY9YMYKAWKFNIWOUWOKYQLTZOIVX"
+        "RITMJTNRMB9"};
+
+    uint32_t idx = (uintptr_t)*state;
+    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
+
+    test_address(PETER_SEED, idx, 3, address[idx]);
 }
 
 static void test_242trits_overflow_seed(void **state)
@@ -77,7 +119,7 @@ static void test_242trits_overflow_seed(void **state)
     uint32_t idx = (uintptr_t)*state;
     assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
 
-    test_address(seed, idx, address[idx]);
+    test_address(seed, idx, 2, address[idx]);
 }
 
 static void test_243trits_overflow_seed(void **state)
@@ -100,7 +142,7 @@ static void test_243trits_overflow_seed(void **state)
     uint32_t idx = (uintptr_t)*state;
     assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
 
-    test_address(seed, idx, address[idx]);
+    test_address(seed, idx, 2, address[idx]);
 }
 
 static void test_n_addresses_for_seed(void **state)
@@ -110,7 +152,7 @@ static void test_n_addresses_for_seed(void **state)
     void test(char *hashes[])
     {
         for (uint32_t idx = 0; idx < 4; idx++) {
-            test_address(hashes[0], idx, hashes[idx + 1]);
+            test_address(hashes[0], idx, 2, hashes[idx + 1]);
         }
     }
 
@@ -120,11 +162,21 @@ static void test_n_addresses_for_seed(void **state)
 int main(void)
 {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)0),
-        cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)1),
-        cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)2),
-        cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)3),
-        cmocka_unit_test_prestate(test_peter_seed, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)0),
+        cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)1),
+        cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)2),
+        cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)3),
+        cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_security_level_two, (uint32_t *)0),
+        cmocka_unit_test_prestate(test_security_level_two, (uint32_t *)1),
+        cmocka_unit_test_prestate(test_security_level_two, (uint32_t *)2),
+        cmocka_unit_test_prestate(test_security_level_two, (uint32_t *)3),
+        cmocka_unit_test_prestate(test_security_level_two, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)0),
+        cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)1),
+        cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)2),
+        cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)3),
+        cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)4),
         cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)0),
         cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)1),
         cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)2),
