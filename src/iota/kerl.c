@@ -47,14 +47,6 @@ void kerl_squeeze_chunk(cx_sha3_t *sha3, unsigned char *bytes_out)
     kerl_absorb_chunk(sha3, hash);
 }
 
-void kerl_squeeze_cheat(cx_sha3_t *sha3, unsigned char *bytes_out)
-{
-    cx_hash((cx_hash_t *)sha3, CX_LAST, bytes_out, 0, bytes_out);
-    
-    // flip bytes for multiple squeeze
-    flip_hash_bytes(bytes_out);
-}
-
 void kerl_squeeze_bytes(cx_sha3_t *sha3, unsigned char *bytes, unsigned int len)
 {
     unsigned char *chunk = bytes;
@@ -64,4 +56,18 @@ void kerl_squeeze_bytes(cx_sha3_t *sha3, unsigned char *bytes, unsigned int len)
         kerl_squeeze_chunk(sha3, chunk);
         chunk += NUM_HASH_BYTES;
     }
+}
+
+void kerl_squeeze_cheat(cx_sha3_t *sha3, unsigned char *bytes_out)
+{
+    cx_hash((cx_hash_t *)sha3, CX_LAST, bytes_out, 0, bytes_out);
+}
+
+void kerl_absorb_cheat(cx_sha3_t *sha3, unsigned char *bytes_in)
+{
+    // flip bytes for multiple squeeze
+    flip_hash_bytes(bytes_in);
+    
+    kerl_initialize(sha3);
+    kerl_absorb_chunk(sha3, bytes_in);
 }
