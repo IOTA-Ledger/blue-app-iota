@@ -3,28 +3,22 @@
 #include "conversion.h"
 #include "kerl.h"
 
-static void digest_single_chunk(const unsigned char *key,
+static void digest_single_chunk(unsigned char *key_fragment,
                                 cx_sha3_t *digest_sha3, cx_sha3_t *round_sha3)
 {
-    unsigned char buffer[48];
-
-    os_memcpy(buffer, key, sizeof(buffer));
-    // key will not have last trit set to 0, so set it to 0 in buffer
-    bytes_set_last_trit_zero(buffer);
-
     for (int k = 0; k < 26; k++) {
         kerl_initialize(round_sha3);
-        kerl_absorb_chunk(round_sha3, buffer);
-        kerl_squeeze_final_chunk(round_sha3, buffer);
+        kerl_absorb_chunk(round_sha3, key_fragment);
+        kerl_squeeze_final_chunk(round_sha3, key_fragment);
     }
 
     // absorb buffer directly to avoid storing the digest fragment
-    kerl_absorb_chunk(digest_sha3, buffer);
+    kerl_absorb_chunk(digest_sha3, key_fragment);
 }
 
 // initialize the sha3 instance for generating private key
-void init_shas(const unsigned char *seed_bytes, uint32_t idx,
-               cx_sha3_t *key_sha, cx_sha3_t *digest_sha)
+static void init_shas(const unsigned char *seed_bytes, uint32_t idx,
+                      cx_sha3_t *key_sha, cx_sha3_t *digest_sha)
 {
     // use temp bigint so seed not destroyed
     unsigned char bytes[48];
@@ -61,14 +55,15 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
 
     for (uint8_t i = 0; i < security; i++) {
         for (uint8_t j = 0; j < 27; j++) {
-            // cheat the squeeze (last trit not set to 0, nor are bytes
-            // flipped/reabsorbed)
-            kerl_squeeze_cheat(&key_sha, key_f);
+            unsigned char state[48];
+
+            // the state takes only 48bytes and allows us to reuse key_sha
+            kerl_state_squeeze_chunk(&key_sha, state, key_f);
             // re-use key_sha as round_sha
             digest_single_chunk(key_f, &digest_sha, &key_sha);
-            // now that we've reused the key_sha, we can reinitialize it with
-            // our key_f
-            kerl_absorb_cheat(&key_sha, key_f);
+
+            // as key_sha has been tainted, reinitialize with the saved state
+            kerl_reinitialize(&key_sha, state);
         }
         kerl_squeeze_final_chunk(&digest_sha, digest + 48 * i);
 
