@@ -39,6 +39,8 @@
 #define IDX_OUT_OF_ORDER 0x6D08
 #define UNBALANCED_TX 0x6D10
 #define TEST_ERROR 0x9876
+#define BAD_ADDR 0x6D22
+#define NO_SEED_IDX 0x6D28
 
 // IOTA-Related APIs
 #define INS_GET_PUBKEY 0x01
@@ -58,9 +60,11 @@
 #define TX_TIME 0x08
 #define TX_CUR 0x10
 #define TX_LAST 0x20
+#define TX_SEED_IDX 0x40
 
 // all of the fields for the tx are filled
 #define TX_FULL 0x3F
+#define TX_FULL_IN 0x7F
 // end IOTA-Related APIs
 
 extern cx_sha256_t hash;

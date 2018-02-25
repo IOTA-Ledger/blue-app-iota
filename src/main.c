@@ -55,7 +55,7 @@ static void IOTA_main(void)
     volatile unsigned int flags = 0;
 
     // initialize the UI
-    initUImsg();
+    ui_init();
 
     unsigned char response[90];
     unsigned char tx_mask = 0;
@@ -64,9 +64,9 @@ static void IOTA_main(void)
     unsigned char bundle_bytes[MAX_INDEX_SZ * 96];
 
 
-    // input address indexes
+    // actual seed index for address
     uint32_t idx_inputs[MAX_INPUTS];
-    // corresponding bundle indexes
+    // bundle index
     uint8_t bundle_idx_inputs[MAX_INPUTS];
     uint8_t input_counter = 0;
 
@@ -172,38 +172,34 @@ static void IOTA_main(void)
                         uint_to_str(tx_idx - 1, response, 10);
 
                     } break;
+                    /* --------------- TX SEED IDX ------------------ */
+                    case TX_SEED_IDX: {
+                        // just record the index, but let the host provide addr
+                        // to save time - this will be double checked in bundle
+                        // generation
+                        uint32_t tmp_idx = str_to_int(msg, len);
+
+                        // copy this index for re-use with signature gen
+                        // and copy it's position in the bundle
+                        idx_inputs[input_counter] = tmp_idx;
+                        bundle_idx_inputs[input_counter++] = tx_idx;
+
+                        // if we are using our last address, gen new one
+                        if (tmp_idx == global_idx)
+                            last_addr_used = true;
+                    } break;
                     /* --------------- TX ADDR ------------------ */
                     case TX_ADDR: {
                         // if length is 81, we are provided an outgoing address
-                        if (len == 81) {
+                        if (len >= 81) {
                             // convert address char into address bytes
                             chars_to_bytes(msg, bytes_ptr, 81);
 
                             memset(response, '-', 90);
                             bytes_to_chars(bytes_ptr, response, 48);
                         }
-                        // len != 81 -> we were given index to our addr
-                        else {
-                            uint32_t tmp_idx = str_to_int(msg, len);
-
-                            // copy this index for re-use with signature gen
-                            // and copy it's position in the bundle
-                            idx_inputs[input_counter] = tmp_idx;
-                            bundle_idx_inputs[input_counter++] = tx_idx;
-
-                            // if we are using our last address, gen new one
-                            if (tmp_idx == global_idx)
-                                last_addr_used = true;
-
-                            unsigned char seed_bytes[48];
-                            get_seed(NULL /*TODO*/, 0, seed_bytes);
-
-                            get_public_addr(seed_bytes, tmp_idx, SEC_LVL,
-                                            bytes_ptr);
-
-                            memset(response, '-', 90);
-                            bytes_to_chars(bytes_ptr, response, 48);
-                        }
+                        else
+                            THROW(BAD_ADDR);
                     } break;
                     /* ------------------ TX VALUE ------------------ */
                     case TX_VAL: {
@@ -246,10 +242,7 @@ static void IOTA_main(void)
                     }
 
                     // tx is complete
-                    if (tx_mask == TX_FULL) {
-                        // reset tx_mask
-                        tx_mask = TX_LAST;
-
+                    if (tx_mask == TX_FULL || tx_mask == TX_FULL_IN) {
                         create_bundle_bytes(tx_val, tx_tag, tx_timestamp,
                                             tx_idx, last_index, bytes_ptr + 48);
 
@@ -257,6 +250,10 @@ static void IOTA_main(void)
 
                         // if tx val is negative, it's input, create meta tx
                         if (tx_val < 0) {
+                            // since input, make sure we received the index
+                            if (tx_mask != TX_FULL_IN)
+                                THROW(NO_SEED_IDX);
+
                             // copy the tx info into the meta tx
                             tx_val = 0;
 
@@ -269,6 +266,9 @@ static void IOTA_main(void)
 
                             tx_idx++;
                         }
+
+                        // reset tx_mask
+                        tx_mask = TX_LAST;
                     }
 
                     // entire bundle is complete
@@ -287,6 +287,8 @@ static void IOTA_main(void)
                             if (last_addr_used)
                                 global_idx++;
 
+                            // TODO : Postpone generating change address until
+                            // tx is signed off on
                             tx_val = total_bal - send_amt;
                             memcpy(tx_tag, "LEDGER999999999999999999999", 27);
 
@@ -338,8 +340,8 @@ static void IOTA_main(void)
                         uint_to_str(total_bal, top + 9, 20);
                         uint_to_str(send_amt, bot + 7, 20);
 
-                        ui_display_message(top, 20, TYPE_STR, NULL, 0, 0, bot, 20,
-                                         TYPE_STR);
+                        ui_display_message(top, 20, TYPE_STR, NULL, 0, 0, bot,
+                                           20, TYPE_STR);
                     }
                 } break;
 
@@ -420,7 +422,7 @@ static void IOTA_main(void)
                            5); // copy last 4 chars + null
 
                     ui_display_message(NULL, 0, 0, &addr_abbrv[0], 12, TYPE_STR,
-                                     NULL, 0, 0);
+                                       NULL, 0, 0);
                 } break;
 
 
@@ -451,7 +453,8 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
 
-                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
+                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0,
+                                       0);
                 } break;
 
                     /* ---------------------------------------------
@@ -487,7 +490,8 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
                     // Nothing to display, this is purely behind the scenes
-                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
+                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0,
+                                       0);
                 } break;
 
                     /* ---------------------------------------------
@@ -532,7 +536,8 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
                     // Nothing to display, this is purely behind the scenes
-                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
+                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0,
+                                       0);
                 } break;
 
                     /* ---------------------------------------------
@@ -574,8 +579,13 @@ static void IOTA_main(void)
             {
                 // reset important values upon failure
                 tx_mask = 0;
+
                 input_counter = 0;
+
                 last_index = 0;
+
+                tx_val = 0;
+                tx_timestamp = 0;
                 tx_idx = 0;
 
                 total_bal = 0;
@@ -583,6 +593,8 @@ static void IOTA_main(void)
 
                 broadcast_complete = false;
                 last_addr_used = false;
+
+                ui_reset();
 
 
                 switch (e & 0xF000) {
@@ -740,8 +752,6 @@ __attribute__((section(".boot"))) int main(void)
 
             USB_power(0);
             USB_power(1);
-
-            ui_idle();
 
             IOTA_main();
         }

@@ -82,8 +82,14 @@ print "Time: " + str(publicKey) + "\n";
 publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "1\0"));
 print "Cur: " + str(publicKey) + "\n";
 
+#on input tx's you must provide seed index
+#idx
+publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "0\0"));
+print "Idx: " + str(publicKey) + "\n";
+
 #addr
-publicKey = dongle.exchange(bytes("8020000110".decode('hex') + "0\0"));
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
+    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
 print "Addr: " + str(publicKey) + "\n";
 
 #value
@@ -106,8 +112,14 @@ print "Time: " + str(publicKey) + "\n";
 publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "3\0"));
 print "Cur: " + str(publicKey) + "\n";
 
+#input index
+#idx
+publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "4\0"));
+print "Idx: " + str(publicKey) + "\n";
+
 #addr
-publicKey = dongle.exchange(bytes("8020000110".decode('hex') + "4\0"));
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
+    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
 print "Addr: " + str(publicKey) + "\n";
 
 #value
