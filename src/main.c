@@ -25,6 +25,7 @@
 #include "iota/conversion.h"
 #include "iota/addresses.h"
 #include "iota/transaction.h"
+#include "iota/bundle.h"
 
 cx_sha256_t hash;
 unsigned char hashTainted; // notification to restart the hash
@@ -37,7 +38,7 @@ typedef struct internalStorage_t {
 
 } internalStorage_t;
 
-uint32_t global_seed_key;
+uint32_t global_idx;
 
 // N_storage_real will hold the actual address for NVRAM
 WIDE internalStorage_t N_storage_real;
@@ -56,24 +57,32 @@ static void IOTA_main(void)
     // initialize the UI
     initUImsg();
 
-    char addr_abbrv[12];
+    unsigned char response[90];
     unsigned char tx_mask = 0;
 
     // bundle_bytes holds all of the bundle information in byte format
-    unsigned char *bundle_bytes = NULL;
+    unsigned char bundle_bytes[MAX_INDEX_SZ * 96];
 
-    // we don't care about address
-    char tx_address[82];
-    char tx_tag[27];
+
+    // input address indexes
+    uint32_t idx_inputs[MAX_INPUTS];
+    // corresponding bundle indexes
+    uint8_t bundle_idx_inputs[MAX_INPUTS];
+    uint8_t input_counter = 0;
+
+    uint8_t last_index = 0;
+
+    // TODO: convert to 64 bit values
+    int tx_val = 0;
+    unsigned char tx_tag[27];
+    uint32_t tx_timestamp = 0;
     uint32_t tx_idx = 0;
 
     uint32_t total_bal = 0;
     uint32_t send_amt = 0;
 
-    uint8_t last_index = 0;
-    uint8_t our_index = 0;
-
     bool broadcast_complete = false;
+    bool last_addr_used = false;
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
     // goal is to retrieve APDU.
@@ -110,16 +119,18 @@ static void IOTA_main(void)
                     THROW(0x6E00);
                 }
 
+                uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
+                unsigned char *msg = G_io_apdu_buffer + APDU_HEADER_LENGTH;
+
                 // check second byte for instruction
                 switch (G_io_apdu_buffer[1]) {
                 // upon return G_io_apdu_buffer is null terminated (though
                 // python  will still display garbage characters after the null
                 // termination)
                 case INS_GET_MULTI_SEND: {
-                    uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
-                    unsigned char *msg = G_io_apdu_buffer + APDU_HEADER_LENGTH;
-
                     tx_mask = tx_mask | G_io_apdu_buffer[APDU_TX_TYPE];
+
+                    unsigned char *bytes_ptr = bundle_bytes + (tx_idx * 48 * 2);
 
                     // make sure the very first piece of information we receive
                     // is last idx
@@ -127,43 +138,71 @@ static void IOTA_main(void)
                         last_index == 0)
                         THROW(LAST_IDX_ERROR);
 
+                    // check third byte for which part of tx we are receiving
                     switch (G_io_apdu_buffer[APDU_TX_TYPE]) {
+                    /* -------------------- TX LAST ------------------- */
+                    case TX_LAST: {
+                        // only rcv last index once
+                        if (last_index != 0)
+                            THROW(LAST_IDX_ERROR);
+
+                        last_index = str_to_int(msg, len);
+                        // 2 is minimum (idx0=output, idx1=input,
+                        // idx2=input_meta)
+                        if (last_index < 2 || last_index > MAX_INDEX_SZ) {
+                            last_index = 0;
+                            THROW(LAST_IDX_ERROR);
+                        }
+
+                        memset(response, '-', 90);
+                        uint_to_str(last_index, response, 10);
+                    } break;
+                    /* -------------------- TX CUR ------------------- */
+                    case TX_CUR: {
+                        uint32_t tmp_idx = str_to_int(msg, len);
+
+                        // ensure current index is first thing we receive
+                        // and verify the indexes stay in order
+                        if (tx_mask != TX_CUR & TX_LAST)
+                            THROW(IDX_OUT_OF_ORDER);
+                        if (tmp_idx != tx_idx)
+                            THROW(TEST_ERROR);
+
+                        memset(response, '-', 90);
+                        uint_to_str(tx_idx - 1, response, 10);
+
+                    } break;
                     /* --------------- TX ADDR ------------------ */
                     case TX_ADDR: {
                         // if length is 81, we are provided an outgoing address
                         if (len == 81) {
                             // convert address char into address bytes
-                            // chars_to_bytes(msg, bundle_bytes+(our_index *
-                            // 48*2), 81);
+                            chars_to_bytes(msg, bytes_ptr, 81);
+
+                            memset(response, '-', 90);
+                            bytes_to_chars(bytes_ptr, response, 48);
                         }
-                        // we weren't given outgoing address, we were given
-                        // input idx
+                        // len != 81 -> we were given index to our addr
                         else {
-                            tx_idx = str_to_int(msg, len);
+                            uint32_t tmp_idx = str_to_int(msg, len);
+
+                            // copy this index for re-use with signature gen
+                            // and copy it's position in the bundle
+                            idx_inputs[input_counter] = tmp_idx;
+                            bundle_idx_inputs[input_counter++] = tx_idx;
+
+                            // if we are using our last address, gen new one
+                            if (tmp_idx == global_idx)
+                                last_addr_used = true;
+
                             unsigned char seed_bytes[48];
                             get_seed(NULL /*TODO*/, 0, seed_bytes);
 
-                            unsigned char addr_bytes[48];
-                            {
-                                // set the security of our seed
-                                const uint8_t security = 2;
-                                const uint32_t idx = 0;
+                            get_public_addr(seed_bytes, tmp_idx, SEC_LVL,
+                                            bytes_ptr);
 
-                                get_public_addr(seed_bytes, idx, security,
-                                                addr_bytes);
-                            }
-                            // convert the bigint address into character address
-                            char address[82];
-                            bytes_to_chars(addr_bytes, tx_address, 48);
-
-                            // - Convert into abbreviated seeed (first 4 and
-                            // last 4 characters)
-                            memcpy(&addr_abbrv[0], &tx_address[0],
-                                   4); // first 4 chars of seed
-                            memcpy(&addr_abbrv[4], "...", 3); // copy ...
-                            memcpy(&addr_abbrv[7], &tx_address[81 - 4],
-                                   4); // copy last 4 chars + null
-                            addr_abbrv[11] = '\0';
+                            memset(response, '-', 90);
+                            bytes_to_chars(bytes_ptr, response, 48);
                         }
                     } break;
                     /* ------------------ TX VALUE ------------------ */
@@ -171,47 +210,33 @@ static void IOTA_main(void)
                         // if it's a negative amount coming in, add it as our
                         // balance
                         if (msg[0] == '-') {
-                            total_bal += str_to_int(msg + 1, len);
+                            tx_val = -1 * str_to_int(msg + 1, len);
+                            total_bal -= tx_val;
+
+                            // once the tx is fully formed we will generate a
+                            // meta tx for the input as well
                         }
-                        // if positive it is outgoing balance
+                        // if positive it is outgoing amount
                         else {
-                            send_amt += str_to_int(msg, len);
+                            tx_val = str_to_int(msg, len);
+                            send_amt += tx_val;
                         }
+
+                        memset(response, '-', 90);
+                        int_to_str(tx_val, response, 10);
                     } break;
                     /* -------------------- TX TAG ------------------- */
                     case TX_TAG: {
-
+                        memcpy(tx_tag, msg, len);
+                        memset(response, '-', 90);
+                        memcpy(response, msg, 28);
+                        // TODO: Ensure tag is filled out with 9's
                     } break;
                     /* -------------------- TX TIME ------------------- */
                     case TX_TIME: {
-
-                    } break;
-                    /* -------------------- TX CUR ------------------- */
-                    case TX_CUR: {
-                        uint32_t c = str_to_int(msg, len);
-
-                        // TODO: handle incrementing cur_idx in tx_mask == FULL
-                        our_index++;
-
-                    } break;
-                    /* -------------------- TX LAST ------------------- */
-                    case TX_LAST: {
-                        // make sure we haven't received a last_index before
-                        if (last_index != 0)
-                            THROW(LAST_IDX_ERROR);
-
-                        last_index = str_to_int(msg, len);
-                        // 2 is minimum (indexed from 0, that means 2 input 1
-                        // output, no change)
-                        if (last_index < 2) {
-                            last_index = 0;
-                            THROW(LAST_IDX_ERROR);
-                        }
-
-                        // allocate the space required for all of these tx's
-                        // unsigned char allBytes[last_index*2*48];
-                        // bundle_bytes = allBytes;
-                        // bundle_bytes[last_index*2*48] = 'T';
+                        tx_timestamp = str_to_int(msg, len);
+                        memset(response, '-', 90);
+                        uint_to_str(tx_timestamp, response, 10);
                     } break;
 
                     // Unknown TX type
@@ -220,33 +245,75 @@ static void IOTA_main(void)
                         break;
                     }
 
+                    // tx is complete
+                    if (tx_mask == TX_FULL) {
+                        // reset tx_mask
+                        tx_mask = TX_LAST;
+
+                        create_bundle_bytes(tx_val, tx_tag, tx_timestamp,
+                                            tx_idx, last_index, bytes_ptr + 48);
+
+                        tx_idx++;
+
+                        // if tx val is negative, it's input, create meta tx
+                        if (tx_val < 0) {
+                            // copy the tx info into the meta tx
+                            tx_val = 0;
+
+                            // copy address into meta tx bundle bytes
+                            memcpy(bytes_ptr + 96, bytes_ptr, 48);
+
+                            create_bundle_bytes(tx_val, tx_tag, tx_timestamp,
+                                                tx_idx, last_index,
+                                                bytes_ptr + 144);
+
+                            tx_idx++;
+                        }
+                    }
+
                     // entire bundle is complete
                     if (G_io_apdu_buffer[APDU_MORE] == TX_END) {
                         // verify the last transaction is fully created
-                        if (tx_mask != TX_FULL)
+                        if (tx_mask != TX_LAST)
                             THROW(INCOMPLETE_TX);
 
-                        // if our index is 1 less than last, we create final
-                        // with our own change address
-                        if (our_index == last_index - 1)
-                            total_bal = 123;
+                        bool idx_check = tx_idx == last_index;
+                        bool bal_check = total_bal - send_amt != 0;
+
+                        // check if we need to create a change tx
+                        if (idx_check && bal_check) {
+                            // if we are using our last address as change
+                            // gen new one, else reuse old
+                            if (last_addr_used)
+                                global_idx++;
+
+                            tx_val = total_bal - send_amt;
+                            memcpy(tx_tag, "LEDGER999999999999999999999", 27);
+
+                            unsigned char seed_bytes[48];
+                            get_seed(NULL /*TODO*/, 0, seed_bytes);
+
+                            // bytes_ptr will point to last_tx created
+                            get_public_addr(seed_bytes, global_idx, SEC_LVL,
+                                            bytes_ptr + 96);
+
+                            create_bundle_bytes(tx_val, tx_tag, tx_timestamp,
+                                                tx_idx, last_index,
+                                                bytes_ptr + 144);
+
+                            tx_idx++;
+                        }
+                        // ensure both are true, or neither
+                        else if (idx_check != bal_check)
+                            THROW(UNBALANCED_TX);
 
                         broadcast_complete = true;
                     }
 
-                    // tx is complete, but bundle is not, reset mask for next tx
-                    if (tx_mask == TX_FULL) {
-                        // reset tx_mask
-                        tx_mask = 0;
-
-                        // commented out for testing purposes, incrementing idx
-                        // should  be handled here  our_index++;
-                    }
-
                     // push the response onto the response buffer.
-                    os_memmove(G_io_apdu_buffer, tx_address, 82);
+                    os_memmove(G_io_apdu_buffer, response, 90);
 
-                    tx = 82;
+                    tx = 90;
                     // Manually send back success 0x9000 at end
                     G_io_apdu_buffer[tx++] = 0x90;
                     G_io_apdu_buffer[tx++] = 0x00;
@@ -256,12 +323,23 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
 
+                    unsigned char dest_addr[82];
+                    // very first tx should be dest_addr
+                    bytes_to_chars(bundle_bytes, dest_addr, 48);
+
                     if (broadcast_complete) {
-                        ui_gen_warning(total_bal, send_amt, addr_abbrv);
+                        ui_init_state(total_bal, send_amt, dest_addr, 82);
                     }
                     else {
-                        ui_display_debug(&send_amt, 10, TYPE_UINT, NULL, 0, 0,
-                                         &total_bal, 10, TYPE_UINT);
+                        unsigned char top[20], bot[20];
+                        memcpy(top, "Balance: ", 10);
+                        memcpy(bot, "Spend: ", 8);
+
+                        uint_to_str(total_bal, top + 9, 20);
+                        uint_to_str(send_amt, bot + 7, 20);
+
+                        ui_display_debug(top, 20, TYPE_STR, NULL, 0, 0, bot, 20,
+                                         TYPE_STR);
                     }
                 } break;
 
@@ -352,12 +430,12 @@ static void IOTA_main(void)
                      -----------------------------------------------
                      ----------------------------------------------- */
                 case INS_BAD_PUBKEY: {
-                    global_seed_key++;
+                    global_idx++;
 
                     char msg[11];
                     // 10 characters is largest uint32 num, might need to go
                     // higher  once larger indices are allowed
-                    uint_to_str(global_seed_key, &msg[0], 11);
+                    uint_to_str(global_idx, msg, 11);
                     tx = 11;
 
 
@@ -373,8 +451,7 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
 
-                    ui_display_debug(NULL, 0, 0, &msg[0], 11, TYPE_STR, NULL, 0,
-                                     0);
+                    ui_display_debug(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
                 } break;
 
                     /* ---------------------------------------------
@@ -387,7 +464,7 @@ static void IOTA_main(void)
                     internalStorage_t storage;
                     storage.initialized = 0x01;
                     // get the global seed key and write it as the new key
-                    storage.seed_key = global_seed_key;
+                    storage.seed_key = global_idx;
 
                     nvm_write(&N_storage, (void *)&storage,
                               sizeof(internalStorage_t));
@@ -395,7 +472,7 @@ static void IOTA_main(void)
                     char msg[11];
                     // 10 characters is largest uint32 num, might need to go
                     // higher  once larger indices are allowed
-                    uint_to_str(global_seed_key, &msg[0], 11);
+                    uint_to_str(global_idx, msg, 11);
                     tx = 11;
 
                     // push the response onto the response buffer.
@@ -410,8 +487,7 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
                     // Nothing to display, this is purely behind the scenes
-                    ui_display_debug(NULL, 0, 0, &msg[0], 11, TYPE_STR, NULL, 0,
-                                     0);
+                    ui_display_debug(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
                 } break;
 
                     /* ---------------------------------------------
@@ -423,19 +499,14 @@ static void IOTA_main(void)
                     // Note - Change Index does not write to NVRAM
                     // Notify good_pub_key to write (after verifying its good)
                 case INS_CHANGE_INDEX: {
-                    // largest uint32 is 10 characters long
-                    // might need more if if we support larger than uint32
-                    char msg[11];
-                    memcpy(&msg[0], &G_io_apdu_buffer[5], 10);
-
-                    uint32_t new_index = str_to_int(&msg[0], 10);
+                    uint32_t new_index = str_to_int(msg, len);
 
                     tx = 11;
 
-                    // only update global_seed_key if we increment
+                    // only update global_idx if we increment
                     // don't allow reducing seed_key (vulnerability)
-                    if (new_index > global_seed_key) {
-                        global_seed_key = new_index;
+                    if (new_index > global_idx) {
+                        global_idx = new_index;
 
                         // push the response onto the response buffer.
                         os_memmove(G_io_apdu_buffer, msg, tx);
@@ -461,8 +532,7 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
                     // Nothing to display, this is purely behind the scenes
-                    ui_display_debug(NULL, 0, 0, &msg[0], 11, TYPE_STR, NULL, 0,
-                                     0);
+                    ui_display_debug(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
                 } break;
 
                     /* ---------------------------------------------
@@ -502,6 +572,19 @@ static void IOTA_main(void)
             }
             CATCH_OTHER(e)
             {
+                // reset important values upon failure
+                tx_mask = 0;
+                input_counter = 0;
+                last_index = 0;
+                tx_idx = 0;
+
+                total_bal = 0;
+                send_amt = 0;
+
+                broadcast_complete = false;
+                last_addr_used = false;
+
+
                 switch (e & 0xF000) {
                 case 0x6000:
                 case 0x9000:
@@ -644,7 +727,7 @@ __attribute__((section(".boot"))) int main(void)
                           sizeof(internalStorage_t));
             }
 
-            global_seed_key = N_storage.seed_key;
+            global_idx = N_storage.seed_key;
 
 #ifdef LISTEN_BLE
             if (os_seph_features() &

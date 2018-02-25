@@ -23,7 +23,7 @@ void int_to_str(int i, char *str, uint8_t len)
 
 // len specifies length of number (789 is 3 digits).
 // Any number above 3 will work fine in this scenario
-uint32_t str_to_int(char *str, uint8_t len)
+uint32_t str_to_int(unsigned char *str, uint8_t len)
 {
     uint32_t num = 0;
     // don't attempt to store more than 10 characters in a 32bit unsigned

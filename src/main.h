@@ -19,6 +19,10 @@
 #define MID 2
 #define BOT 3
 
+#define SEC_LVL 2
+#define MAX_INDEX_SZ 10
+#define MAX_INPUTS 4
+
 // data starts at apdu[5]
 #define APDU_HEADER_LENGTH 5
 // defines byte that says length
@@ -32,6 +36,9 @@
 #define INCOMPLETE_TX 0x6D18
 #define UNKNOWN_TX_TYPE 0x6D00
 #define LAST_IDX_ERROR 0x6D04
+#define IDX_OUT_OF_ORDER 0x6D08
+#define UNBALANCED_TX 0x6D10
+#define TEST_ERROR 0x9876
 
 // IOTA-Related APIs
 #define INS_GET_PUBKEY 0x01

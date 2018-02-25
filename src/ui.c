@@ -9,9 +9,9 @@ uint8_t ui_state;
 
 uint32_t bal = 0;
 uint32_t out = 0;
-char addr[12];
+char addr[20];
 
-void ui_continue_warning();
+void ui_display_state();
 
 // write_display(&words, sizeof(words), TYPE_STR);
 // write_display(&int_val, sizeof(int_val), TYPE_INT);
@@ -230,40 +230,71 @@ void ui_display_debug(void *o, uint8_t sz, uint8_t t, void *o2, uint8_t sz2,
     UX_DISPLAY(bagl_ui_nanos_screen, NULL);
 }
 
-void ui_gen_warning(uint64_t b, uint64_t o, const char *a)
+void ui_write_addr(const char *a, uint8_t len)
+{
+    // length 81 or 82 means full address
+    if (len == 81 || len == 82) {
+        // Convert into abbreviated seeed
+        memcpy(addr, a, 6);          // first 6 chars of address
+        memcpy(addr + 6, "...", 3);  // copy ...
+        memcpy(addr + 9, a + 75, 7); // copy last 6 chars + null
+    }
+    else if (len <= 20) {
+        memcpy(addr, a, len);
+    }
+}
+
+void ui_init_state(uint64_t b, uint64_t o, const char *a, uint8_t len)
 {
     bal = b;
     out = o;
-    memcpy(addr, a, 12);
+    ui_write_addr(a, len);
+
     ui_state = 0;
 
-    ui_continue_warning();
+    ui_display_state();
 }
 
-void ui_continue_warning()
+void ui_set_state(uint8_t i)
 {
-    write_display("&is_spicy", 20, TYPE_STR, TOP);
+    ui_state = i;
+}
 
-    if (ui_state == 0) {
+void ui_display_state()
+{
+    switch (ui_state) {
+    /* ------------  -------------- */
+    case 0: {
         write_display("Total Balance:", 20, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
         write_display(&bal, 20, TYPE_UINT, BOT);
-    }
-    else if (ui_state == 1) {
+    } break;
+    /* ------------  -------------- */
+    case 1: {
         write_display("Send Amt:", 20, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
         write_display(&out, 20, TYPE_UINT, BOT);
-    }
-    else if (ui_state == 2) {
+    } break;
+    /* ------------  -------------- */
+    case 2: {
         write_display("Dest Address:", 20, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
         write_display(addr, 20, TYPE_STR, BOT);
-    }
-    else {
-        write_display("NO_UI", 20, TYPE_STR, BOT);
+    } break;
+    /* ------------ UNKNOWN STATE -------------- */
+    default: {
+        write_display(NULL, 0, 0, TOP);
+        write_display("UI ERROR", 20, TYPE_STR, MID);
+        write_display(NULL, 0, 0, BOT);
+    } break;
     }
 
     UX_DISPLAY(bagl_ui_nanos_screen, NULL);
+}
+
+bool state_is(uint8_t state)
+{
+    return ui_state == state;
 }
 
 void ui_idle(void)
@@ -285,14 +316,16 @@ unsigned int bagl_ui_nanos_screen_button(unsigned int button_mask,
 {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT: // EXIT
-        io_seproxyhal_touch_exit(NULL);
         break;
     case BUTTON_EVT_RELEASED | BUTTON_RIGHT: // EXIT
-        ui_state++;
-        ui_continue_warning();
+        // if (state_is(STATE_APPROVE))
+        //    io_seproxyhal_touch_exit(NULL);
 
-        if (ui_state == 3)
-            io_seproxyhal_touch_exit(NULL);
+        ui_state++;
+        ui_display_state();
+        break;
+    case BUTTON_EVT_RELEASED | BUTTON_RIGHT | BUTTON_LEFT:
+        io_seproxyhal_touch_exit(NULL);
         break;
     }
     return 0;

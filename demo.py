@@ -47,46 +47,97 @@ start_time = time.time()
 #80 20 01
 
 #last - provide last index first
-publicKey = dongle.exchange(bytes("80200020FF".decode('hex') + "4"));
-print "Last: " + str(publicKey);
+publicKey = dongle.exchange(bytes("80200020FF".decode('hex') + "5\0"));
+print "Last: " + str(publicKey) + "\n";
 
 
-use_idx = True
-#address
-if use_idx:
-    publicKey = dongle.exchange(bytes("8020000110".decode('hex') +
-                                      "8971"));
-else:
-    publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-        "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ"));
-print "Addr: " + str(publicKey);
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-1489"));
-print "Val: " + str(publicKey);
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-48"));
-print "Val: " + str(publicKey);
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "80"));
-print "Val: " + str(publicKey);
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-12"));
-print "Val: " + str(publicKey);
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "14"));
-print "Val: " + str(publicKey);
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "18"));
-print "Val: " + str(publicKey);
-#tag
-publicKey = dongle.exchange(bytes("80200004FF".decode('hex') + "TAG"));
-print "Tag: " + str(publicKey);
-#time
-publicKey = dongle.exchange(bytes("80200008FF".decode('hex') + "TIME"));
-print "Time: " + str(publicKey);
+
+#per tx, make sure cur comes first
 #cur
-publicKey = dongle.exchange(bytes("80200110FF".decode('hex') + "3"));
-print "Cur: " + str(publicKey);
+publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "0\0"));
+print "Cur: " + str(publicKey) + "\n";
+
+#addr
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
+    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
+print "Addr: " + str(publicKey) + "\n";
+
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "18\0"));
+print "Val: " + str(publicKey) + "\n";
+
+#tag - 1B is 27
+publicKey = dongle.exchange(bytes("802000041B".decode('hex') + "TAG999999999999999999999995\0"));
+print "Tag: " + str(publicKey) + "\n";
+
+#time
+publicKey = dongle.exchange(bytes("80200008FF".decode('hex') + "99999\0"));
+print "Time: " + str(publicKey) + "\n";
+
+
+
+
+#per tx, make sure cur comes first
+#cur
+publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "1\0"));
+print "Cur: " + str(publicKey) + "\n";
+
+#addr
+publicKey = dongle.exchange(bytes("8020000110".decode('hex') + "0\0"));
+print "Addr: " + str(publicKey) + "\n";
+
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-9\0"));
+print "Val: " + str(publicKey) + "\n";
+
+#tag - 1B is 27
+publicKey = dongle.exchange(bytes("802000041B".decode('hex') + "TAG999999999999999999999995\0"));
+print "Tag: " + str(publicKey) + "\n";
+
+#time
+publicKey = dongle.exchange(bytes("80200008FF".decode('hex') + "99999\0"));
+print "Time: " + str(publicKey) + "\n";
+
+
+
+
+#per tx, make sure cur comes first
+#cur
+publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "3\0"));
+print "Cur: " + str(publicKey) + "\n";
+
+#addr
+publicKey = dongle.exchange(bytes("8020000110".decode('hex') + "4\0"));
+print "Addr: " + str(publicKey) + "\n";
+
+#value
+publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-15\0"));
+print "Val: " + str(publicKey) + "\n";
+
+#tag - 1B is 27
+publicKey = dongle.exchange(bytes("802000041B".decode('hex') + "TAG999999999999999999999995\0"));
+print "Tag: " + str(publicKey) + "\n";
+
+#time
+publicKey = dongle.exchange(bytes("80200108FF".decode('hex') + "99999\0"));
+print "Time: " + str(publicKey) + "\n";
+
+
+
+
+##
+#use_idx = True
+#address
+#if use_idx:
+#    publicKey = dongle.exchange(bytes("8020000110".decode('hex') +
+#                                      "0"));
+#else:
+#    publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
+#        "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ"));
+#print "Addr: " + str(publicKey);
+
+
+
 
 
 elapsed_time = time.time() - start_time
