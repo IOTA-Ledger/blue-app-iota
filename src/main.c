@@ -328,7 +328,7 @@ static void IOTA_main(void)
                     bytes_to_chars(bundle_bytes, dest_addr, 48);
 
                     if (broadcast_complete) {
-                        ui_init_state(total_bal, send_amt, dest_addr, 82);
+                        ui_sign_tx(total_bal, send_amt, dest_addr, 82);
                     }
                     else {
                         unsigned char top[20], bot[20];
@@ -338,7 +338,7 @@ static void IOTA_main(void)
                         uint_to_str(total_bal, top + 9, 20);
                         uint_to_str(send_amt, bot + 7, 20);
 
-                        ui_display_debug(top, 20, TYPE_STR, NULL, 0, 0, bot, 20,
+                        ui_display_message(top, 20, TYPE_STR, NULL, 0, 0, bot, 20,
                                          TYPE_STR);
                     }
                 } break;
@@ -419,7 +419,7 @@ static void IOTA_main(void)
                     memcpy(&addr_abbrv[7], &address[77],
                            5); // copy last 4 chars + null
 
-                    ui_display_debug(NULL, 0, 0, &addr_abbrv[0], 12, TYPE_STR,
+                    ui_display_message(NULL, 0, 0, &addr_abbrv[0], 12, TYPE_STR,
                                      NULL, 0, 0);
                 } break;
 
@@ -451,7 +451,7 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
 
-                    ui_display_debug(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
+                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
                 } break;
 
                     /* ---------------------------------------------
@@ -487,7 +487,7 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
                     // Nothing to display, this is purely behind the scenes
-                    ui_display_debug(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
+                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
                 } break;
 
                     /* ---------------------------------------------
@@ -532,7 +532,7 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
                     // Nothing to display, this is purely behind the scenes
-                    ui_display_debug(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
+                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0, 0);
                 } break;
 
                     /* ---------------------------------------------
