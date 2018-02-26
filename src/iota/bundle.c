@@ -105,4 +105,9 @@ void finalize(cx_sha3_t *bundle_sha)
     bytes_to_trytes(hash_bytes, hash_trytes);
 
     normalize_hash(hash_trytes);
+    if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
+        // TODO: cache transaction bytes
+        // bytes_increment_trit_82(transaction[0]);
+        // TODO: rehash
+    }
 }
