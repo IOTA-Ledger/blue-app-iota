@@ -32,130 +32,43 @@ unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
 // Ledger Nano S specific UI
 // *************************
 // one dynamic screen that changes based on the ui state
+
+// clang-format off
 static const bagl_element_t bagl_ui_nanos_screen[] = {
-    // {type, userid, x, y, width, height, stroke, radius, fill, fgcolor
-    // bgcolor, fontid, iconid}, text .....
-    {
-        {BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000,
-         0xFFFFFF, 0, 0},
-        NULL,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    // {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, fontid, iconid}, text .....
+    {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
+      0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        top_str,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     top_str, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_LABELINE, 0x01, 0, 18, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        mid_str,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_LABELINE, 0x01, 0, 18, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     mid_str, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_LABELINE, 0x01, 0, 24, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        bot_str,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_LABELINE, 0x01, 0, 24, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     bot_str, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_LESS},
-        glyph_bar_l,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+      BAGL_GLYPH_ICON_LESS}, glyph_bar_l, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_LESS},
-        glyph_bar_r,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+      BAGL_GLYPH_ICON_LESS}, glyph_bar_r, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-         BAGL_GLYPH_ICON_CROSS},
-        glyph_cross,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
+      BAGL_GLYPH_ICON_CROSS}, glyph_cross, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_CHECK},
-        glyph_check,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+      BAGL_GLYPH_ICON_CHECK}, glyph_check, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-         BAGL_GLYPH_ICON_UP},
-        glyph_up,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
+    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
+      BAGL_GLYPH_ICON_UP}, glyph_up, 0, 0, 0, NULL, NULL, NULL},
 
-    {
-        {BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_DOWN},
-        glyph_down,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-};
-
+    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+      BAGL_GLYPH_ICON_DOWN}, glyph_down, 0, 0, 0, NULL, NULL, NULL}};
+// clang-format on
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
  ---------------------------------------------------------
