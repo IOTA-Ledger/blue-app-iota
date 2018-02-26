@@ -361,6 +361,13 @@ void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
     bigint_to_bytes(bigint, bytes);
 }
 
+void trytes_to_bytes(const tryte_t *trytes, unsigned char *bytes)
+{
+    trit_t trits[243];
+    trytes_to_trits(trytes, trits, 81);
+    trits_to_bytes(trits, bytes);
+}
+
 void chars_to_bytes(const char *chars, unsigned char *bytes,
                     unsigned int chars_len)
 {
@@ -381,16 +388,19 @@ static inline void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
     bigint_to_trits_mem(bigint, trits);
 }
 
+void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
+{
+    trit_t trits[243];
+    bytes_to_trits(bytes, trits);
+    trits_to_trytes(trits, trytes, 243);
+}
+
 void bytes_to_chars(const unsigned char *bytes, char *chars,
                     unsigned int bytes_len)
 {
     for (unsigned int i = 0; i < bytes_len / 48; i++) {
         tryte_t trytes[81];
-        {
-            trit_t trits[243];
-            bytes_to_trits(bytes + i * 48, trits);
-            trits_to_trytes(trits, trytes, 243);
-        }
+        bytes_to_trytes(bytes + i * 48, trytes);
         trytes_to_chars(trytes, chars + i * 81, 81);
     }
 

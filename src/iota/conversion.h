@@ -34,6 +34,24 @@ bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
  */
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes);
 
+/** @brief Converts a balanced ternary number in tryte (3-trit) representation
+ *         into a big-enadian binary integer.
+ *  The input must consist of exactly one 81-tryte (243-trit) chunk and is
+ *  converted into one big-endian 48-byte integer.
+ *  @param trytes tryte array consisting of exectly 81 trytes
+ *  @param bytes target byte array
+ */
+void trytes_to_bytes(const tryte_t *trytes, unsigned char *bytes);
+
+/** @brief Converts a big-enadian binary integer into a balanced ternary number
+ *         in tryte (3-trit) representation.
+ *  The input must consist of exactly one big-endian 48-byte integer and is
+ *  converted into one 81-tryte (243-trit) chunk.
+ *  @param bytes input big-endian 48-byte integers
+ *  @param trytes target tryte array
+ */
+void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes);
+
 /** @brief Converts a balanced ternary number in base-27 encoding into a
  *         big-enadian binary integer.
  *  The input must consist of multiples of 81-char chunks, each chunk is
