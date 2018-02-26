@@ -43,19 +43,66 @@ void addEntry(cx_sha3_t *bundle_sha, unsigned char *address_bytes,
     absorb_trits(bundle_sha, bundle_essence_trits);
 }
 
-static void normalize_hash(const unsigned char *hash_bytes,
-                           unsigned char *normalize_hash)
+static inline int decrement_tryte(int max, tryte_t *tryte)
 {
-    // TODO
-    os_memcpy(normalize_hash, hash_bytes, 48);
+    const int slack = *tryte - MIN_TRYTE_VALUE;
+    if (slack <= 0) {
+        return 0;
+    }
+
+    const int dec = MIN(max, slack);
+    *tryte -= dec;
+
+    return dec;
+}
+
+static inline int increment_tryte(int max, tryte_t *tryte)
+{
+    const int slack = MAX_TRYTE_VALUE - *tryte;
+    if (slack <= 0) {
+        return 0;
+    }
+
+    const int inc = MIN(max, slack);
+    *tryte += inc;
+
+    return inc;
+}
+
+static void normalize_hash_fragment(tryte_t *fragment_trytes)
+{
+    int sum = 0;
+    for (unsigned int j = 0; j < 27; j++) {
+        sum += fragment_trytes[j];
+    }
+
+    for (unsigned int j = 0; j < 27; j++) {
+        if (sum > 0) {
+            sum -= decrement_tryte(sum, &fragment_trytes[j]);
+        }
+        else if (sum < 0) {
+            sum += increment_tryte(-sum, &fragment_trytes[j]);
+        }
+        if (sum == 0) {
+            break;
+        }
+    }
+}
+
+static void normalize_hash(tryte_t *hash_trytes)
+{
+    for (unsigned int i = 0; i < 3; i++) {
+        normalize_hash_fragment(hash_trytes + i * 27);
+    }
 }
 
 void finalize(cx_sha3_t *bundle_sha)
 {
-    unsigned char normalized_hash_bytes[48];
-    {
-        unsigned char hash_bytes[48];
-        kerl_squeeze_final_chunk(bundle_sha, hash_bytes);
-        normalize_hash(hash_bytes, normalized_hash_bytes);
-    }
+    unsigned char hash_bytes[48];
+    kerl_squeeze_final_chunk(bundle_sha, hash_bytes);
+
+    tryte_t hash_trytes[81];
+    bytes_to_trytes(hash_bytes, hash_trytes);
+
+    normalize_hash(hash_trytes);
 }
