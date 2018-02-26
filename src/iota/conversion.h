@@ -62,6 +62,13 @@ void bytes_to_chars(const unsigned char *bytes, char *chars, unsigned int bytes_
  */
 void bytes_set_last_trit_zero(unsigned char *bytes);
 
+/** @brief Increments the 82nd trit.
+ *  Incrementing the 82nd trit is equivalent to adding 3^81 to the corresponding
+ *  binary number.
+ *  @param bytes array consisting of 48 bytes.
+ */
+void bytes_increment_trit_82(unsigned char *bytes);
+
 /** @brief Adds a single integer to a 48-byte big-enadian integer.
  *  The bytes are changed in such a way, that they are still a vaild big-endian
  *  binary representation of a ternary number, i.e. the 243th trit is set to 0.

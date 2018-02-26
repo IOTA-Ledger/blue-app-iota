@@ -17,9 +17,13 @@ static const uint32_t NEG_HALF_3[12] = {
     0x865b38fd, 0xb74451c9, 0x56097f74, 0x55f957fa, 0x57805420, 0xa1961410};
 
 // representing the value of the highes trit in the feasible domain, i.e 3^242
-static const uint32_t LAST_TRIT[12] = {
+static const uint32_t TRIT_243[12] = {
     0x4b9d12c9, 0x3e00ecd3, 0x2908a09f, 0x75bc01b2, 0x184890dc, 0xa12f3aae,
     0xf3498e04, 0x91775c6c, 0x53ed0116, 0x540d500b, 0x50ff57bf, 0xbcd3d7df};
+
+// representing the value of the 82nd trit, i.e. 3^81
+static const uint32_t TRIT_82[12] = {0xd56d7cc3, 0xb6bf0c69, 0xa149e834,
+                                     0x4d98d5ce, 0x1};
 
 static const trit_t trits_mapping[27][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
@@ -216,13 +220,13 @@ static bool bigint_set_last_trit_zero(uint32_t *bigint)
 {
     if (bigint_is_negative(bigint)) {
         if (bigint_cmp(bigint, NEG_HALF_3) < 0) {
-            bigint_add(bigint, bigint, LAST_TRIT);
+            bigint_add(bigint, bigint, TRIT_243);
             return true;
         }
     }
     else {
         if (bigint_cmp(bigint, HALF_3) > 0) {
-            bigint_sub(bigint, bigint, LAST_TRIT);
+            bigint_sub(bigint, bigint, TRIT_243);
             return true;
         }
     }
@@ -401,6 +405,17 @@ void bytes_set_last_trit_zero(unsigned char *bytes)
     if (bigint_set_last_trit_zero(bigint)) {
         bigint_to_bytes(bigint, bytes);
     }
+}
+
+void bytes_increment_trit_82(unsigned char *bytes)
+{
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    bigint_add(bigint, bigint, TRIT_82);
+
+    // make sure that even by many carries the last trit is never set
+    bigint_set_last_trit_zero(bigint);
+    bigint_to_bytes(bigint, bytes);
 }
 
 void bytes_add_u32_mem(unsigned char *bytes, uint32_t summand)
