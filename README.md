@@ -1,5 +1,7 @@
 # IOTA App for Ledger Blue & Ledger Nano S
 
+[![Build Status](https://travis-ci.org/IOTA-Ledger/blue-app-iota.svg?branch=master)](https://travis-ci.org/IOTA-Ledger/blue-app-iota)
+
 Here we try to use natively available crypto logic to create IOTA Seeds and sign transactions on the fly. It's currently heavily in alpha so don't trust this yet!
 
 See [Ledger's documentation](http://ledger.readthedocs.io) to get more info about the inner workings.
