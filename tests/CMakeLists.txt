@@ -27,6 +27,7 @@ add_definitions(
 
 add_library(iota-ledger SHARED
     "../src/iota/addresses.c"
+    "../src/iota/bundle.c"
     "../src/iota/conversion.c"
     "../src/iota/kerl.c"
     "../src/keccak/sha3.c"

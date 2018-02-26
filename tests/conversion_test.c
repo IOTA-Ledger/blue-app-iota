@@ -5,8 +5,34 @@
 #include <cmocka.h>
 #include "test_constants.h"
 #include "iota/conversion.h"
+#include "iota/bundle.h"
 
 #define NUM_RANDOM_TESTS 10000
+
+static void test_increment_trit_82(void **state)
+{
+    (void)state; // unused
+
+    const int64_t value = 0;
+    const uint32_t timestamp = 0;
+    const uint32_t current_index = 0;
+    const uint32_t last_index = 1;
+    char tag[] = "999999999999999999999999999";
+
+    unsigned char bytes[NUM_HASH_BYTES];
+    create_bundle_bytes(value, tag, timestamp, current_index, last_index,
+                        bytes);
+    bytes_increment_trit_82(bytes);
+
+    // incrementing the 82nd trit should be equivalent to incrementing the tag
+    tag[0] = 'A';
+
+    unsigned char expected_bytes[NUM_HASH_BYTES];
+    create_bundle_bytes(value, tag, timestamp, current_index, last_index,
+                        expected_bytes);
+
+    assert_memory_equal(bytes, expected_bytes, NUM_HASH_BYTES);
+}
 
 static void test_int64_to_trits_zero(void **state)
 {
@@ -181,6 +207,7 @@ static void test_random_chars_via_bytes(void **state)
 int main(void)
 {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test(test_increment_trit_82),
         cmocka_unit_test(test_int64_to_trits_zero),
         cmocka_unit_test(test_int64_to_trits_one),
         cmocka_unit_test(test_int64_to_trits_neg_one),
