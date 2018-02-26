@@ -33,6 +33,7 @@ bipp44_path = (
               +"00000000"
               +"00000000")
 
+
 textToSign = ""
 while True:
 	data = raw_input("Enter text to sign, end with an empty line : ")
@@ -40,7 +41,9 @@ while True:
 		break
 	textToSign += data + "\n"
 
+
 dongle = getDongle(True)
+
 # 80 is magic start byte, 04 is type (GETPUBLICKEY) ignore rest of the data
 start_time = time.time()
 #publicKey = dongle.exchange(bytes(("80010000FF"+bipp44_path).decode('hex')))

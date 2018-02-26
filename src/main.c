@@ -57,7 +57,7 @@ static void IOTA_main(void)
     // initialize the UI
     ui_init();
 
-    unsigned char response[90];
+    char response[90];
     unsigned char tx_mask = 0;
 
     // bundle_bytes holds all of the bundle information in byte format
@@ -74,7 +74,7 @@ static void IOTA_main(void)
 
     // TODO: convert to 64 bit values
     int tx_val = 0;
-    unsigned char tx_tag[27];
+    char tx_tag[27];
     uint32_t tx_timestamp = 0;
     uint32_t tx_idx = 0;
 
@@ -120,7 +120,7 @@ static void IOTA_main(void)
                 }
 
                 uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
-                unsigned char *msg = G_io_apdu_buffer + APDU_HEADER_LENGTH;
+                char *msg = (char *)G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
                 // check second byte for instruction
                 switch (G_io_apdu_buffer[1]) {
@@ -163,7 +163,7 @@ static void IOTA_main(void)
 
                         // ensure current index is first thing we receive
                         // and verify the indexes stay in order
-                        if (tx_mask != TX_CUR & TX_LAST)
+                        if (tx_mask != TX_CUR_LAST)
                             THROW(IDX_OUT_OF_ORDER);
                         if (tmp_idx != tx_idx)
                             THROW(TEST_ERROR);
@@ -325,7 +325,7 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
 
-                    unsigned char dest_addr[82];
+                    char dest_addr[82];
                     // very first tx should be dest_addr
                     bytes_to_chars(bundle_bytes, dest_addr, 48);
 
@@ -333,12 +333,12 @@ static void IOTA_main(void)
                         ui_sign_tx(total_bal, send_amt, dest_addr, 82);
                     }
                     else {
-                        unsigned char top[20], bot[20];
+                        char top[21], bot[21];
                         memcpy(top, "Balance: ", 10);
                         memcpy(bot, "Spend: ", 8);
 
-                        uint_to_str(total_bal, top + 9, 20);
-                        uint_to_str(send_amt, bot + 7, 20);
+                        uint_to_str(total_bal, top + 9, 21);
+                        uint_to_str(send_amt, bot + 7, 21);
 
                         ui_display_message(top, 20, TYPE_STR, NULL, 0, 0, bot,
                                            20, TYPE_STR);

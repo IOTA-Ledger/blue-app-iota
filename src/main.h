@@ -60,6 +60,7 @@
 #define TX_TIME 0x08
 #define TX_CUR 0x10
 #define TX_LAST 0x20
+#define TX_CUR_LAST 0x30
 #define TX_SEED_IDX 0x40
 
 // all of the fields for the tx are filled

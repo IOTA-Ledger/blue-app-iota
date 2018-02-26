@@ -22,14 +22,186 @@ char addr[21];
 static uint8_t state_transitions[TOTAL_STATES][3];
 
 // ----------- local function prototypes
-void ui_display_state();
-void init_state_transitions();
-bool state_is(uint8_t state);
-uint8_t ui_translate_mask(unsigned int button_mask);
+void init_state_transitions(void);
+void ui_display_state(void);
 void ui_transition_state(unsigned int button_mask);
-void ui_record_addr(const char *a, uint8_t len);
-void display_glyphs(char *c1, char *c2);
-void display_glyphs_with_bars(char *c1, char *c2);
+
+unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
+
+// *************************
+// Ledger Nano S specific UI
+// *************************
+// one dynamic screen that changes based on the ui state
+static const bagl_element_t bagl_ui_nanos_screen[] = {
+    // {type, userid, x, y, width, height, stroke, radius, fill, fgcolor
+    // bgcolor, fontid, iconid}, text .....
+    {
+        {BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000,
+         0xFFFFFF, 0, 0},
+        NULL,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        top_str,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_LABELINE, 0x01, 0, 18, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        mid_str,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_LABELINE, 0x01, 0, 24, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        bot_str,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+         BAGL_GLYPH_ICON_LESS},
+        glyph_bar_l,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+         BAGL_GLYPH_ICON_LESS},
+        glyph_bar_r,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
+         BAGL_GLYPH_ICON_CROSS},
+        glyph_cross,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+         BAGL_GLYPH_ICON_CHECK},
+        glyph_check,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
+         BAGL_GLYPH_ICON_UP},
+        glyph_up,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+
+    {
+        {BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+         BAGL_GLYPH_ICON_DOWN},
+        glyph_down,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        NULL,
+    },
+};
+
+
+/* ------------------- DISPLAY UI FUNCTIONS -------------
+ ---------------------------------------------------------
+ --------------------------------------------------------- */
+void ui_init()
+{
+    init_state_transitions();
+
+    ui_state = STATE_WELCOME;
+    ui_display_state();
+}
+
+void ui_reset()
+{
+    bal = 0;
+    out = 0;
+    memset(addr, '\0', sizeof(addr));
+
+    ui_state = STATE_WELCOME;
+    ui_display_state();
+}
+
+void ui_record_addr(const char *a, uint8_t len)
+{
+    // length 81 or 82 means full address
+    if (len == 81 || len == 82) {
+        // Convert into abbreviated seeed
+        memcpy(addr, a, 6);          // first 6 chars of address
+        memcpy(addr + 6, "...", 3);  // copy ...
+        memcpy(addr + 9, a + 75, 7); // copy last 6 chars + null
+    }
+    else if (len <= 21) {
+        memcpy(addr, a, len);
+    }
+}
+
+void ui_sign_tx(uint64_t b, uint64_t o, const char *a, uint8_t len)
+{
+    bal = b;
+    out = o;
+    ui_record_addr(a, len);
+
+    ui_state = STATE_TX_SIGN;
+
+    ui_display_state();
+}
 
 // write_display(&words, sizeof(words), TYPE_STR);
 // write_display(&int_val, sizeof(int_val), TYPE_INT);
@@ -66,167 +238,6 @@ void write_display(void *o, uint8_t sz, uint8_t t, uint8_t p)
     }
 }
 
-// ********************************************************************************
-// Ledger Nano S specific UI
-// ********************************************************************************
-
-static const bagl_element_t bagl_ui_nanos_screen[] = {
-    // {
-    //     {type, userid, x, y, width, height, stroke, radius, fill, fgcolor,
-    //      bgcolor, font_id, icon_id},
-    //     text,
-    //     touch_area_brim,
-    //     overfgcolor,
-    //     overbgcolor,
-    //     tap,
-    //     out,
-    //     over,
-    // },
-    {
-        {BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000,
-         0xFFFFFF, 0, 0},
-        NULL,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        top_str,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_LABELINE, 0x01, 0, 18, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        mid_str,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_LABELINE, 0x01, 0, 24, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        bot_str,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_LESS},
-        glyph_bar_l,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_LESS},
-        glyph_bar_r,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-         BAGL_GLYPH_ICON_CROSS},
-        glyph_cross,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_CHECK},
-        glyph_check,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-         BAGL_GLYPH_ICON_UP},
-        glyph_up,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        {BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-         BAGL_GLYPH_ICON_DOWN},
-        glyph_down,
-        0,
-        0,
-        0,
-        NULL,
-        NULL,
-        NULL,
-    },
-};
-
-
-/* ------------------- DISPLAY UI FUNCTIONS -------------
- ---------------------------------------------------------
- --------------------------------------------------------- */
-void ui_init()
-{
-    init_state_transitions();
-
-    ui_state = STATE_WELCOME;
-    ui_display_state();
-}
-
-void ui_reset()
-{
-    bal = 0;
-    out = 0;
-    memset(addr, '\0', sizeof(addr));
-
-    ui_state = STATE_WELCOME;
-    ui_display_state();
-}
-
-void ui_sign_tx(uint64_t b, uint64_t o, const char *a, uint8_t len)
-{
-    bal = b;
-    out = o;
-    ui_record_addr(a, len);
-
-    ui_state = STATE_TX_SIGN;
-
-    ui_display_state();
-}
-
 // ui_display_message(top, szof(top), TYPE_TOP,
 //                  mid, szof(mid), TYPE_MID,
 //                  bot, szof(bot) TYPE_BOT);
@@ -240,19 +251,6 @@ void ui_display_message(void *o, uint8_t sz, uint8_t t, void *o2, uint8_t sz2,
     UX_DISPLAY(bagl_ui_nanos_screen, NULL);
 }
 
-void ui_record_addr(const char *a, uint8_t len)
-{
-    // length 81 or 82 means full address
-    if (len == 81 || len == 82) {
-        // Convert into abbreviated seeed
-        memcpy(addr, a, 6);          // first 6 chars of address
-        memcpy(addr + 6, "...", 3);  // copy ...
-        memcpy(addr + 9, a + 75, 7); // copy last 6 chars + null
-    }
-    else if (len <= 21) {
-        memcpy(addr, a, len);
-    }
-}
 
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------
  ---------------------------------------------------------------
@@ -296,6 +294,7 @@ const bagl_element_t *io_seproxyhal_touch_approve(const bagl_element_t *e)
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
 
+// Turns glyphs on or off
 void display_on(char *c)
 {
     if (c != NULL)
@@ -310,6 +309,7 @@ void display_off(char *c)
     }
 }
 
+// turns on only 2 glyphs
 void display_glyphs(char *c1, char *c2)
 {
     // turn off all glyphs
@@ -325,6 +325,7 @@ void display_glyphs(char *c1, char *c2)
     display_on(c2);
 }
 
+// combine glyphs with bars along top
 void display_glyphs_with_bars(char *c1, char *c2)
 {
     // turn off all glyphs
@@ -369,6 +370,13 @@ void ui_transition_state(unsigned int button_mask)
 
     ui_state = state_transitions[ui_state][translated_mask];
 
+    if (state_is(STATE_WELCOME) && translated_mask == BUTTON_RIGHT) {
+        G_io_apdu_buffer[0] = '+';
+        G_io_apdu_buffer[1] = 0x90;
+        G_io_apdu_buffer[2] = 0x00;
+        // Send back the response, do not restart the event loop
+        io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 3);
+    }
     if (state_is(STATE_EXIT))
         io_seproxyhal_touch_exit(NULL);
 
@@ -417,7 +425,7 @@ void ui_display_state()
         write_display("UI ERROR", 20, TYPE_STR, MID);
         write_display(NULL, 0, 0, BOT);
 
-        display_glyphs(NULL, NULL);
+        display_glyphs_with_bars(NULL, NULL);
     } break;
     }
 

@@ -32,15 +32,6 @@
 #define STATE_TX_SPEND 2
 #define STATE_TX_ADDR 3
 
-
-void write_display(void* o, uint8_t sz, uint8_t t, uint8_t p);
-
-unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
-
-const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e);
-const bagl_element_t *io_seproxyhal_touch_deny(const bagl_element_t *e);
-const bagl_element_t* io_seproxyhal_touch_approve(const bagl_element_t *e);
-
 void ui_init(void);
 void ui_reset(void);
 void ui_display_message(void *o, uint8_t sz, uint8_t t,
