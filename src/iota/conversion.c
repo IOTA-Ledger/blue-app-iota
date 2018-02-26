@@ -2,9 +2,6 @@
 #include <stdint.h>
 #include "common.h"
 
-// if this is defined, ledger system calls are used for big-endiann arithmetics
-// #define USE_CX_MATH
-
 #define INT_LENGTH 12
 // base of the ternary system
 #define BASE 3
@@ -24,26 +21,6 @@ static const uint32_t LAST_TRIT[12] = {
     0x4b9d12c9, 0x3e00ecd3, 0x2908a09f, 0x75bc01b2, 0x184890dc, 0xa12f3aae,
     0xf3498e04, 0x91775c6c, 0x53ed0116, 0x540d500b, 0x50ff57bf, 0xbcd3d7df};
 
-#ifdef USE_CX_MATH
-static const unsigned char HALF_3_BYTES[] = {
-    0x5e, 0x69, 0xeb, 0xef, 0xa8, 0x7f, 0xab, 0xdf, 0xaa, 0x06, 0xa8, 0x05,
-    0xa9, 0xf6, 0x80, 0x8b, 0x48, 0xbb, 0xae, 0x36, 0x79, 0xa4, 0xc7, 0x02,
-    0x50, 0x97, 0x9d, 0x57, 0x0c, 0x24, 0x48, 0x6e, 0x3a, 0xde, 0x00, 0xd9,
-    0x14, 0x84, 0x50, 0x4f, 0x9f, 0x00, 0x76, 0x69, 0xa5, 0xce, 0x89, 0x64};
-
-static const unsigned char NEG_HALF_3_BYTES[] = {
-    0xa1, 0x96, 0x14, 0x10, 0x57, 0x80, 0x54, 0x20, 0x55, 0xf9, 0x57, 0xfa,
-    0x56, 0x09, 0x7f, 0x74, 0xb7, 0x44, 0x51, 0xc9, 0x86, 0x5b, 0x38, 0xfd,
-    0xaf, 0x68, 0x62, 0xa8, 0xf3, 0xdb, 0xb7, 0x91, 0xc5, 0x21, 0xff, 0x26,
-    0xeb, 0x7b, 0xaf, 0xb0, 0x60, 0xff, 0x89, 0x96, 0x5a, 0x31, 0x76, 0x9c};
-
-static const unsigned char LAST_TRIT_BYTES[] = {
-    0xbc, 0xd3, 0xd7, 0xdf, 0x50, 0xff, 0x57, 0xbf, 0x54, 0x0d, 0x50, 0x0b,
-    0x53, 0xed, 0x01, 0x16, 0x91, 0x77, 0x5c, 0x6c, 0xf3, 0x49, 0x8e, 0x04,
-    0xa1, 0x2f, 0x3a, 0xae, 0x18, 0x48, 0x90, 0xdc, 0x75, 0xbc, 0x01, 0xb2,
-    0x29, 0x08, 0xa0, 0x9f, 0x3e, 0x00, 0xec, 0xd3, 0x4b, 0x9d, 0x12, 0xc9};
-#endif
-
 static const trit_t trits_mapping[27][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
     {-1, 1, -1},  {0, 1, -1},  {1, 1, -1},  {-1, -1, 0}, {0, -1, 0}, {1, -1, 0},
@@ -57,9 +34,9 @@ static const char tryte_to_char_mapping[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
 /* --------------------- trits > trytes and back */
 // used for bytes to chars and back
 int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
-                    uint32_t tryte_len)
+                    unsigned int tryte_len)
 {
-    for (uint32_t i = 0; i < tryte_len; i++) {
+    for (unsigned int i = 0; i < tryte_len; i++) {
         int8_t idx = (int8_t)trytes_in[i] + 13;
         trits_out[i * 3 + 0] = trits_mapping[idx][0];
         trits_out[i * 3 + 1] = trits_mapping[idx][1];
@@ -69,14 +46,14 @@ int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
 }
 
 int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
-                    uint32_t trit_len)
+                    unsigned int trit_len)
 {
     if (trit_len % 3 != 0) {
         return -1;
     }
-    uint32_t tryte_len = trit_len / 3;
+    unsigned int tryte_len = trit_len / 3;
 
-    for (uint32_t i = 0; i < tryte_len; i++) {
+    for (unsigned int i = 0; i < tryte_len; i++) {
         trytes_out[i] = trits_in[i * 3 + 0] + trits_in[i * 3 + 1] * 3 +
                         trits_in[i * 3 + 2] * 9;
     }
@@ -86,9 +63,10 @@ int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
 
 /* --------------------- trytes > chars and back */
 // used for bytes to chars and back
-int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len)
+int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
+                    unsigned int len)
 {
-    for (uint8_t i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len; i++) {
         if (chars_in[i] == '9') {
             trytes_out[i] = 0;
         }
@@ -102,9 +80,10 @@ int chars_to_trytes(const char chars_in[], tryte_t trytes_out[], uint8_t len)
     return 0;
 }
 
-int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
+int trytes_to_chars(const tryte_t trytes_in[], char chars_out[],
+                    unsigned int len)
 {
-    for (uint16_t i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len; i++) {
         chars_out[i] = tryte_to_char_mapping[trytes_in[i] + 13];
     }
 
@@ -112,11 +91,11 @@ int trytes_to_chars(const tryte_t trytes_in[], char chars_out[], uint16_t len)
 }
 /* --------------------- END trytes > chars */
 
-void chars_to_trits(const char *chars, trit_t *trits)
+void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
 {
-    tryte_t trytes[81];
-    chars_to_trytes(chars, trytes, 81);
-    trytes_to_trits(trytes, trits, 81);
+    tryte_t trytes[chars_len];
+    chars_to_trytes(chars, trytes, chars_len);
+    trytes_to_trits(trytes, trits, chars_len);
 }
 
 /** @brief Returns true, if the long little-endian integer represents a negative
@@ -253,7 +232,7 @@ static bool bigint_set_last_trit_zero(uint32_t *bigint)
 /* --------------------- trits > bigint and back */
 static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
 {
-    unsigned int ms_index = 0;  // initialy there is no most significant word >0
+    unsigned int ms_index = 0; // initialy there is no most significant word >0
     os_memset(bigint, 0, 12 * sizeof(bigint[0]));
 
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
@@ -306,10 +285,37 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
     for (unsigned int i = 0; i < 242; i++) {
         const uint32_t rem = bigint_div_byte_mem(bigint, BASE);
-        trits[i] = rem - 1;  // convert back to balanced
+        trits[i] = rem - 1; // convert back to balanced
     }
     // set the last trit to zero for consistency
     trits[242] = 0;
+}
+
+bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits)
+{
+    const bool is_negative = value < 0;
+    if (is_negative) {
+        value = -value;
+    }
+
+    os_memset(trits, 0, num_trits);
+
+    for (unsigned int i = 0; i < num_trits; i++) {
+        if (value == 0) {
+            return false;
+        }
+
+        int rem = value % BASE;
+        value = value / BASE;
+        if (rem > 1) {
+            rem = -1;
+            value += 1;
+        }
+
+        trits[i] = is_negative ? -rem : rem;
+    }
+
+    return value != 0;
 }
 /* --------------------- END trits > bigint */
 
@@ -344,18 +350,19 @@ static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
     }
 }
 
-static inline void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
+void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
 {
     uint32_t bigint[12];
     trits_to_bigint(trits, bigint);
     bigint_to_bytes(bigint, bytes);
 }
 
-void chars_to_bytes(const char *chars, unsigned char *bytes, size_t chars_len)
+void chars_to_bytes(const char *chars, unsigned char *bytes,
+                    unsigned int chars_len)
 {
     for (unsigned int i = 0; i < chars_len / 81; i++) {
         trit_t trits[243];
-        chars_to_trits(chars + i * 81, trits);
+        chars_to_trits(chars + i * 81, trits, 81);
         // bigint can only handle 242 trits
         trits[242] = 0;
 
@@ -370,7 +377,8 @@ static inline void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
     bigint_to_trits_mem(bigint, trits);
 }
 
-void bytes_to_chars(const unsigned char *bytes, char *chars, size_t bytes_len)
+void bytes_to_chars(const unsigned char *bytes, char *chars,
+                    unsigned int bytes_len)
 {
     for (unsigned int i = 0; i < bytes_len / 48; i++) {
         tryte_t trytes[81];
@@ -388,24 +396,11 @@ void bytes_to_chars(const unsigned char *bytes, char *chars, size_t bytes_len)
 
 void bytes_set_last_trit_zero(unsigned char *bytes)
 {
-#ifdef USE_CX_MATH
-    if ((bytes[0] >> 7) != 0) {
-        if (cx_math_cmp(bytes, (unsigned char *)NEG_HALF_3_BYTES, 48) < 0) {
-            cx_math_add(bytes, bytes, (unsigned char *)LAST_TRIT_BYTES, 48);
-        }
-    }
-    else {
-        if (cx_math_cmp(bytes, (unsigned char *)HALF_3_BYTES, 48) > 0) {
-            cx_math_sub(bytes, bytes, (unsigned char *)LAST_TRIT_BYTES, 48);
-        }
-    }
-#else
     uint32_t bigint[12];
     bytes_to_bigint(bytes, bigint);
     if (bigint_set_last_trit_zero(bigint)) {
         bigint_to_bytes(bigint, bytes);
     }
-#endif
 }
 
 void bytes_add_u32_mem(unsigned char *bytes, uint32_t summand)
