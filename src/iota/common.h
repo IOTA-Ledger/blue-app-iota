@@ -61,6 +61,17 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
 /* -                            COMMON                                   - */
 /* ----------------------------------------------------------------------- */
 
+#define UNUSED(x) (void)(x)
+
+#define MIN(a,b) \
+        ({ __typeof__ (a)_a = (a); \
+           __typeof__ (b)_b = (b); \
+           _a < _b ? _a : _b; })
+#define MAX(a,b) \
+        ({ __typeof__ (a)_a = (a); \
+           __typeof__ (b)_b = (b); \
+           _a > _b ? _a : _b; })
+
 #define CX_KECCAK384_SIZE 48
 
 #endif // COMMON_H
