@@ -3,12 +3,15 @@
 
 #ifdef NO_BOLOS
 
+#include <assert.h>
 #include <string.h>
 #include "sha3.h"
 
 /* ----------------------------------------------------------------------- */
 /* -                      DEFINES AND MACROS                             - */
 /* ----------------------------------------------------------------------- */
+
+#define THROW(x) assert(false)
 
 #define UNUSED(x) (void)(x)
 
