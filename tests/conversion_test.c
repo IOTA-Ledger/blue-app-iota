@@ -4,39 +4,33 @@
 #include <stdlib.h>
 #include <cmocka.h>
 #include "test_constants.h"
-#include "iota/conversion.h"
-#include "iota/bundle.h"
+// include the c-file to be able to test static functions
+#include "iota/conversion.c"
 
 #define NUM_RANDOM_TESTS 10000
 
 static void test_increment_trit_82(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
-    const int64_t value = 0;
-    const uint32_t timestamp = 0;
-    const uint32_t current_index = 0;
-    const uint32_t last_index = 1;
-    char tag[] = "999999999999999999999999999";
+    // all zero trits correspond to all zero bytes
+    unsigned char bytes[NUM_HASH_BYTES] = {0};
 
-    unsigned char bytes[NUM_HASH_BYTES];
-    create_bundle_bytes(value, tag, timestamp, current_index, last_index,
-                        bytes);
     bytes_increment_trit_82(bytes);
 
-    // incrementing the 82nd trit should be equivalent to incrementing the tag
-    tag[0] = 'A';
+    trit_t inc_trits[NUM_HASH_TRITS];
+    bytes_to_trits(bytes, inc_trits);
 
-    unsigned char expected_bytes[NUM_HASH_BYTES];
-    create_bundle_bytes(value, tag, timestamp, current_index, last_index,
-                        expected_bytes);
+    trit_t expected_trits[NUM_HASH_TRITS] = {0};
+    // the 82nd trit is the trit at index 81
+    expected_trits[81] = 1;
 
-    assert_memory_equal(bytes, expected_bytes, NUM_HASH_BYTES);
+    assert_memory_equal(inc_trits, expected_trits, NUM_HASH_TRITS);
 }
 
 static void test_int64_to_trits_zero(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     static const int64_t input_value = 0;
     static const trit_t expected_trits[42] = {0};
@@ -50,7 +44,7 @@ static void test_int64_to_trits_zero(void **state)
 
 static void test_int64_to_trits_one(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     static const int64_t input_value = 6078832729528464400;
     trit_t expected_trits[40];
@@ -65,7 +59,7 @@ static void test_int64_to_trits_one(void **state)
 
 static void test_int64_to_trits_neg_one(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     static const int64_t input_value = -6078832729528464400;
     trit_t expected_trits[40];
@@ -80,7 +74,7 @@ static void test_int64_to_trits_neg_one(void **state)
 
 static void test_int64_to_trits_overflow(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     static const int64_t input_value = 6078832729528464401;
 
@@ -120,7 +114,7 @@ static void assert_bytes_equal(unsigned char *actual, unsigned char *expected)
 
 static void test_random_bytes_via_chars(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     srand(2);
     for (uint i = 0; i < NUM_RANDOM_TESTS; i++) {
@@ -162,7 +156,7 @@ static void test_chars_via_bytes(const char *input)
 
 static void test_all_zero(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     static const char ZERO_CHARS[NUM_HASH_TRYTES] =
         "9999999999999999999999999999999999999999999999999999999999999999999999"
@@ -182,7 +176,7 @@ static void test_all_zero(void **state)
 
 static void test_all_neg_one(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     static const char NEG_ONE_CHARS[NUM_HASH_TRYTES] =
         "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
