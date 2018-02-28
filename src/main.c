@@ -60,23 +60,19 @@ static void IOTA_main(void)
     char response[90];
     unsigned char tx_mask = 0;
 
-    // bundle_bytes holds all of the bundle information in byte format
-    unsigned char bundle_bytes[MAX_INDEX_SZ * 96];
-
+    BUNDLE_CTX bundle_ctx;
+    bool initialized = false;
 
     // actual seed index for address
-    uint32_t idx_inputs[MAX_INPUTS];
+    uint32_t idx_inputs[MAX_BUNDLE_NUM_INPUTS];
     // bundle index
-    uint8_t bundle_idx_inputs[MAX_INPUTS];
+    uint8_t bundle_idx_inputs[MAX_BUNDLE_NUM_INPUTS];
     uint8_t input_counter = 0;
-
-    uint8_t last_index = 0;
 
     // TODO: convert to 64 bit values
     int tx_val = 0;
     char tx_tag[27];
     uint32_t tx_timestamp = 0;
-    uint32_t tx_idx = 0;
 
     uint32_t total_bal = 0;
     uint32_t send_amt = 0;
@@ -130,50 +126,53 @@ static void IOTA_main(void)
                 case INS_GET_MULTI_SEND: {
                     tx_mask = tx_mask | G_io_apdu_buffer[APDU_TX_TYPE];
 
-                    unsigned char *bytes_ptr = bundle_bytes + (tx_idx * 48 * 2);
-
-                    // make sure the very first piece of information we receive
-                    // is last idx
-                    if (G_io_apdu_buffer[APDU_TX_TYPE] != TX_LAST &&
-                        last_index == 0)
-                        THROW(LAST_IDX_ERROR);
-
                     // check third byte for which part of tx we are receiving
                     switch (G_io_apdu_buffer[APDU_TX_TYPE]) {
                     /* -------------------- TX LAST ------------------- */
                     case TX_LAST: {
                         // only rcv last index once
-                        if (last_index != 0)
+                        if (initialized) {
                             THROW(LAST_IDX_ERROR);
+                        }
 
-                        last_index = str_to_int(msg, len);
+                        uint32_t last_index = str_to_int(msg, len);
                         // 2 is minimum (idx0=output, idx1=input,
                         // idx2=input_meta)
-                        if (last_index < 2 || last_index > MAX_INDEX_SZ) {
+                        if (last_index < 2 ||
+                            last_index > MAX_BUNDLE_NUM_INPUTS) {
                             last_index = 0;
                             THROW(LAST_IDX_ERROR);
                         }
+                        bundle_initialize(&bundle_ctx, last_index);
 
                         memset(response, '-', 90);
                         uint_to_str(last_index, response, 10);
                     } break;
                     /* -------------------- TX CUR ------------------- */
                     case TX_CUR: {
-                        uint32_t tmp_idx = str_to_int(msg, len);
+                        if (!initialized) {
+                            THROW(LAST_IDX_ERROR);
+                        }
+
+                        uint32_t tx_idx = bundle_get_current_index(&bundle_ctx);
+                        uint32_t input_idx = str_to_int(msg, len);
 
                         // ensure current index is first thing we receive
                         // and verify the indexes stay in order
                         if (tx_mask != TX_CUR_LAST)
                             THROW(IDX_OUT_OF_ORDER);
-                        if (tmp_idx != tx_idx)
+                        if (input_idx != tx_idx)
                             THROW(TEST_ERROR);
 
                         memset(response, '-', 90);
                         uint_to_str(tx_idx - 1, response, 10);
-
                     } break;
                     /* --------------- TX SEED IDX ------------------ */
                     case TX_SEED_IDX: {
+                        if (!initialized) {
+                            THROW(LAST_IDX_ERROR);
+                        }
+
                         // just record the index, but let the host provide addr
                         // to save time - this will be double checked in bundle
                         // generation
@@ -182,7 +181,8 @@ static void IOTA_main(void)
                         // copy this index for re-use with signature gen
                         // and copy it's position in the bundle
                         idx_inputs[input_counter] = tmp_idx;
-                        bundle_idx_inputs[input_counter++] = tx_idx;
+                        bundle_idx_inputs[input_counter++] =
+                            bundle_get_current_index(&bundle_ctx);
 
                         // if we are using our last address, gen new one
                         if (tmp_idx == global_idx)
@@ -190,19 +190,27 @@ static void IOTA_main(void)
                     } break;
                     /* --------------- TX ADDR ------------------ */
                     case TX_ADDR: {
+                        if (!initialized) {
+                            THROW(LAST_IDX_ERROR);
+                        }
+
                         // if length is 81, we are provided an outgoing address
                         if (len >= 81) {
-                            // convert address char into address bytes
-                            chars_to_bytes(msg, bytes_ptr, 81);
+                            // add the address to the current transaction
+                            bundle_set_address_chars(&bundle_ctx, msg);
 
-                            memset(response, '-', 90);
-                            bytes_to_chars(bytes_ptr, response, 48);
+                            os_memset(response, '-', 90);
+                            os_memcpy(response, msg, 81);
                         }
                         else
                             THROW(BAD_ADDR);
                     } break;
                     /* ------------------ TX VALUE ------------------ */
                     case TX_VAL: {
+                        if (!initialized) {
+                            THROW(LAST_IDX_ERROR);
+                        }
+
                         // if it's a negative amount coming in, add it as our
                         // balance
                         if (msg[0] == '-') {
@@ -223,13 +231,22 @@ static void IOTA_main(void)
                     } break;
                     /* -------------------- TX TAG ------------------- */
                     case TX_TAG: {
-                        memcpy(tx_tag, msg, len);
+                        if (!initialized) {
+                            THROW(LAST_IDX_ERROR);
+                        }
+
+                        os_memset(tx_tag, '9', 27);
+                        os_memcpy(tx_tag, msg, MIN(27, len));
+
                         memset(response, '-', 90);
-                        memcpy(response, msg, 28);
-                        // TODO: Ensure tag is filled out with 9's
+                        memcpy(response, tx_tag, 27);
                     } break;
                     /* -------------------- TX TIME ------------------- */
                     case TX_TIME: {
+                        if (!initialized) {
+                            THROW(LAST_IDX_ERROR);
+                        }
+
                         tx_timestamp = str_to_int(msg, len);
                         memset(response, '-', 90);
                         uint_to_str(tx_timestamp, response, 10);
@@ -242,29 +259,24 @@ static void IOTA_main(void)
                     }
 
                     // tx is complete
-                    if (tx_mask == TX_FULL || tx_mask == TX_FULL_IN) {
-                        create_bundle_bytes(tx_val, tx_tag, tx_timestamp,
-                                            tx_idx, last_index, bytes_ptr + 48);
-
-                        tx_idx++;
+                    if (tx_mask & TX_FULL) {
+                        uint32_t tx_idx = bundle_add_tx(&bundle_ctx, tx_val,
+                                                        tx_tag, tx_timestamp);
 
                         // if tx val is negative, it's input, create meta tx
                         if (tx_val < 0) {
                             // since input, make sure we received the index
-                            if (tx_mask != TX_FULL_IN)
+                            if ((tx_mask & TX_SEED_IDX) == 0) {
                                 THROW(NO_SEED_IDX);
-
-                            // copy the tx info into the meta tx
-                            tx_val = 0;
+                            }
 
                             // copy address into meta tx bundle bytes
-                            memcpy(bytes_ptr + 96, bytes_ptr, 48);
+                            const unsigned char *address_bytes =
+                                bundle_get_address_bytes(&bundle_ctx, tx_idx);
+                            bundle_set_address_bytes(&bundle_ctx,
+                                                     address_bytes);
 
-                            create_bundle_bytes(tx_val, tx_tag, tx_timestamp,
-                                                tx_idx, last_index,
-                                                bytes_ptr + 144);
-
-                            tx_idx++;
+                            bundle_add_tx(&bundle_ctx, 0, tx_tag, tx_timestamp);
                         }
 
                         // reset tx_mask
@@ -277,37 +289,16 @@ static void IOTA_main(void)
                         if (tx_mask != TX_LAST)
                             THROW(INCOMPLETE_TX);
 
-                        bool idx_check = tx_idx == last_index;
-                        bool bal_check = total_bal - send_amt != 0;
-
-                        // check if we need to create a change tx
-                        if (idx_check && bal_check) {
-                            // if we are using our last address as change
-                            // gen new one, else reuse old
-                            if (last_addr_used)
-                                global_idx++;
-
-                            // TODO : Postpone generating change address until
-                            // tx is signed off on
-                            tx_val = total_bal - send_amt;
-                            memcpy(tx_tag, "LEDGER999999999999999999999", 27);
-
-                            unsigned char seed_bytes[48];
-                            get_seed(NULL /*TODO*/, 0, seed_bytes);
-
-                            // bytes_ptr will point to last_tx created
-                            get_public_addr(seed_bytes, global_idx, SEC_LVL,
-                                            bytes_ptr + 96);
-
-                            create_bundle_bytes(tx_val, tx_tag, tx_timestamp,
-                                                tx_idx, last_index,
-                                                bytes_ptr + 144);
-
-                            tx_idx++;
-                        }
-                        // ensure both are true, or neither
-                        else if (idx_check != bal_check)
+                        // TODO: do we want to support unbalanced transactions?
+                        if (total_bal != send_amt) {
                             THROW(UNBALANCED_TX);
+                        }
+
+                        unsigned char bundle_hash[48];
+                        bundle_finalize(&bundle_ctx, bundle_hash);
+
+                        memset(response, '-', 90);
+                        bytes_to_chars(bundle_hash, response, 48);
 
                         broadcast_complete = true;
                     }
@@ -327,7 +318,8 @@ static void IOTA_main(void)
 
                     char dest_addr[82];
                     // very first tx should be dest_addr
-                    bytes_to_chars(bundle_bytes, dest_addr, 48);
+                    bytes_to_chars(bundle_get_address_bytes(&bundle_ctx, 0),
+                                   dest_addr, 48);
 
                     if (broadcast_complete) {
                         ui_sign_tx(total_bal, send_amt, dest_addr, 82);
@@ -582,11 +574,8 @@ static void IOTA_main(void)
 
                 input_counter = 0;
 
-                last_index = 0;
-
                 tx_val = 0;
                 tx_timestamp = 0;
-                tx_idx = 0;
 
                 total_bal = 0;
                 send_amt = 0;

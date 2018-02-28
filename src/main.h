@@ -19,10 +19,6 @@
 #define MID 2
 #define BOT 3
 
-#define SEC_LVL 2
-#define MAX_INDEX_SZ 10
-#define MAX_INPUTS 4
-
 // data starts at apdu[5]
 #define APDU_HEADER_LENGTH 5
 // defines byte that says length
@@ -64,8 +60,8 @@
 #define TX_SEED_IDX 0x40
 
 // all of the fields for the tx are filled
-#define TX_FULL 0x3F
-#define TX_FULL_IN 0x7F
+#define TX_FULL (TX_ADDR | TX_VAL | TX_TAG | TX_TIME | TX_CUR | TX_LAST)
+#define TX_FULL_IN (TX_FULL | TX_SEED_IDX)
 // end IOTA-Related APIs
 
 extern cx_sha256_t hash;
