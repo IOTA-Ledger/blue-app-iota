@@ -3,7 +3,8 @@
 
 #ifdef NO_BOLOS
 
-#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "sha3.h"
 
@@ -11,7 +12,10 @@
 /* -                      DEFINES AND MACROS                             - */
 /* ----------------------------------------------------------------------- */
 
-#define THROW(x) assert(false)
+// no catching supported, just abort while printing the code name to stderr
+#define THROW(x) \
+        ({ fprintf(stderr, "EXCEPTION: " #x "\n"); \
+           abort(); })
 
 #define UNUSED(x) (void)(x)
 
@@ -45,13 +49,13 @@ typedef SHA3_CTX cx_sha3_t;
 typedef SHA3_CTX cx_hash_t;
 
 static inline void cx_keccak_init(SHA3_CTX* hash, int size) {
-        (void)size; // unused
+        UNUSED(size);
 
         keccak_384_Init(hash);
 }
 
 static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
-                           unsigned int len,unsigned char *out) {
+                           unsigned int len, unsigned char *out) {
 
         if (mode != CX_LAST) {
                 // if CX_LAST is not set, add input data to add to current hash
