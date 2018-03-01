@@ -30,6 +30,7 @@ add_library(iota-ledger SHARED
     "../src/iota/bundle.c"
     "../src/iota/conversion.c"
     "../src/iota/kerl.c"
+    "../src/iota/signing.c"
     "../src/keccak/sha3.c"
     "../src/aux.c"
 )
@@ -49,3 +50,7 @@ add_test(address_test ${CMAKE_CURRENT_BINARY_DIR}/address_test)
 add_executable(bundle_test bundle_test.c)
 target_link_libraries(bundle_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(bundle_test ${CMAKE_CURRENT_BINARY_DIR}/bundle_test)
+
+add_executable(signing_test signing_test.c)
+target_link_libraries(signing_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(signing_test ${CMAKE_CURRENT_BINARY_DIR}/signing_test)
