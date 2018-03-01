@@ -1,12 +1,5 @@
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stddef.h>
 #include <stdio.h>
-
-#include <cmocka.h>
-
-#include "hash_file.h"
-#include "test_constants.h"
+#include "test_common.h"
 #include "iota/conversion.h"
 #include "iota/kerl.h"
 

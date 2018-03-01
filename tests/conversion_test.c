@@ -1,9 +1,5 @@
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stddef.h>
 #include <stdlib.h>
-#include <cmocka.h>
-#include "test_constants.h"
+#include "test_common.h"
 // include the c-file to be able to test static functions
 #include "iota/conversion.c"
 

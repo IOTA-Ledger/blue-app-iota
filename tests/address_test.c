@@ -1,9 +1,4 @@
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <cmocka.h>
-#include "hash_file.h"
-#include "test_constants.h"
+#include "test_common.h"
 #include "iota/addresses.h"
 #include "iota/conversion.h"
 

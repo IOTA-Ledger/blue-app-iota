@@ -1,8 +1,4 @@
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <cmocka.h>
-#include "test_constants.h"
+#include "test_common.h"
 #include "iota/conversion.h"
 // include the c-file to be able to test static functions
 #include "iota/bundle.c"
@@ -25,11 +21,11 @@ static void test_increment_tag(void **state)
     // incrementing the 82nd trit should be equivalent to incrementing the tag
     tag[0] = 'A';
 
-    unsigned char expected_bytes[NUM_HASH_BYTES];
+    unsigned char exp_bytes[NUM_HASH_BYTES];
     create_bundle_bytes(value, tag, timestamp, current_index, last_index,
-                        expected_bytes);
+                        exp_bytes);
 
-    assert_memory_equal(bytes, expected_bytes, NUM_HASH_BYTES);
+    assert_memory_equal(bytes, exp_bytes, NUM_HASH_BYTES);
 }
 
 static void test_normalize_hash_zero(void **state)
@@ -40,8 +36,8 @@ static void test_normalize_hash_zero(void **state)
     normalize_hash(hash_trytes);
 
     // all zero hash is already normalized
-    static const tryte_t expected_trytes[NUM_HASH_TRYTES] = {0};
-    assert_memory_equal(hash_trytes, expected_trytes, NUM_HASH_TRYTES);
+    static const tryte_t exp_trytes[NUM_HASH_TRYTES] = {0};
+    assert_memory_equal(hash_trytes, exp_trytes, NUM_HASH_TRYTES);
 }
 
 static void test_normalize_hash_one(void **state)
@@ -52,9 +48,9 @@ static void test_normalize_hash_one(void **state)
     normalize_hash(hash_trytes);
 
     // in the normalized hash the first tryte will be reduced to lowest value
-    static const tryte_t expected_trytes[NUM_HASH_TRYTES] = {MIN_TRYTE_VALUE,
-                                                             MAX_TRYTE_VALUE};
-    assert_memory_equal(hash_trytes, expected_trytes, NUM_HASH_TRYTES);
+    static const tryte_t exp_trytes[NUM_HASH_TRYTES] = {MIN_TRYTE_VALUE,
+                                                        MAX_TRYTE_VALUE};
+    assert_memory_equal(hash_trytes, exp_trytes, NUM_HASH_TRYTES);
 }
 
 static void test_normalize_hash_neg_one(void **state)
@@ -65,9 +61,9 @@ static void test_normalize_hash_neg_one(void **state)
     normalize_hash(hash_trytes);
 
     // in the normalized hash the first tryte will be reduced to highest value
-    static const tryte_t expected_trytes[NUM_HASH_TRYTES] = {MAX_TRYTE_VALUE,
-                                                             MIN_TRYTE_VALUE};
-    assert_memory_equal(hash_trytes, expected_trytes, NUM_HASH_TRYTES);
+    static const tryte_t exp_trytes[NUM_HASH_TRYTES] = {MAX_TRYTE_VALUE,
+                                                        MIN_TRYTE_VALUE};
+    assert_memory_equal(hash_trytes, exp_trytes, NUM_HASH_TRYTES);
 }
 
 // Hash relevant content of one transaction
@@ -106,19 +102,19 @@ static void test_bundle_hash(void **state)
         {"UMDTJXHIFVYVCHXKZNMQWMDHNLVQNMJMRULXUFRLNFVVUMKYZOAETVQOWSDUAKTXVNDS"
          "VAJCASTRQNV9D",
          -5, "999999999999999999999999999", 0}};
-    const char expected_hash[] = "QYPTXEAWEIIAXHUKFMNJAWTWLKVXNVCQUCTF9EBPZBVVH"
-                                 "JBOJTHTAGEQEAEWRFBG9MBWFPCR9OAYHZ9AC";
+    const char exp_hash[] = "QYPTXEAWEIIAXHUKFMNJAWTWLKVXNVCQUCTF9EBPZBVVHJBOJT"
+                            "HTAGEQEAEWRFBG9MBWFPCR9OAYHZ9AC";
 
     BUNDLE_CTX bundle_ctx;
     construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
 
-    unsigned char hash_bytes[48];
+    unsigned char hash_bytes[NUM_HASH_BYTES];
     compute_hash(&bundle_ctx, hash_bytes);
 
-    char hash[82];
-    bytes_to_chars(hash_bytes, hash, 48);
+    char hash_chars[NUM_HASH_CHARS];
+    bytes_to_chars(hash_bytes, hash_chars, NUM_HASH_BYTES);
 
-    assert_string_equal(hash, expected_hash);
+    assert_string_equal(hash_chars, exp_hash);
 }
 
 static void test_bundle_finalize(void **state)
