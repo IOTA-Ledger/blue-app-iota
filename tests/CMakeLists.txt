@@ -48,4 +48,4 @@ add_test(address_test ${CMAKE_CURRENT_BINARY_DIR}/address_test)
 
 add_executable(bundle_test bundle_test.c)
 target_link_libraries(bundle_test ${CMOCKA_LIBRARIES} iota-ledger)
-add_test(bundle_test ${CMAKE_CURRENT_BINARY_DIR}/conversion_test)
+add_test(bundle_test ${CMAKE_CURRENT_BINARY_DIR}/bundle_test)
