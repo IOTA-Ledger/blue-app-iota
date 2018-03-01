@@ -5,7 +5,7 @@
 #ifndef CONVERSION_H
 #define CONVERSION_H
 
-#include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include "iota_types.h"
 

@@ -203,7 +203,7 @@ static uint32_t bigint_div_byte_mem(uint32_t *a, uint8_t divisor)
     uint32_t remainder = 0;
 
     for (unsigned int i = 12; i-- > 0;) {
-        const uint64_t v = (uint64_t)0x100000000 * remainder + a[i];
+        const uint64_t v = UINT64_C(0x100000000) * remainder + a[i];
 
         remainder = v % divisor;
         a[i] = (v / divisor) & 0xFFFFFFFF;

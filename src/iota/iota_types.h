@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 typedef int8_t trit_t;
 typedef int8_t tryte_t;
