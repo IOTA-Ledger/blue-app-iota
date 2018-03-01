@@ -88,6 +88,28 @@ static void construct_bundle(const TX_ENTRY *txs, unsigned int num_txs,
     }
 }
 
+static void test_empty_bundle(void **state)
+{
+    UNUSED(state);
+
+    BUNDLE_CTX bundle_ctx;
+    expect_assert_failure(construct_bundle(NULL, 0, &bundle_ctx));
+}
+
+static void test_one_tx_bundle(void **state)
+{
+    UNUSED(state);
+
+    const TX_ENTRY txs[] = {
+        {"LHWIEGUADQXNMRKQSBDJOAFMBIFKHHZXYEFOU9WFRMBGODSNJAPGFHOUOSGDICSFVA9K"
+         "OUPPCMLAHPHAW",
+         10, "999999999999999999999999999", 0}};
+
+    BUNDLE_CTX bundle_ctx;
+    expect_assert_failure(
+        construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx));
+}
+
 static void test_bundle_hash(void **state)
 {
     UNUSED(state);
@@ -131,20 +153,49 @@ static void test_bundle_finalize(void **state)
         {"UMDTJXHIFVYVCHXKZNMQWMDHNLVQNMJMRULXUFRLNFVVUMKYZOAETVQOWSDUAKTXVNDS"
          "VAJCASTRQNV9D",
          -5, "999999999999999999999999999", 0}};
-    const char expected_hash[] = "VMSEGGHKOUYTE9JNZEQIZWFUYHATWEVXAIJNPG9EDPCQR"
-                                 "FAFWPCVGHYJDJWXAFNWRGUUPULXOCEJDBUVD";
+    const char exp_hash[] = "VMSEGGHKOUYTE9JNZEQIZWFUYHATWEVXAIJNPG9EDPCQRFAFWP"
+                            "CVGHYJDJWXAFNWRGUUPULXOCEJDBUVD";
+    const unsigned int exp_tag_increment = 404;
 
     BUNDLE_CTX bundle_ctx;
     construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
 
-    unsigned char hash_bytes[48];
-    uint32_t tag_increment = bundle_finalize(&bundle_ctx, hash_bytes);
-    assert_int_equal(tag_increment, 404);
+    unsigned char hash_bytes[NUM_HASH_BYTES];
+    const uint32_t tag_increment = bundle_finalize(&bundle_ctx, hash_bytes);
+    assert_int_equal(tag_increment, exp_tag_increment);
 
-    char hash[82];
-    bytes_to_chars(hash_bytes, hash, 48);
+    char hash_chars[NUM_HASH_CHARS];
+    bytes_to_chars(hash_bytes, hash_chars, NUM_HASH_BYTES);
 
-    assert_string_equal(hash, expected_hash);
+    assert_string_equal(hash_chars, exp_hash);
+}
+
+static void test_max_value_txs_bundle_finalize(void **state)
+{
+    UNUSED(state);
+
+    const TX_ENTRY txs[] = {
+        {"UMDTJXHIFVYVCHXKZNMQWMDHNLVQNMJMRULXUFRLNFVVUMKYZOAETVQOWSDUAKTXVNDSV"
+         "AJCASTRQNV9D",
+         MAX_IOTA_VALUE, "MMMMMMMMMMMMMMMMMMMMMMMMMMM", 0xFFFFFFFF},
+        {"WLRSPFNMBJRWS9DFXCGIROJCZCPJQG9PMOO9CUZNQXTLLQAYXGXT9LECGEQ9MQIWIBGQR"
+         "EFHULPOETHNZ",
+         -MAX_IOTA_VALUE, "MMMMMMMMMMMMMMMMMMMMMMMMMMM", 0xFFFFFFFF}};
+    const char exp_hash[] = "9ZARQDSKQGVYEKJGVILRTTLBGCTYITLIYBDBGSFDUKWINXSHCP"
+                            "AWNXSCIPVVDDFWYEHQITKGOUYGYAPRD";
+    const unsigned int exp_tag_increment = 79;
+
+    BUNDLE_CTX bundle_ctx;
+    construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
+
+    unsigned char hash_bytes[NUM_HASH_BYTES];
+    const uint32_t tag_increment = bundle_finalize(&bundle_ctx, hash_bytes);
+    assert_int_equal(tag_increment, exp_tag_increment);
+
+    char hash_chars[NUM_HASH_CHARS];
+    bytes_to_chars(hash_bytes, hash_chars, NUM_HASH_BYTES);
+
+    assert_string_equal(hash_chars, exp_hash);
 }
 
 int main(void)
@@ -154,8 +205,11 @@ int main(void)
         cmocka_unit_test(test_normalize_hash_zero),
         cmocka_unit_test(test_normalize_hash_one),
         cmocka_unit_test(test_normalize_hash_neg_one),
+        cmocka_unit_test(test_empty_bundle),
+        cmocka_unit_test(test_one_tx_bundle),
         cmocka_unit_test(test_bundle_hash),
-        cmocka_unit_test(test_bundle_finalize)};
+        cmocka_unit_test(test_bundle_finalize),
+        cmocka_unit_test(test_max_value_txs_bundle_finalize)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
