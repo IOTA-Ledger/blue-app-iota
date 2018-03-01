@@ -147,7 +147,7 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx, unsigned char *hash_bytes)
         normalize_hash(hash_trytes);
         if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
             // increment the tag of the first transaction
-            bytes_increment_trit_82(ctx->bytes + 48);
+            bytes_increment_trit_area_81(ctx->bytes + 48);
             tag_increment++;
         }
         else {

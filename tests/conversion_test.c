@@ -12,7 +12,7 @@ static void test_increment_trit_82(void **state)
     // all zero trits correspond to all zero bytes
     unsigned char bytes[NUM_HASH_BYTES] = {0};
 
-    bytes_increment_trit_82(bytes);
+    bytes_increment_trit_area_81(bytes);
 
     trit_t inc_trits[NUM_HASH_TRITS];
     bytes_to_trits(bytes, inc_trits);
@@ -20,6 +20,27 @@ static void test_increment_trit_82(void **state)
     trit_t expected_trits[NUM_HASH_TRITS] = {0};
     // the 82nd trit is the trit at index 81
     expected_trits[81] = 1;
+
+    assert_memory_equal(inc_trits, expected_trits, NUM_HASH_TRITS);
+}
+
+static void test_increment_trit_no_overflow(void **state)
+{
+    UNUSED(state);
+
+    trit_t trits[NUM_HASH_TRITS] = {0};
+    memset(trits + 81, 1, 81);
+
+    unsigned char bytes[NUM_HASH_BYTES];
+    trits_to_bytes(trits, bytes);
+
+    bytes_increment_trit_area_81(bytes);
+
+    trit_t inc_trits[NUM_HASH_TRITS];
+    bytes_to_trits(bytes, inc_trits);
+
+    trit_t expected_trits[NUM_HASH_TRITS] = {0};
+    memset(expected_trits + 81, -1, 81);
 
     assert_memory_equal(inc_trits, expected_trits, NUM_HASH_TRITS);
 }
@@ -198,6 +219,7 @@ int main(void)
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_increment_trit_82),
+        cmocka_unit_test(test_increment_trit_no_overflow),
         cmocka_unit_test(test_int64_to_trits_zero),
         cmocka_unit_test(test_int64_to_trits_one),
         cmocka_unit_test(test_int64_to_trits_neg_one),

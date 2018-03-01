@@ -7,6 +7,9 @@
 typedef int8_t trit_t;
 typedef int8_t tryte_t;
 
+#define MIN_TRIT_VALUE -1
+#define MAX_TRIT_VALUE 1
+
 #define MIN_TRYTE_VALUE -13
 #define MAX_TRYTE_VALUE 13
 

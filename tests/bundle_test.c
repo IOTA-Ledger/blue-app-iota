@@ -16,7 +16,7 @@ static void test_increment_tag(void **state)
     unsigned char bytes[NUM_HASH_BYTES];
     create_bundle_bytes(value, tag, timestamp, current_index, last_index,
                         bytes);
-    bytes_increment_trit_82(bytes);
+    bytes_increment_trit_area_81(bytes);
 
     // incrementing the 82nd trit should be equivalent to incrementing the tag
     tag[0] = 'A';
