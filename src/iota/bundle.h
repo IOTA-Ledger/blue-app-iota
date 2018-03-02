@@ -1,6 +1,8 @@
 #ifndef BUNDLE_H
 #define BUNDLE_H
 
+#include "iota_types.h"
+
 #define SEC_LVL 2
 
 #define MAX_BUNDLE_INDEX_SZ 8
@@ -36,5 +38,12 @@ const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
                                               uint32_t tx_index);
 
 uint32_t bundle_get_current_index(const BUNDLE_CTX *ctx);
+
+/** @brief Computes the normalized hash.
+ *  @param hash_bytes input hash in 48-byte representation.
+ *  @param normalized_hash_trytes target 81-tryte array for the normalized hash.
+ */
+void normalize_hash_bytes(const unsigned char *hash_bytes,
+                          tryte_t *normalized_hash_trytes);
 
 #endif // BUNDLE_H

@@ -114,11 +114,18 @@ static void normalize_hash_fragment(tryte_t *fragment_trytes)
     }
 }
 
-static void normalize_hash(tryte_t *hash_trytes)
+static inline void normalize_hash(tryte_t *hash_trytes)
 {
     for (unsigned int i = 0; i < 3; i++) {
         normalize_hash_fragment(hash_trytes + i * 27);
     }
+}
+
+void normalize_hash_bytes(const unsigned char *hash_bytes,
+                          tryte_t *normalized_hash_trytes)
+{
+    bytes_to_trytes(hash_bytes, normalized_hash_trytes);
+    normalize_hash(normalized_hash_trytes);
 }
 
 static inline void compute_hash(const BUNDLE_CTX *ctx,
@@ -140,11 +147,10 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx, unsigned char *hash_bytes)
     }
 
     while (true) {
-        tryte_t hash_trytes[81];
         compute_hash(ctx, hash_bytes);
-        bytes_to_trytes(hash_bytes, hash_trytes);
 
-        normalize_hash(hash_trytes);
+        tryte_t hash_trytes[81];
+        normalize_hash_bytes(hash_bytes, hash_trytes);
         if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
             // increment the tag of the first transaction
             bytes_increment_trit_area_81(ctx->bytes + 48);
