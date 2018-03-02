@@ -35,7 +35,8 @@ unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
 
 // clang-format off
 static const bagl_element_t bagl_ui_nanos_screen[] = {
-    // {type, userid, x, y, width, height, stroke, radius, fill, fgcolor, bgcolor, fontid, iconid}, text .....
+    // {type, userid, x, y, width, height, stroke, radius, fill,
+    // fgcolor, bgcolor, fontid, iconid}, text .....
     {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
       0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
 
@@ -122,7 +123,7 @@ void write_display(void *o, uint8_t sz, uint8_t t, uint8_t p)
 {
     // don't allow messages greater than 20
     if (sz > 21)
-        sz = 2;
+        sz = 21;
     char *c_ptr = NULL;
 
     if (p == TOP)
@@ -283,13 +284,6 @@ void ui_transition_state(unsigned int button_mask)
 
     ui_state = state_transitions[ui_state][translated_mask];
 
-    if (state_is(STATE_WELCOME) && translated_mask == BUTTON_RIGHT) {
-        G_io_apdu_buffer[0] = '+';
-        G_io_apdu_buffer[1] = 0x90;
-        G_io_apdu_buffer[2] = 0x00;
-        // Send back the response, do not restart the event loop
-        io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 3);
-    }
     if (state_is(STATE_EXIT))
         io_seproxyhal_touch_exit(NULL);
 

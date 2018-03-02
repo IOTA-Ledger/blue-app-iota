@@ -6,7 +6,6 @@
 #include "iota/iota_types.h"
 #include "iota/kerl.h"
 #include "iota/conversion.h"
-#include "iota/transaction.h"
 #include "iota/addresses.h"
 
 

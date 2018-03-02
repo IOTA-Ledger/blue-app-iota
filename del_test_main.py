@@ -44,11 +44,37 @@ while True:
 
 dongle = getDongle(True)
 
+exceptionCount = 0
+
 # 80 is magic start byte, 04 is type (GETPUBLICKEY) ignore rest of the data
 start_time = time.time()
 #publicKey = dongle.exchange(bytes(("80010000FF"+bipp44_path).decode('hex')))
-#80 20 01
 
+
+# first byte: magic first byte (always 80)
+# second byte: instruction type
+# third byte: more, or end transmission
+# fourth byte: sub instruction type
+# fifth byte: length of message
+
+
+# ------------------------------------------
+# Should fail on wrong initial byte
+try:
+    publicKey = dongle.exchange(bytes("70200020FF".decode('hex') + "5\0"));
+except:
+    exceptionCount++;
+
+# ------------------------------------------
+# Should fail on not rcv last index first
+try:
+    publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "0\0"));
+except:
+    exceptionCount++;
+
+
+
+# ------------------------------------------
 #last - provide last index first
 publicKey = dongle.exchange(bytes("80200020FF".decode('hex') + "5\0"));
 print "Last: " + str(publicKey) + "\n";
@@ -88,7 +114,7 @@ print "Cur: " + str(publicKey) + "\n";
 #on input tx's you must provide seed index
 #idx
 publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "0\0"));
-print "Seed Idx: " + str(publicKey) + "\n";
+print "Idx: " + str(publicKey) + "\n";
 
 #addr
 publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
@@ -118,7 +144,7 @@ print "Cur: " + str(publicKey) + "\n";
 #input index
 #idx
 publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "4\0"));
-print "Seed Idx: " + str(publicKey) + "\n";
+print "Idx: " + str(publicKey) + "\n";
 
 #addr
 publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
