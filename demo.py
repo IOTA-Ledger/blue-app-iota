@@ -42,6 +42,9 @@ while True:
 	textToSign += data + "\n"
 
 
+test_addr = "ADR"*27 + "\0";
+
+
 dongle = getDongle(True)
 
 # 80 is magic start byte, 04 is type (GETPUBLICKEY) ignore rest of the data
@@ -61,11 +64,10 @@ publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "0\0"));
 print "Cur: " + str(publicKey) + "\n";
 
 #addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-   "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr);
 print "Addr: " + str(publicKey) + "\n";
 
-#value
+#value -  RIGHT NOW TX_VAL JUST OVERFLOWS AND GOES BACK TO 0 IF NUM GETS TOO LARGE
 publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "18\0"));
 print "Val: " + str(publicKey) + "\n";
 
@@ -91,8 +93,7 @@ publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "0\0"));
 print "Seed Idx: " + str(publicKey) + "\n";
 
 #addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr);
 print "Addr: " + str(publicKey) + "\n";
 
 #value
@@ -121,8 +122,7 @@ publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "4\0"));
 print "Seed Idx: " + str(publicKey) + "\n";
 
 #addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr);
 print "Addr: " + str(publicKey) + "\n";
 
 #value

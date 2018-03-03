@@ -26,22 +26,6 @@ import time
 #define INS_CHANGE_INDEX 0x08
 #define INS_SIGN 0x10
 
-bipp44_path = (
-               "8000002C"
-              +"80000378"
-              +"80000000"
-              +"00000000"
-              +"00000000")
-
-
-textToSign = ""
-while True:
-	data = raw_input("Enter text to sign, end with an empty line : ")
-	if len(data) == 0:
-		break
-	textToSign += data + "\n"
-
-
 dongle = getDongle(True)
 
 exceptionCount = 0
@@ -57,134 +41,93 @@ start_time = time.time()
 # fourth byte: sub instruction type
 # fifth byte: length of message
 
+test_addr = "ADR"*27 + "\0";
+
 
 # ------------------------------------------
 # Should fail on wrong initial byte
 try:
-    publicKey = dongle.exchange(bytes("70200020FF".decode('hex') + "5\0"));
+    dongle.exchange(bytes("70200020FF".decode('hex') + "5\0"));
 except:
-    exceptionCount++;
+    exceptionCount += 1;
 
 # ------------------------------------------
-# Should fail on not rcv last index first
+# Should fail on not rcv last index first (this is Cur flag)
 try:
-    publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "0\0"));
+    dongle.exchange(bytes("80200010FF".decode('hex') + "0\0"));
 except:
-    exceptionCount++;
-
-
+    exceptionCount += 1;
 
 # ------------------------------------------
-#last - provide last index first
-publicKey = dongle.exchange(bytes("80200020FF".decode('hex') + "5\0"));
-print "Last: " + str(publicKey) + "\n";
+# Last idx too small
+try:
+    dongle.exchange(bytes("80200020FF".decode('hex') + "1\0"));
+except:
+    exceptionCount += 1;
 
+# ------------------------------------------
+# Last idx too large
+try:
+    dongle.exchange(bytes("80200020FF".decode('hex') + "9\0"));
+except:
+    exceptionCount += 1;
 
+# ------------------------------------------
+# Cur out of order
+dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
+try:
+    dongle.exchange(bytes("80200010FF".decode('hex') + "1\0"));
+except:
+    exceptionCount += 1;
 
-#per tx, make sure cur comes first
-#cur
-publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "0\0"));
-print "Cur: " + str(publicKey) + "\n";
+# ------------------------------------------
+# Previous TX incomplete
+dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
+dongle.exchange(bytes("80200010FF".decode('hex') + "0\0")); # set cur idx
+try:
+    dongle.exchange(bytes("80200010FF".decode('hex') + "1\0"));
+except:
+    exceptionCount += 1;
 
-#addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-   "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
-print "Addr: " + str(publicKey) + "\n";
+# ------------------------------------------
+# Previous TX incomplete - missing time
+dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
+dongle.exchange(bytes("80200010FF".decode('hex') + "0\0")); # set cur idx
+dongle.exchange(bytes("8020000151".decode('hex') + test_addr)); # set addr
+dongle.exchange(bytes("80200002FF".decode('hex') + "200\0")); # set val
+dongle.exchange(bytes("802000041B".decode('hex') + "TAG\0")); # set tag
+try:
+    dongle.exchange(bytes("80200010FF".decode('hex') + "1\0")); # set cur idx
+except:
+    exceptionCount += 1;
 
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "18\0"));
-print "Val: " + str(publicKey) + "\n";
+# ------------------------------------------
+# Input missing seed idx
+dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
+dongle.exchange(bytes("80200010FF".decode('hex') + "0\0")); # set cur idx
+dongle.exchange(bytes("8020000151".decode('hex') + test_addr)); # set addr
+dongle.exchange(bytes("80200002FF".decode('hex') + "-5\0")); # set val
+dongle.exchange(bytes("802000041B".decode('hex') + "TAG\0")); # set tag
+dongle.exchange(bytes("80200108FF".decode('hex') + "99999\0")); # set time
+try:
+    dongle.exchange(bytes("80200010FF".decode('hex') + "1\0")); # set cur idx
+except:
+    exceptionCount += 1;
 
-#tag - 1B is 27
-publicKey = dongle.exchange(bytes("802000041B".decode('hex') + "TAG999999999999999999999995\0"));
-print "Tag: " + str(publicKey) + "\n";
-
-#time
-publicKey = dongle.exchange(bytes("80200008FF".decode('hex') + "99999\0"));
-print "Time: " + str(publicKey) + "\n";
-
-
-
-
-#per tx, make sure cur comes first
-#cur
-publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "1\0"));
-print "Cur: " + str(publicKey) + "\n";
-
-#on input tx's you must provide seed index
-#idx
-publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "0\0"));
-print "Idx: " + str(publicKey) + "\n";
-
-#addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
-print "Addr: " + str(publicKey) + "\n";
-
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-9\0"));
-print "Val: " + str(publicKey) + "\n";
-
-#tag - 1B is 27
-publicKey = dongle.exchange(bytes("802000041B".decode('hex') + "TAG999999999999999999999995\0"));
-print "Tag: " + str(publicKey) + "\n";
-
-#time
-publicKey = dongle.exchange(bytes("80200008FF".decode('hex') + "99999\0"));
-print "Time: " + str(publicKey) + "\n";
-
-
-
-
-#per tx, make sure cur comes first
-#cur
-publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "3\0"));
-print "Cur: " + str(publicKey) + "\n";
-
-#input index
-#idx
-publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "4\0"));
-print "Idx: " + str(publicKey) + "\n";
-
-#addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ\0"));
-print "Addr: " + str(publicKey) + "\n";
-
-#value
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "-15\0"));
-print "Val: " + str(publicKey) + "\n";
-
-#tag - 1B is 27
-publicKey = dongle.exchange(bytes("802000041B".decode('hex') + "TAG999999999999999999999995\0"));
-print "Tag: " + str(publicKey) + "\n";
-
-#time
-publicKey = dongle.exchange(bytes("80200108FF".decode('hex') + "99999\0"));
-print "Time: " + str(publicKey) + "\n";
-
-
-
-
-##
-#use_idx = True
-#address
-#if use_idx:
-#    publicKey = dongle.exchange(bytes("8020000110".decode('hex') +
-#                                      "0"));
-#else:
-#    publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-#        "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ"));
-#print "Addr: " + str(publicKey);
-
-
+# ------------------------------------------
+# Input missing input address
+dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
+dongle.exchange(bytes("80200010FF".decode('hex') + "0\0")); # set cur idx
+dongle.exchange(bytes("80200040FF".decode('hex') + "4\0")); # set input idx
+dongle.exchange(bytes("80200002FF".decode('hex') + "-5\0")); # set val
+dongle.exchange(bytes("802000041B".decode('hex') + "TAG\0")); # set tag
+dongle.exchange(bytes("80200108FF".decode('hex') + "99999\0")); # set time
+try:
+    dongle.exchange(bytes("80200010FF".decode('hex') + "1\0")); # set cur idx
+except:
+    exceptionCount += 1;
 
 
 
 elapsed_time = time.time() - start_time
-
-# third byte specifies FINAL TRANSMISSION - 00 is more, 01 is end
-# fourth byte specifies TX PART
-#80 20 01
-
-print "Response: %s took: %d seconds" % (str(publicKey), elapsed_time)
+print "Time Elapsed: %d - Exceptions: %d" % (elapsed_time, exceptionCount)

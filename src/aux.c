@@ -8,66 +8,82 @@
 #include "iota/conversion.h"
 #include "iota/addresses.h"
 
-
-// functions for reading from input buffer
-void uint_to_str(uint32_t i, char *str, uint8_t len)
+// len specifies max size of buffer
+// if buffer doesn't fit whole int, returns null
+void int_to_str(int64_t num, char *str, uint8_t len)
 {
-    // snprintf null terminates
-    snprintf(str, len, "%u", i);
-}
+    // don't do anything if buffer isn't big enough
+    if (len < 2) {
+        return;
+    }
 
-void int_to_str(int i, char *str, uint8_t len)
-{
-    // snprintf null terminates
-    snprintf(str, len, "%d", i);
+    int64_t i = 0;
+    bool isNeg = false;
+
+    // handle 0 first
+    if (num == 0) {
+        str[0] = '0';
+        str[1] = '\0';
+        return;
+    }
+
+    if (num < 0) {
+        isNeg = true;
+        num = -num;
+    }
+
+    while (num != 0) {
+        uint8_t rem = num % 10;
+        str[i++] = rem + '0';
+        num = num / 10;
+
+        // ensure we have room for full int + null term
+        if (i == len || (i == len - 1 && isNeg)) {
+            str[0] = '\0';
+            return;
+        }
+    }
+
+    if (isNeg)
+        str[i++] = '-';
+
+    str[i--] = '\0';
+
+    // reverse the string
+    for (uint8_t j = 0; j < i; j++, i--) {
+        char c = str[j];
+        str[j] = str[i];
+        str[i] = c;
+    }
 }
 
 // len specifies length of number (789 is 3 digits).
-// Any number above 3 will work fine in this scenario
-uint32_t str_to_int(char *str, uint8_t len)
+// any large enough number works (reads until non digit char)
+// too large overflows the integer
+int64_t str_to_int(char *str, uint8_t len)
 {
-    uint32_t num = 0;
-    // don't attempt to store more than 10 characters in a 32bit unsigned
-    if (len > 10)
-        len = 10;
+    bool isNeg = false;
+    int64_t num = 0;
+    // including negative sign, max 20 chars in 64 bit int
+    if (len > 20)
+        len = 20;
+
+    if (str[0] == '-') {
+        isNeg = true;
+        str++;
+    }
 
     for (uint8_t i = 0; i < len; i++) {
-        switch (str[i]) {
-        case '0':
-            num = (num * 10) + 0;
+        // ensure it is still a number
+        if (str[i] < '0' || str[i] > '9')
             break;
-        case '1':
-            num = (num * 10) + 1;
-            break;
-        case '2':
-            num = (num * 10) + 2;
-            break;
-        case '3':
-            num = (num * 10) + 3;
-            break;
-        case '4':
-            num = (num * 10) + 4;
-            break;
-        case '5':
-            num = (num * 10) + 5;
-            break;
-        case '6':
-            num = (num * 10) + 6;
-            break;
-        case '7':
-            num = (num * 10) + 7;
-            break;
-        case '8':
-            num = (num * 10) + 8;
-            break;
-        case '9':
-            num = (num * 10) + 9;
-            break;
-            // any other char means we are done
-        default:
-            return num;
-        }
+
+        num = (num * 10) + str[i] - '0';
     }
+
+    if (isNeg)
+        num = -num;
+
     return num;
 }
 

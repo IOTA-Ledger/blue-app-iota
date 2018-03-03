@@ -14,8 +14,8 @@ char glyph_up[2], glyph_down[2];
 uint8_t ui_state;
 
 // tx information
-uint32_t bal = 0;
-uint32_t out = 0;
+uint64_t bal = 0;
+uint64_t out = 0;
 char addr[21];
 
 // matrix holds layout of state transitions

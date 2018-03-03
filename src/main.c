@@ -68,13 +68,12 @@ static void IOTA_main(void)
     uint8_t bundle_idx_inputs[MAX_BUNDLE_NUM_INPUTS];
     uint8_t input_counter = 0;
 
-    // TODO: convert to 64 bit values
-    int tx_val = 0;
+    int64_t tx_val = 0;
     char tx_tag[27];
     uint32_t tx_timestamp = 0;
 
-    uint32_t total_bal = 0;
-    uint32_t send_amt = 0;
+    uint64_t total_bal = 0;
+    uint64_t send_amt = 0;
 
     bool broadcast_complete = false;
     bool last_addr_used = false;
@@ -147,7 +146,7 @@ static void IOTA_main(void)
                         initialized = true;
 
                         memset(response, '-', 90);
-                        uint_to_str(last_index, response, 10);
+                        int_to_str(last_index, response, 10);
                     } break;
                     /* -------------------- TX CUR ------------------- */
                     case TX_CUR: {
@@ -166,7 +165,7 @@ static void IOTA_main(void)
                             THROW(0x0005);
 
                         memset(response, '-', 90);
-                        uint_to_str(tx_idx, response, 10);
+                        int_to_str(tx_idx, response, 10);
                     } break;
                     /* --------------- TX SEED IDX ------------------ */
                     case TX_SEED_IDX: {
@@ -190,7 +189,7 @@ static void IOTA_main(void)
                             last_addr_used = true;
 
                         memset(response, '-', 90);
-                        uint_to_str(tmp_idx, response, 10);
+                        int_to_str(tmp_idx, response, 10);
                     } break;
                     /* --------------- TX ADDR ------------------ */
                     case TX_ADDR: {
@@ -215,23 +214,17 @@ static void IOTA_main(void)
                             THROW(0x0009);
                         }
 
-                        // if it's a negative amount coming in, add it as our
-                        // balance
-                        if (msg[0] == '-') {
-                            tx_val = -1 * str_to_int(msg + 1, len);
-                            total_bal -= tx_val;
+                        tx_val = str_to_int(msg, len);
 
-                            // once the tx is fully formed we will generate a
-                            // meta tx for the input as well
-                        }
-                        // if positive it is outgoing amount
-                        else {
-                            tx_val = str_to_int(msg, len);
+                        // negative means our balance
+                        if (tx_val < 0)
+                            total_bal -= tx_val;
+                        // positive means spending amount
+                        else
                             send_amt += tx_val;
-                        }
 
                         memset(response, '-', 90);
-                        int_to_str(tx_val, response, 10);
+                        int_to_str(tx_val, response, 20);
                     } break;
                     /* -------------------- TX TAG ------------------- */
                     case TX_TAG: {
@@ -253,7 +246,7 @@ static void IOTA_main(void)
 
                         tx_timestamp = str_to_int(msg, len);
                         memset(response, '-', 90);
-                        uint_to_str(tx_timestamp, response, 10);
+                        int_to_str(tx_timestamp, response, 10);
                     } break;
 
                     // Unknown TX type
@@ -357,14 +350,14 @@ static void IOTA_main(void)
                     }
                     else {
                         char top[21], bot[21];
-                        memcpy(top, "Balance: ", 10);
-                        memcpy(bot, "Spend: ", 8);
+                        memcpy(top, "B:", 3);
+                        memcpy(bot, "S:", 3);
 
-                        uint_to_str(total_bal, top + 9, 21);
-                        uint_to_str(send_amt, bot + 7, 21);
+                        int_to_str(total_bal, top + 2, 19);
+                        int_to_str(send_amt, bot + 2, 19);
 
-                        ui_display_message(top, 20, TYPE_STR, NULL, 0, 0, bot,
-                                           20, TYPE_STR);
+                        ui_display_message(top, 21, TYPE_STR, NULL, 0, 0, bot,
+                                           21, TYPE_STR);
                     }
                 } break;
 
@@ -460,7 +453,7 @@ static void IOTA_main(void)
                     char msg[11];
                     // 10 characters is largest uint32 num, might need to go
                     // higher  once larger indices are allowed
-                    uint_to_str(global_idx, msg, 11);
+                    int_to_str(global_idx, msg, 11);
                     tx = 11;
 
 
@@ -498,7 +491,7 @@ static void IOTA_main(void)
                     char msg[11];
                     // 10 characters is largest uint32 num, might need to go
                     // higher  once larger indices are allowed
-                    uint_to_str(global_idx, msg, 11);
+                    int_to_str(global_idx, msg, 11);
                     tx = 11;
 
                     // push the response onto the response buffer.
@@ -601,7 +594,7 @@ static void IOTA_main(void)
             CATCH_OTHER(e)
             {
                 // reset important values upon failure
-                // tx_mask = 0;
+                tx_mask = 0;
 
                 input_counter = 0;
 
@@ -613,7 +606,7 @@ static void IOTA_main(void)
 
                 broadcast_complete = false;
                 last_addr_used = false;
-                // initialized = false;
+                initialized = false;
 
                 // ui_reset();
 
