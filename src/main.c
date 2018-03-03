@@ -338,26 +338,30 @@ static void IOTA_main(void)
 
                     flags |= IO_ASYNCH_REPLY;
 
-                    char dest_addr[82];
-                    memcpy(dest_addr, "ADDRESS", 8);
-                    // very first tx should be dest_addr
-                    // ***** THIS IS THE LINE THAT ERRORS ****
-                    // bytes_to_chars(bundle_get_address_bytes(&bundle_ctx, 0),
-                    //               dest_addr, 48);
+                    // TODO: is this the right place for that?
+                    if (initialized &&
+                        (bundle_get_current_index(&bundle_ctx) >= 1)) {
 
-                    if (broadcast_complete) {
-                        ui_sign_tx(total_bal, send_amt, dest_addr, 82);
-                    }
-                    else {
-                        char top[21], bot[21];
-                        memcpy(top, "B:", 3);
-                        memcpy(bot, "S:", 3);
+                        char dest_addr[82];
+                        memcpy(dest_addr, "ADDRESS", 8);
+                        // very first tx should be dest_addr
+                        bytes_to_chars(bundle_get_address_bytes(&bundle_ctx, 0),
+                                       dest_addr, 48);
 
-                        int_to_str(total_bal, top + 2, 19);
-                        int_to_str(send_amt, bot + 2, 19);
+                        if (broadcast_complete) {
+                            ui_sign_tx(total_bal, send_amt, dest_addr, 82);
+                        }
+                        else {
+                            char top[21], bot[21];
+                            memcpy(top, "B:", 3);
+                            memcpy(bot, "S:", 3);
 
-                        ui_display_message(top, 21, TYPE_STR, NULL, 0, 0, bot,
-                                           21, TYPE_STR);
+                            int_to_str(total_bal, top + 2, 19);
+                            int_to_str(send_amt, bot + 2, 19);
+
+                            ui_display_message(top, 21, TYPE_STR, NULL, 0, 0,
+                                               bot, 21, TYPE_STR);
+                        }
                     }
                 } break;
 
