@@ -26,6 +26,12 @@ import time
 #define INS_CHANGE_INDEX 0x08
 #define INS_SIGN 0x10
 
+# first byte: magic first byte (always 80)
+# second byte: instruction type
+# third byte: more, or end transmission
+# fourth byte: sub instruction type
+# fifth byte: length of message
+
 bipp44_path = (
                "8000002C"
               +"80000378"
