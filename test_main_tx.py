@@ -226,6 +226,21 @@ except:
     exceptionCount += 1;
 
 # ------------------------------------------
+# Complete transmission flag sent too early
+dongle.exchange(bytes("80200020FF".decode('hex') + "2\0")); # set last idx
+
+dongle.exchange(bytes("80200010FF".decode('hex') + "0\0")); # set cur idx
+dongle.exchange(bytes("8020000151".decode('hex') + test_addr)); # set addr
+dongle.exchange(bytes("80200040FF".decode('hex') + "4\0")); # set input idx
+dongle.exchange(bytes("80200002FF".decode('hex') + "-5\0")); # set val
+dongle.exchange(bytes("802000041B".decode('hex') + "TAG\0")); # set tag
+
+try:
+    dongle.exchange(bytes("80200108FF".decode('hex') + "99999\0")); # set time
+except:
+    exceptionCount += 1;
+
+# ------------------------------------------
 # other tests/considerations:
 
 # ------------------------------------------
@@ -245,7 +260,16 @@ except:
 # Integer under/overflow
 
 # ------------------------------------------
-# Negative timestamp (perfectly fine)
+# Negative timestamp
+
+# ------------------------------------------
+# Transmission not "complete" but bundle is
+
+# ------------------------------------------
+# Length byte or null terminator ends the msg
+
+# ------------------------------------------
+# Length byte 0
 
 
 elapsed_time = time.time() - start_time
