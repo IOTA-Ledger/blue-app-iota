@@ -26,14 +26,6 @@
 #include "iota/addresses.h"
 #include "iota/bundle.h"
 
-#define T_64 -64
-#define T_32_U 32
-#define T_32 -32
-#define T_16_U 16
-#define T_16 -16
-#define T_8_U 8
-#define T_8 -8
-
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {
     uint8_t initialized;
@@ -51,6 +43,33 @@ WIDE internalStorage_t N_storage_real;
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 ux_state_t ux;
 
+
+/* ----- TX VARIABLES ----- * /
+
+unsigned char tx_mask = 0;
+uint8_t input_counter = 0;
+int64_t total_bal = 0;
+int64_t send_amt = 0;
+// initializes upon first call of last idx
+bool tx_initialized = false;
+bool bundle_complete = false;
+bool last_addr_used = false;
+
+void reset_tx()
+{
+    // reset important values upon failure
+    tx_mask = 0;
+    input_counter = 0;
+    
+    total_bal = 0;
+    send_amt = 0;
+    
+    bundle_complete = false;
+    last_addr_used = false;
+    tx_initialized = false;
+}
+*/
+
 int8_t receive_tx()
 {
     volatile unsigned int rx = 0;
@@ -61,30 +80,30 @@ int8_t receive_tx()
     /* IOTA main variables */
     char response[90];
     unsigned char tx_mask = 0;
-
+    
     // initializes upon first call of last idx
     bool tx_initialized = false;
-
+    
     // actual seed index for address
     uint32_t idx_inputs[MAX_BUNDLE_NUM_INPUTS];
     // bundle index
     uint8_t bundle_idx_inputs[MAX_BUNDLE_NUM_INPUTS];
-
-
+    
+    
     uint8_t input_counter = 0;
-
+    
     int64_t tx_val = 0;
     char tx_tag[27];
     uint32_t tx_timestamp = 0;
     uint8_t err = 0;
-
+    
     int64_t total_bal = 0;
     int64_t send_amt = 0;
-
-    bool broadcast_complete = false;
+    
+    bool bundle_complete = false;
     bool last_addr_used = false;
 
-
+    
     // respond to let them know we're ready for transaction
     tx = 0;
     // Manually send back success 0x9000 at end
@@ -191,7 +210,8 @@ int8_t receive_tx()
                             THROW(0x0009);
 
                         tx_val = main_tx_value(msg, len, &err, response,
-                                               &total_bal, &send_amt);
+                                               &total_bal, &send_amt,
+                                               &bundle_ctx);
                     } break;
                         /* -------------------- TX TAG ------------------- */
                     case TX_TAG: {
@@ -214,74 +234,29 @@ int8_t receive_tx()
                         break;
                     }
 
-                    // tx is complete
+                    /* -------------------- TX COMPLETE ------------------- */
                     if ((tx_mask & TX_FULL) == TX_FULL) {
-
-                        uint32_t tx_idx = bundle_add_tx(&bundle_ctx, tx_val,
-                                                        tx_tag, tx_timestamp);
-
-                        // if tx val is negative, it's input, create meta tx
-                        if (tx_val < 0) {
-                            // since input, make sure we received the index
-                            if ((tx_mask & TX_SEED_IDX) == 0) {
-                                THROW(0x0014);
-                            }
-
-                            // copy address into meta tx bundle bytes
-                            const unsigned char *address_bytes =
-                                bundle_get_address_bytes(&bundle_ctx, tx_idx);
-                            bundle_set_address_bytes(&bundle_ctx,
-                                                     address_bytes);
-
-                            bundle_add_tx(&bundle_ctx, 0, tx_tag, tx_timestamp);
-                        }
-
+                        main_tx_complete(&bundle_ctx, tx_val, tx_tag,
+                                         tx_timestamp, tx_mask);
+                        
                         // reset tx_mask
                         tx_mask = TX_LAST;
                     }
 
-                    // entire bundle is complete
+                    /* ------------------ BUNDLE COMPLETE ----------------- */
                     if (G_io_apdu_buffer[APDU_MORE] == TX_END) {
                         // verify the last transaction is fully created
                         // it will be reset to TX_LAST above if fully formed
                         if (tx_mask != TX_LAST)
                             THROW(0x0016);
-
-                        // check if we need to create a change tx
-                        if (total_bal - send_amt != 0) {
-                            // if we are using our last address as change
-                            // gen new one, else reuse old
-                            if (last_addr_used)
-                                global_idx++;
-
-                            // TODO : Postpone generating change address until
-                            // tx is signed off on
-                            tx_val = total_bal - send_amt;
-
-                            // populate tag with 9's, and then copy in msg
-                            os_memset(tx_tag, '9', 27);
-                            os_memcpy(tx_tag, LEDGER_MSG, sizeof(LEDGER_MSG));
-
-                            unsigned char seed_bytes[48];
-                            get_seed(NULL /*TODO*/, 0, seed_bytes);
-
-                            unsigned char addr_bytes[48];
-                            // bytes_ptr will point to last_tx created
-                            get_public_addr(seed_bytes, global_idx, SEC_LVL,
-                                            addr_bytes);
-
-                            bundle_set_address_bytes(&bundle_ctx, addr_bytes);
-                            bundle_add_tx(&bundle_ctx, 0, tx_tag, tx_timestamp);
-                        }
-
-                        unsigned char bundle_hash[48];
-                        unsigned int tx_incr =
-                            bundle_finalize(&bundle_ctx, bundle_hash);
-
-                        memset(response, '-', 90);
-                        bytes_to_chars(bundle_hash, response, 48);
-
-                        broadcast_complete = true;
+                        
+                        main_bundle_complete(total_bal, send_amt,
+                                             last_addr_used, &global_idx,
+                                             &bundle_ctx, tx_timestamp,
+                                             response);
+                        
+                        
+                        bundle_complete = true;
                     }
 
                     // push the response onto the response buffer.
@@ -297,30 +272,24 @@ int8_t receive_tx()
 
                     flags |= IO_ASYNCH_REPLY;
 
-                    // TODO: is this the right place for that?
-                    if (tx_initialized &&
-                        (bundle_get_current_index(&bundle_ctx) >= 1)) {
-
+                    if (bundle_complete) {
                         char dest_addr[82];
-                        memcpy(dest_addr, "ADDRESS", 8);
-                        // very first tx should be dest_addr
+                        // very first tx will hold dest_addr
                         bytes_to_chars(bundle_get_address_bytes(&bundle_ctx, 0),
                                        dest_addr, 48);
+                        
+                        ui_sign_tx(total_bal, send_amt, dest_addr, 82);
+                    }
+                    else {
+                        char top[21], bot[21];
+                        memcpy(top, "B:", 3);
+                        memcpy(bot, "S:", 3);
 
-                        if (broadcast_complete) {
-                            ui_sign_tx(total_bal, send_amt, dest_addr, 82);
-                        }
-                        else {
-                            char top[21], bot[21];
-                            memcpy(top, "B:", 3);
-                            memcpy(bot, "S:", 3);
+                        int_to_str(total_bal, top + 2, 19);
+                        int_to_str(send_amt, bot + 2, 19);
 
-                            int_to_str(total_bal, top + 2, 19);
-                            int_to_str(send_amt, bot + 2, 19);
-
-                            ui_display_message(top, 21, TYPE_STR, NULL, 0, 0,
-                                               bot, 21, TYPE_STR);
-                        }
+                        ui_display_message(top, 21, TYPE_STR, NULL, 0, 0,
+                                           bot, 21, TYPE_STR);
                     }
                 } break;
                 default: // any other case exit the transactions
@@ -331,18 +300,20 @@ int8_t receive_tx()
             {
                 // reset important values upon failure
                 tx_mask = 0;
-
+                
                 input_counter = 0;
-
+                
                 tx_val = 0;
                 tx_timestamp = 0;
-
+                
                 total_bal = 0;
                 send_amt = 0;
-
-                broadcast_complete = false;
+                
+                bundle_complete = false;
                 last_addr_used = false;
                 tx_initialized = false;
+                
+                //reset_tx();
 
                 // ui_reset();
 
@@ -419,18 +390,7 @@ static void IOTA_main(void)
                 // upon return G_io_apdu_buffer is null terminated (though
                 // python  will still display garbage characters after the null
                 // termination)
-                case INS_GET_MULTI_SEND: { /*
-                     // respond success then wait in receive_tx for subsequent
-                     messages tx = 0;
-                     // Manually send back success 0x9000 at end
-                     G_io_apdu_buffer[tx++] = 0x90;
-                     G_io_apdu_buffer[tx++] = 0x00;
-
-                     // send back response
-                     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-                     */
-                    // flags |= IO_ASYNCH_REPLY;
-
+                case INS_GET_MULTI_SEND: {
                     receive_tx();
                 } break;
 

@@ -58,11 +58,19 @@
 #define TX_LAST 0x20
 #define TX_SEED_IDX 0x40
 
-#define LEDGER_MSG "LEDGER"
-
 // all of the fields for the tx are filled
 #define TX_FULL (TX_ADDR | TX_VAL | TX_TAG | TX_TIME | TX_CUR | TX_LAST)
 #define TX_FULL_IN (TX_FULL | TX_SEED_IDX)
+
+#define LEDGER_MSG "LEDGER"
+
+#define T_64 -64
+#define T_32_U 32
+#define T_32 -32
+#define T_16_U 16
+#define T_16 -16
+#define T_8_U 8
+#define T_8 -8
 // end IOTA-Related APIs
 
 extern cx_sha256_t hash;

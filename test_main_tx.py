@@ -121,6 +121,16 @@ except:
     exceptionCount += 1;
 
 # ------------------------------------------
+# First tx not output
+dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
+dongle.exchange(bytes("80200010FF".decode('hex') + "0\0")); # set cur idx
+dongle.exchange(bytes("8020000151".decode('hex') + test_addr)); # set addr
+try:
+    dongle.exchange(bytes("80200002FF".decode('hex') + "-200\0")); # set val
+except:
+    exceptionCount += 1;
+
+# ------------------------------------------
 # Tag invalid char(s)
 dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
 dongle.exchange(bytes("80200010FF".decode('hex') + "0\0")); # set cur idx
