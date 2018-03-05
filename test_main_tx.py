@@ -28,12 +28,15 @@ test_addr = "ADR"*27 + "\0";
 bad_tag = "TAG"*9 + "9\0";
 
 
+
 # ------------------------------------------
 # Wrong initial byte
 try:
     dongle.exchange(bytes("70200020FF".decode('hex') + "5\0"));
 except:
     exceptionCount += 1;
+
+dongle.exchange(bytes("8020000000".decode('hex')));
 
 # ------------------------------------------
 # Not rcv last index first (this is Cur flag)
@@ -74,6 +77,8 @@ except:
 # ------------------------------------------
 # Cur idx negative
 dongle.exchange(bytes("80200020FF".decode('hex') + "5\0")); # set last idx
+
+# TODO : this does not throw anymore due to overflow detection
 try:
     dongle.exchange(bytes("80200010FF".decode('hex') + "-1\0"));
 except:

@@ -58,6 +58,10 @@ start_time = time.time()
 #publicKey = dongle.exchange(bytes(("80010000FF"+bipp44_path).decode('hex')))
 #80 20 01
 
+#first call of sign to enter signature mode
+publicKey = dongle.exchange(bytes("8020000000".decode('hex')));
+print "Last: " + str(publicKey) + "\n";
+
 #last - provide last index first
 publicKey = dongle.exchange(bytes("80200020FF".decode('hex') + "5\0"));
 print "Last: " + str(publicKey) + "\n";
@@ -70,7 +74,7 @@ publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "0\0"));
 print "Cur: " + str(publicKey) + "\n";
 
 #addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr);
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr));
 print "Addr: " + str(publicKey) + "\n";
 
 #value -  RIGHT NOW TX_VAL JUST OVERFLOWS AND GOES BACK TO 0 IF NUM GETS TOO LARGE
@@ -99,7 +103,7 @@ publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "0\0"));
 print "Seed Idx: " + str(publicKey) + "\n";
 
 #addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr);
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr));
 print "Addr: " + str(publicKey) + "\n";
 
 #value
@@ -128,7 +132,7 @@ publicKey = dongle.exchange(bytes("80200040FF".decode('hex') + "4\0"));
 print "Seed Idx: " + str(publicKey) + "\n";
 
 #addr
-publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr);
+publicKey = dongle.exchange(bytes("8020000151".decode('hex') + test_addr));
 print "Addr: " + str(publicKey) + "\n";
 
 #value

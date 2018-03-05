@@ -14,8 +14,9 @@
 #define MID 2
 #define BOT 3
 
-void int_to_str(int64_t i, char *str, uint8_t len);
-int64_t str_to_int(char *str, uint8_t len);
+void int_to_str(int64_t num, char *str, uint8_t len);
+int64_t str_to_int(char *str, uint8_t len, uint8_t *err, int8_t type);
+int64_t bytes_to_int(unsigned char *bytes, uint8_t len);
 
 void get_seed(const unsigned char *privateKey, uint8_t sz, unsigned char *seed_bytes);
 
