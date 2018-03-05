@@ -44,16 +44,18 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 ux_state_t ux;
 
 
-/* ----- TX VARIABLES ----- * /
+/* ----- TX VARIABLES ----- */
+BUNDLE_CTX bundle_ctx;
 
-unsigned char tx_mask = 0;
-uint8_t input_counter = 0;
-int64_t total_bal = 0;
-int64_t send_amt = 0;
+
+unsigned char tx_mask;
+uint8_t input_counter;
+int64_t total_bal;
+int64_t send_amt;
 // initializes upon first call of last idx
-bool tx_initialized = false;
-bool bundle_complete = false;
-bool last_addr_used = false;
+bool tx_initialized;
+bool bundle_complete;
+bool last_addr_used;
 
 void reset_tx()
 {
@@ -68,7 +70,7 @@ void reset_tx()
     last_addr_used = false;
     tx_initialized = false;
 }
-*/
+
 
 int8_t receive_tx()
 {
@@ -76,32 +78,22 @@ int8_t receive_tx()
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
 
-    BUNDLE_CTX bundle_ctx;
     /* IOTA main variables */
     char response[90];
-    unsigned char tx_mask = 0;
-    
-    // initializes upon first call of last idx
-    bool tx_initialized = false;
     
     // actual seed index for address
     uint32_t idx_inputs[MAX_BUNDLE_NUM_INPUTS];
     // bundle index
     uint8_t bundle_idx_inputs[MAX_BUNDLE_NUM_INPUTS];
     
-    
-    uint8_t input_counter = 0;
-    
+    // local tx values
     int64_t tx_val = 0;
     char tx_tag[27];
     uint32_t tx_timestamp = 0;
     uint8_t err = 0;
     
-    int64_t total_bal = 0;
-    int64_t send_amt = 0;
-    
-    bool bundle_complete = false;
-    bool last_addr_used = false;
+    // reset also initializes
+    reset_tx();
 
     
     // respond to let them know we're ready for transaction
