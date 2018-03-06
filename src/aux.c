@@ -176,6 +176,25 @@ int64_t bytes_to_int(unsigned char *bytes, uint8_t len)
     return num;
 }
 
+bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding)
+{
+    const size_t len = strnlen(chars, num_chars);
+    for (unsigned int i = 0; i < len; i++) {
+        const char c = chars[i];
+        if (c != '9' && (c < 'A' || c > 'Z')) {
+            return false;
+        }
+    }
+
+    if (zero_padding) {
+        for (unsigned int i = len; i < num_chars; i++) {
+            chars[i] = '9';
+        }
+    }
+
+    return true;
+}
+
 void get_seed(const unsigned char *privateKey, uint8_t sz,
               unsigned char *seed_bytes)
 {
