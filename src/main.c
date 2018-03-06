@@ -57,15 +57,33 @@ bool tx_initialized;
 bool bundle_complete;
 bool last_addr_used;
 
+// This symbol is defined by the link script to be at the start of the stack
+extern unsigned long _stack;
+
+#define STACK_CANARY (*((volatile uint32_t *)&_stack))
+
+void init_canary()
+{
+    STACK_CANARY = 0xDEADBEEF;
+}
+
+void check_canary()
+{
+    if (STACK_CANARY != 0xDEADBEEF) {
+        THROW(0x0077);
+        // THROW(EXCEPTION_OVERFLOW);
+    }
+}
+
 void reset_tx()
 {
     // reset important values upon failure
     tx_mask = 0;
     input_counter = 0;
-    
+
     total_bal = 0;
     send_amt = 0;
-    
+
     bundle_complete = false;
     last_addr_used = false;
     tx_initialized = false;
@@ -80,22 +98,22 @@ int8_t receive_tx()
 
     /* IOTA main variables */
     char response[90];
-    
+
     // actual seed index for address
     uint32_t idx_inputs[MAX_BUNDLE_NUM_INPUTS];
     // bundle index
     uint8_t bundle_idx_inputs[MAX_BUNDLE_NUM_INPUTS];
-    
+
     // local tx values
     int64_t tx_val = 0;
     char tx_tag[27];
     uint32_t tx_timestamp = 0;
     uint8_t err = 0;
-    
+
     // reset also initializes
     reset_tx();
 
-    
+
     // respond to let them know we're ready for transaction
     tx = 0;
     // Manually send back success 0x9000 at end
@@ -122,8 +140,10 @@ int8_t receive_tx()
             TRY
             {
                 rx = tx;
-                tx = 0; // ensure no race in catch_other if io_exchange throws
-                // an error
+                // ensure no race in catch_other if io_exchange throws an error
+                tx = 0;
+
+                check_canary();
                 rx = io_exchange(CHANNEL_APDU | flags, rx);
 
                 // flags sets the IO to blocking, make sure to re-enable asynch
@@ -201,9 +221,9 @@ int8_t receive_tx()
                         if (!tx_initialized)
                             THROW(0x0009);
 
-                        tx_val = main_tx_value(msg, len, &err, response,
-                                               &total_bal, &send_amt,
-                                               &bundle_ctx);
+                        tx_val =
+                            main_tx_value(msg, len, &err, response, &total_bal,
+                                          &send_amt, &bundle_ctx);
                     } break;
                         /* -------------------- TX TAG ------------------- */
                     case TX_TAG: {
@@ -230,7 +250,7 @@ int8_t receive_tx()
                     if ((tx_mask & TX_FULL) == TX_FULL) {
                         main_tx_complete(&bundle_ctx, tx_val, tx_tag,
                                          tx_timestamp, tx_mask);
-                        
+
                         // reset tx_mask
                         tx_mask = TX_LAST;
                     }
@@ -241,13 +261,12 @@ int8_t receive_tx()
                         // it will be reset to TX_LAST above if fully formed
                         if (tx_mask != TX_LAST)
                             THROW(0x0016);
-                        
-                        main_bundle_complete(total_bal, send_amt,
-                                             last_addr_used, &global_idx,
-                                             &bundle_ctx, tx_timestamp,
-                                             response);
-                        
-                        
+
+                        main_bundle_complete(
+                            total_bal, send_amt, last_addr_used, &global_idx,
+                            &bundle_ctx, tx_timestamp, response);
+
+
                         bundle_complete = true;
                     }
 
@@ -269,7 +288,7 @@ int8_t receive_tx()
                         // very first tx will hold dest_addr
                         bytes_to_chars(bundle_get_address_bytes(&bundle_ctx, 0),
                                        dest_addr, 48);
-                        
+
                         ui_sign_tx(total_bal, send_amt, dest_addr, 82);
                     }
                     else {
@@ -280,8 +299,8 @@ int8_t receive_tx()
                         int_to_str(total_bal, top + 2, 19);
                         int_to_str(send_amt, bot + 2, 19);
 
-                        ui_display_message(top, 21, TYPE_STR, NULL, 0, 0,
-                                           bot, 21, TYPE_STR);
+                        ui_display_message(top, 21, TYPE_STR, NULL, 0, 0, bot,
+                                           21, TYPE_STR);
                     }
                 } break;
                 default: // any other case exit the transactions
@@ -292,20 +311,20 @@ int8_t receive_tx()
             {
                 // reset important values upon failure
                 tx_mask = 0;
-                
+
                 input_counter = 0;
-                
+
                 tx_val = 0;
                 tx_timestamp = 0;
-                
+
                 total_bal = 0;
                 send_amt = 0;
-                
+
                 bundle_complete = false;
                 last_addr_used = false;
                 tx_initialized = false;
-                
-                //reset_tx();
+
+                // reset_tx();
 
                 // ui_reset();
 
@@ -357,8 +376,10 @@ static void IOTA_main(void)
             TRY
             {
                 rx = tx;
-                tx = 0; // ensure no race in catch_other if io_exchange throws
-                // an error
+                // ensure no race in catch_other if io_exchange throws an error
+                tx = 0;
+
+                check_canary();
                 rx = io_exchange(CHANNEL_APDU | flags, rx);
 
                 // flags sets the IO to blocking, make sure to re-enable asynch
@@ -737,6 +758,8 @@ __attribute__((section(".boot"))) int main(void)
 
     // ensure exception will work as planned
     os_boot();
+
+    init_canary();
 
     BEGIN_TRY
     {
