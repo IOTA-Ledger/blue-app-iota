@@ -40,6 +40,10 @@ static void init_shas(const unsigned char *seed_bytes, uint32_t idx,
 void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
                      uint8_t security, unsigned char *address_bytes)
 {
+    if (security < 1 || security > MAX_SECURITY) {
+        THROW(INVALID_PARAMETER);
+    }
+
     // sha size is 424 bytes
     cx_sha3_t key_sha, digest_sha;
 

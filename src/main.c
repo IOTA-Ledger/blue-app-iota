@@ -104,6 +104,12 @@ typedef struct __attribute__((__packed__)) BUNDLE_OUTPUT {
     char bundle_hash[81];
 } BUNDLE_OUTPUT;
 
+typedef struct __attribute__((__packed__)) PUB_KEY_INPUT {
+    int64_t bip44_path[BIP44_PATH_LEN];
+    int64_t address_idx;
+    int64_t security;
+} PUB_KEY_INPUT;
+
 
 int8_t receive_tx()
 {
@@ -491,79 +497,41 @@ static void IOTA_main(void)
                      -----------------------------------------------
                      ----------------------------------------------- */
                 case INS_GET_PUBKEY: {
-                    // we only care about privateKeyData, we will be discarding
-                    // everything else, and using this to generate our iota seed
-                    unsigned char privateKeyData[32];
-                    { // Localize public key (since we discard it anyways)
-                        // private key and bip44path
-
-                        if (rx < APDU_HEADER_LENGTH + BIP44_BYTE_LENGTH)
-                            THROW(0x6D09);
-
-                        /** BIP44 path, used to derive the private key from the
-                         * mnemonic by calling os_perso_derive_node_bip32. */
-                        unsigned char *bip44_in =
-                            G_io_apdu_buffer + APDU_HEADER_LENGTH;
-
-                        unsigned int bip44_path[BIP44_PATH_LEN];
-                        uint32_t i;
-                        for (i = 0; i < BIP44_PATH_LEN; i++) {
-                            bip44_path[i] = (bip44_in[0] << 24) |
-                                            (bip44_in[1] << 16) |
-                                            (bip44_in[2] << 8) | (bip44_in[3]);
-                            bip44_in += 4;
-                        }
-
-                        os_perso_derive_node_bip32(CX_CURVE_256K1, bip44_path,
-                                                   BIP44_PATH_LEN,
-                                                   privateKeyData, NULL);
+                    if (len < sizeof(PUB_KEY_INPUT)) {
+                        THROW(0x6D09);
                     }
+                    PUB_KEY_INPUT *input = (PUB_KEY_INPUT *)(msg);
 
                     // the seed in 48 bytes representation
                     unsigned char seed_bytes[48];
-                    get_seed(privateKeyData, sizeof(privateKeyData),
-                             seed_bytes);
+                    {
+                        unsigned int path[BIP44_PATH_LEN];
+                        for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
+                            if (!ASSIGN(path[i], input->bip44_path[i]))
+                                THROW(INVALID_PARAMETER);
+                        }
+
+                        // we only care about privateKeyData and using this to
+                        // generate our iota seed
+                        unsigned char privateKeyData[32];
+                        os_perso_derive_node_bip32(CX_CURVE_256K1, path,
+                                                   BIP44_PATH_LEN,
+                                                   privateKeyData, NULL);
+                        get_seed(privateKeyData, sizeof(privateKeyData),
+                                 seed_bytes);
+                    }
 
                     unsigned char addr_bytes[48];
-                    {
-                        // set the security of our seed
-                        const uint8_t security = 2;
-                        const uint32_t idx = 0;
+                    get_public_addr(seed_bytes, input->address_idx,
+                                    input->security, addr_bytes);
 
-                        get_public_addr(seed_bytes, idx, security, addr_bytes);
-                    }
-                    // convert the bigint address into character address
-                    char address[82];
-                    bytes_to_chars(addr_bytes, address, 48);
+                    // convert the 48 byte address into base-27 address
+                    bytes_to_chars(addr_bytes, (char *)G_io_apdu_buffer, 48);
+                    tx = 81;
 
-                    // push the response onto the response buffer.
-                    os_memmove(G_io_apdu_buffer, address, 82);
-
-                    tx = 82;
-                    // Manually send back success 0x9000 at end
-                    G_io_apdu_buffer[tx++] = 0x90;
-                    G_io_apdu_buffer[tx++] = 0x00;
-
-                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
-                    flags |= IO_ASYNCH_REPLY;
-
-
-                    char addr_abbrv[12];
-
-                    // - Convert into abbreviated seeed (first 4 and last 4
-                    // characters)
-                    memcpy(&addr_abbrv[0], &address[0],
-                           4);                        // first 4 chars of seed
-                    memcpy(&addr_abbrv[4], "...", 3); // copy ...
-                    memcpy(&addr_abbrv[7], &address[77],
-                           5); // copy last 4 chars + null
-
-                    ui_display_message(NULL, 0, 0, &addr_abbrv[0], 12, TYPE_STR,
-                                       NULL, 0, 0);
+                    // return success
+                    THROW(0x9000);
                 } break;
-
-
                     /* ---------------------------------------------
                      -----------------------------------------------
                      ---------------- BAD PUBLIC KEY ---------------
