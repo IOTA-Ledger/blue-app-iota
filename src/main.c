@@ -99,6 +99,11 @@ typedef struct __attribute__((__packed__)) TX_INPUT {
     int64_t timestamp;
 } TX_INPUT;
 
+typedef struct __attribute__((__packed__)) BUNDLE_OUTPUT {
+    int64_t tag_increment;
+    char bundle_hash[81];
+} BUNDLE_OUTPUT;
+
 
 int8_t receive_tx()
 {
@@ -463,13 +468,17 @@ static void IOTA_main(void)
                     // TODO: generate meta transactions
 
                     if (tx_input->current_index == bundle_ctx.last_index) {
-                        unsigned char bundle_hash[48];
-                        const int64_t tx_incr =
-                            bundle_finalize(&bundle_ctx, bundle_hash);
+                        unsigned char hash_bytes[48];
+                        const unsigned int incr =
+                            bundle_finalize(&bundle_ctx, hash_bytes);
 
-                        // return tag increment as little endian 64bit integer
-                        os_memcpy(G_io_apdu_buffer, &tx_incr, sizeof(tx_incr));
-                        tx = sizeof(tx_incr);
+                        BUNDLE_OUTPUT *output =
+                            (BUNDLE_OUTPUT *)(G_io_apdu_buffer);
+
+                        output->tag_increment = incr;
+                        bytes_to_chars(hash_bytes, output->bundle_hash, 48);
+
+                        tx = sizeof(BUNDLE_OUTPUT);
                     }
 
                     // return success
