@@ -45,6 +45,7 @@
 #define INS_CHANGE_INDEX 0x08
 #define INS_SIGN 0x10
 #define INS_GET_MULTI_SEND 0x20
+#define INS_SINGLE_TX 0x40
 
 //very last chunk or will there be more?
 #define TX_MORE 0x00

@@ -89,6 +89,16 @@ void reset_tx()
     tx_initialized = false;
 }
 
+typedef struct __attribute__((__packed__)) TX_INPUT {
+    char address[81];
+    int64_t address_idx;
+    int64_t value;
+    char tag[27];
+    int64_t current_index;
+    int64_t last_index;
+    int64_t timestamp;
+} TX_INPUT;
+
 
 int8_t receive_tx()
 {
@@ -359,6 +369,8 @@ static void IOTA_main(void)
 
     uint8_t err = 0;
 
+    tx_initialized = false;
+
     // initialize the UI
     ui_init();
 
@@ -395,7 +407,10 @@ static void IOTA_main(void)
                 if (G_io_apdu_buffer[0] != CLA)
                     THROW(0x6E00);
 
-                uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
+                const uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
+                if (rx < len + APDU_HEADER_LENGTH) {
+                    THROW(INVALID_STATE);
+                }
                 unsigned char *msg = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
                 // check second byte for instruction
@@ -405,6 +420,60 @@ static void IOTA_main(void)
                 // termination)
                 case INS_GET_MULTI_SEND: {
                     receive_tx();
+                } break;
+
+                case INS_SINGLE_TX: {
+                    if (len < sizeof(TX_INPUT)) {
+                        THROW(0x6D09);
+                    }
+                    TX_INPUT *tx_input = (TX_INPUT *)(msg);
+
+                    if (tx_initialized == false) {
+                        uint32_t last_index;
+                        if (!ASSIGN(last_index, tx_input->last_index)) {
+                            THROW(INVALID_PARAMETER); // overflow
+                        }
+                        bundle_initialize(&bundle_ctx, last_index);
+                        tx_initialized = true;
+                    }
+
+                    // validate transaction indices
+                    if (tx_input->last_index != bundle_ctx.last_index) {
+                        THROW(INVALID_STATE);
+                    }
+                    if (tx_input->current_index != bundle_ctx.current_index) {
+                        THROW(INVALID_STATE);
+                    }
+
+                    if (!validate_chars(tx_input->address, 81, false)) {
+                        THROW(INVALID_PARAMETER);
+                    }
+                    bundle_set_address_chars(&bundle_ctx, tx_input->address);
+
+                    if (!validate_chars(tx_input->tag, 27, true)) {
+                        THROW(INVALID_PARAMETER);
+                    }
+                    uint32_t timestamp;
+                    if (!ASSIGN(timestamp, tx_input->timestamp)) {
+                        THROW(INVALID_PARAMETER); // overflow
+                    }
+                    bundle_add_tx(&bundle_ctx, tx_input->value, tx_input->tag,
+                                  timestamp);
+
+                    // TODO: generate meta transactions
+
+                    if (tx_input->current_index == bundle_ctx.last_index) {
+                        unsigned char bundle_hash[48];
+                        const int64_t tx_incr =
+                            bundle_finalize(&bundle_ctx, bundle_hash);
+
+                        // return tag increment as little endian 64bit integer
+                        os_memcpy(G_io_apdu_buffer, &tx_incr, sizeof(tx_incr));
+                        tx = sizeof(tx_incr);
+                    }
+
+                    // return success
+                    THROW(0x9000);
                 } break;
 
                     /* ---------------------------------------------
