@@ -19,6 +19,8 @@ static void kerl(const char *input, const size_t squeeze_num_trits,
     kerl_squeeze_bytes(&kerl, bytes, NUM_BYTES(squeeze_num_trits));
 
     bytes_to_chars(bytes, output, NUM_BYTES(squeeze_num_trits));
+    // make null-terminated
+    output[NUM_TRYTES(squeeze_num_trits)] = '\0';
 }
 
 static void test_kerl(const char *input, const size_t length,

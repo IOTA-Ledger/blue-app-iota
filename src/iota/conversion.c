@@ -406,9 +406,6 @@ void bytes_to_chars(const unsigned char *bytes, char *chars,
         bytes_to_trytes(bytes + i * 48, trytes);
         trytes_to_chars(trytes, chars + i * 81, 81);
     }
-
-    // make zero termnated
-    chars[(bytes_len / 48) * 81] = '\0';
 }
 
 void bytes_set_last_trit_zero(unsigned char *bytes)

@@ -23,6 +23,8 @@ static void seed_address(const char *seed_chars, uint32_t idx, uint8_t security,
     get_public_addr(seed_bytes, idx, security, address_bytes);
 
     bytes_to_chars(address_bytes, address_chars, NUM_HASH_BYTES);
+    // make null-terminated
+    address_chars[NUM_HASH_TRYTES] = '\0';
 }
 
 static void test_address(const char *seed, uint32_t idx, uint8_t security,

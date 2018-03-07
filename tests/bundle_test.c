@@ -133,8 +133,10 @@ static void test_bundle_hash(void **state)
     unsigned char hash_bytes[NUM_HASH_BYTES];
     compute_hash(&bundle_ctx, hash_bytes);
 
-    char hash_chars[NUM_HASH_CHARS];
+    char hash_chars[NUM_HASH_TRYTES + 1];
     bytes_to_chars(hash_bytes, hash_chars, NUM_HASH_BYTES);
+    // make null-terminated
+    hash_chars[NUM_HASH_TRYTES] = '\0';
 
     assert_string_equal(hash_chars, exp_hash);
 }
@@ -163,8 +165,10 @@ static void test_bundle_finalize(void **state)
     const uint32_t tag_increment = bundle_finalize(&bundle_ctx);
     assert_int_equal(tag_increment, exp_tag_increment);
 
-    char hash_chars[NUM_HASH_CHARS];
+    char hash_chars[NUM_HASH_TRYTES + 1];
     bytes_to_chars(bundle_get_hash(&bundle_ctx), hash_chars, NUM_HASH_BYTES);
+    // make null-terminated
+    hash_chars[NUM_HASH_TRYTES] = '\0';
 
     assert_string_equal(hash_chars, exp_hash);
 }
@@ -190,8 +194,10 @@ static void test_max_value_txs_bundle_finalize(void **state)
     const uint32_t tag_increment = bundle_finalize(&bundle_ctx);
     assert_int_equal(tag_increment, exp_tag_increment);
 
-    char hash_chars[NUM_HASH_CHARS];
+    char hash_chars[NUM_HASH_TRYTES + 1];
     bytes_to_chars(bundle_get_hash(&bundle_ctx), hash_chars, NUM_HASH_BYTES);
+    // make null-terminated
+    hash_chars[NUM_HASH_TRYTES] = '\0';
 
     assert_string_equal(hash_chars, exp_hash);
 }
