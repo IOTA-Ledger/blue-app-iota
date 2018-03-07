@@ -1,8 +1,7 @@
 #include "aux.h"
-
 #include <stdint.h>
+#include "main.h"
 
-#include "iota/common.h"
 #include "iota/iota_types.h"
 #include "iota/kerl.h"
 #include "iota/conversion.h"
@@ -27,27 +26,31 @@ bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding)
     return true;
 }
 
-void get_seed(const unsigned char *privateKey, unsigned int sz,
+void get_seed(const unsigned char *entropy, unsigned int n,
               unsigned char *seed_bytes)
 {
-    // {
-    //   // localize bytes_in variable to discard it when we are done
-    //   unsigned char bytes_in[48];
-    //
-    //   // kerl requires 424 bytes
-    //   kerl_initialize();
-    //
-    //   // copy our private key into bytes_in
-    //   // for now just re-use the last 16 bytes to fill bytes_in
-    //   memcpy(&bytes_in[0], privateKey, sz);
-    //   memcpy(&bytes_in[sz], privateKey, 48-sz);
-    //
-    //   // absorb these bytes
-    //   kerl_absorb_bytes(&bytes_in[0], 48);
-    // }
+#ifndef DEBUG_SEED
+    // at least one chunk of entropy required
+    if (n < 48) {
+        THROW(INVALID_PARAMETER);
+    }
 
-    // override for testing purposes
-    const char test_seed[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETE"
-                             "RPETERPETERPETERPETERPETERPETERR";
-    chars_to_bytes(test_seed, seed_bytes, 81);
+    cx_sha3_t sha;
+    kerl_initialize(&sha);
+
+    for (unsigned int i = 0; i < n / 48; i++) {
+        kerl_absorb_chunk(&sha, entropy + i * 48);
+    }
+    // TODO: should we use standard padding rules?
+    if (n % 48 != 0) {
+        kerl_absorb_chunk(&sha, entropy + (n - 48));
+    }
+
+    kerl_squeeze_final_chunk(&sha, seed_bytes);
+#else  // DEBUG_SEED
+    UNUSED(entropy);
+    UNUSED(n);
+
+    chars_to_bytes(DEBUG_SEED, seed_bytes, 81);
+#endif // DEBUG_SEED
 }
