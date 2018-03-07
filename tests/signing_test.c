@@ -12,7 +12,6 @@ static const char PETER_SEED[] =
     "RPETERR";
 static const uint32_t IDX = 0;
 
-// the all-zero hash is a valid normalized hash
 static const tryte_t NORMALIZED_HASH[NUM_HASH_TRYTES] = {0};
 
 static const char *FRAGMENTS[] = {
@@ -107,22 +106,22 @@ static const char *FRAGMENTS[] = {
     "CWQDPIVXOXB9WHGEVOTYXANITICWGTFTEWLVXFSIQQUSQEKUJTUOLBIWOIFNQOIHUVTCEAUVMM"
     "YVYTLBFXSBIISGCAWSQJPEUZBMTEBXMUBVNCEFFMB"};
 
-static void generate_signature(const unsigned char *seed_bytes, uint32_t idx,
-                               uint8_t security, char *signature)
+static void generate_signature(const unsigned char *seed_bytes,
+                               uint32_t address_idx, uint8_t security,
+                               char *signature)
 {
-    unsigned char kerl_state[NUM_HASH_BYTES];
+    SIGNING_CTX ctx;
     unsigned char signature_fragment[SIGNATURE_FRAGMENT_SIZE * NUM_HASH_BYTES];
 
-    signing_first_fragment(seed_bytes, idx, kerl_state, NORMALIZED_HASH,
-                           signature_fragment);
-    bytes_to_chars(signature_fragment, signature,
-                   SIGNATURE_FRAGMENT_SIZE * NUM_HASH_BYTES);
+    signing_initialize(&ctx, seed_bytes, address_idx, security,
+                       NORMALIZED_HASH);
 
-    for (int i = 1; i < NUM_SIGNATURE_FRAGMENTS(security); i++) {
+    for (int i = 0; i < NUM_SIGNATURE_FRAGMENTS(security); i++) {
 
-        signing_next_fragment(kerl_state,
-                              NORMALIZED_HASH + i * SIGNATURE_FRAGMENT_SIZE,
-                              signature_fragment);
+        const int fragment_index =
+            signing_next_fragment(&ctx, signature_fragment);
+        assert_int_equal(fragment_index, i);
+
         bytes_to_chars(signature_fragment,
                        signature + i * SIGNATURE_FRAGMENT_SIZE * 81,
                        SIGNATURE_FRAGMENT_SIZE * NUM_HASH_BYTES);
