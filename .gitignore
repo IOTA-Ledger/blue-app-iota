@@ -53,3 +53,13 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#CMake
+CMakeCache.txt
+CMakeFiles/
+cmake-build-debug/
+cmake_install.cmake
+
+#Compiled sources
+c_light_wallet
+c_light_wallet.cbp

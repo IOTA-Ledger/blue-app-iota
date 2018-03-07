@@ -1,10 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#ifdef NO_BOLOS
-
 #include <string.h>
-#include "sha3.h"
+#include "../keccak/sha3.h"
 
 /* ----------------------------------------------------------------------- */
 /* -                         OS ALTERNATIVES                             - */
@@ -12,7 +10,6 @@
 
 #define os_swap_u32 __builtin_bswap32
 
-#define os_memmove memmove
 #define os_memcpy memcpy
 
 #define os_memset memset
@@ -47,15 +44,6 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
                 keccak_Final(hash, out);
         }
 }
-
-#else // ifdef NO_BOLOS
-
-/* ----------------------------------------------------------------------- */
-/* -                          USE BOLOS                                  - */
-/* ----------------------------------------------------------------------- */
-
-#include "os.h"
-#endif // ifdef NO_BOLOS
 
 /* ----------------------------------------------------------------------- */
 /* -                            COMMON                                   - */

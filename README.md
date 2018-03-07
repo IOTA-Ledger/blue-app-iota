@@ -1,19 +1,23 @@
-# IOTA App for Ledger Blue & Ledger Nano S
+# IOTA C Light Wallet
 
-[![Build Status](https://travis-ci.org/IOTA-Ledger/blue-app-iota.svg?branch=master)](https://travis-ci.org/IOTA-Ledger/blue-app-iota)
+A big thanks to the people of the IOTA implementation of the Ledger Nano S.
+They create an amazing low foodprint C light wallet implementation for the Nano S.
+We use this as base for the generic embedded C light wallet implementation.
 
-Here we try to use natively available crypto logic to create IOTA Seeds and sign transactions on the fly. It's currently heavily in alpha so don't trust this yet!
+Usage:
+The usage is quit simple.
 
-See [Ledger's documentation](http://ledger.readthedocs.io) to get more info about the inner workings.
+```
+ unsigned char address[81];
+ char seedChars[] = "INSERT_SEED_HERE";
+ unsigned char seedBytes[48];
+ chars_to_bytes(seedChars, seedBytes, 81);
+ get_public_addr(seedBytes, 0, 2, address);
 
-## How to get started
+ char charAddress[81];
+ bytes_to_chars(address, charAddress, 48);
+```
 
-- Clone this repo, and set up your dev environment according to this: <https://github.com/LedgerHQ/ledger-nano-s>
 
-- Inside the folder of the repo you just cloned, run `make load` while your Ledger is attached, and unlocked and watch the magic happen. Be sure to connect your Ledger and open it at the dashboard to load the app.
 
-- You can now make your first IOTA Ledger address by running: `python demo.py` and hit enter (while ledger is plugged in and the IOTA App is open).
 
-## Todos
-
-See: https://github.com/IOTA-Ledger/blue-app-iota/blob/master/TODO.md
