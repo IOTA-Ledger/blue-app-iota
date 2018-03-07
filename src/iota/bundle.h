@@ -14,6 +14,8 @@ typedef struct BUNDLE_CTX {
 
         uint32_t current_index;
         uint32_t last_index;
+
+        unsigned char hash[48];
 } BUNDLE_CTX;
 
 void bundle_initialize(BUNDLE_CTX *ctx, uint32_t last_index);
@@ -25,11 +27,15 @@ void bundle_set_address_bytes(BUNDLE_CTX *ctx, const unsigned char *addresses);
 uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
                        uint32_t timestamp);
 
-/** @brief Computes the valid bundle hash.
+/** @brief Finalizes the bundle by computing the valid bundle hash.
  *  @return tag increment of the first transaction that was necessary to
  *          generate a valid bundle
  */
-unsigned int bundle_finalize(BUNDLE_CTX *ctx, unsigned char *hash_bytes);
+unsigned int bundle_finalize(BUNDLE_CTX *ctx);
+
+/** @brief Returns the hash of a finalized bundle.
+ */
+const unsigned char* bundle_get_hash(const BUNDLE_CTX *ctx);
 
 /** @brief Returns a pointer to the address of the given transaction in
  *         48-byte representation.

@@ -160,12 +160,11 @@ static void test_bundle_finalize(void **state)
     BUNDLE_CTX bundle_ctx;
     construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
 
-    unsigned char hash_bytes[NUM_HASH_BYTES];
-    const uint32_t tag_increment = bundle_finalize(&bundle_ctx, hash_bytes);
+    const uint32_t tag_increment = bundle_finalize(&bundle_ctx);
     assert_int_equal(tag_increment, exp_tag_increment);
 
     char hash_chars[NUM_HASH_CHARS];
-    bytes_to_chars(hash_bytes, hash_chars, NUM_HASH_BYTES);
+    bytes_to_chars(bundle_get_hash(&bundle_ctx), hash_chars, NUM_HASH_BYTES);
 
     assert_string_equal(hash_chars, exp_hash);
 }
@@ -188,12 +187,11 @@ static void test_max_value_txs_bundle_finalize(void **state)
     BUNDLE_CTX bundle_ctx;
     construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
 
-    unsigned char hash_bytes[NUM_HASH_BYTES];
-    const uint32_t tag_increment = bundle_finalize(&bundle_ctx, hash_bytes);
+    const uint32_t tag_increment = bundle_finalize(&bundle_ctx);
     assert_int_equal(tag_increment, exp_tag_increment);
 
     char hash_chars[NUM_HASH_CHARS];
-    bytes_to_chars(hash_bytes, hash_chars, NUM_HASH_BYTES);
+    bytes_to_chars(bundle_get_hash(&bundle_ctx), hash_chars, NUM_HASH_BYTES);
 
     assert_string_equal(hash_chars, exp_hash);
 }

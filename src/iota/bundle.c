@@ -138,7 +138,7 @@ static inline void compute_hash(const BUNDLE_CTX *ctx,
     kerl_squeeze_final_chunk(&sha, hash_bytes);
 }
 
-unsigned int bundle_finalize(BUNDLE_CTX *ctx, unsigned char *hash_bytes)
+unsigned int bundle_finalize(BUNDLE_CTX *ctx)
 {
     unsigned int tag_increment = 0;
 
@@ -147,10 +147,10 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx, unsigned char *hash_bytes)
     }
 
     while (true) {
-        compute_hash(ctx, hash_bytes);
+        compute_hash(ctx, ctx->hash);
 
         tryte_t hash_trytes[81];
-        normalize_hash_bytes(hash_bytes, hash_trytes);
+        normalize_hash_bytes(ctx->hash, hash_trytes);
         if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
             // increment the tag of the first transaction
             bytes_increment_trit_area_81(ctx->bytes + 48);
@@ -174,6 +174,16 @@ const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
     }
 
     return ctx->bytes + tx_index * 96;
+}
+
+const unsigned char *bundle_get_hash(const BUNDLE_CTX *ctx)
+{
+    if (ctx->current_index <= ctx->last_index) {
+        THROW(INVALID_STATE);
+    }
+    // TODO check that the bundle has already been finalized
+
+    return ctx->hash;
 }
 
 uint32_t bundle_get_current_index(const BUNDLE_CTX *ctx)
