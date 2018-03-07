@@ -1,7 +1,7 @@
 # IOTA C Light Wallet
 
 A big thanks to the people of the IOTA implementation of the Ledger Nano S.
-They create an amazing low foodprint C light wallet implementation for the Nano S.
+They create an amazing low footprint C light wallet implementation for the Nano S.
 We use this as base for the generic embedded C light wallet implementation.
 
 Usage:
