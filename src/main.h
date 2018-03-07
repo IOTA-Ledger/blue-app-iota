@@ -39,6 +39,7 @@
 
 
 #define LEDGER_MSG "LEDGER"
+#define SECURITY_LEVEL 2
 
 extern unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 extern ux_state_t ux;

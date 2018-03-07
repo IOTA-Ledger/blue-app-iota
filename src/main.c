@@ -142,8 +142,8 @@ static void IOTA_main(void)
                     PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
 
                     unsigned char addr_bytes[48];
-                    get_public_addr(seed_bytes, input->address_idx, 2,
-                                    addr_bytes);
+                    get_public_addr(seed_bytes, input->address_idx,
+                                    SECURITY_LEVEL, addr_bytes);
 
                     PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
                     os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
@@ -233,8 +233,8 @@ static void IOTA_main(void)
 
                         // TODO: the transaction index is not the address index
                         signing_initialize(&signing_ctx, seed_bytes,
-                                           input->transaction_idx, 2,
-                                           normalized_hash);
+                                           input->transaction_idx,
+                                           SECURITY_LEVEL, normalized_hash);
 
                         state_flags |= SIGNING_STARTED;
                     }
@@ -255,7 +255,8 @@ static void IOTA_main(void)
                                        output->signature_fragment,
                                        SIGNATURE_FRAGMENT_SIZE * 48);
                     }
-                    output->last_fragment = NUM_SIGNATURE_FRAGMENTS(2) - 1;
+                    output->last_fragment =
+                        NUM_SIGNATURE_FRAGMENTS(SECURITY_LEVEL) - 1;
 
 
                     if (output->fragment_index == output->last_fragment) {
