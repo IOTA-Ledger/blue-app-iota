@@ -1,30 +1,14 @@
-/*******************************************************************************
- *   Ledger Blue
- *   (c) 2016 Ledger
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- ********************************************************************************/
-
 #include "main.h"
 #include "ui.h"
+#include "apdu.h"
 #include "aux.h"
-#include "main_tx.h"
 
 // iota-related stuff
 #include "iota/kerl.h"
 #include "iota/conversion.h"
 #include "iota/addresses.h"
 #include "iota/bundle.h"
+#include "iota/signing.h"
 
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {
@@ -43,19 +27,12 @@ WIDE internalStorage_t N_storage_real;
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 ux_state_t ux;
 
+unsigned int state_flags;
 
-/* ----- TX VARIABLES ----- */
+unsigned char seed_bytes[48];
+
 BUNDLE_CTX bundle_ctx;
-
-
-unsigned char tx_mask;
-uint8_t input_counter;
-int64_t total_bal;
-int64_t send_amt;
-// initializes upon first call of last idx
-bool tx_initialized;
-bool bundle_complete;
-bool last_addr_used;
+SIGNING_CTX signing_ctx;
 
 // This symbol is defined by the link script to be at the start of the stack
 extern unsigned long _stack;
@@ -75,312 +52,11 @@ void check_canary()
     }
 }
 
-void reset_tx()
-{
-    // reset important values upon failure
-    tx_mask = 0;
-    input_counter = 0;
-
-    total_bal = 0;
-    send_amt = 0;
-
-    bundle_complete = false;
-    last_addr_used = false;
-    tx_initialized = false;
-}
-
-typedef struct __attribute__((__packed__)) TX_INPUT {
-    char address[81];
-    int64_t address_idx;
-    int64_t value;
-    char tag[27];
-    int64_t current_index;
-    int64_t last_index;
-    int64_t timestamp;
-} TX_INPUT;
-
-typedef struct __attribute__((__packed__)) BUNDLE_OUTPUT {
-    int64_t tag_increment;
-    char bundle_hash[81];
-} BUNDLE_OUTPUT;
-
-typedef struct __attribute__((__packed__)) PUB_KEY_INPUT {
-    int64_t bip44_path[BIP44_PATH_LEN];
-    int64_t address_idx;
-    int64_t security;
-} PUB_KEY_INPUT;
-
-
-int8_t receive_tx()
-{
-    volatile unsigned int rx = 0;
-    volatile unsigned int tx = 0;
-    volatile unsigned int flags = 0;
-
-    /* IOTA main variables */
-    char response[90];
-
-    // actual seed index for address
-    uint32_t idx_inputs[MAX_BUNDLE_NUM_INPUTS];
-    // bundle index
-    uint8_t bundle_idx_inputs[MAX_BUNDLE_NUM_INPUTS];
-
-    // local tx values
-    int64_t tx_val = 0;
-    char tx_tag[27];
-    uint32_t tx_timestamp = 0;
-    uint8_t err = 0;
-
-    // reset also initializes
-    reset_tx();
-
-
-    // respond to let them know we're ready for transaction
-    tx = 0;
-    // Manually send back success 0x9000 at end
-    G_io_apdu_buffer[tx++] = 0x90;
-    G_io_apdu_buffer[tx++] = 0x00;
-
-    // send back response
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
-    flags |= IO_ASYNCH_REPLY;
-
-
-    // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
-    // goal is to retrieve APDU.
-    // When APDU are to be fetched from multiple IOs, like NFC+USB+BLE, make
-    // sure the io_event is called with a
-    // switch event, before the apdu is replied to the bootloader. This avoid
-    // APDU injection faults.
-    for (;;) {
-        volatile unsigned short sw = 0;
-
-        BEGIN_TRY
-        {
-            TRY
-            {
-                rx = tx;
-                // ensure no race in catch_other if io_exchange throws an error
-                tx = 0;
-
-                check_canary();
-                rx = io_exchange(CHANNEL_APDU | flags, rx);
-
-                // flags sets the IO to blocking, make sure to re-enable asynch
-                flags = 0;
-
-                // no apdu received, well, reset the session, and reset the
-                // bootloader configuration
-                if (rx == 0)
-                    THROW(0x6982);
-
-                // If it doesnt start with the magic byte return error
-                // CLA is 0x80
-                if (G_io_apdu_buffer[0] != CLA)
-                    THROW(0x6E00);
-
-                uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
-                unsigned char *msg = G_io_apdu_buffer + APDU_HEADER_LENGTH;
-
-                // check second byte for instruction
-                switch (G_io_apdu_buffer[1]) {
-                // upon return G_io_apdu_buffer is null terminated (though
-                // python  will still display garbage characters after the null
-                // termination)
-                case INS_GET_MULTI_SEND: {
-                    tx_mask = tx_mask | G_io_apdu_buffer[APDU_TX_TYPE];
-
-
-                    // check third byte for which part of tx we are receiving
-                    switch (G_io_apdu_buffer[APDU_TX_TYPE]) {
-                        /* -------------------- TX LAST ------------------- */
-                    case TX_LAST: {
-                        // only rcv last index once
-                        if (tx_initialized)
-                            THROW(0x0001);
-
-                        tx_initialized = true;
-
-                        // read in last index, initialize bundle
-                        // and form response msg
-                        main_tx_last(msg, len, &err, &bundle_ctx, response);
-                    } break;
-                        /* -------------------- TX CUR ------------------- */
-                    case TX_CUR: {
-                        if (!tx_initialized)
-                            THROW(0x0003);
-
-                        // ensure cur is the first part of tx we receive
-                        // after last idx
-                        if (tx_mask != (TX_CUR | TX_LAST))
-                            THROW(0x0004);
-
-                        // set current index in bundle
-                        // and form response msg
-                        main_tx_cur(msg, len, &err, &bundle_ctx, response);
-                    } break;
-                        /* --------------- TX SEED IDX ------------------ */
-                    case TX_SEED_IDX: {
-                        if (!tx_initialized)
-                            THROW(0x0006);
-
-                        last_addr_used = main_tx_seed_idx(
-                            msg, len, &err, &bundle_ctx, response,
-                            &idx_inputs[0], &bundle_idx_inputs[0],
-                            input_counter++, global_idx);
-                    } break;
-                        /* --------------- TX ADDR ------------------ */
-                    case TX_ADDR: {
-                        if (!tx_initialized)
-                            THROW(0x0007);
-
-                        main_tx_addr(msg, len, &bundle_ctx, response);
-                    } break;
-                        /* ------------------ TX VALUE ------------------ */
-                    case TX_VAL: {
-                        if (!tx_initialized)
-                            THROW(0x0009);
-
-                        tx_val =
-                            main_tx_value(msg, len, &err, response, &total_bal,
-                                          &send_amt, &bundle_ctx);
-                    } break;
-                        /* -------------------- TX TAG ------------------- */
-                    case TX_TAG: {
-                        if (!tx_initialized)
-                            THROW(0x0010);
-
-                        main_tx_tag(msg, len, tx_tag, response);
-                    } break;
-                        /* -------------------- TX TIME ------------------- */
-                    case TX_TIME: {
-                        if (!tx_initialized)
-                            THROW(0x0011);
-
-                        tx_timestamp = main_tx_time(msg, len, &err, response);
-                    } break;
-
-                        // Unknown TX type
-                    default:
-                        THROW(0x0012);
-                        break;
-                    }
-
-                    /* -------------------- TX COMPLETE ------------------- */
-                    if ((tx_mask & TX_FULL) == TX_FULL) {
-                        main_tx_complete(&bundle_ctx, tx_val, tx_tag,
-                                         tx_timestamp, tx_mask);
-
-                        // reset tx_mask
-                        tx_mask = TX_LAST;
-                    }
-
-                    /* ------------------ BUNDLE COMPLETE ----------------- */
-                    if (G_io_apdu_buffer[APDU_MORE] == TX_END) {
-                        // verify the last transaction is fully created
-                        // it will be reset to TX_LAST above if fully formed
-                        if (tx_mask != TX_LAST)
-                            THROW(0x0016);
-
-                        main_bundle_complete(
-                            total_bal, send_amt, last_addr_used, &global_idx,
-                            &bundle_ctx, tx_timestamp, response);
-
-
-                        bundle_complete = true;
-                    }
-
-                    // push the response onto the response buffer.
-                    os_memmove(G_io_apdu_buffer, response, 90);
-
-                    tx = 90;
-                    // Manually send back success 0x9000 at end
-                    G_io_apdu_buffer[tx++] = 0x90;
-                    G_io_apdu_buffer[tx++] = 0x00;
-
-                    // send back response
-                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
-                    flags |= IO_ASYNCH_REPLY;
-
-                    if (bundle_complete) {
-                        char dest_addr[82];
-                        // very first tx will hold dest_addr
-                        bytes_to_chars(bundle_get_address_bytes(&bundle_ctx, 0),
-                                       dest_addr, 48);
-
-                        ui_sign_tx(total_bal, send_amt, dest_addr, 82);
-                    }
-                    else {
-                        char top[21], bot[21];
-                        memcpy(top, "B:", 3);
-                        memcpy(bot, "S:", 3);
-
-                        int_to_str(total_bal, top + 2, 19);
-                        int_to_str(send_amt, bot + 2, 19);
-
-                        ui_display_message(top, 21, TYPE_STR, NULL, 0, 0, bot,
-                                           21, TYPE_STR);
-                    }
-                } break;
-                default: // any other case exit the transactions
-                    return 0;
-                }
-            } // TRY
-            CATCH_OTHER(e)
-            {
-                // reset important values upon failure
-                tx_mask = 0;
-
-                input_counter = 0;
-
-                tx_val = 0;
-                tx_timestamp = 0;
-
-                total_bal = 0;
-                send_amt = 0;
-
-                bundle_complete = false;
-                last_addr_used = false;
-                tx_initialized = false;
-
-                // reset_tx();
-
-                // ui_reset();
-
-
-                switch (e & 0xF000) {
-                case 0x6000:
-                case 0x9000:
-                    sw = e;
-                    break;
-                default:
-                    sw = 0x6800 | (e & 0x7FF);
-                    break;
-                }
-                // Unexpected exception => report
-                G_io_apdu_buffer[tx] = sw >> 8;
-                G_io_apdu_buffer[tx + 1] = sw;
-                tx += 2;
-            }
-            FINALLY
-            {
-            }
-        } // BEGIN
-        END_TRY;
-    } // for
-}
-
 static void IOTA_main(void)
 {
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
-
-    uint8_t err = 0;
-
-    tx_initialized = false;
 
     // initialize the UI
     ui_init();
@@ -426,244 +102,168 @@ static void IOTA_main(void)
 
                 // check second byte for instruction
                 switch (G_io_apdu_buffer[1]) {
-                // upon return G_io_apdu_buffer is null terminated (though
-                // python  will still display garbage characters after the null
-                // termination)
-                case INS_GET_MULTI_SEND: {
-                    receive_tx();
+
+                case INS_SET_SEED: {
+                    if (CHECK_STATE(state_flags, SET_SEED)) {
+                        THROW(INVALID_STATE);
+                    }
+                    if (len < sizeof(SET_SEED_INPUT)) {
+                        THROW(0x6D09);
+                    }
+                    SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
+
+                    unsigned int path[BIP44_PATH_LEN];
+                    for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
+                        if (!ASSIGN(path[i], input->bip44_path[i]))
+                            THROW(INVALID_PARAMETER);
+                    }
+
+                    // we only care about privateKeyData and using this to
+                    // generate our iota seed
+                    unsigned char entropy[64];
+                    os_perso_derive_node_bip32(CX_CURVE_256K1, path,
+                                               BIP44_PATH_LEN, entropy,
+                                               entropy + 32);
+                    get_seed(entropy, sizeof(entropy), seed_bytes);
+                    // getting the seed resets everything
+                    state_flags = SEED_SET;
+
+                    // return success
+                    THROW(0x9000);
                 } break;
 
-                case INS_SINGLE_TX: {
+                case INS_PUBKEY: {
+                    if (CHECK_STATE(state_flags, PUBKEY)) {
+                        THROW(INVALID_STATE);
+                    }
+                    if (len < sizeof(PUBKEY_INPUT)) {
+                        THROW(0x6D09);
+                    }
+                    PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
+
+                    unsigned char addr_bytes[48];
+                    get_public_addr(seed_bytes, input->address_idx, 2,
+                                    addr_bytes);
+
+                    PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
+                    os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
+                    tx = sizeof(PUBKEY_OUTPUT);
+
+                    // convert the 48 byte address into base-27 address
+                    bytes_to_chars(addr_bytes, output->address, 48);
+
+                    // return success
+                    THROW(0x9000);
+                } break;
+
+                case INS_TX: {
+                    if (CHECK_STATE(state_flags, TX)) {
+                        THROW(INVALID_STATE);
+                    }
                     if (len < sizeof(TX_INPUT)) {
                         THROW(0x6D09);
                     }
-                    TX_INPUT *tx_input = (TX_INPUT *)(msg);
+                    TX_INPUT *input = (TX_INPUT *)(msg);
 
-                    if (tx_initialized == false) {
+                    if ((state_flags & BUNDLE_INITIALIZED) == 0) {
                         uint32_t last_index;
-                        if (!ASSIGN(last_index, tx_input->last_index)) {
+                        if (!ASSIGN(last_index, input->last_index)) {
                             THROW(INVALID_PARAMETER); // overflow
                         }
                         bundle_initialize(&bundle_ctx, last_index);
-                        tx_initialized = true;
+                        state_flags |= BUNDLE_INITIALIZED;
                     }
 
                     // validate transaction indices
-                    if (tx_input->last_index != bundle_ctx.last_index) {
+                    if (input->last_index != bundle_ctx.last_index) {
                         THROW(INVALID_STATE);
                     }
-                    if (tx_input->current_index != bundle_ctx.current_index) {
+                    if (input->current_index != bundle_ctx.current_index) {
                         THROW(INVALID_STATE);
                     }
 
-                    if (!validate_chars(tx_input->address, 81, false)) {
+                    if (!validate_chars(input->address, 81, false)) {
                         THROW(INVALID_PARAMETER);
                     }
-                    bundle_set_address_chars(&bundle_ctx, tx_input->address);
+                    bundle_set_address_chars(&bundle_ctx, input->address);
 
-                    if (!validate_chars(tx_input->tag, 27, true)) {
+                    if (!validate_chars(input->tag, 27, true)) {
                         THROW(INVALID_PARAMETER);
                     }
                     uint32_t timestamp;
-                    if (!ASSIGN(timestamp, tx_input->timestamp)) {
+                    if (!ASSIGN(timestamp, input->timestamp)) {
                         THROW(INVALID_PARAMETER); // overflow
                     }
-                    bundle_add_tx(&bundle_ctx, tx_input->value, tx_input->tag,
+                    bundle_add_tx(&bundle_ctx, input->value, input->tag,
                                   timestamp);
 
                     // TODO: generate meta transactions
 
-                    if (tx_input->current_index == bundle_ctx.last_index) {
-                        unsigned char hash_bytes[48];
-                        const unsigned int incr =
-                            bundle_finalize(&bundle_ctx, hash_bytes);
+                    TX_OUTPUT *output = (TX_OUTPUT *)(G_io_apdu_buffer);
+                    os_memset(output, 0, sizeof(TX_OUTPUT));
+                    tx = sizeof(TX_OUTPUT);
 
-                        BUNDLE_OUTPUT *output =
-                            (BUNDLE_OUTPUT *)(G_io_apdu_buffer);
+                    if (input->current_index == bundle_ctx.last_index) {
+                        output->tag_increment = bundle_finalize(&bundle_ctx);
 
-                        output->tag_increment = incr;
-                        bytes_to_chars(hash_bytes, output->bundle_hash, 48);
+                        output->finalized = true;
+                        state_flags |= BUNDLE_FINALIZED;
 
-                        tx = sizeof(BUNDLE_OUTPUT);
+                        bytes_to_chars(bundle_get_hash(&bundle_ctx),
+                                       output->bundle_hash, 48);
                     }
 
                     // return success
                     THROW(0x9000);
                 } break;
 
-                    /* ---------------------------------------------
-                     -----------------------------------------------
-                     ---------------- GET PUBLIC KEY ---------------
-                     -----------------------------------------------
-                     ----------------------------------------------- */
-                case INS_GET_PUBKEY: {
-                    if (len < sizeof(PUB_KEY_INPUT)) {
+                case INS_SIGN: {
+                    if (CHECK_STATE(state_flags, SIGN)) {
+                        THROW(INVALID_STATE);
+                    }
+                    if (len < sizeof(SIGN_INPUT)) {
                         THROW(0x6D09);
                     }
-                    PUB_KEY_INPUT *input = (PUB_KEY_INPUT *)(msg);
+                    SIGN_INPUT *input = (SIGN_INPUT *)(msg);
 
-                    // the seed in 48 bytes representation
-                    unsigned char seed_bytes[48];
-                    {
-                        unsigned int path[BIP44_PATH_LEN];
-                        for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
-                            if (!ASSIGN(path[i], input->bip44_path[i]))
-                                THROW(INVALID_PARAMETER);
-                        }
+                    if ((state_flags & SIGNING_STARTED) == 0) {
+                        tryte_t normalized_hash[81];
+                        normalize_hash_bytes(bundle_get_hash(&bundle_ctx),
+                                             normalized_hash);
 
-                        // we only care about privateKeyData and using this to
-                        // generate our iota seed
-                        unsigned char privateKeyData[32];
-                        os_perso_derive_node_bip32(CX_CURVE_256K1, path,
-                                                   BIP44_PATH_LEN,
-                                                   privateKeyData, NULL);
-                        get_seed(privateKeyData, sizeof(privateKeyData),
-                                 seed_bytes);
+                        // TODO: the transaction index is not the address index
+                        signing_initialize(&signing_ctx, seed_bytes,
+                                           input->transaction_idx, 2,
+                                           normalized_hash);
+
+                        state_flags |= SIGNING_STARTED;
                     }
 
-                    unsigned char addr_bytes[48];
-                    get_public_addr(seed_bytes, input->address_idx,
-                                    input->security, addr_bytes);
+                    // TODO: check that the transaction idx has not changed
 
-                    // convert the 48 byte address into base-27 address
-                    bytes_to_chars(addr_bytes, (char *)G_io_apdu_buffer, 48);
-                    tx = 81;
+                    SIGN_OUTPUT *output = (SIGN_OUTPUT *)(G_io_apdu_buffer);
+                    os_memset(output, 0, sizeof(SIGN_OUTPUT));
+                    tx = sizeof(SIGN_OUTPUT);
+
+                    {
+                        unsigned char
+                            fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
+                        output->fragment_index =
+                            signing_next_fragment(&signing_ctx, fragment_bytes);
+
+                        bytes_to_chars(fragment_bytes,
+                                       output->signature_fragment,
+                                       SIGNATURE_FRAGMENT_SIZE * 48);
+                    }
+                    output->last_fragment = NUM_SIGNATURE_FRAGMENTS(2) - 1;
+
+
+                    if (output->fragment_index == output->last_fragment) {
+                        state_flags &= ~SIGNING_STARTED;
+                    }
 
                     // return success
                     THROW(0x9000);
-                } break;
-                    /* ---------------------------------------------
-                     -----------------------------------------------
-                     ---------------- BAD PUBLIC KEY ---------------
-                     -----------------------------------------------
-                     ----------------------------------------------- */
-                case INS_BAD_PUBKEY: {
-                    global_idx++;
-
-                    char msg[11];
-                    // 10 characters is largest uint32 num, might need to go
-                    // higher  once larger indices are allowed
-                    int_to_str(global_idx, msg, 11);
-                    tx = 11;
-
-
-                    // push the response onto the response buffer.
-                    os_memmove(G_io_apdu_buffer, msg, tx);
-
-                    // Manually send back success 0x9000 at end
-                    G_io_apdu_buffer[tx++] = 0x90;
-                    G_io_apdu_buffer[tx++] = 0x00;
-
-                    // send back response
-                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
-                    flags |= IO_ASYNCH_REPLY;
-
-                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0,
-                                       0);
-                } break;
-
-                    /* ---------------------------------------------
-                     -----------------------------------------------
-                     --------------- GOOD PUBLIC KEY ---------------
-                     -----------------------------------------------
-                     ----------------------------------------------- */
-                case INS_GOOD_PUBKEY: {
-                    // Just use this to write to NVRAM the new seed key
-                    internalStorage_t storage;
-                    storage.initialized = 0x01;
-                    // get the global seed key and write it as the new key
-                    storage.seed_key = global_idx;
-
-                    nvm_write(&N_storage, (void *)&storage,
-                              sizeof(internalStorage_t));
-
-                    char msg[11];
-                    // 10 characters is largest uint32 num, might need to go
-                    // higher  once larger indices are allowed
-                    int_to_str(global_idx, msg, 11);
-                    tx = 11;
-
-                    // push the response onto the response buffer.
-                    os_memmove(G_io_apdu_buffer, msg, tx);
-
-                    // Manually send back success 0x9000 at end
-                    G_io_apdu_buffer[tx++] = 0x90;
-                    G_io_apdu_buffer[tx++] = 0x00;
-
-                    // send back response
-                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
-                    flags |= IO_ASYNCH_REPLY;
-                    // Nothing to display, this is purely behind the scenes
-                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0,
-                                       0);
-                } break;
-
-                    /* ---------------------------------------------
-                     -----------------------------------------------
-                     -------------- CHANGE SEED INDEX --------------
-                     -----------------------------------------------
-                     ----------------------------------------------- */
-
-                    // Note - Change Index does not write to NVRAM
-                    // Notify good_pub_key to write (after verifying its good)
-                case INS_CHANGE_INDEX: {
-                    uint32_t new_index =
-                        str_to_int((char *)msg, len, &err, T_32_U);
-
-                    tx = 11;
-
-                    // only update global_idx if we increment
-                    // don't allow reducing seed_key (vulnerability)
-                    if (new_index > global_idx) {
-                        global_idx = new_index;
-
-                        // push the response onto the response buffer.
-                        os_memmove(G_io_apdu_buffer, msg, tx);
-                        // Manually send back success 0x9000 at end
-                        G_io_apdu_buffer[tx++] = 0x90;
-                        G_io_apdu_buffer[tx++] = 0x00;
-                    }
-                    else {
-                        // don't update seed_key (exposed address)
-
-
-                        // push the response onto the response buffer.
-                        os_memmove(G_io_apdu_buffer, msg, tx);
-                        // Manually send back failure
-                        // TODO MODIFY FAILURE RETURN CODE
-                        G_io_apdu_buffer[tx++] = 0x90;
-                        G_io_apdu_buffer[tx++] = 0x00;
-                    }
-
-
-                    // send back response
-                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
-                    flags |= IO_ASYNCH_REPLY;
-                    // Nothing to display, this is purely behind the scenes
-                    ui_display_message(NULL, 0, 0, msg, 11, TYPE_STR, NULL, 0,
-                                       0);
-                } break;
-
-                    /* ---------------------------------------------
-                     -----------------------------------------------
-                     ------------------- SIGN TX -------------------
-                     -----------------------------------------------
-                     ----------------------------------------------- */
-                case INS_SIGN: {
-                    // check third byte for instruction type
-                    /*if ((G_io_apdu_buffer[2] != P1_MORE) &&
-                        (G_io_apdu_buffer[2] != P1_LAST)) {
-                        THROW(0x6A86);
-                    }*/
-
-                    // Position 5 is the start of the real data, pos 4 is
-                    // the length of the data, flag off end with nullchar
-                    G_io_apdu_buffer[5 + G_io_apdu_buffer[4]] = '\0';
-
-                    flags |= IO_ASYNCH_REPLY;
                 } break;
 
                 case 0xFF: // return to dashboard
@@ -678,7 +278,6 @@ static void IOTA_main(void)
             CATCH_OTHER(e)
             {
                 // ui_reset();
-
 
                 switch (e & 0xF000) {
                 case 0x6000:
@@ -703,14 +302,6 @@ static void IOTA_main(void)
 
 return_to_dashboard:
     return;
-}
-
-bool nvram_is_init()
-{
-    if (N_storage.initialized != 0x01)
-        return false;
-    else
-        return true;
 }
 
 

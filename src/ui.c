@@ -1,5 +1,7 @@
-#include "main.h"
 #include "ui.h"
+#include <string.h>
+#include "common.h"
+#include "main.h"
 #include "aux.h"
 
 char top_str[21];
@@ -187,7 +189,6 @@ const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e)
 
 const bagl_element_t *io_seproxyhal_touch_deny(const bagl_element_t *e)
 {
-    hashTainted = 1;
     G_io_apdu_buffer[0] = 0x69;
     G_io_apdu_buffer[1] = 0x85;
     // Send back the response, do not restart the event loop
