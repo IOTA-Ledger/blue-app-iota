@@ -32,7 +32,6 @@ add_library(iota-ledger SHARED
     "../src/iota/kerl.c"
     "../src/iota/signing.c"
     "../src/keccak/sha3.c"
-    "../src/aux.c"
 )
 
 add_executable(conversion_test conversion_test.c)
