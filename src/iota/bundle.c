@@ -185,8 +185,3 @@ const unsigned char *bundle_get_hash(const BUNDLE_CTX *ctx)
 
     return ctx->hash;
 }
-
-uint32_t bundle_get_current_index(const BUNDLE_CTX *ctx)
-{
-    return ctx->current_index;
-}
