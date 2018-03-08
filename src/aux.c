@@ -1,94 +1,56 @@
 #include "aux.h"
-
 #include <stdint.h>
+#include "main.h"
 
-// iota-related stuff
 #include "iota/iota_types.h"
 #include "iota/kerl.h"
 #include "iota/conversion.h"
-#include "iota/transaction.h"
-#include "iota/addresses.h"
 
 
-// functions for reading from input buffer
-void uint_to_str(uint32_t i, char *str, uint8_t len)
+bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding)
 {
-    snprintf(str, len, "%u", i);
-}
-
-void int_to_str(int i, char *str, uint8_t len)
-{
-    snprintf(str, len, "%d", i);
-}
-
-uint32_t str_to_int(char *str, uint8_t len)
-{
-    uint32_t num = 0;
-    // don't attempt to store more than 10 characters in a 32bit unsigned
-    if (len > 10)
-        len = 10;
-
-    for (uint8_t i = 0; i < len; i++) {
-        switch (str[i]) {
-        case '0':
-            num = (num * 10) + 0;
-            break;
-        case '1':
-            num = (num * 10) + 1;
-            break;
-        case '2':
-            num = (num * 10) + 2;
-            break;
-        case '3':
-            num = (num * 10) + 3;
-            break;
-        case '4':
-            num = (num * 10) + 4;
-            break;
-        case '5':
-            num = (num * 10) + 5;
-            break;
-        case '6':
-            num = (num * 10) + 6;
-            break;
-        case '7':
-            num = (num * 10) + 7;
-            break;
-        case '8':
-            num = (num * 10) + 8;
-            break;
-        case '9':
-            num = (num * 10) + 9;
-            break;
-            // any other char means we are done
-        default:
-            return num;
+    const size_t len = strnlen(chars, num_chars);
+    for (unsigned int i = 0; i < len; i++) {
+        const char c = chars[i];
+        if (c != '9' && (c < 'A' || c > 'Z')) {
+            return false;
         }
     }
-    return num;
+
+    if (zero_padding) {
+        for (unsigned int i = len; i < num_chars; i++) {
+            chars[i] = '9';
+        }
+    }
+
+    return true;
 }
 
-void get_seed(const unsigned char *privateKey, uint8_t sz,
+void get_seed(const unsigned char *entropy, unsigned int n,
               unsigned char *seed_bytes)
 {
-    // {
-    //   // localize bytes_in variable to discard it when we are done
-    //   unsigned char bytes_in[48];
-    //
-    //   // kerl requires 424 bytes
-    //   kerl_initialize();
-    //
-    //   // copy our private key into bytes_in
-    //   // for now just re-use the last 16 bytes to fill bytes_in
-    //   memcpy(&bytes_in[0], privateKey, sz);
-    //   memcpy(&bytes_in[sz], privateKey, 48-sz);
-    //
-    //   // absorb these bytes
-    //   kerl_absorb_bytes(&bytes_in[0], 48);
-    // }
+#ifndef DEBUG_SEED
+    // at least one chunk of entropy required
+    if (n < 48) {
+        THROW(INVALID_PARAMETER);
+    }
 
-    // override for testing purposes
-    const char test_seed[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETE"
-                             "RPETERPETERPETERPETERPETERPETERR";
-    chars_to_bytes(test_seed, seed_bytes, 81);
+    cx_sha3_t sha;
+    kerl_initialize(&sha);
+
+    for (unsigned int i = 0; i < n / 48; i++) {
+        kerl_absorb_chunk(&sha, entropy + i * 48);
+    }
+    // TODO: should we use standard padding rules?
+    if (n % 48 != 0) {
+        kerl_absorb_chunk(&sha, entropy + (n - 48));
+    }
+
+    kerl_squeeze_final_chunk(&sha, seed_bytes);
+#else  // DEBUG_SEED
+    UNUSED(entropy);
+    UNUSED(n);
+
+    chars_to_bytes(DEBUG_SEED, seed_bytes, 81);
+#endif // DEBUG_SEED
 }

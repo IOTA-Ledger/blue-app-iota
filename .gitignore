@@ -38,6 +38,7 @@ debug/
 *.i*86
 *.x86_64
 *.hex
+format.sh
 
 # Debug files
 *.dSYM/

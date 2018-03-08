@@ -1,84 +1,95 @@
 #!/usr/bin/env python
-#*******************************************************************************
-#*   Ledger Blue
-#*   (c) 2016 Ledger
-#*
-#*  Licensed under the Apache License, Version 2.0 (the "License");
-#*  you may not use this file except in compliance with the License.
-#*  You may obtain a copy of the License at
-#*
-#*      http://www.apache.org/licenses/LICENSE-2.0
-#*
-#*  Unless required by applicable law or agreed to in writing, software
-#*  distributed under the License is distributed on an "AS IS" BASIS,
-#*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#*  See the License for the specific language governing permissions and
-#*  limitations under the License.
-#********************************************************************************
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
-from secp256k1 import PublicKey
+from struct import Struct
 import time
 
-#define INS_GET_PUBKEY 0x01
-#define INS_BAD_PUBKEY 0x02
-#define INS_GOOD_PUBKEY 0x04
-#define INS_CHANGE_INDEX 0x08
-#define INS_SIGN 0x10
+BIP44_PATH = [0x8000002C,
+              0x8000107A,
+              0x80000000,
+              0x00000000,
+              0x00000000]
+ADDRESS = "ADR" * 27 + "\0"
 
-bipp44_path = (
-               "8000002C"
-              +"80000378"
-              +"80000000"
-              +"00000000"
-              +"00000000")
+INS_SET_SEED = 0x01
+INS_PUBKEY = 0x02
+INS_TX = 0x03
+INS_SIGN = 0x04
 
-textToSign = ""
-while True:
-	data = raw_input("Enter text to sign, end with an empty line : ")
-	if len(data) == 0:
-		break
-	textToSign += data + "\n"
+
+def apdu_command(ins, data, p1=0, p2=0):
+    b = bytes(data)
+
+    command = bytearray()
+    command.append(0x80)  # Instruction class (1)
+    command.append(ins)  # Instruction code (1)
+    command.extend([p1, p2])  # Instruction parameters (2)
+    command.append(len(b))  # length of data (1)
+    command.extend(b)  # Command data
+    command.append(0)
+
+    return command
+
+
+def pack_set_seed_input(bip44_path):
+    struct = Struct("<5q")
+    return struct.pack(bip44_path[0], bip44_path[1], bip44_path[2], bip44_path[3], bip44_path[4])
+
+
+def pack_pub_key_input(address_idx):
+    struct = Struct("<q")
+    return struct.pack(address_idx)
+
+
+def unpack_pubkey_output(data):
+    struct = Struct("<81s")
+    return struct.unpack(data)
+
+
+def pack_tx_input(address, address_idx, value, tag, tx_idx, tx_len, tx_time):
+    tx_struct = Struct("<81sqq27sqqq")
+    return tx_struct.pack(address, address_idx, value, tag, tx_idx, tx_len, tx_time)
+
+
+def unpack_tx_output(data):
+    struct = Struct("<?q81s")
+    return struct.unpack(data)
+
+
+def pack_sign_input(transaction_idx):
+    struct = Struct("<q")
+    return struct.pack(transaction_idx)
+
+
+def unpack_sign_output(data):
+    struct = Struct("<243sLL")
+    return struct.unpack(data)
+
 
 dongle = getDongle(True)
-# 80 is magic start byte, 04 is type (GETPUBLICKEY) ignore rest of the data
+exceptionCount = 0
 start_time = time.time()
-#publicKey = dongle.exchange(bytes(("80010000FF"+bipp44_path).decode('hex')))
-#80 20 01
-#address
-#publicKey = dongle.exchange(bytes("8020000151".decode('hex') +
-#    "CQYUHGQAILW9ODCXLKRHBIEODRBPTBUKSZZ99O9EGTIKITJCGTNVKPQQ9LWKLROYWTKGDLUZSXFUKSLQZ"));
 
-publicKey = dongle.exchange(bytes("8020000110".decode('hex') +
-    "8971"));
+dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
-print str(publicKey);
-#value
-time.sleep(1);
-publicKey = dongle.exchange(bytes("80200002FF".decode('hex') + "VALUE"));
-print str(publicKey);
-#tag
-time.sleep(1);
-publicKey = dongle.exchange(bytes("80200004FF".decode('hex') + "TAG"));
-print str(publicKey);
-#time
-time.sleep(1);
-publicKey = dongle.exchange(bytes("80200008FF".decode('hex') + "TIME"));
-print str(publicKey);
-#cur
-time.sleep(1);
-publicKey = dongle.exchange(bytes("80200010FF".decode('hex') + "CUR"));
-print str(publicKey);
-#last
-time.sleep(1);
-publicKey = dongle.exchange(bytes("80200120FF".decode('hex') + "LAST"));
-print str(publicKey);
+response = dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(1)))
+print unpack_pubkey_output(response)
 
+response = dongle.exchange(apdu_command(
+    INS_TX, pack_tx_input(ADDRESS, 2, 10, "", 0, 1, 99999)))
+print unpack_tx_output(response)
+
+response = dongle.exchange(apdu_command(
+    INS_TX, pack_tx_input(ADDRESS, 1, -10, "", 1, 1, 99999)))
+print unpack_tx_output(response)
+
+while True:
+    response = dongle.exchange(apdu_command(INS_SIGN, pack_sign_input(1)))
+    struct = unpack_sign_output(response)
+    print struct
+
+    if struct[1] == struct[2]:
+        break
 
 elapsed_time = time.time() - start_time
-
-# third byte specifies FINAL TRANSMISSION - 00 is more, 01 is end
-# fourth byte specifies TX PART
-#80 20 01
-
-print "Response: %s took: %d seconds" % (str(publicKey), elapsed_time)
+print "Time Elapsed: %d" % elapsed_time

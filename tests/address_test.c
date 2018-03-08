@@ -1,9 +1,4 @@
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <cmocka.h>
-#include "hash_file.h"
-#include "test_constants.h"
+#include "test_common.h"
 #include "iota/addresses.h"
 #include "iota/conversion.h"
 
@@ -28,6 +23,8 @@ static void seed_address(const char *seed_chars, uint32_t idx, uint8_t security,
     get_public_addr(seed_bytes, idx, security, address_bytes);
 
     bytes_to_chars(address_bytes, address_chars, NUM_HASH_BYTES);
+    // make null-terminated
+    address_chars[NUM_HASH_TRYTES] = '\0';
 }
 
 static void test_address(const char *seed, uint32_t idx, uint8_t security,
