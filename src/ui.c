@@ -1,7 +1,6 @@
 #include "ui.h"
 #include <string.h>
 #include "common.h"
-#include "main.h"
 #include "aux.h"
 
 char top_str[21];
@@ -17,7 +16,7 @@ uint8_t ui_state;
 
 // tx information
 uint64_t bal = 0;
-uint64_t out = 0;
+uint64_t pay = 0;
 char addr[21];
 
 // matrix holds layout of state transitions
@@ -26,6 +25,7 @@ static uint8_t state_transitions[TOTAL_STATES][3];
 // ----------- local function prototypes
 void init_state_transitions(void);
 void ui_display_state(void);
+void ui_handle_button(uint8_t button_mask);
 void ui_transition_state(unsigned int button_mask);
 
 unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
@@ -87,7 +87,7 @@ void ui_init()
 void ui_reset()
 {
     bal = 0;
-    out = 0;
+    pay = 0;
     memset(addr, '\0', sizeof(addr));
 
     ui_state = STATE_WELCOME;
@@ -108,10 +108,10 @@ void ui_record_addr(const char *a, uint8_t len)
     }
 }
 
-void ui_sign_tx(uint64_t b, uint64_t o, const char *a, uint8_t len)
+void ui_sign_tx(uint64_t b, uint64_t p, const char *a, uint8_t len)
 {
     bal = b;
-    out = o;
+    pay = p;
     ui_record_addr(a, len);
 
     ui_state = STATE_TX_SIGN;
@@ -283,6 +283,7 @@ void ui_transition_state(unsigned int button_mask)
     if (translated_mask == BUTTON_BAD)
         return;
 
+    ui_handle_button(translated_mask);
     ui_state = state_transitions[ui_state][translated_mask];
 
     if (state_is(STATE_EXIT))
@@ -297,40 +298,48 @@ void ui_display_state()
     switch (ui_state) {
         /* ------------ WELCOME -------------- */
     case STATE_WELCOME: {
-        write_display(NULL, 20, TYPE_STR, TOP);
-        write_display("Welcome to IOTA", 20, TYPE_STR, MID);
-        write_display(NULL, 20, TYPE_STR, BOT);
+        write_display(NULL, 0, TYPE_STR, TOP);
+        write_display("Welcome to IOTA", 21, TYPE_STR, MID);
+        write_display(NULL, 0, TYPE_STR, BOT);
 
         display_glyphs(glyph_cross, NULL);
     } break;
         /* ------------ TX BAL -------------- */
     case STATE_TX_BAL: {
-        write_display("Total Balance:", 20, TYPE_STR, TOP);
+        write_display("Total Balance:", 21, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
-        write_display(&bal, 20, TYPE_UINT, BOT);
+        write_display(&bal, 21, TYPE_UINT, BOT);
 
         display_glyphs(NULL, glyph_down);
     } break;
         /* ------------ TX SPEND -------------- */
     case STATE_TX_SPEND: {
-        write_display("Send Amt:", 20, TYPE_STR, TOP);
+        write_display("Send Amt:", 21, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
-        write_display(&out, 20, TYPE_UINT, BOT);
+        write_display(&pay, 21, TYPE_UINT, BOT);
 
         display_glyphs(glyph_up, glyph_down);
     } break;
         /* ------------ TX ADDR -------------- */
     case STATE_TX_ADDR: {
-        write_display("Dest Address:", 20, TYPE_STR, TOP);
+        write_display("Dest Address:", 21, TYPE_STR, TOP);
         write_display(NULL, 0, TYPE_STR, MID);
-        write_display(addr, 20, TYPE_STR, BOT);
+        write_display(addr, 21, TYPE_STR, BOT);
 
         display_glyphs_with_bars(glyph_up, NULL);
+    } break;
+        /* ------------ TX CALCULATING -------------- */
+    case STATE_TX_CALCULATING: {
+        write_display(NULL, 0, TYPE_STR, TOP);
+        write_display("Calculating...", 21, TYPE_STR, MID);
+        write_display(NULL, 0, TYPE_STR, BOT);
+        
+        display_glyphs_with_bars(NULL, NULL);
     } break;
         /* ------------ UNKNOWN STATE -------------- */
     default: {
         write_display(NULL, 0, 0, TOP);
-        write_display("UI ERROR", 20, TYPE_STR, MID);
+        write_display("UI ERROR", 21, TYPE_STR, MID);
         write_display(NULL, 0, 0, BOT);
 
         display_glyphs_with_bars(NULL, NULL);
@@ -338,6 +347,13 @@ void ui_display_state()
     }
 
     UX_DISPLAY(bagl_ui_nanos_screen, NULL);
+}
+
+void ui_handle_button(uint8_t button_mask)
+{
+    /* ------------- APPROVE TX --------------- */
+    if(ui_state == STATE_TX_ADDR && button_mask == BUTTON_B)
+        user_sign();
 }
 
 void init_state_transitions()
@@ -358,4 +374,8 @@ void init_state_transitions()
     state_transitions[STATE_TX_ADDR][BUTTON_L] = STATE_TX_SPEND;
     state_transitions[STATE_TX_ADDR][BUTTON_R] = STATE_TX_ADDR;
     state_transitions[STATE_TX_ADDR][BUTTON_B] = STATE_WELCOME;
+    /* ------------- TX CALCULATING --------------- */
+    state_transitions[STATE_TX_CALCULATING][BUTTON_L] = STATE_TX_CALCULATING;
+    state_transitions[STATE_TX_CALCULATING][BUTTON_R] = STATE_TX_CALCULATING;
+    state_transitions[STATE_TX_CALCULATING][BUTTON_B] = STATE_EXIT;
 }

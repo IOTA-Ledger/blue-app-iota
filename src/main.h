@@ -50,5 +50,6 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len);
 void io_seproxyhal_display(const bagl_element_t *element);
 unsigned char io_event(unsigned char channel);
 
+void user_sign();
 
 #endif // MAIN_H
