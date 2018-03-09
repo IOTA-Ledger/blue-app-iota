@@ -33,6 +33,7 @@ unsigned char seed_bytes[48];
 
 BUNDLE_CTX bundle_ctx;
 SIGNING_CTX signing_ctx;
+TX_OUTPUT *output;
 
 // This symbol is defined by the link script to be at the start of the stack
 extern unsigned long _stack;
@@ -52,11 +53,36 @@ void check_canary()
     }
 }
 
+void return_result(unsigned int tx)
+{
+    G_io_apdu_buffer[tx++] = 0x90;
+    G_io_apdu_buffer[tx++] = 0x00;
+    
+    // Send back the response, do not restart the event loop
+    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
+}
+
+void user_sign()
+{
+    output->tag_increment = bundle_finalize(&bundle_ctx);
+    
+    output->finalized = true;
+    state_flags |= BUNDLE_FINALIZED;
+    
+    bytes_to_chars(bundle_get_hash(&bundle_ctx),
+                   output->bundle_hash, 48);
+    
+    return_result(sizeof(TX_OUTPUT));
+}
+
 static void IOTA_main(void)
 {
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
+    
+    int64_t balance = 0;
+    int64_t payment = 0;
 
     // initialize the UI
     ui_init();
@@ -197,24 +223,39 @@ static void IOTA_main(void)
                     bundle_add_tx(&bundle_ctx, input->value, input->tag,
                                   timestamp);
 
-                    // TODO: generate meta transactions
+                    if(input->value >= 0)
+                        payment += input->value;
+                    else // create meta tx for input
+                    {
+                        balance -= input->value;
+                        
+                        bundle_set_address_chars(&bundle_ctx, input->address);
+                        
+                        bundle_add_tx(&bundle_ctx, 0, input->tag,
+                                      timestamp);
+                    }
 
-                    TX_OUTPUT *output = (TX_OUTPUT *)(G_io_apdu_buffer);
+                    output = (TX_OUTPUT *)(G_io_apdu_buffer);
                     os_memset(output, 0, sizeof(TX_OUTPUT));
                     tx = sizeof(TX_OUTPUT);
 
-                    if (input->current_index == bundle_ctx.last_index) {
-                        output->tag_increment = bundle_finalize(&bundle_ctx);
-
-                        output->finalized = true;
-                        state_flags |= BUNDLE_FINALIZED;
-
-                        bytes_to_chars(bundle_get_hash(&bundle_ctx),
-                                       output->bundle_hash, 48);
+                    // TODO: add change address
+                    if (bundle_ctx.current_index >
+                        bundle_ctx.last_index)
+                    {
+                        const unsigned char *addr_bytes =
+                            bundle_get_address_bytes(&bundle_ctx,
+                                                     0);
+                        char address[81];
+                        
+                        bytes_to_chars(addr_bytes, address, 48);
+                        // display
+                        flags |= IO_ASYNCH_REPLY;
+                        
+                        ui_sign_tx(balance, payment, address, 81);
                     }
-
-                    // return success
-                    THROW(0x9000);
+                    else // return success
+                        THROW(0x9000);
                 } break;
 
                 case INS_SIGN: {

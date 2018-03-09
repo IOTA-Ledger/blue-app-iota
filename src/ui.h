@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
+#include "main.h"
 
 #define TYPE_INT 1
 #define TYPE_UINT 2
@@ -31,6 +32,7 @@
 #define STATE_TX_BAL 1
 #define STATE_TX_SPEND 2
 #define STATE_TX_ADDR 3
+#define STATE_TX_CALCULATING 4
 
 void ui_init(void);
 void ui_reset(void);
