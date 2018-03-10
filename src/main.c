@@ -13,12 +13,9 @@
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {
     uint8_t initialized;
-    char pub_addr[81];
-    uint32_t seed_key;
+    uint32_t seed_key[5];
 
 } internalStorage_t;
-
-uint32_t global_idx;
 
 // N_storage_real will hold the actual address for NVRAM
 WIDE internalStorage_t N_storage_real;
@@ -53,7 +50,25 @@ void check_canary()
     }
 }
 
-void return_result(unsigned int tx)
+bool init_flash()
+{
+    // not initialized
+    if (N_storage.initialized != 0x01) {
+        internalStorage_t storage;
+        
+        storage.initialized = 0x01;
+        memset(storage.seed_key, 0, sizeof(uint32_t)*5);
+        
+        nvm_write(&N_storage, (void *)&storage,
+                  sizeof(internalStorage_t));
+        
+        return true;
+    }
+    
+    return false;
+}
+
+void apdu_return(unsigned int tx)
 {
     G_io_apdu_buffer[tx++] = 0x90;
     G_io_apdu_buffer[tx++] = 0x00;
@@ -72,10 +87,10 @@ void user_sign()
     bytes_to_chars(bundle_get_hash(&bundle_ctx),
                    output->bundle_hash, 48);
     
-    return_result(sizeof(TX_OUTPUT));
+    apdu_return(sizeof(TX_OUTPUT));
 }
 
-static void IOTA_main(void)
+static void IOTA_main()
 {
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
@@ -83,9 +98,14 @@ static void IOTA_main(void)
     
     int64_t balance = 0;
     int64_t payment = 0;
+    
+    uint8_t active_seed = 255;
+    
+    // check if flash is initialized
+    bool first_run = init_flash();
 
     // initialize the UI
-    ui_init();
+    ui_init(first_run);
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
     // goal is to retrieve APDU.
@@ -143,6 +163,11 @@ static void IOTA_main(void)
                         if (!ASSIGN(path[i], input->bip44_path[i]))
                             THROW(INVALID_PARAMETER);
                     }
+                    
+                    active_seed = path[BIP44_PATH_ACCOUNT];
+                    
+                    if(active_seed > 4)
+                        THROW(INVALID_PARAMETER);
 
                     // we only care about privateKeyData and using this to
                     // generate our iota seed
@@ -302,6 +327,10 @@ static void IOTA_main(void)
 
                     if (output->fragment_index == output->last_fragment) {
                         state_flags &= ~SIGNING_STARTED;
+                        
+                        flags |= IO_ASYNCH_REPLY;
+                        apdu_return(tx);
+                        ui_display_welcome();
                     }
 
                     // return success
@@ -445,17 +474,6 @@ __attribute__((section(".boot"))) int main(void)
         TRY
         {
             io_seproxyhal_init();
-
-            if (N_storage.initialized != 0x01) {
-                internalStorage_t storage;
-                storage.initialized = 0x01;
-                storage.seed_key = 0;
-
-                nvm_write(&N_storage, (void *)&storage,
-                          sizeof(internalStorage_t));
-            }
-
-            global_idx = N_storage.seed_key;
 
 #ifdef LISTEN_BLE
             if (os_seph_features() &

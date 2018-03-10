@@ -9,14 +9,15 @@ char bot_str[21];
 
 // flags for turning on/off certain glyphs
 char glyph_bar_l[2], glyph_bar_r[2];
+char glyph_bar_l_c[2], glyph_bar_r_c[2];
 char glyph_cross[2], glyph_check[2];
 char glyph_up[2], glyph_down[2];
 
 uint8_t ui_state;
 
 // tx information
-uint64_t bal = 0;
-uint64_t pay = 0;
+int64_t bal = 0;
+int64_t pay = 0;
 char addr[21];
 
 // matrix holds layout of state transitions
@@ -40,47 +41,57 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
     // {type, userid, x, y, width, height, stroke, radius, fill,
     // fgcolor, bgcolor, fontid, iconid}, text .....
     {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
-      0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
+        0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     top_str, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        top_str, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x01, 0, 18, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     mid_str, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        mid_str, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x01, 0, 24, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     bot_str, 0, 0, 0, NULL, NULL, NULL},
-
+        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        bot_str, 0, 0, 0, NULL, NULL, NULL},
+    
     {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_LESS}, glyph_bar_l, 0, 0, 0, NULL, NULL, NULL},
-
+        BAGL_GLYPH_ICON_LESS}, glyph_bar_l, 0, 0, 0, NULL, NULL, NULL},
+    
     {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_LESS}, glyph_bar_r, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_LESS}, glyph_bar_r, 0, 0, 0, NULL, NULL, NULL},
+    
+    {{BAGL_ICON, 0x00, 3, 0, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+        BAGL_GLYPH_ICON_LESS}, glyph_bar_l_c, 0, 0, 0, NULL, NULL, NULL},
+    
+    {{BAGL_ICON, 0x00, 117, 0, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+        BAGL_GLYPH_ICON_LESS}, glyph_bar_r_c, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-      BAGL_GLYPH_ICON_CROSS}, glyph_cross, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_CROSS}, glyph_cross, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_CHECK}, glyph_check, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_CHECK}, glyph_check, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-      BAGL_GLYPH_ICON_UP}, glyph_up, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_UP}, glyph_up, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_DOWN}, glyph_down, 0, 0, 0, NULL, NULL, NULL}};
+        BAGL_GLYPH_ICON_DOWN}, glyph_down, 0, 0, 0, NULL, NULL, NULL}};
 // clang-format on
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
  ---------------------------------------------------------
  --------------------------------------------------------- */
-void ui_init()
+void ui_init(bool first_run)
 {
     init_state_transitions();
 
-    ui_state = STATE_WELCOME;
+    if(first_run)
+        ui_state = STATE_INIT1;
+    else
+        ui_state = STATE_WELCOME;
+    
     ui_display_state();
 }
 
@@ -108,7 +119,25 @@ void ui_record_addr(const char *a, uint8_t len)
     }
 }
 
-void ui_sign_tx(uint64_t b, uint64_t p, const char *a, uint8_t len)
+void ui_display_welcome()
+{
+    ui_state = STATE_WELCOME;
+    ui_display_state();
+}
+
+void ui_display_calc()
+{
+    ui_state = STATE_CALC;
+    ui_display_state();
+}
+
+void ui_display_recv()
+{
+    ui_state = STATE_RECV;
+    ui_display_state();
+}
+
+void ui_sign_tx(int64_t b, int64_t p, const char *a, uint8_t len)
 {
     bal = b;
     pay = p;
@@ -230,6 +259,8 @@ void display_glyphs(char *c1, char *c2)
     // turn off all glyphs
     display_off(glyph_bar_l);
     display_off(glyph_bar_r);
+    display_off(glyph_bar_l_c);
+    display_off(glyph_bar_r_c);
     display_off(glyph_cross);
     display_off(glyph_check);
     display_off(glyph_up);
@@ -240,8 +271,8 @@ void display_glyphs(char *c1, char *c2)
     display_on(c2);
 }
 
-// combine glyphs with bars along top
-void display_glyphs_with_bars(char *c1, char *c2)
+// combine glyphs with bars along top for confirm
+void display_glyphs_confirm(char *c1, char *c2)
 {
     // turn off all glyphs
     display_off(glyph_cross);
@@ -249,6 +280,26 @@ void display_glyphs_with_bars(char *c1, char *c2)
     display_off(glyph_up);
     display_off(glyph_down);
 
+    // turn on ones we want
+    display_on(glyph_bar_l);
+    display_on(glyph_bar_r);
+    display_on(glyph_bar_l_c);
+    display_on(glyph_bar_r_c);
+    display_on(c1);
+    display_on(c2);
+}
+
+// combine glyphs with bars along top for exit
+void display_glyphs_exit(char *c1, char *c2)
+{
+    // turn off all glyphs
+    display_off(glyph_cross);
+    display_off(glyph_check);
+    display_off(glyph_up);
+    display_off(glyph_down);
+    display_off(glyph_bar_l_c);
+    display_off(glyph_bar_r_c);
+    
     // turn on ones we want
     display_on(glyph_bar_l);
     display_on(glyph_bar_r);
@@ -282,7 +333,7 @@ void ui_transition_state(unsigned int button_mask)
     // make sure we only transition on valid button presses
     if (translated_mask == BUTTON_BAD)
         return;
-
+    
     ui_handle_button(translated_mask);
     ui_state = state_transitions[ui_state][translated_mask];
 
@@ -298,51 +349,75 @@ void ui_display_state()
     switch (ui_state) {
         /* ------------ WELCOME -------------- */
     case STATE_WELCOME: {
-        write_display(NULL, 0, TYPE_STR, TOP);
+        write_display(NULL, 21, TYPE_STR, TOP);
         write_display("Welcome to IOTA", 21, TYPE_STR, MID);
-        write_display(NULL, 0, TYPE_STR, BOT);
+        write_display(NULL, 21, TYPE_STR, BOT);
 
-        display_glyphs(glyph_cross, NULL);
+        display_glyphs_exit(NULL, NULL);
     } break;
         /* ------------ TX BAL -------------- */
     case STATE_TX_BAL: {
         write_display("Total Balance:", 21, TYPE_STR, TOP);
-        write_display(NULL, 0, TYPE_STR, MID);
+        write_display(NULL, 21, TYPE_STR, MID);
         write_display(&bal, 21, TYPE_UINT, BOT);
 
-        display_glyphs(NULL, glyph_down);
+        display_glyphs_exit(glyph_up, glyph_down);
     } break;
         /* ------------ TX SPEND -------------- */
     case STATE_TX_SPEND: {
         write_display("Send Amt:", 21, TYPE_STR, TOP);
-        write_display(NULL, 0, TYPE_STR, MID);
+        write_display(NULL, 21, TYPE_STR, MID);
         write_display(&pay, 21, TYPE_UINT, BOT);
 
-        display_glyphs(glyph_up, glyph_down);
+        display_glyphs_exit(glyph_up, glyph_down);
     } break;
         /* ------------ TX ADDR -------------- */
     case STATE_TX_ADDR: {
         write_display("Dest Address:", 21, TYPE_STR, TOP);
-        write_display(NULL, 0, TYPE_STR, MID);
+        write_display(NULL, 21, TYPE_STR, MID);
         write_display(addr, 21, TYPE_STR, BOT);
 
-        display_glyphs_with_bars(glyph_up, NULL);
+        display_glyphs_confirm(glyph_up, glyph_down);
     } break;
         /* ------------ TX CALCULATING -------------- */
-    case STATE_TX_CALCULATING: {
-        write_display(NULL, 0, TYPE_STR, TOP);
+    case STATE_CALC: {
+        write_display(NULL, 21, TYPE_STR, TOP);
         write_display("Calculating...", 21, TYPE_STR, MID);
-        write_display(NULL, 0, TYPE_STR, BOT);
+        write_display(NULL, 21, TYPE_STR, BOT);
         
-        display_glyphs_with_bars(NULL, NULL);
+        display_glyphs_exit(NULL, NULL);
+    } break;
+        /* ------------ TX RECEIVING -------------- */
+    case STATE_RECV: {
+        write_display(NULL, 21, TYPE_STR, TOP);
+        write_display("Receiving tx...", 21, TYPE_STR, MID);
+        write_display(NULL, 21, TYPE_STR, BOT);
+        
+        display_glyphs_exit(NULL, NULL);
+    } break;
+        /* ------------ INIT1 -------------- */
+    case STATE_INIT1: {
+        write_display("WARNING!", 21, TYPE_STR, TOP);
+        write_display(NULL, 21, TYPE_STR, MID);
+        write_display("IOTA is unique", 21, TYPE_STR, BOT);
+        
+        display_glyphs(NULL, glyph_down);
+    } break;
+        /* ------------ INIT2 -------------- */
+    case STATE_INIT2: {
+        write_display("Visit iota.org/nanos", 21, TYPE_STR, TOP);
+        write_display(NULL, 21, TYPE_STR, MID);
+        write_display("For safety tips", 21, TYPE_STR, BOT);
+        
+        display_glyphs_exit(glyph_up, NULL);
     } break;
         /* ------------ UNKNOWN STATE -------------- */
     default: {
-        write_display(NULL, 0, 0, TOP);
+        write_display(NULL, 21, TYPE_STR, TOP);
         write_display("UI ERROR", 21, TYPE_STR, MID);
-        write_display(NULL, 0, 0, BOT);
+        write_display(NULL, 21, TYPE_STR, BOT);
 
-        display_glyphs_with_bars(NULL, NULL);
+        display_glyphs_exit(NULL, NULL);
     } break;
     }
 
@@ -359,11 +434,11 @@ void ui_handle_button(uint8_t button_mask)
 void init_state_transitions()
 {
     /* ------------- WELCOME --------------- */
-    state_transitions[STATE_WELCOME][BUTTON_L] = STATE_EXIT;
+    state_transitions[STATE_WELCOME][BUTTON_L] = STATE_WELCOME;
     state_transitions[STATE_WELCOME][BUTTON_R] = STATE_WELCOME;
-    state_transitions[STATE_WELCOME][BUTTON_B] = STATE_WELCOME;
+    state_transitions[STATE_WELCOME][BUTTON_B] = STATE_EXIT;
     /* ------------- TX BALANCE --------------- */
-    state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_BAL;
+    state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_ADDR;
     state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_SPEND;
     state_transitions[STATE_TX_BAL][BUTTON_B] = STATE_EXIT;
     /* ------------- TX SPEND --------------- */
@@ -372,10 +447,22 @@ void init_state_transitions()
     state_transitions[STATE_TX_SPEND][BUTTON_B] = STATE_EXIT;
     /* ------------- TX ADDR --------------- */
     state_transitions[STATE_TX_ADDR][BUTTON_L] = STATE_TX_SPEND;
-    state_transitions[STATE_TX_ADDR][BUTTON_R] = STATE_TX_ADDR;
-    state_transitions[STATE_TX_ADDR][BUTTON_B] = STATE_WELCOME;
+    state_transitions[STATE_TX_ADDR][BUTTON_R] = STATE_TX_BAL;
+    state_transitions[STATE_TX_ADDR][BUTTON_B] = STATE_CALC;
     /* ------------- TX CALCULATING --------------- */
-    state_transitions[STATE_TX_CALCULATING][BUTTON_L] = STATE_TX_CALCULATING;
-    state_transitions[STATE_TX_CALCULATING][BUTTON_R] = STATE_TX_CALCULATING;
-    state_transitions[STATE_TX_CALCULATING][BUTTON_B] = STATE_EXIT;
+    state_transitions[STATE_CALC][BUTTON_L] = STATE_CALC;
+    state_transitions[STATE_CALC][BUTTON_R] = STATE_CALC;
+    state_transitions[STATE_CALC][BUTTON_B] = STATE_EXIT;
+    /* ------------- TX RECEIVING --------------- */
+    state_transitions[STATE_RECV][BUTTON_L] = STATE_RECV;
+    state_transitions[STATE_RECV][BUTTON_R] = STATE_RECV;
+    state_transitions[STATE_RECV][BUTTON_B] = STATE_EXIT;
+    /* ------------- INIT1 --------------- */
+    state_transitions[STATE_INIT1][BUTTON_L] = STATE_INIT1;
+    state_transitions[STATE_INIT1][BUTTON_R] = STATE_INIT2;
+    state_transitions[STATE_INIT1][BUTTON_B] = STATE_INIT1;
+    /* ------------- INIT2 --------------- */
+    state_transitions[STATE_INIT2][BUTTON_L] = STATE_INIT1;
+    state_transitions[STATE_INIT2][BUTTON_R] = STATE_INIT2;
+    state_transitions[STATE_INIT2][BUTTON_B] = STATE_WELCOME;
 }
