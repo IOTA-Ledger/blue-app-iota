@@ -11,7 +11,7 @@
 
 #define BIP44_PATH_LEN 5
 #define BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
-#define BIP44_PATH_ACCOUNT 4
+#define BIP44_ACCOUNT 4
 
 #define TYPE_INT 1
 #define TYPE_UINT 2

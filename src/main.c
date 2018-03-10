@@ -13,7 +13,8 @@
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {
     uint8_t initialized;
-    uint32_t seed_key[5];
+    uint32_t account_seed[5];
+    bool advanced_mode;
 
 } internalStorage_t;
 
@@ -57,7 +58,9 @@ bool init_flash()
         internalStorage_t storage;
         
         storage.initialized = 0x01;
-        memset(storage.seed_key, 0, sizeof(uint32_t)*5);
+        memset(storage.account_seed, 0, sizeof(uint32_t)*5);
+        storage.account_seed[0] = 1;
+        storage.advanced_mode = false;
         
         nvm_write(&N_storage, (void *)&storage,
                   sizeof(internalStorage_t));
@@ -164,7 +167,7 @@ static void IOTA_main()
                             THROW(INVALID_PARAMETER);
                     }
                     
-                    active_seed = path[BIP44_PATH_ACCOUNT];
+                    active_seed = path[BIP44_ACCOUNT];
                     
                     if(active_seed > 4)
                         THROW(INVALID_PARAMETER);
@@ -190,11 +193,24 @@ static void IOTA_main()
                     if (len < sizeof(PUBKEY_INPUT)) {
                         THROW(0x6D09);
                     }
-                    PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
-
+                    
                     unsigned char addr_bytes[48];
-                    get_public_addr(seed_bytes, input->address_idx,
-                                    SECURITY_LEVEL, addr_bytes);
+                    
+                    // for now only take index if advanced mode
+                    if(N_storage.advanced_mode) {
+                        PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
+
+                        get_public_addr(seed_bytes, input->address_idx,
+                                        SECURITY_LEVEL, addr_bytes);
+                    }
+                    else {
+                        if(active_seed > 10)
+                            THROW(0x9999);
+                        
+                        get_public_addr(seed_bytes,
+                                        N_storage.account_seed[0],
+                                        SECURITY_LEVEL, addr_bytes);
+                    }
 
                     PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
                     os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
