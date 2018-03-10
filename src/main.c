@@ -31,7 +31,6 @@ unsigned char seed_bytes[48];
 
 BUNDLE_CTX bundle_ctx;
 SIGNING_CTX signing_ctx;
-TX_OUTPUT *output;
 
 // This symbol is defined by the link script to be at the start of the stack
 extern unsigned long _stack;
@@ -82,6 +81,9 @@ void apdu_return(unsigned int tx)
 
 void user_sign()
 {
+    TX_OUTPUT *output = (TX_OUTPUT *)(G_io_apdu_buffer);
+    os_memset(output, 0, sizeof(TX_OUTPUT));
+    
     output->tag_increment = bundle_finalize(&bundle_ctx);
     
     output->finalized = true;
@@ -91,6 +93,219 @@ void user_sign()
                    output->bundle_hash, 48);
     
     apdu_return(sizeof(TX_OUTPUT));
+}
+
+void __attribute__ ((noinline)) ins_set_seed(unsigned char *msg,
+                                             const uint8_t len,
+                                             uint8_t *active_seed)
+{
+    if (CHECK_STATE(state_flags, SET_SEED)) {
+        THROW(INVALID_STATE);
+    }
+    if (len < sizeof(SET_SEED_INPUT)) {
+        THROW(0x6D09);
+    }
+    SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
+    
+    unsigned int path[BIP44_PATH_LEN];
+    for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
+        if (!ASSIGN(path[i], input->bip44_path[i]))
+            THROW(INVALID_PARAMETER);
+    }
+    
+    *active_seed = path[BIP44_ACCOUNT];
+    
+    if(*active_seed > 4)
+        THROW(INVALID_PARAMETER);
+    
+    // we only care about privateKeyData and using this to
+    // generate our iota seed
+    unsigned char entropy[64];
+    os_perso_derive_node_bip32(CX_CURVE_256K1, path,
+                               BIP44_PATH_LEN, entropy,
+                               entropy + 32);
+    get_seed(entropy, sizeof(entropy), seed_bytes);
+    // getting the seed resets everything
+    state_flags = SEED_SET;
+    
+    // return success
+    THROW(0x9000);
+}
+
+void __attribute__ ((noinline)) ins_pubkey(unsigned char *msg,
+                                           const uint8_t len,
+                                           uint8_t active_seed)
+{
+    if (CHECK_STATE(state_flags, PUBKEY)) {
+        THROW(INVALID_STATE);
+    }
+    if (len < sizeof(PUBKEY_INPUT)) {
+        THROW(0x6D09);
+    }
+    
+    unsigned char addr_bytes[48];
+    
+    // for now only take index if advanced mode
+    if(N_storage.advanced_mode) {
+        PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
+        
+        get_public_addr(seed_bytes, input->address_idx,
+                        SECURITY_LEVEL, addr_bytes);
+    }
+    else {
+        if(active_seed > 10)
+            THROW(0x9999);
+        
+        get_public_addr(seed_bytes,
+                        N_storage.account_seed[0],
+                        SECURITY_LEVEL, addr_bytes);
+    }
+    
+    PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
+    os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
+    
+    // convert the 48 byte address into base-27 address
+    bytes_to_chars(addr_bytes, output->address, 48);
+    
+    // return success
+    apdu_return(sizeof(PUBKEY_OUTPUT));
+}
+
+void __attribute__ ((noinline)) ins_tx(unsigned char *msg,
+                                       const uint8_t len,
+                                       volatile unsigned int *flags,
+                                       int64_t *balance, int64_t *payment)
+{
+    if (CHECK_STATE(state_flags, TX)) {
+        THROW(INVALID_STATE);
+    }
+    if (len < sizeof(TX_INPUT)) {
+        THROW(0x6D09);
+    }
+    TX_INPUT *input = (TX_INPUT *)(msg);
+    
+    if ((state_flags & BUNDLE_INITIALIZED) == 0) {
+        uint32_t last_index;
+        if (!ASSIGN(last_index, input->last_index)) {
+            THROW(INVALID_PARAMETER); // overflow
+        }
+        bundle_initialize(&bundle_ctx, last_index);
+        state_flags |= BUNDLE_INITIALIZED;
+    }
+    
+    // validate transaction indices
+    if (input->last_index != bundle_ctx.last_index) {
+        THROW(INVALID_STATE);
+    }
+    if (input->current_index != bundle_ctx.current_index) {
+        THROW(INVALID_STATE);
+    }
+    
+    if (!validate_chars(input->address, 81, false)) {
+        THROW(INVALID_PARAMETER);
+    }
+    bundle_set_address_chars(&bundle_ctx, input->address);
+    
+    if (!validate_chars(input->tag, 27, true)) {
+        THROW(INVALID_PARAMETER);
+    }
+    uint32_t timestamp;
+    if (!ASSIGN(timestamp, input->timestamp)) {
+        THROW(INVALID_PARAMETER); // overflow
+    }
+    bundle_add_tx(&bundle_ctx, input->value, input->tag,
+                  timestamp);
+    
+    if(input->value >= 0)
+        *payment += input->value;
+    else // create meta tx for input
+    {
+        *balance -= input->value;
+        
+        bundle_set_address_chars(&bundle_ctx, input->address);
+        
+        bundle_add_tx(&bundle_ctx, 0, input->tag,
+                      timestamp);
+    }
+    
+    // TODO: add change address
+    if (bundle_ctx.current_index >
+        bundle_ctx.last_index)
+    {
+        const unsigned char *addr_bytes =
+        bundle_get_address_bytes(&bundle_ctx,
+                                 0);
+        char address[81];
+        
+        bytes_to_chars(addr_bytes, address, 48);
+        // display
+        *flags |= IO_ASYNCH_REPLY;
+        
+        ui_sign_tx(*balance, *payment, address, 81);
+    }
+    else // return success
+    {
+        TX_OUTPUT *output = (TX_OUTPUT *)(G_io_apdu_buffer);
+        os_memset(output, 0, sizeof(TX_OUTPUT));
+        
+        apdu_return(sizeof(TX_OUTPUT));
+    }
+}
+
+void __attribute__ ((noinline)) ins_sign(unsigned char *msg,
+                                         const uint8_t len,
+                                         volatile unsigned int *flags)
+{
+    if (CHECK_STATE(state_flags, SIGN)) {
+        THROW(INVALID_STATE);
+    }
+    if (len < sizeof(SIGN_INPUT)) {
+        THROW(0x6D09);
+    }
+    SIGN_INPUT *input = (SIGN_INPUT *)(msg);
+    
+    if ((state_flags & SIGNING_STARTED) == 0) {
+        tryte_t normalized_hash[81];
+        normalize_hash_bytes(bundle_get_hash(&bundle_ctx),
+                             normalized_hash);
+        
+        // TODO: the transaction index is not the address index
+        signing_initialize(&signing_ctx, seed_bytes,
+                           input->transaction_idx,
+                           SECURITY_LEVEL, normalized_hash);
+        
+        state_flags |= SIGNING_STARTED;
+    }
+    
+    // TODO: check that the transaction idx has not changed
+    
+    SIGN_OUTPUT *output = (SIGN_OUTPUT *)(G_io_apdu_buffer);
+    os_memset(output, 0, sizeof(SIGN_OUTPUT));
+    
+    {
+        unsigned char
+        fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
+        output->fragment_index =
+        signing_next_fragment(&signing_ctx, fragment_bytes);
+        
+        bytes_to_chars(fragment_bytes,
+                       output->signature_fragment,
+                       SIGNATURE_FRAGMENT_SIZE * 48);
+    }
+    output->last_fragment =
+    NUM_SIGNATURE_FRAGMENTS(SECURITY_LEVEL) - 1;
+    
+    
+    if (output->fragment_index == output->last_fragment) {
+        state_flags &= ~SIGNING_STARTED;
+        
+        *flags |= IO_ASYNCH_REPLY;
+        apdu_return(sizeof(SIGN_OUTPUT));
+        ui_display_welcome();
+    }
+    
+    // return success
+    apdu_return(sizeof(SIGN_OUTPUT));
 }
 
 static void IOTA_main()
@@ -153,204 +368,19 @@ static void IOTA_main()
                 switch (G_io_apdu_buffer[1]) {
 
                 case INS_SET_SEED: {
-                    if (CHECK_STATE(state_flags, SET_SEED)) {
-                        THROW(INVALID_STATE);
-                    }
-                    if (len < sizeof(SET_SEED_INPUT)) {
-                        THROW(0x6D09);
-                    }
-                    SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
-
-                    unsigned int path[BIP44_PATH_LEN];
-                    for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
-                        if (!ASSIGN(path[i], input->bip44_path[i]))
-                            THROW(INVALID_PARAMETER);
-                    }
-                    
-                    active_seed = path[BIP44_ACCOUNT];
-                    
-                    if(active_seed > 4)
-                        THROW(INVALID_PARAMETER);
-
-                    // we only care about privateKeyData and using this to
-                    // generate our iota seed
-                    unsigned char entropy[64];
-                    os_perso_derive_node_bip32(CX_CURVE_256K1, path,
-                                               BIP44_PATH_LEN, entropy,
-                                               entropy + 32);
-                    get_seed(entropy, sizeof(entropy), seed_bytes);
-                    // getting the seed resets everything
-                    state_flags = SEED_SET;
-
-                    // return success
-                    THROW(0x9000);
+                    ins_set_seed(msg, len, &active_seed);
                 } break;
 
                 case INS_PUBKEY: {
-                    if (CHECK_STATE(state_flags, PUBKEY)) {
-                        THROW(INVALID_STATE);
-                    }
-                    if (len < sizeof(PUBKEY_INPUT)) {
-                        THROW(0x6D09);
-                    }
-                    
-                    unsigned char addr_bytes[48];
-                    
-                    // for now only take index if advanced mode
-                    if(N_storage.advanced_mode) {
-                        PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
-
-                        get_public_addr(seed_bytes, input->address_idx,
-                                        SECURITY_LEVEL, addr_bytes);
-                    }
-                    else {
-                        if(active_seed > 10)
-                            THROW(0x9999);
-                        
-                        get_public_addr(seed_bytes,
-                                        N_storage.account_seed[0],
-                                        SECURITY_LEVEL, addr_bytes);
-                    }
-
-                    PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
-                    os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
-                    tx = sizeof(PUBKEY_OUTPUT);
-
-                    // convert the 48 byte address into base-27 address
-                    bytes_to_chars(addr_bytes, output->address, 48);
-
-                    // return success
-                    THROW(0x9000);
+                    ins_pubkey(msg, len, active_seed);
                 } break;
 
                 case INS_TX: {
-                    if (CHECK_STATE(state_flags, TX)) {
-                        THROW(INVALID_STATE);
-                    }
-                    if (len < sizeof(TX_INPUT)) {
-                        THROW(0x6D09);
-                    }
-                    TX_INPUT *input = (TX_INPUT *)(msg);
-
-                    if ((state_flags & BUNDLE_INITIALIZED) == 0) {
-                        uint32_t last_index;
-                        if (!ASSIGN(last_index, input->last_index)) {
-                            THROW(INVALID_PARAMETER); // overflow
-                        }
-                        bundle_initialize(&bundle_ctx, last_index);
-                        state_flags |= BUNDLE_INITIALIZED;
-                    }
-
-                    // validate transaction indices
-                    if (input->last_index != bundle_ctx.last_index) {
-                        THROW(INVALID_STATE);
-                    }
-                    if (input->current_index != bundle_ctx.current_index) {
-                        THROW(INVALID_STATE);
-                    }
-
-                    if (!validate_chars(input->address, 81, false)) {
-                        THROW(INVALID_PARAMETER);
-                    }
-                    bundle_set_address_chars(&bundle_ctx, input->address);
-
-                    if (!validate_chars(input->tag, 27, true)) {
-                        THROW(INVALID_PARAMETER);
-                    }
-                    uint32_t timestamp;
-                    if (!ASSIGN(timestamp, input->timestamp)) {
-                        THROW(INVALID_PARAMETER); // overflow
-                    }
-                    bundle_add_tx(&bundle_ctx, input->value, input->tag,
-                                  timestamp);
-
-                    if(input->value >= 0)
-                        payment += input->value;
-                    else // create meta tx for input
-                    {
-                        balance -= input->value;
-                        
-                        bundle_set_address_chars(&bundle_ctx, input->address);
-                        
-                        bundle_add_tx(&bundle_ctx, 0, input->tag,
-                                      timestamp);
-                    }
-
-                    output = (TX_OUTPUT *)(G_io_apdu_buffer);
-                    os_memset(output, 0, sizeof(TX_OUTPUT));
-                    tx = sizeof(TX_OUTPUT);
-
-                    // TODO: add change address
-                    if (bundle_ctx.current_index >
-                        bundle_ctx.last_index)
-                    {
-                        const unsigned char *addr_bytes =
-                            bundle_get_address_bytes(&bundle_ctx,
-                                                     0);
-                        char address[81];
-                        
-                        bytes_to_chars(addr_bytes, address, 48);
-                        // display
-                        flags |= IO_ASYNCH_REPLY;
-                        
-                        ui_sign_tx(balance, payment, address, 81);
-                    }
-                    else // return success
-                        THROW(0x9000);
+                    ins_tx(msg, len, &flags, &balance, &payment);
                 } break;
 
                 case INS_SIGN: {
-                    if (CHECK_STATE(state_flags, SIGN)) {
-                        THROW(INVALID_STATE);
-                    }
-                    if (len < sizeof(SIGN_INPUT)) {
-                        THROW(0x6D09);
-                    }
-                    SIGN_INPUT *input = (SIGN_INPUT *)(msg);
-
-                    if ((state_flags & SIGNING_STARTED) == 0) {
-                        tryte_t normalized_hash[81];
-                        normalize_hash_bytes(bundle_get_hash(&bundle_ctx),
-                                             normalized_hash);
-
-                        // TODO: the transaction index is not the address index
-                        signing_initialize(&signing_ctx, seed_bytes,
-                                           input->transaction_idx,
-                                           SECURITY_LEVEL, normalized_hash);
-
-                        state_flags |= SIGNING_STARTED;
-                    }
-
-                    // TODO: check that the transaction idx has not changed
-
-                    SIGN_OUTPUT *output = (SIGN_OUTPUT *)(G_io_apdu_buffer);
-                    os_memset(output, 0, sizeof(SIGN_OUTPUT));
-                    tx = sizeof(SIGN_OUTPUT);
-
-                    {
-                        unsigned char
-                            fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
-                        output->fragment_index =
-                            signing_next_fragment(&signing_ctx, fragment_bytes);
-
-                        bytes_to_chars(fragment_bytes,
-                                       output->signature_fragment,
-                                       SIGNATURE_FRAGMENT_SIZE * 48);
-                    }
-                    output->last_fragment =
-                        NUM_SIGNATURE_FRAGMENTS(SECURITY_LEVEL) - 1;
-
-
-                    if (output->fragment_index == output->last_fragment) {
-                        state_flags &= ~SIGNING_STARTED;
-                        
-                        flags |= IO_ASYNCH_REPLY;
-                        apdu_return(tx);
-                        ui_display_welcome();
-                    }
-
-                    // return success
-                    THROW(0x9000);
+                    ins_sign(msg, len, &flags);
                 } break;
 
                 case 0xFF: // return to dashboard
