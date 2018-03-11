@@ -3,17 +3,21 @@
 #include "common.h"
 #include "aux.h"
 
+char half_top[21];
 char top_str[21];
 char mid_str[21];
 char bot_str[21];
+char half_bot[21];
 
 // flags for turning on/off certain glyphs
 char glyph_bar_l[2], glyph_bar_r[2];
 char glyph_bar_l_c[2], glyph_bar_r_c[2];
 char glyph_cross[2], glyph_check[2];
 char glyph_up[2], glyph_down[2];
+char glyph_warn[2];
 
 uint8_t ui_state;
+uint8_t text_idx;
 
 // tx information
 int64_t bal = 0;
@@ -27,6 +31,7 @@ static uint8_t state_transitions[TOTAL_STATES][3];
 void init_state_transitions(void);
 void ui_display_state(void);
 void ui_handle_button(uint8_t button_mask);
+void ui_handle_text_array(uint8_t translated_mask);
 void ui_transition_state(unsigned int button_mask);
 
 unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
@@ -42,6 +47,10 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
     // fgcolor, bgcolor, fontid, iconid}, text .....
     {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
         0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
+    
+    {{BAGL_LABELINE, 0x01, 0, 3, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        half_top, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
@@ -54,6 +63,10 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
     {{BAGL_LABELINE, 0x01, 0, 24, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         bot_str, 0, 0, 0, NULL, NULL, NULL},
+    
+    {{BAGL_LABELINE, 0x01, 0, 33, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+        half_bot, 0, 0, 0, NULL, NULL, NULL},
     
     {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_LESS}, glyph_bar_l, 0, 0, 0, NULL, NULL, NULL},
@@ -77,7 +90,10 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
         BAGL_GLYPH_ICON_UP}, glyph_up, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DOWN}, glyph_down, 0, 0, 0, NULL, NULL, NULL}};
+        BAGL_GLYPH_ICON_DOWN}, glyph_down, 0, 0, 0, NULL, NULL, NULL},
+    
+    {{BAGL_ICON, 0x00, 9, 11, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+        BAGL_GLYPH_ICON_WARNING_BADGE}, glyph_warn, 0, 0, 0, NULL, NULL, NULL}};
 // clang-format on
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
@@ -86,12 +102,13 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
 void ui_init(bool first_run)
 {
     init_state_transitions();
+    text_idx = 0;
 
-    if(first_run)
-        ui_state = STATE_INIT1;
+    if (first_run)
+        ui_state = STATE_INIT;
     else
         ui_state = STATE_WELCOME;
-    
+
     ui_display_state();
 }
 
@@ -155,14 +172,27 @@ void write_display(void *o, uint8_t sz, uint8_t t, uint8_t p)
     // don't allow messages greater than 20
     if (sz > 21)
         sz = 21;
+
     char *c_ptr = NULL;
 
-    if (p == TOP)
-        c_ptr = &top_str[0];
-    else if (p == BOT)
-        c_ptr = &bot_str[0];
-    else
-        c_ptr = &mid_str[0];
+    switch (p) {
+    case TOP_H:
+        c_ptr = half_top;
+        break;
+    case TOP:
+        c_ptr = top_str;
+        break;
+    case BOT:
+        c_ptr = bot_str;
+        break;
+    case BOT_H:
+        c_ptr = half_bot;
+        break;
+    case MID:
+    default:
+        c_ptr = mid_str;
+        break;
+    }
 
     // NULL value sets line blank
     if (o == NULL) {
@@ -194,6 +224,15 @@ void ui_display_message(void *o, uint8_t sz, uint8_t t, void *o2, uint8_t sz2,
     write_display(o3, sz3, t3, BOT);
 
     UX_DISPLAY(bagl_ui_nanos_screen, NULL);
+}
+
+void clear_display()
+{
+    write_display(NULL, 21, TYPE_STR, TOP_H);
+    write_display(NULL, 21, TYPE_STR, TOP);
+    write_display(NULL, 21, TYPE_STR, MID);
+    write_display(NULL, 21, TYPE_STR, BOT);
+    write_display(NULL, 21, TYPE_STR, BOT_H);
 }
 
 
@@ -265,6 +304,7 @@ void display_glyphs(char *c1, char *c2)
     display_off(glyph_check);
     display_off(glyph_up);
     display_off(glyph_down);
+    display_off(glyph_warn);
 
     // turn on ones we want
     display_on(c1);
@@ -279,6 +319,7 @@ void display_glyphs_confirm(char *c1, char *c2)
     display_off(glyph_check);
     display_off(glyph_up);
     display_off(glyph_down);
+    display_off(glyph_warn);
 
     // turn on ones we want
     display_on(glyph_bar_l);
@@ -297,9 +338,10 @@ void display_glyphs_exit(char *c1, char *c2)
     display_off(glyph_check);
     display_off(glyph_up);
     display_off(glyph_down);
+    display_off(glyph_warn);
     display_off(glyph_bar_l_c);
     display_off(glyph_bar_r_c);
-    
+
     // turn on ones we want
     display_on(glyph_bar_l);
     display_on(glyph_bar_r);
@@ -333,9 +375,13 @@ void ui_transition_state(unsigned int button_mask)
     // make sure we only transition on valid button presses
     if (translated_mask == BUTTON_BAD)
         return;
-    
+
     ui_handle_button(translated_mask);
+
     ui_state = state_transitions[ui_state][translated_mask];
+
+    // special handles text array screens
+    ui_handle_text_array(translated_mask);
 
     if (state_is(STATE_EXIT))
         io_seproxyhal_touch_exit(NULL);
@@ -344,78 +390,95 @@ void ui_transition_state(unsigned int button_mask)
     ui_display_state();
 }
 
+void write_text_array(char *array, uint8_t len)
+{
+    clear_display();
+
+    if (text_idx > 0)
+        write_display(array + (21 * (text_idx - 1)), 21, TYPE_STR, TOP_H);
+
+    write_display(array + (21 * text_idx), 21, TYPE_STR, MID);
+
+    if (text_idx < len - 1)
+        write_display(array + (21 * (text_idx + 1)), 21, TYPE_STR, BOT_H);
+}
+
+void get_init_text_array(char *msg)
+{
+    memset(msg, '\0', INIT_ARR_LEN * 21);
+
+    memcpy(msg, "WARNING!", 9);
+    memcpy(msg + 21, "IOTA is not like", 17);
+    memcpy(msg + 42, "other cryptos!", 15);
+    memcpy(msg + 63, "Visit iota.org/nanos", 21);
+    memcpy(msg + 84, "to learn more", 14);
+}
+
 void ui_display_state()
 {
     switch (ui_state) {
+        /* ------------ INIT *TEXT_ARRAY* -------------- */
+    case STATE_INIT: {
+        char msg[INIT_ARR_LEN * 21];
+        get_init_text_array(msg);
+        write_text_array(msg, INIT_ARR_LEN);
+
+        if (text_idx == 0)
+            display_glyphs(glyph_warn, glyph_down);
+        else if (text_idx == INIT_ARR_LEN - 1)
+            display_glyphs_exit(glyph_up, glyph_check);
+        else
+            display_glyphs(glyph_up, glyph_down);
+    } break;
         /* ------------ WELCOME -------------- */
     case STATE_WELCOME: {
-        write_display(NULL, 21, TYPE_STR, TOP);
+        clear_display();
         write_display("Welcome to IOTA", 21, TYPE_STR, MID);
-        write_display(NULL, 21, TYPE_STR, BOT);
 
         display_glyphs_exit(NULL, NULL);
     } break;
         /* ------------ TX BAL -------------- */
     case STATE_TX_BAL: {
+        clear_display();
         write_display("Total Balance:", 21, TYPE_STR, TOP);
-        write_display(NULL, 21, TYPE_STR, MID);
         write_display(&bal, 21, TYPE_UINT, BOT);
 
         display_glyphs_exit(glyph_up, glyph_down);
     } break;
         /* ------------ TX SPEND -------------- */
     case STATE_TX_SPEND: {
+        clear_display();
         write_display("Send Amt:", 21, TYPE_STR, TOP);
-        write_display(NULL, 21, TYPE_STR, MID);
         write_display(&pay, 21, TYPE_UINT, BOT);
 
         display_glyphs_exit(glyph_up, glyph_down);
     } break;
         /* ------------ TX ADDR -------------- */
     case STATE_TX_ADDR: {
+        clear_display();
         write_display("Dest Address:", 21, TYPE_STR, TOP);
-        write_display(NULL, 21, TYPE_STR, MID);
         write_display(addr, 21, TYPE_STR, BOT);
 
         display_glyphs_confirm(glyph_up, glyph_down);
     } break;
         /* ------------ TX CALCULATING -------------- */
     case STATE_CALC: {
-        write_display(NULL, 21, TYPE_STR, TOP);
+        clear_display();
         write_display("Calculating...", 21, TYPE_STR, MID);
-        write_display(NULL, 21, TYPE_STR, BOT);
-        
+
         display_glyphs_exit(NULL, NULL);
     } break;
         /* ------------ TX RECEIVING -------------- */
     case STATE_RECV: {
-        write_display(NULL, 21, TYPE_STR, TOP);
+        clear_display();
         write_display("Receiving tx...", 21, TYPE_STR, MID);
-        write_display(NULL, 21, TYPE_STR, BOT);
-        
+
         display_glyphs_exit(NULL, NULL);
-    } break;
-        /* ------------ INIT1 -------------- */
-    case STATE_INIT1: {
-        write_display("WARNING!", 21, TYPE_STR, TOP);
-        write_display(NULL, 21, TYPE_STR, MID);
-        write_display("IOTA is unique", 21, TYPE_STR, BOT);
-        
-        display_glyphs(NULL, glyph_down);
-    } break;
-        /* ------------ INIT2 -------------- */
-    case STATE_INIT2: {
-        write_display("Visit iota.org/nanos", 21, TYPE_STR, TOP);
-        write_display(NULL, 21, TYPE_STR, MID);
-        write_display("For safety tips", 21, TYPE_STR, BOT);
-        
-        display_glyphs_exit(glyph_up, NULL);
     } break;
         /* ------------ UNKNOWN STATE -------------- */
     default: {
-        write_display(NULL, 21, TYPE_STR, TOP);
+        clear_display();
         write_display("UI ERROR", 21, TYPE_STR, MID);
-        write_display(NULL, 21, TYPE_STR, BOT);
 
         display_glyphs_exit(NULL, NULL);
     } break;
@@ -427,8 +490,36 @@ void ui_display_state()
 void ui_handle_button(uint8_t button_mask)
 {
     /* ------------- APPROVE TX --------------- */
-    if(ui_state == STATE_TX_ADDR && button_mask == BUTTON_B)
+    if (ui_state == STATE_TX_ADDR && button_mask == BUTTON_B)
         user_sign();
+}
+
+// moves text, handles special exit conditions
+void ui_handle_text_array(uint8_t translated_mask)
+{
+    uint8_t array_sz = 0;
+
+    switch (ui_state) {
+        /* ------------ STATE INIT -------------- */
+    case STATE_INIT:
+        array_sz = INIT_ARR_LEN - 1;
+
+        if (translated_mask == BUTTON_B && text_idx == array_sz) {
+            ui_state = STATE_WELCOME;
+            return;
+        }
+        break;
+        /* ------------ DEFAULT -------------- */
+    default:
+        text_idx = 0;
+        return;
+    }
+
+    // auto incr or decr text_idx
+    if (translated_mask == BUTTON_L)
+        text_idx = MAX(0, text_idx - 1);
+    else if (translated_mask == BUTTON_R)
+        text_idx = MIN(array_sz, text_idx + 1);
 }
 
 void init_state_transitions()
@@ -457,12 +548,8 @@ void init_state_transitions()
     state_transitions[STATE_RECV][BUTTON_L] = STATE_RECV;
     state_transitions[STATE_RECV][BUTTON_R] = STATE_RECV;
     state_transitions[STATE_RECV][BUTTON_B] = STATE_EXIT;
-    /* ------------- INIT1 --------------- */
-    state_transitions[STATE_INIT1][BUTTON_L] = STATE_INIT1;
-    state_transitions[STATE_INIT1][BUTTON_R] = STATE_INIT2;
-    state_transitions[STATE_INIT1][BUTTON_B] = STATE_INIT1;
-    /* ------------- INIT2 --------------- */
-    state_transitions[STATE_INIT2][BUTTON_L] = STATE_INIT1;
-    state_transitions[STATE_INIT2][BUTTON_R] = STATE_INIT2;
-    state_transitions[STATE_INIT2][BUTTON_B] = STATE_WELCOME;
+    /* ------------- INIT --------------- */
+    state_transitions[STATE_INIT][BUTTON_L] = STATE_INIT;
+    state_transitions[STATE_INIT][BUTTON_R] = STATE_INIT;
+    state_transitions[STATE_INIT][BUTTON_B] = STATE_WELCOME;
 }
