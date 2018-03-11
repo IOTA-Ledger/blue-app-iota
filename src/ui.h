@@ -27,20 +27,24 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-#define TOTAL_STATES 7
-#define STATE_EXIT 7
+#define TOTAL_STATES 8
+#define STATE_EXIT 8
 
-#define STATE_WELCOME 0
+#define STATE_MENU_WELCOME 0
 #define STATE_TX_SIGN 1
 #define STATE_TX_BAL 1
 #define STATE_TX_SPEND 2
 #define STATE_TX_ADDR 3
 #define STATE_CALC 4
 #define STATE_RECV 5
-#define STATE_INIT 6
+#define STATE_MENU_INIT 6
+#define STATE_MENU_DISP_ADDR 7
 
-// UI Text Array Size
-#define INIT_ARR_LEN 5
+// Size of Menu
+#define MENU_INIT_LEN 5
+#define MENU_WELCOME_LEN 6
+#define MENU_DISP_ADDR_LEN 6
+#define MENU_IDX_LEN 6
 
 /* To create a new UI screen -
  - #define new STATE_ here, incr TOTAL_STATES/STATE_EXIT
@@ -48,9 +52,9 @@
  - Define state transitions (init_state_transitions)
  - Define special button functions (ui_handle_button)
 
- - If scrollable text array screen:
+ - If scrollable menu screen:
+        - #define Size of Menu
         - Create msg to display (ui_display_state)
-        - #define new UI_Text_Array_Size
         - Define behavior (ui_handle_text_array) */
 
 void ui_init(bool first_run);

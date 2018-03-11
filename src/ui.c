@@ -14,10 +14,10 @@ char glyph_bar_l[2], glyph_bar_r[2];
 char glyph_bar_l_c[2], glyph_bar_r_c[2];
 char glyph_cross[2], glyph_check[2];
 char glyph_up[2], glyph_down[2];
-char glyph_warn[2];
+char glyph_warn[2], glyph_dash[2];
 
 uint8_t ui_state;
-uint8_t text_idx;
+uint8_t menu_idx;
 
 // tx information
 int64_t bal = 0;
@@ -31,8 +31,11 @@ static uint8_t state_transitions[TOTAL_STATES][3];
 void init_state_transitions(void);
 void ui_display_state(void);
 void ui_handle_button(uint8_t button_mask);
-void ui_handle_text_array(uint8_t translated_mask);
+void ui_handle_text_array(uint8_t state, uint8_t translated_mask);
 void ui_transition_state(unsigned int button_mask);
+void get_init_menu(char *msg);
+void get_welcome_menu(char *msg);
+void get_disp_addr_menu(char *msg);
 
 unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
 
@@ -52,19 +55,19 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         half_top, 0, 0, 0, NULL, NULL, NULL},
 
-    {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         top_str, 0, 0, 0, NULL, NULL, NULL},
 
-    {{BAGL_LABELINE, 0x01, 0, 18, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x01, 0, 19, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         mid_str, 0, 0, 0, NULL, NULL, NULL},
 
-    {{BAGL_LABELINE, 0x01, 0, 24, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         bot_str, 0, 0, 0, NULL, NULL, NULL},
     
-    {{BAGL_LABELINE, 0x01, 0, 33, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x01, 0, 36, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         half_bot, 0, 0, 0, NULL, NULL, NULL},
     
@@ -88,12 +91,15 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
         BAGL_GLYPH_ICON_UP}, glyph_up, 0, 0, 0, NULL, NULL, NULL},
-
+    
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_DOWN}, glyph_down, 0, 0, 0, NULL, NULL, NULL},
     
-    {{BAGL_ICON, 0x00, 9, 11, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_WARNING_BADGE}, glyph_warn, 0, 0, 0, NULL, NULL, NULL}};
+    {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+        BAGL_GLYPH_ICON_WARNING_BADGE}, glyph_warn, 0, 0, 0, NULL, NULL, NULL},
+    
+    {{BAGL_ICON, 0x00, 24, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+        BAGL_GLYPH_ICON_DASHBOARD_BADGE}, glyph_dash, 0, 0, 0, NULL, NULL, NULL}};
 // clang-format on
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
@@ -102,12 +108,12 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
 void ui_init(bool first_run)
 {
     init_state_transitions();
-    text_idx = 0;
+    menu_idx = 0;
 
     if (first_run)
-        ui_state = STATE_INIT;
+        ui_state = STATE_MENU_INIT;
     else
-        ui_state = STATE_WELCOME;
+        ui_state = STATE_MENU_WELCOME;
 
     ui_display_state();
 }
@@ -118,7 +124,7 @@ void ui_reset()
     pay = 0;
     memset(addr, '\0', sizeof(addr));
 
-    ui_state = STATE_WELCOME;
+    ui_state = STATE_MENU_WELCOME;
     ui_display_state();
 }
 
@@ -138,7 +144,7 @@ void ui_record_addr(const char *a, uint8_t len)
 
 void ui_display_welcome()
 {
-    ui_state = STATE_WELCOME;
+    ui_state = STATE_MENU_WELCOME;
     ui_display_state();
 }
 
@@ -278,13 +284,13 @@ const bagl_element_t *io_seproxyhal_touch_approve(const bagl_element_t *e)
 /* --------- STATE RELATED FUNCTIONS ----------- */
 
 // Turns glyphs on or off
-void display_on(char *c)
+void glyph_on(char *c)
 {
     if (c != NULL)
         c[0] = '\0';
 }
 
-void display_off(char *c)
+void glyph_off(char *c)
 {
     if (c != NULL) {
         c[0] = '.';
@@ -292,61 +298,55 @@ void display_off(char *c)
     }
 }
 
+void clear_glyphs()
+{
+    // turn off all glyphs
+    glyph_off(glyph_bar_l);
+    glyph_off(glyph_bar_r);
+    glyph_off(glyph_bar_l_c);
+    glyph_off(glyph_bar_r_c);
+    glyph_off(glyph_cross);
+    glyph_off(glyph_check);
+    glyph_off(glyph_up);
+    glyph_off(glyph_down);
+    glyph_off(glyph_warn);
+    glyph_off(glyph_dash);
+}
+
 // turns on only 2 glyphs
 void display_glyphs(char *c1, char *c2)
 {
-    // turn off all glyphs
-    display_off(glyph_bar_l);
-    display_off(glyph_bar_r);
-    display_off(glyph_bar_l_c);
-    display_off(glyph_bar_r_c);
-    display_off(glyph_cross);
-    display_off(glyph_check);
-    display_off(glyph_up);
-    display_off(glyph_down);
-    display_off(glyph_warn);
+    clear_glyphs();
 
     // turn on ones we want
-    display_on(c1);
-    display_on(c2);
+    glyph_on(c1);
+    glyph_on(c2);
 }
 
 // combine glyphs with bars along top for confirm
 void display_glyphs_confirm(char *c1, char *c2)
 {
-    // turn off all glyphs
-    display_off(glyph_cross);
-    display_off(glyph_check);
-    display_off(glyph_up);
-    display_off(glyph_down);
-    display_off(glyph_warn);
+    clear_glyphs();
 
     // turn on ones we want
-    display_on(glyph_bar_l);
-    display_on(glyph_bar_r);
-    display_on(glyph_bar_l_c);
-    display_on(glyph_bar_r_c);
-    display_on(c1);
-    display_on(c2);
+    glyph_on(glyph_bar_l);
+    glyph_on(glyph_bar_r);
+    glyph_on(glyph_bar_l_c);
+    glyph_on(glyph_bar_r_c);
+    glyph_on(c1);
+    glyph_on(c2);
 }
 
 // combine glyphs with bars along top for exit
 void display_glyphs_exit(char *c1, char *c2)
 {
-    // turn off all glyphs
-    display_off(glyph_cross);
-    display_off(glyph_check);
-    display_off(glyph_up);
-    display_off(glyph_down);
-    display_off(glyph_warn);
-    display_off(glyph_bar_l_c);
-    display_off(glyph_bar_r_c);
+    clear_glyphs();
 
     // turn on ones we want
-    display_on(glyph_bar_l);
-    display_on(glyph_bar_r);
-    display_on(c1);
-    display_on(c2);
+    glyph_on(glyph_bar_l);
+    glyph_on(glyph_bar_r);
+    glyph_on(c1);
+    glyph_on(c2);
 }
 
 uint8_t ui_translate_mask(unsigned int button_mask)
@@ -378,10 +378,11 @@ void ui_transition_state(unsigned int button_mask)
 
     ui_handle_button(translated_mask);
 
+    uint8_t old_state = ui_state;
     ui_state = state_transitions[ui_state][translated_mask];
 
     // special handles text array screens
-    ui_handle_text_array(translated_mask);
+    ui_handle_text_array(old_state, translated_mask);
 
     if (state_is(STATE_EXIT))
         io_seproxyhal_touch_exit(NULL);
@@ -393,49 +394,76 @@ void ui_transition_state(unsigned int button_mask)
 void write_text_array(char *array, uint8_t len)
 {
     clear_display();
+    clear_glyphs();
 
-    if (text_idx > 0)
-        write_display(array + (21 * (text_idx - 1)), 21, TYPE_STR, TOP_H);
+    if (menu_idx > 0) {
+        write_display(array + (21 * (menu_idx - 1)), 21, TYPE_STR, TOP_H);
+        glyph_on(glyph_up);
+    }
 
-    write_display(array + (21 * text_idx), 21, TYPE_STR, MID);
+    write_display(array + (21 * menu_idx), 21, TYPE_STR, MID);
 
-    if (text_idx < len - 1)
-        write_display(array + (21 * (text_idx + 1)), 21, TYPE_STR, BOT_H);
-}
-
-void get_init_text_array(char *msg)
-{
-    memset(msg, '\0', INIT_ARR_LEN * 21);
-
-    memcpy(msg, "WARNING!", 9);
-    memcpy(msg + 21, "IOTA is not like", 17);
-    memcpy(msg + 42, "other cryptos!", 15);
-    memcpy(msg + 63, "Visit iota.org/nanos", 21);
-    memcpy(msg + 84, "to learn more", 14);
+    if (menu_idx < len - 1) {
+        write_display(array + (21 * (menu_idx + 1)), 21, TYPE_STR, BOT_H);
+        glyph_on(glyph_down);
+    }
 }
 
 void ui_display_state()
 {
     switch (ui_state) {
-        /* ------------ INIT *TEXT_ARRAY* -------------- */
-    case STATE_INIT: {
-        char msg[INIT_ARR_LEN * 21];
-        get_init_text_array(msg);
-        write_text_array(msg, INIT_ARR_LEN);
+        /* ------------ MENU_INIT *TEXT_ARRAY* -------------- */
+    case STATE_MENU_INIT: {
+        char msg[MENU_INIT_LEN * 21];
+        get_init_menu(msg);
+        write_text_array(msg, MENU_INIT_LEN);
 
-        if (text_idx == 0)
-            display_glyphs(glyph_warn, glyph_down);
-        else if (text_idx == INIT_ARR_LEN - 1)
-            display_glyphs_exit(glyph_up, glyph_check);
-        else
-            display_glyphs(glyph_up, glyph_down);
+        // special override states
+        if (menu_idx == 0)
+            glyph_on(glyph_warn);
+        if (menu_idx == MENU_INIT_LEN - 1) {
+            display_glyphs_exit(glyph_up, NULL);
+        }
     } break;
-        /* ------------ WELCOME -------------- */
-    case STATE_WELCOME: {
-        clear_display();
-        write_display("Welcome to IOTA", 21, TYPE_STR, MID);
+        /* ------------ MENU_WELCOME *TEXT_ARRAY* -------------- */
+    case STATE_MENU_WELCOME: {
+        char msg[MENU_WELCOME_LEN * 21];
+        get_welcome_menu(msg);
+        write_text_array(msg, MENU_WELCOME_LEN);
 
-        display_glyphs_exit(NULL, NULL);
+        // special override display states
+        switch (menu_idx) {
+        // turn off BOT_H
+        case 0:
+        case MENU_WELCOME_LEN - 2:
+            write_display(NULL, 21, TYPE_STR, BOT_H);
+            break;
+        // turn off TOP_H
+        case MENU_WELCOME_LEN - 1:
+            display_glyphs_exit(glyph_up, glyph_dash);
+        case 1:
+            write_display(NULL, 21, TYPE_STR, TOP_H);
+            break;
+        }
+    } break;
+        /* ------------ MENU_DISP_ADDR *TEXT_ARRAY* -------------- */
+    case STATE_MENU_DISP_ADDR: {
+        char msg[MENU_DISP_ADDR_LEN * 21];
+        get_disp_addr_menu(msg);
+        write_text_array(msg, MENU_DISP_ADDR_LEN);
+
+        // special override display states
+        switch (menu_idx) {
+        // turn off BOT_H
+        case MENU_WELCOME_LEN - 2:
+            write_display(NULL, 21, TYPE_STR, BOT_H);
+            break;
+            // turn off TOP_H
+        case MENU_WELCOME_LEN - 1:
+            display_glyphs_exit(glyph_up, glyph_dash);
+            write_display(NULL, 21, TYPE_STR, TOP_H);
+            break;
+        }
     } break;
         /* ------------ TX BAL -------------- */
     case STATE_TX_BAL: {
@@ -495,39 +523,81 @@ void ui_handle_button(uint8_t button_mask)
 }
 
 // moves text, handles special exit conditions
-void ui_handle_text_array(uint8_t translated_mask)
+void ui_handle_text_array(uint8_t state, uint8_t translated_mask)
 {
     uint8_t array_sz = 0;
 
-    switch (ui_state) {
+    switch (state) {
         /* ------------ STATE INIT -------------- */
-    case STATE_INIT:
-        array_sz = INIT_ARR_LEN - 1;
+    case STATE_MENU_INIT:
+        array_sz = MENU_INIT_LEN - 1;
 
-        if (translated_mask == BUTTON_B && text_idx == array_sz) {
-            ui_state = STATE_WELCOME;
+        if (translated_mask == BUTTON_B && menu_idx == array_sz) {
+            ui_state = STATE_MENU_WELCOME;
+            menu_idx = 0;
+            return;
+        }
+        break;
+        /* ------------ STATE OPTIONS -------------- */
+    case STATE_MENU_WELCOME:
+        array_sz = MENU_WELCOME_LEN - 1;
+
+        switch (menu_idx) {
+        // View Addresses
+        case 1:
+            if (translated_mask == BUTTON_B) {
+                ui_state = STATE_MENU_DISP_ADDR;
+                menu_idx = 0;
+                return;
+            }
+            break;
+        // Exit App
+        case MENU_WELCOME_LEN - 1:
+            if (translated_mask == BUTTON_B) {
+                ui_state = STATE_EXIT;
+                return;
+            }
+            break;
+        }
+        break;
+        /* ------------ STATE DISPLAY_ADDRESSES -------------- */
+    case STATE_MENU_DISP_ADDR:
+        array_sz = MENU_DISP_ADDR_LEN - 1;
+
+        // Back
+        if (translated_mask == BUTTON_B && menu_idx == array_sz) {
+            ui_state = STATE_MENU_WELCOME;
+            menu_idx = 1;
             return;
         }
         break;
         /* ------------ DEFAULT -------------- */
     default:
-        text_idx = 0;
+        menu_idx = 0;
         return;
     }
 
-    // auto incr or decr text_idx
+    // auto incr or decr menu_idx
     if (translated_mask == BUTTON_L)
-        text_idx = MAX(0, text_idx - 1);
+        menu_idx = MAX(0, menu_idx - 1);
     else if (translated_mask == BUTTON_R)
-        text_idx = MIN(array_sz, text_idx + 1);
+        menu_idx = MIN(array_sz, menu_idx + 1);
 }
 
 void init_state_transitions()
 {
-    /* ------------- WELCOME --------------- */
-    state_transitions[STATE_WELCOME][BUTTON_L] = STATE_WELCOME;
-    state_transitions[STATE_WELCOME][BUTTON_R] = STATE_WELCOME;
-    state_transitions[STATE_WELCOME][BUTTON_B] = STATE_EXIT;
+    /* ------------- MENU INIT --------------- */
+    state_transitions[STATE_MENU_INIT][BUTTON_L] = STATE_MENU_INIT;
+    state_transitions[STATE_MENU_INIT][BUTTON_R] = STATE_MENU_INIT;
+    state_transitions[STATE_MENU_INIT][BUTTON_B] = STATE_MENU_INIT;
+    /* ------------- MENU WELCOME --------------- */
+    state_transitions[STATE_MENU_WELCOME][BUTTON_L] = STATE_MENU_WELCOME;
+    state_transitions[STATE_MENU_WELCOME][BUTTON_R] = STATE_MENU_WELCOME;
+    state_transitions[STATE_MENU_WELCOME][BUTTON_B] = STATE_MENU_WELCOME;
+    /* ------------- MENU ADDR --------------- */
+    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_L] = STATE_MENU_DISP_ADDR;
+    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_R] = STATE_MENU_DISP_ADDR;
+    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_B] = STATE_MENU_DISP_ADDR;
     /* ------------- TX BALANCE --------------- */
     state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_ADDR;
     state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_SPEND;
@@ -548,8 +618,46 @@ void init_state_transitions()
     state_transitions[STATE_RECV][BUTTON_L] = STATE_RECV;
     state_transitions[STATE_RECV][BUTTON_R] = STATE_RECV;
     state_transitions[STATE_RECV][BUTTON_B] = STATE_EXIT;
-    /* ------------- INIT --------------- */
-    state_transitions[STATE_INIT][BUTTON_L] = STATE_INIT;
-    state_transitions[STATE_INIT][BUTTON_R] = STATE_INIT;
-    state_transitions[STATE_INIT][BUTTON_B] = STATE_WELCOME;
+}
+
+/* ----------- BUILDING MENU / TEXT ARRAY ------------- */
+void get_init_menu(char *msg)
+{
+    memset(msg, '\0', MENU_INIT_LEN * 21);
+
+    uint8_t i = 0;
+
+    strcpy(msg + (i++ * 21), "WARNING!");
+    strcpy(msg + (i++ * 21), "IOTA is not like");
+    strcpy(msg + (i++ * 21), "other cryptos!");
+    strcpy(msg + (i++ * 21), "Visit iota.org/nanos");
+    strcpy(msg + (i++ * 21), "to learn more");
+}
+
+void get_welcome_menu(char *msg)
+{
+    memset(msg, '\0', MENU_WELCOME_LEN * 21);
+
+    uint8_t i = 0;
+
+    strcpy(msg + (i++ * 21), "Welcome to IOTA");
+    strcpy(msg + (i++ * 21), "View Addresses");
+    strcpy(msg + (i++ * 21), "View Account Index");
+    strcpy(msg + (i++ * 21), "Advanced Mode");
+    strcpy(msg + (i++ * 21), "Browser Support");
+    strcpy(msg + (i++ * 21), "Exit App");
+}
+
+void get_disp_addr_menu(char *msg)
+{
+    memset(msg, '\0', MENU_DISP_ADDR_LEN * 21);
+
+    uint8_t i = 0;
+
+    strcpy(msg + (i++ * 21), "Account [1]");
+    strcpy(msg + (i++ * 21), "Account [2]");
+    strcpy(msg + (i++ * 21), "Account [3]");
+    strcpy(msg + (i++ * 21), "Account [4]");
+    strcpy(msg + (i++ * 21), "Account [5]");
+    strcpy(msg + (i++ * 21), "Back");
 }

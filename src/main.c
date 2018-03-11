@@ -29,7 +29,7 @@ unsigned int state_flags;
 
 unsigned char seed_bytes[48];
 
-uint8_t active_seed;
+unsigned int active_seed;
 
 BUNDLE_CTX bundle_ctx;
 SIGNING_CTX signing_ctx;
@@ -130,8 +130,7 @@ ins_set_seed(unsigned char *msg, const uint8_t len)
     THROW(0x9000);
 }
 
-void __attribute__((noinline))
-ins_pubkey(unsigned char *msg, const uint8_t len)
+void __attribute__((noinline)) ins_pubkey(unsigned char *msg, const uint8_t len)
 {
     if (CHECK_STATE(state_flags, PUBKEY)) {
         THROW(INVALID_STATE);
@@ -153,8 +152,8 @@ ins_pubkey(unsigned char *msg, const uint8_t len)
         if (active_seed > 4)
             THROW(INVALID_PARAMETER);
 
-        get_public_addr(seed_bytes, N_storage.account_seed[active_seed], SECURITY_LEVEL,
-                        addr_bytes);
+        get_public_addr(seed_bytes, N_storage.account_seed[active_seed],
+                        SECURITY_LEVEL, addr_bytes);
     }
 
     PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
