@@ -56,18 +56,17 @@ bool init_flash()
     // not initialized
     if (N_storage.initialized != 0x01) {
         internalStorage_t storage;
-        
+
         storage.initialized = 0x01;
-        memset(storage.account_seed, 0, sizeof(uint32_t)*5);
+        memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
         storage.account_seed[0] = 1;
         storage.advanced_mode = false;
-        
-        nvm_write(&N_storage, (void *)&storage,
-                  sizeof(internalStorage_t));
-        
+
+        nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
+
         return true;
     }
-    
+
     return false;
 }
 
@@ -75,7 +74,7 @@ void apdu_return(unsigned int tx)
 {
     G_io_apdu_buffer[tx++] = 0x90;
     G_io_apdu_buffer[tx++] = 0x00;
-    
+
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
 }
@@ -83,13 +82,12 @@ void apdu_return(unsigned int tx)
 void user_sign()
 {
     output->tag_increment = bundle_finalize(&bundle_ctx);
-    
+
     output->finalized = true;
     state_flags |= BUNDLE_FINALIZED;
-    
-    bytes_to_chars(bundle_get_hash(&bundle_ctx),
-                   output->bundle_hash, 48);
-    
+
+    bytes_to_chars(bundle_get_hash(&bundle_ctx), output->bundle_hash, 48);
+
     apdu_return(sizeof(TX_OUTPUT));
 }
 
@@ -98,14 +96,14 @@ static void IOTA_main()
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
-    
-    int64_t balance = 0;
-    int64_t payment = 0;
-    
-    uint8_t active_seed = 255;
-    
+
+    volatile int64_t balance = 0;
+    volatile int64_t payment = 0;
+
+    volatile uint8_t active_seed = 255;
+
     // check if flash is initialized
-    bool first_run = init_flash();
+    const bool first_run = init_flash();
 
     // initialize the UI
     ui_init(first_run);
@@ -166,10 +164,10 @@ static void IOTA_main()
                         if (!ASSIGN(path[i], input->bip44_path[i]))
                             THROW(INVALID_PARAMETER);
                     }
-                    
+
                     active_seed = path[BIP44_ACCOUNT];
-                    
-                    if(active_seed > 4)
+
+                    if (active_seed > 4)
                         THROW(INVALID_PARAMETER);
 
                     // we only care about privateKeyData and using this to
@@ -193,22 +191,21 @@ static void IOTA_main()
                     if (len < sizeof(PUBKEY_INPUT)) {
                         THROW(0x6D09);
                     }
-                    
+
                     unsigned char addr_bytes[48];
-                    
+
                     // for now only take index if advanced mode
-                    if(N_storage.advanced_mode) {
+                    if (N_storage.advanced_mode) {
                         PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
 
                         get_public_addr(seed_bytes, input->address_idx,
                                         SECURITY_LEVEL, addr_bytes);
                     }
                     else {
-                        if(active_seed > 10)
+                        if (active_seed > 10)
                             THROW(0x9999);
-                        
-                        get_public_addr(seed_bytes,
-                                        N_storage.account_seed[0],
+
+                        get_public_addr(seed_bytes, N_storage.account_seed[0],
                                         SECURITY_LEVEL, addr_bytes);
                     }
 
@@ -264,16 +261,15 @@ static void IOTA_main()
                     bundle_add_tx(&bundle_ctx, input->value, input->tag,
                                   timestamp);
 
-                    if(input->value >= 0)
+                    if (input->value >= 0)
                         payment += input->value;
                     else // create meta tx for input
                     {
                         balance -= input->value;
-                        
+
                         bundle_set_address_chars(&bundle_ctx, input->address);
-                        
-                        bundle_add_tx(&bundle_ctx, 0, input->tag,
-                                      timestamp);
+
+                        bundle_add_tx(&bundle_ctx, 0, input->tag, timestamp);
                     }
 
                     output = (TX_OUTPUT *)(G_io_apdu_buffer);
@@ -281,18 +277,15 @@ static void IOTA_main()
                     tx = sizeof(TX_OUTPUT);
 
                     // TODO: add change address
-                    if (bundle_ctx.current_index >
-                        bundle_ctx.last_index)
-                    {
+                    if (bundle_ctx.current_index > bundle_ctx.last_index) {
                         const unsigned char *addr_bytes =
-                            bundle_get_address_bytes(&bundle_ctx,
-                                                     0);
+                            bundle_get_address_bytes(&bundle_ctx, 0);
                         char address[81];
-                        
+
                         bytes_to_chars(addr_bytes, address, 48);
                         // display
                         flags |= IO_ASYNCH_REPLY;
-                        
+
                         ui_sign_tx(balance, payment, address, 81);
                     }
                     else // return success
@@ -343,7 +336,7 @@ static void IOTA_main()
 
                     if (output->fragment_index == output->last_fragment) {
                         state_flags &= ~SIGNING_STARTED;
-                        
+
                         flags |= IO_ASYNCH_REPLY;
                         apdu_return(tx);
                         ui_display_welcome();
