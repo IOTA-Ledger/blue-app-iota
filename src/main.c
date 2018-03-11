@@ -55,18 +55,17 @@ bool init_flash()
     // not initialized
     if (N_storage.initialized != 0x01) {
         internalStorage_t storage;
-        
+
         storage.initialized = 0x01;
-        memset(storage.account_seed, 0, sizeof(uint32_t)*5);
+        memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
         storage.account_seed[0] = 1;
         storage.advanced_mode = false;
-        
-        nvm_write(&N_storage, (void *)&storage,
-                  sizeof(internalStorage_t));
-        
+
+        nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
+
         return true;
     }
-    
+
     return false;
 }
 
@@ -74,7 +73,7 @@ void apdu_return(unsigned int tx)
 {
     G_io_apdu_buffer[tx++] = 0x90;
     G_io_apdu_buffer[tx++] = 0x00;
-    
+
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
 }
@@ -83,21 +82,19 @@ void user_sign()
 {
     TX_OUTPUT *output = (TX_OUTPUT *)(G_io_apdu_buffer);
     os_memset(output, 0, sizeof(TX_OUTPUT));
-    
+
     output->tag_increment = bundle_finalize(&bundle_ctx);
-    
+
     output->finalized = true;
     state_flags |= BUNDLE_FINALIZED;
-    
-    bytes_to_chars(bundle_get_hash(&bundle_ctx),
-                   output->bundle_hash, 48);
-    
+
+    bytes_to_chars(bundle_get_hash(&bundle_ctx), output->bundle_hash, 48);
+
     apdu_return(sizeof(TX_OUTPUT));
 }
 
-void __attribute__ ((noinline)) ins_set_seed(unsigned char *msg,
-                                             const uint8_t len,
-                                             uint8_t *active_seed)
+void __attribute__((noinline))
+ins_set_seed(unsigned char *msg, const uint8_t len, uint8_t *active_seed)
 {
     if (CHECK_STATE(state_flags, SET_SEED)) {
         THROW(INVALID_STATE);
@@ -106,35 +103,33 @@ void __attribute__ ((noinline)) ins_set_seed(unsigned char *msg,
         THROW(0x6D09);
     }
     SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
-    
+
     unsigned int path[BIP44_PATH_LEN];
     for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
         if (!ASSIGN(path[i], input->bip44_path[i]))
             THROW(INVALID_PARAMETER);
     }
-    
+
     *active_seed = path[BIP44_ACCOUNT];
-    
-    if(*active_seed > 4)
+
+    if (*active_seed > 4)
         THROW(INVALID_PARAMETER);
-    
+
     // we only care about privateKeyData and using this to
     // generate our iota seed
     unsigned char entropy[64];
-    os_perso_derive_node_bip32(CX_CURVE_256K1, path,
-                               BIP44_PATH_LEN, entropy,
+    os_perso_derive_node_bip32(CX_CURVE_256K1, path, BIP44_PATH_LEN, entropy,
                                entropy + 32);
     get_seed(entropy, sizeof(entropy), seed_bytes);
     // getting the seed resets everything
     state_flags = SEED_SET;
-    
+
     // return success
     THROW(0x9000);
 }
 
-void __attribute__ ((noinline)) ins_pubkey(unsigned char *msg,
-                                           const uint8_t len,
-                                           uint8_t active_seed)
+void __attribute__((noinline))
+ins_pubkey(unsigned char *msg, const uint8_t len, uint8_t active_seed)
 {
     if (CHECK_STATE(state_flags, PUBKEY)) {
         THROW(INVALID_STATE);
@@ -142,39 +137,37 @@ void __attribute__ ((noinline)) ins_pubkey(unsigned char *msg,
     if (len < sizeof(PUBKEY_INPUT)) {
         THROW(0x6D09);
     }
-    
+
     unsigned char addr_bytes[48];
-    
+
     // for now only take index if advanced mode
-    if(N_storage.advanced_mode) {
+    if (N_storage.advanced_mode) {
         PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
-        
-        get_public_addr(seed_bytes, input->address_idx,
-                        SECURITY_LEVEL, addr_bytes);
+
+        get_public_addr(seed_bytes, input->address_idx, SECURITY_LEVEL,
+                        addr_bytes);
     }
     else {
-        if(active_seed > 10)
-            THROW(0x9999);
-        
-        get_public_addr(seed_bytes,
-                        N_storage.account_seed[0],
-                        SECURITY_LEVEL, addr_bytes);
+        if (active_seed > 4)
+            THROW(INVALID_PARAMETER);
+
+        get_public_addr(seed_bytes, N_storage.account_seed[0], SECURITY_LEVEL,
+                        addr_bytes);
     }
-    
+
     PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
     os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
-    
+
     // convert the 48 byte address into base-27 address
     bytes_to_chars(addr_bytes, output->address, 48);
-    
+
     // return success
     apdu_return(sizeof(PUBKEY_OUTPUT));
 }
 
-void __attribute__ ((noinline)) ins_tx(unsigned char *msg,
-                                       const uint8_t len,
-                                       volatile unsigned int *flags,
-                                       int64_t *balance, int64_t *payment)
+void __attribute__((noinline))
+ins_tx(unsigned char *msg, const uint8_t len, volatile unsigned int *flags,
+       int64_t *balance, int64_t *payment)
 {
     if (CHECK_STATE(state_flags, TX)) {
         THROW(INVALID_STATE);
@@ -183,7 +176,7 @@ void __attribute__ ((noinline)) ins_tx(unsigned char *msg,
         THROW(0x6D09);
     }
     TX_INPUT *input = (TX_INPUT *)(msg);
-    
+
     if ((state_flags & BUNDLE_INITIALIZED) == 0) {
         uint32_t last_index;
         if (!ASSIGN(last_index, input->last_index)) {
@@ -192,7 +185,7 @@ void __attribute__ ((noinline)) ins_tx(unsigned char *msg,
         bundle_initialize(&bundle_ctx, last_index);
         state_flags |= BUNDLE_INITIALIZED;
     }
-    
+
     // validate transaction indices
     if (input->last_index != bundle_ctx.last_index) {
         THROW(INVALID_STATE);
@@ -200,12 +193,12 @@ void __attribute__ ((noinline)) ins_tx(unsigned char *msg,
     if (input->current_index != bundle_ctx.current_index) {
         THROW(INVALID_STATE);
     }
-    
+
     if (!validate_chars(input->address, 81, false)) {
         THROW(INVALID_PARAMETER);
     }
     bundle_set_address_chars(&bundle_ctx, input->address);
-    
+
     if (!validate_chars(input->tag, 27, true)) {
         THROW(INVALID_PARAMETER);
     }
@@ -213,48 +206,42 @@ void __attribute__ ((noinline)) ins_tx(unsigned char *msg,
     if (!ASSIGN(timestamp, input->timestamp)) {
         THROW(INVALID_PARAMETER); // overflow
     }
-    bundle_add_tx(&bundle_ctx, input->value, input->tag,
-                  timestamp);
-    
-    if(input->value >= 0)
+    bundle_add_tx(&bundle_ctx, input->value, input->tag, timestamp);
+
+    if (input->value >= 0)
         *payment += input->value;
     else // create meta tx for input
     {
         *balance -= input->value;
-        
+
         bundle_set_address_chars(&bundle_ctx, input->address);
-        
-        bundle_add_tx(&bundle_ctx, 0, input->tag,
-                      timestamp);
+
+        bundle_add_tx(&bundle_ctx, 0, input->tag, timestamp);
     }
-    
+
     // TODO: add change address
-    if (bundle_ctx.current_index >
-        bundle_ctx.last_index)
-    {
+    if (bundle_ctx.current_index > bundle_ctx.last_index) {
         const unsigned char *addr_bytes =
-        bundle_get_address_bytes(&bundle_ctx,
-                                 0);
+            bundle_get_address_bytes(&bundle_ctx, 0);
         char address[81];
-        
+
         bytes_to_chars(addr_bytes, address, 48);
         // display
         *flags |= IO_ASYNCH_REPLY;
-        
+
         ui_sign_tx(*balance, *payment, address, 81);
     }
     else // return success
     {
         TX_OUTPUT *output = (TX_OUTPUT *)(G_io_apdu_buffer);
         os_memset(output, 0, sizeof(TX_OUTPUT));
-        
+
         apdu_return(sizeof(TX_OUTPUT));
     }
 }
 
-void __attribute__ ((noinline)) ins_sign(unsigned char *msg,
-                                         const uint8_t len,
-                                         volatile unsigned int *flags)
+void __attribute__((noinline))
+ins_sign(unsigned char *msg, const uint8_t len, volatile unsigned int *flags)
 {
     if (CHECK_STATE(state_flags, SIGN)) {
         THROW(INVALID_STATE);
@@ -263,47 +250,42 @@ void __attribute__ ((noinline)) ins_sign(unsigned char *msg,
         THROW(0x6D09);
     }
     SIGN_INPUT *input = (SIGN_INPUT *)(msg);
-    
+
     if ((state_flags & SIGNING_STARTED) == 0) {
         tryte_t normalized_hash[81];
-        normalize_hash_bytes(bundle_get_hash(&bundle_ctx),
-                             normalized_hash);
-        
+        normalize_hash_bytes(bundle_get_hash(&bundle_ctx), normalized_hash);
+
         // TODO: the transaction index is not the address index
-        signing_initialize(&signing_ctx, seed_bytes,
-                           input->transaction_idx,
+        signing_initialize(&signing_ctx, seed_bytes, input->transaction_idx,
                            SECURITY_LEVEL, normalized_hash);
-        
+
         state_flags |= SIGNING_STARTED;
     }
-    
+
     // TODO: check that the transaction idx has not changed
-    
+
     SIGN_OUTPUT *output = (SIGN_OUTPUT *)(G_io_apdu_buffer);
     os_memset(output, 0, sizeof(SIGN_OUTPUT));
-    
+
     {
-        unsigned char
-        fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
+        unsigned char fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
         output->fragment_index =
-        signing_next_fragment(&signing_ctx, fragment_bytes);
-        
-        bytes_to_chars(fragment_bytes,
-                       output->signature_fragment,
+            signing_next_fragment(&signing_ctx, fragment_bytes);
+
+        bytes_to_chars(fragment_bytes, output->signature_fragment,
                        SIGNATURE_FRAGMENT_SIZE * 48);
     }
-    output->last_fragment =
-    NUM_SIGNATURE_FRAGMENTS(SECURITY_LEVEL) - 1;
-    
-    
+    output->last_fragment = NUM_SIGNATURE_FRAGMENTS(SECURITY_LEVEL) - 1;
+
+
     if (output->fragment_index == output->last_fragment) {
         state_flags &= ~SIGNING_STARTED;
-        
+
         *flags |= IO_ASYNCH_REPLY;
         apdu_return(sizeof(SIGN_OUTPUT));
         ui_display_welcome();
     }
-    
+
     // return success
     apdu_return(sizeof(SIGN_OUTPUT));
 }
@@ -313,12 +295,12 @@ static void IOTA_main()
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
-    
+
     int64_t balance = 0;
     int64_t payment = 0;
-    
+
     uint8_t active_seed = 255;
-    
+
     // check if flash is initialized
     bool first_run = init_flash();
 

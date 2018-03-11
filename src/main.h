@@ -16,9 +16,12 @@
 #define TYPE_INT 1
 #define TYPE_UINT 2
 #define TYPE_STR 3
+
+#define TOP_H 0
 #define TOP 1
 #define MID 2
 #define BOT 3
+#define BOT_H 4
 
 // data starts at apdu[5]
 #define APDU_HEADER_LENGTH 5
