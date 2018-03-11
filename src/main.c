@@ -29,6 +29,8 @@ unsigned int state_flags;
 
 unsigned char seed_bytes[48];
 
+uint8_t active_seed;
+
 BUNDLE_CTX bundle_ctx;
 SIGNING_CTX signing_ctx;
 
@@ -94,7 +96,7 @@ void user_sign()
 }
 
 void __attribute__((noinline))
-ins_set_seed(unsigned char *msg, const uint8_t len, uint8_t *active_seed)
+ins_set_seed(unsigned char *msg, const uint8_t len)
 {
     if (CHECK_STATE(state_flags, SET_SEED)) {
         THROW(INVALID_STATE);
@@ -110,9 +112,9 @@ ins_set_seed(unsigned char *msg, const uint8_t len, uint8_t *active_seed)
             THROW(INVALID_PARAMETER);
     }
 
-    *active_seed = path[BIP44_ACCOUNT];
+    active_seed = path[BIP44_ACCOUNT];
 
-    if (*active_seed > 4)
+    if (active_seed > 4)
         THROW(INVALID_PARAMETER);
 
     // we only care about privateKeyData and using this to
@@ -129,7 +131,7 @@ ins_set_seed(unsigned char *msg, const uint8_t len, uint8_t *active_seed)
 }
 
 void __attribute__((noinline))
-ins_pubkey(unsigned char *msg, const uint8_t len, uint8_t active_seed)
+ins_pubkey(unsigned char *msg, const uint8_t len)
 {
     if (CHECK_STATE(state_flags, PUBKEY)) {
         THROW(INVALID_STATE);
@@ -151,7 +153,7 @@ ins_pubkey(unsigned char *msg, const uint8_t len, uint8_t active_seed)
         if (active_seed > 4)
             THROW(INVALID_PARAMETER);
 
-        get_public_addr(seed_bytes, N_storage.account_seed[0], SECURITY_LEVEL,
+        get_public_addr(seed_bytes, N_storage.account_seed[active_seed], SECURITY_LEVEL,
                         addr_bytes);
     }
 
@@ -167,7 +169,7 @@ ins_pubkey(unsigned char *msg, const uint8_t len, uint8_t active_seed)
 
 void __attribute__((noinline))
 ins_tx(unsigned char *msg, const uint8_t len, volatile unsigned int *flags,
-       int64_t *balance, int64_t *payment)
+       volatile int64_t *balance, volatile int64_t *payment)
 {
     if (CHECK_STATE(state_flags, TX)) {
         THROW(INVALID_STATE);
@@ -296,16 +298,14 @@ static void IOTA_main()
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
 
-    int64_t balance = 0;
-    int64_t payment = 0;
+    volatile int64_t balance = 0;
+    volatile int64_t payment = 0;
 
-    uint8_t active_seed = 255;
+    active_seed = 255;
 
-    // check if flash is initialized
-    bool first_run = init_flash();
-
+    // init the flash (and if first run use that on ui_init())
     // initialize the UI
-    ui_init(first_run);
+    ui_init(init_flash());
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
     // goal is to retrieve APDU.
@@ -350,11 +350,11 @@ static void IOTA_main()
                 switch (G_io_apdu_buffer[1]) {
 
                 case INS_SET_SEED: {
-                    ins_set_seed(msg, len, &active_seed);
+                    ins_set_seed(msg, len);
                 } break;
 
                 case INS_PUBKEY: {
-                    ins_pubkey(msg, len, active_seed);
+                    ins_pubkey(msg, len);
                 } break;
 
                 case INS_TX: {
