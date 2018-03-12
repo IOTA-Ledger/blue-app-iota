@@ -17,7 +17,7 @@ include_directories(
     "../src/keccak"
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow -Wcast-align")
 
 # enable compilation on host
 add_definitions(

@@ -333,12 +333,14 @@ bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits)
  */
 static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
 {
-    uint32_t *p = (uint32_t *)bytes;
-
     // reverse word order
-    for (unsigned int i = 12; i-- > 0; p++) {
-        // convert byte order if necessary
-        *p = os_swap_u32(bigint[i]);
+    for (unsigned int i = 12; i-- > 0; bytes += 4) {
+        const uint32_t num = bigint[i];
+
+        bytes[0] = (num >> 24) & 0xFF;
+        bytes[1] = (num >> 16) & 0xFF;
+        bytes[2] = (num >> 8) & 0xFF;
+        bytes[3] = (num >> 0) & 0xFF;
     }
 }
 
@@ -348,12 +350,10 @@ static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
  */
 static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
 {
-    const uint32_t *p = (const uint32_t *)bytes;
-
     // reverse word order
-    for (unsigned int i = 12; i-- > 0; p++) {
-        // convert byte order if necessary
-        bigint[i] = os_swap_u32(*p);
+    for (unsigned int i = 12; i-- > 0; bytes += 4) {
+        bigint[i] = (uint32_t)bytes[0] << 24 | (uint32_t)bytes[1] << 16 |
+                    (uint32_t)bytes[2] << 8 | (uint32_t)bytes[3] << 0;
     }
 }
 
