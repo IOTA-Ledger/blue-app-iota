@@ -28,10 +28,7 @@ ux_state_t ux;
 
 unsigned int state_flags;
 
-unsigned int path[BIP44_PATH_LEN];
 unsigned char seed_bytes[48];
-
-unsigned int active_seed;
 
 BUNDLE_CTX bundle_ctx;
 SIGNING_CTX signing_ctx;
@@ -166,19 +163,12 @@ ins_set_seed(unsigned char *msg, const uint8_t len)
     ui_force_draw();
 
     SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
-    /* Disable reading path in, instead, generate ourselves
 
     unsigned int path[BIP44_PATH_LEN];
     for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
         if (!ASSIGN(path[i], input->bip44_path[i]))
             THROW(INVALID_PARAMETER);
     }
-*/
-
-    active_seed = path[BIP44_ACCOUNT];
-
-    if (active_seed > 4)
-        THROW(INVALID_PARAMETER);
 
     // we only care about privateKeyData and using this to
     // generate our iota seed
@@ -204,20 +194,9 @@ void __attribute__((noinline)) ins_pubkey(unsigned char *msg, const uint8_t len)
 
     unsigned char addr_bytes[48];
 
-    // for now only take index if advanced mode
-    if (N_storage.advanced_mode) {
-        PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
+    PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
 
-        get_public_addr(seed_bytes, input->address_idx, SECURITY_LEVEL,
-                        addr_bytes);
-    }
-    else {
-        if (active_seed > 4)
-            THROW(INVALID_PARAMETER);
-
-        get_public_addr(seed_bytes, N_storage.account_seed[active_seed],
-                        SECURITY_LEVEL, addr_bytes);
-    }
+    get_public_addr(seed_bytes, input->address_idx, SECURITY_LEVEL, addr_bytes);
 
     PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
     os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
@@ -360,16 +339,6 @@ ins_sign(unsigned char *msg, const uint8_t len, volatile unsigned int *flags)
     apdu_return(sizeof(SIGN_OUTPUT));
 }
 
-void init_path()
-{
-    // pre-defined IOTA bip44 path
-    path[0] = 0x8000002C;
-    path[1] = 0x8000107A;
-    path[2] = 0x80000000;
-    path[3] = 0x00000000;
-    path[4] = 0x00000000;
-}
-
 static void IOTA_main()
 {
     volatile unsigned int rx = 0;
@@ -379,9 +348,6 @@ static void IOTA_main()
     volatile int64_t balance = 0;
     volatile int64_t payment = 0;
 
-    active_seed = 255;
-
-    init_path();
 
     // init the flash (and if first run use that on ui_init())
     // initialize the UI
