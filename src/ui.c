@@ -33,6 +33,12 @@ void ui_display_state(void);
 void ui_handle_button(uint8_t button_mask);
 void ui_handle_menus(uint8_t state, uint8_t translated_mask);
 void ui_transition_state(unsigned int button_mask);
+
+void glyph_on(char *c);
+void glyph_off(char *c);
+void clear_display();
+void clear_glyphs();
+
 void get_init_menu(char *msg);
 void get_welcome_menu(char *msg);
 void get_disp_addr_menu(char *msg);
@@ -321,14 +327,14 @@ void write_text_array(char *array, uint8_t len)
 {
     clear_display();
     clear_glyphs();
-    
+
     if (menu_idx > 0) {
         write_display(array + (21 * (menu_idx - 1)), 21, TYPE_STR, TOP_H);
         glyph_on(glyph_up);
     }
-    
+
     write_display(array + (21 * menu_idx), 21, TYPE_STR, MID);
-    
+
     if (menu_idx < len - 1) {
         write_display(array + (21 * (menu_idx + 1)), 21, TYPE_STR, BOT_H);
         glyph_on(glyph_down);
@@ -498,7 +504,7 @@ void ui_display_state()
         switch (menu_idx) {
         // turn off BOT_H
         case 0:
-                display_glyphs_exit(NULL, glyph_down);
+            display_glyphs_exit(NULL, glyph_down);
         case MENU_WELCOME_LEN - 2:
             write_display(NULL, 21, TYPE_STR, BOT_H);
             break;
@@ -592,35 +598,35 @@ void ui_display_state()
     case STATE_TX_APPROVE: {
         clear_display();
         write_display("Approve TX", 21, TYPE_STR, MID);
-        
+
         display_glyphs_exit(glyph_up, glyph_down);
     } break;
         /* ------------ TX DENY -------------- */
     case STATE_TX_DENY: {
         clear_display();
         write_display("Deny TX", 21, TYPE_STR, MID);
-        
+
         display_glyphs_exit(glyph_up, glyph_down);
     } break;
         /* ------------ CALCULATING -------------- */
     case STATE_CALC: {
         clear_display();
         write_display("Calculating...", 21, TYPE_STR, MID);
-        
+
         display_glyphs_exit(glyph_load, NULL);
     } break;
         /* ------------ RECEIVING -------------- */
     case STATE_RECV: {
         clear_display();
         write_display("Receiving TX...", 21, TYPE_STR, MID);
-        
+
         display_glyphs_exit(glyph_load, NULL);
     } break;
         /* ------------ SENDING -------------- */
     case STATE_SEND: {
         clear_display();
         write_display("Signing TX...", 21, TYPE_STR, MID);
-        
+
         display_glyphs_exit(glyph_load, NULL);
     } break;
         /* ------------ UNKNOWN STATE -------------- */
@@ -764,7 +770,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
  --------------------------------------------------- */
 void ui_handle_button(uint8_t button_mask)
 {
-    if(button_mask == BUTTON_B) {
+    if (button_mask == BUTTON_B) {
         /* ------------- APPROVE TX --------------- */
         if (ui_state == STATE_TX_APPROVE)
             user_sign();
@@ -809,15 +815,15 @@ void init_state_transitions()
     /* ------------- CALCULATING --------------- */
     state_transitions[STATE_CALC][BUTTON_L] = STATE_CALC;
     state_transitions[STATE_CALC][BUTTON_R] = STATE_CALC;
-    state_transitions[STATE_CALC][BUTTON_B] = STATE_EXIT;
+    state_transitions[STATE_CALC][BUTTON_B] = STATE_CALC;
     /* ------------- RECEIVING --------------- */
     state_transitions[STATE_RECV][BUTTON_L] = STATE_RECV;
     state_transitions[STATE_RECV][BUTTON_R] = STATE_RECV;
-    state_transitions[STATE_RECV][BUTTON_B] = STATE_EXIT;
+    state_transitions[STATE_RECV][BUTTON_B] = STATE_RECV;
     /* ------------- SENDING --------------- */
     state_transitions[STATE_SEND][BUTTON_L] = STATE_SEND;
     state_transitions[STATE_SEND][BUTTON_R] = STATE_SEND;
-    state_transitions[STATE_SEND][BUTTON_B] = STATE_EXIT;
+    state_transitions[STATE_SEND][BUTTON_B] = STATE_SEND;
     /* ------------- TX BALANCE --------------- */
     state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_DENY;
     state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_SPEND;
@@ -833,7 +839,7 @@ void init_state_transitions()
     /* ------------- TX APPROVE --------------- */
     state_transitions[STATE_TX_APPROVE][BUTTON_L] = STATE_TX_ADDR;
     state_transitions[STATE_TX_APPROVE][BUTTON_R] = STATE_TX_DENY;
-    state_transitions[STATE_TX_APPROVE][BUTTON_B] = STATE_MENU_WELCOME;
+    state_transitions[STATE_TX_APPROVE][BUTTON_B] = STATE_TX_APPROVE;
     /* ------------- TX DENY --------------- */
     state_transitions[STATE_TX_DENY][BUTTON_L] = STATE_TX_APPROVE;
     state_transitions[STATE_TX_DENY][BUTTON_R] = STATE_TX_BAL;

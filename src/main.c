@@ -28,6 +28,7 @@ ux_state_t ux;
 
 unsigned int state_flags;
 
+unsigned int path[BIP44_PATH_LEN];
 unsigned char seed_bytes[48];
 
 unsigned int active_seed;
@@ -159,18 +160,20 @@ ins_set_seed(unsigned char *msg, const uint8_t len)
     if (len < sizeof(SET_SEED_INPUT)) {
         THROW(0x6D09);
     }
-    
+
     // temporary screen while receiving tx
     ui_display_recv();
     ui_force_draw();
-    
+
     SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
+    /* Disable reading path in, instead, generate ourselves
 
     unsigned int path[BIP44_PATH_LEN];
     for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
         if (!ASSIGN(path[i], input->bip44_path[i]))
             THROW(INVALID_PARAMETER);
     }
+*/
 
     active_seed = path[BIP44_ACCOUNT];
 
@@ -236,7 +239,7 @@ ins_tx(unsigned char *msg, const uint8_t len, volatile unsigned int *flags,
     if (len < sizeof(TX_INPUT)) {
         THROW(0x6D09);
     }
-    
+
     TX_INPUT *input = (TX_INPUT *)(msg);
 
     if ((state_flags & BUNDLE_INITIALIZED) == 0) {
@@ -311,11 +314,11 @@ ins_sign(unsigned char *msg, const uint8_t len, volatile unsigned int *flags)
     if (len < sizeof(SIGN_INPUT)) {
         THROW(0x6D09);
     }
-    
+
     // temporary screen during signing process
     ui_display_sending();
     ui_force_draw();
-    
+
     SIGN_INPUT *input = (SIGN_INPUT *)(msg);
 
     if ((state_flags & SIGNING_STARTED) == 0) {
@@ -357,6 +360,16 @@ ins_sign(unsigned char *msg, const uint8_t len, volatile unsigned int *flags)
     apdu_return(sizeof(SIGN_OUTPUT));
 }
 
+void init_path()
+{
+    // pre-defined IOTA bip44 path
+    path[0] = 0x8000002C;
+    path[1] = 0x8000107A;
+    path[2] = 0x80000000;
+    path[3] = 0x00000000;
+    path[4] = 0x00000000;
+}
+
 static void IOTA_main()
 {
     volatile unsigned int rx = 0;
@@ -367,6 +380,8 @@ static void IOTA_main()
     volatile int64_t payment = 0;
 
     active_seed = 255;
+
+    init_path();
 
     // init the flash (and if first run use that on ui_init())
     // initialize the UI
