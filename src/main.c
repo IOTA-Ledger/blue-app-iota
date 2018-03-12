@@ -14,7 +14,8 @@
 typedef struct internalStorage_t {
     uint8_t initialized;
     uint32_t account_seed[5];
-    bool advanced_mode;
+    uint8_t advanced_mode;
+    uint8_t browser_mode;
 
 } internalStorage_t;
 
@@ -52,6 +53,42 @@ void check_canary()
     }
 }
 
+uint8_t get_advanced_mode()
+{
+    return N_storage.advanced_mode;
+}
+
+uint8_t get_browser_mode()
+{
+    return N_storage.browser_mode;
+}
+
+void write_advanced_mode(uint8_t mode)
+{
+    // something must have gone wrong to receive a mode > 1
+    if (mode > 1) {
+        os_sched_exit(0);
+        return;
+    }
+
+    // only write if mode is different
+    if (mode != N_storage.advanced_mode)
+        nvm_write(&N_storage.advanced_mode, (void *)&mode, sizeof(uint8_t));
+}
+
+void write_browser_mode(uint8_t mode)
+{
+    // something must have gone wrong to receive a mode > 1
+    if (mode > 1) {
+        os_sched_exit(0);
+        return;
+    }
+
+    // only write if mode is different
+    if (mode != N_storage.browser_mode)
+        nvm_write(&N_storage.browser_mode, (void *)&mode, sizeof(uint8_t));
+}
+
 bool init_flash()
 {
     // not initialized
@@ -61,7 +98,12 @@ bool init_flash()
         storage.initialized = 0x01;
         memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
         storage.account_seed[0] = 1;
-        storage.advanced_mode = false;
+        storage.account_seed[1] = 4;
+        storage.account_seed[2] = 9;
+        storage.account_seed[3] = 22;
+        storage.account_seed[4] = 762;
+        storage.advanced_mode = 0;
+        storage.browser_mode = 0;
 
         nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 
@@ -69,6 +111,11 @@ bool init_flash()
     }
 
     return false;
+}
+
+uint32_t get_seed_idx(unsigned int idx)
+{
+    return N_storage.account_seed[idx];
 }
 
 void apdu_return(unsigned int tx)
@@ -80,8 +127,16 @@ void apdu_return(unsigned int tx)
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
 }
 
+void user_deny()
+{
+    apdu_return(0);
+}
+
 void user_sign()
 {
+    ui_display_calc();
+    ui_force_draw();
+
     TX_OUTPUT *output = (TX_OUTPUT *)(G_io_apdu_buffer);
     os_memset(output, 0, sizeof(TX_OUTPUT));
 
@@ -104,6 +159,11 @@ ins_set_seed(unsigned char *msg, const uint8_t len)
     if (len < sizeof(SET_SEED_INPUT)) {
         THROW(0x6D09);
     }
+    
+    // temporary screen while receiving tx
+    ui_display_recv();
+    ui_force_draw();
+    
     SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
 
     unsigned int path[BIP44_PATH_LEN];
@@ -176,6 +236,7 @@ ins_tx(unsigned char *msg, const uint8_t len, volatile unsigned int *flags,
     if (len < sizeof(TX_INPUT)) {
         THROW(0x6D09);
     }
+    
     TX_INPUT *input = (TX_INPUT *)(msg);
 
     if ((state_flags & BUNDLE_INITIALIZED) == 0) {
@@ -250,6 +311,11 @@ ins_sign(unsigned char *msg, const uint8_t len, volatile unsigned int *flags)
     if (len < sizeof(SIGN_INPUT)) {
         THROW(0x6D09);
     }
+    
+    // temporary screen during signing process
+    ui_display_sending();
+    ui_force_draw();
+    
     SIGN_INPUT *input = (SIGN_INPUT *)(msg);
 
     if ((state_flags & SIGNING_STARTED) == 0) {
