@@ -41,10 +41,10 @@ void clear_glyphs();
 
 void get_init_menu(char *msg);
 void get_welcome_menu(char *msg);
-void get_disp_addr_menu(char *msg);
 void get_disp_idx_menu(char *msg);
 void get_advanced_menu(char *msg);
 void get_browser_menu(char *msg);
+void get_adv_warn_menu(char *msg);
 
 unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
 
@@ -442,6 +442,12 @@ bool state_is(uint8_t state)
     return ui_state == state;
 }
 
+void welcome_menu_return(uint8_t idx)
+{
+    ui_state = STATE_MENU_WELCOME;
+    menu_idx = idx;
+}
+
 /* ----------------------------------------------------
  ------------------------------------------------------
         Every button press calls transition_state
@@ -516,44 +522,6 @@ void ui_display_state()
             break;
         }
     } break;
-        /* ------------ DISPLAY ADDR *MENU* -------------- */
-    case STATE_MENU_DISP_ADDR: {
-        char msg[MENU_DISP_ACCOUNTS_LEN * 21];
-        get_disp_addr_menu(msg);
-        write_text_array(msg, MENU_DISP_ACCOUNTS_LEN);
-
-        // special override display states
-        switch (menu_idx) {
-        // turn off BOT_H
-        case MENU_WELCOME_LEN - 2:
-            write_display(NULL, 21, TYPE_STR, BOT_H);
-            break;
-            // turn off TOP_H
-        case MENU_WELCOME_LEN - 1:
-            display_glyphs_exit(glyph_up, glyph_dash);
-            write_display(NULL, 21, TYPE_STR, TOP_H);
-            break;
-        }
-    } break;
-        /* ------------ DISPLAY INDEXES *MENU* -------------- */
-    case STATE_MENU_DISP_IDX: {
-        char msg[MENU_DISP_ACCOUNTS_LEN * 21];
-        get_disp_idx_menu(msg);
-        write_text_array(msg, MENU_DISP_ACCOUNTS_LEN);
-
-        // special override display states
-        switch (menu_idx) {
-            // turn off BOT_H
-        case MENU_WELCOME_LEN - 2:
-            write_display(NULL, 21, TYPE_STR, BOT_H);
-            break;
-            // turn off TOP_H
-        case MENU_WELCOME_LEN - 1:
-            display_glyphs_exit(glyph_up, glyph_dash);
-            write_display(NULL, 21, TYPE_STR, TOP_H);
-            break;
-        }
-    } break;
         /* ------------ ADVANCED MODE *MENU* -------------- */
     case STATE_MENU_ADVANCED: {
         char msg[MENU_ADVANCED_LEN * 21];
@@ -562,6 +530,31 @@ void ui_display_state()
 
         // no special overrides
     } break;
+        /* ------------ ADVANCED MODE WARNING *MENU* -------------- */
+    case STATE_MENU_ADV_WARN: {
+        char msg[MENU_ADV_WARN_LEN * 21];
+        get_adv_warn_menu(msg);
+        write_text_array(msg, MENU_ADV_WARN_LEN);
+        
+        // special override display states
+        switch(menu_idx) {
+            case MENU_ADV_WARN_LEN-2: // Yes
+                display_glyphs_exit(glyph_up, glyph_down);
+                // turn off the half menus
+                write_display(NULL, 21, TYPE_STR, BOT_H);
+                write_display(NULL, 21, TYPE_STR, TOP_H);
+                break;
+                
+            case MENU_ADV_WARN_LEN-1: // No
+                display_glyphs_exit(glyph_up, NULL);
+                // turn off the half text
+                write_display(NULL, 21, TYPE_STR, TOP_H);
+                break;
+                
+            default:
+                break;
+        }
+    } break;
         /* ------------ BROWSER SUPPORT *MENU* -------------- */
     case STATE_MENU_BROWSER: {
         char msg[MENU_BROWSER_LEN * 21];
@@ -569,6 +562,25 @@ void ui_display_state()
         write_text_array(msg, MENU_BROWSER_LEN);
 
         // no special overrides
+    } break;
+        /* ------------ DISPLAY INDEXES *MENU* -------------- */
+    case STATE_MENU_DISP_IDX: {
+        char msg[MENU_DISP_ACCOUNTS_LEN * 21];
+        get_disp_idx_menu(msg);
+        write_text_array(msg, MENU_DISP_ACCOUNTS_LEN);
+        
+        // special override display states
+        switch (menu_idx) {
+                // turn off BOT_H
+            case MENU_DISP_ACCOUNTS_LEN - 2:
+                write_display(NULL, 21, TYPE_STR, BOT_H);
+                break;
+                // turn off TOP_H
+            case MENU_DISP_ACCOUNTS_LEN - 1:
+                display_glyphs_exit(glyph_up, glyph_dash);
+                write_display(NULL, 21, TYPE_STR, TOP_H);
+                break;
+        }
     } break;
         /* ------------ TX BAL -------------- */
     case STATE_TX_BAL: {
@@ -672,27 +684,22 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
             case 0:
                 ui_state = STATE_EXIT;
                 return;
-            // View Addresses
-            case 1:
-                ui_state = STATE_MENU_DISP_ADDR;
-                menu_idx = 0;
-                return;
-            // View Indexes
-            case 2:
-                ui_state = STATE_MENU_DISP_IDX;
-                menu_idx = 0;
-                return;
             // Advanced Mode
-            case 3:
+            case 1:
                 ui_state = STATE_MENU_ADVANCED;
                 // default to the currently set mode
                 menu_idx = get_advanced_mode();
                 return;
             // Browser Mode
-            case 4:
+            case 2:
                 ui_state = STATE_MENU_BROWSER;
                 // default to the currently set mode
                 menu_idx = get_browser_mode();
+                return;
+            // View Indexes
+            case 3:
+                ui_state = STATE_MENU_DISP_IDX;
+                menu_idx = 0;
                 return;
             // Exit App
             case MENU_WELCOME_LEN - 1:
@@ -701,14 +708,53 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
             }
         }
         break;
-        /* ------------ STATE DISPLAY_ADDRESSES -------------- */
-    case STATE_MENU_DISP_ADDR:
-        array_sz = MENU_DISP_ACCOUNTS_LEN - 1;
-
-        // Back
-        if (translated_mask == BUTTON_B && menu_idx == array_sz) {
-            ui_state = STATE_MENU_WELCOME;
-            menu_idx = 1;
+        /* ------------ STATE ADVANCED MODE -------------- */
+    case STATE_MENU_ADVANCED:
+        array_sz = MENU_ADVANCED_LEN - 1;
+        
+        if (translated_mask == BUTTON_B) {
+            
+            // warn if entering advanced mode
+            if(menu_idx == 1 && get_advanced_mode() == 0) {
+                ui_state = STATE_MENU_ADV_WARN;
+                menu_idx = 0;
+                
+                return;
+            }
+            
+            // menu idx entries line up with modes
+            write_advanced_mode(menu_idx);
+            
+            welcome_menu_return(1);
+            return;
+        }
+        break;
+        /* ------------ STATE ADVANCED MODE WARNING -------------- */
+    case STATE_MENU_ADV_WARN:
+        array_sz = MENU_ADV_WARN_LEN - 1;
+        
+        if (translated_mask == BUTTON_B) {
+            
+            switch(menu_idx) {
+                case 1: // Yes
+                    write_advanced_mode(1);
+                case 2: // No
+                    welcome_menu_return(1);
+                    return;
+                default: // "Are you sure?"
+                    break;
+            }
+        }
+        break;
+        /* ------------ STATE BROWSER MODE -------------- */
+    case STATE_MENU_BROWSER:
+        array_sz = MENU_BROWSER_LEN - 1;
+        
+        if (translated_mask == BUTTON_B) {
+            // menu idx entries line up with modes
+            write_browser_mode(menu_idx);
+            
+            welcome_menu_return(2);
             return;
         }
         break;
@@ -718,34 +764,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
 
         // Back
         if (translated_mask == BUTTON_B && menu_idx == array_sz) {
-            ui_state = STATE_MENU_WELCOME;
-            menu_idx = 2;
-            return;
-        }
-        break;
-        /* ------------ STATE ADVANCED MODE -------------- */
-    case STATE_MENU_ADVANCED:
-        array_sz = MENU_ADVANCED_LEN - 1;
-
-        if (translated_mask == BUTTON_B) {
-            // menu idx entries line up with modes
-            write_advanced_mode(menu_idx);
-
-            ui_state = STATE_MENU_WELCOME;
-            menu_idx = 3;
-            return;
-        }
-        break;
-        /* ------------ STATE BROWSER MODE -------------- */
-    case STATE_MENU_BROWSER:
-        array_sz = MENU_BROWSER_LEN - 1;
-
-        if (translated_mask == BUTTON_B) {
-            // menu idx entries line up with modes
-            write_browser_mode(menu_idx);
-
-            ui_state = STATE_MENU_WELCOME;
-            menu_idx = 4;
+            welcome_menu_return(3);
             return;
         }
         break;
@@ -796,10 +815,6 @@ void init_state_transitions()
     state_transitions[STATE_MENU_WELCOME][BUTTON_L] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_R] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_B] = STATE_MENU_WELCOME;
-    /* ------------- MENU VIEW ADDR --------------- */
-    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_L] = STATE_MENU_DISP_ADDR;
-    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_R] = STATE_MENU_DISP_ADDR;
-    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_B] = STATE_MENU_DISP_ADDR;
     /* ------------- MENU VIEW IDX --------------- */
     state_transitions[STATE_MENU_DISP_IDX][BUTTON_L] = STATE_MENU_DISP_IDX;
     state_transitions[STATE_MENU_DISP_IDX][BUTTON_R] = STATE_MENU_DISP_IDX;
@@ -808,6 +823,10 @@ void init_state_transitions()
     state_transitions[STATE_MENU_ADVANCED][BUTTON_L] = STATE_MENU_ADVANCED;
     state_transitions[STATE_MENU_ADVANCED][BUTTON_R] = STATE_MENU_ADVANCED;
     state_transitions[STATE_MENU_ADVANCED][BUTTON_B] = STATE_MENU_ADVANCED;
+    /* ------------- MENU ADVANCED MODE WARNING --------------- */
+    state_transitions[STATE_MENU_ADV_WARN][BUTTON_L] = STATE_MENU_ADV_WARN;
+    state_transitions[STATE_MENU_ADV_WARN][BUTTON_R] = STATE_MENU_ADV_WARN;
+    state_transitions[STATE_MENU_ADV_WARN][BUTTON_B] = STATE_MENU_ADV_WARN;
     /* ------------- MENU BROWSER MODE --------------- */
     state_transitions[STATE_MENU_BROWSER][BUTTON_L] = STATE_MENU_BROWSER;
     state_transitions[STATE_MENU_BROWSER][BUTTON_R] = STATE_MENU_BROWSER;
@@ -867,25 +886,10 @@ void get_welcome_menu(char *msg)
     uint8_t i = 0;
 
     strcpy(msg + (i++ * 21), " Welcome to IOTA");
-    strcpy(msg + (i++ * 21), "View Addresses");
-    strcpy(msg + (i++ * 21), "View Seed Indexes");
     strcpy(msg + (i++ * 21), "Advanced Mode");
     strcpy(msg + (i++ * 21), "Browser Support");
+    strcpy(msg + (i++ * 21), "Account Indexes");
     strcpy(msg + (i++ * 21), "Exit App");
-}
-
-void get_disp_addr_menu(char *msg)
-{
-    memset(msg, '\0', MENU_DISP_ACCOUNTS_LEN * 21);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * 21), "Account [1]");
-    strcpy(msg + (i++ * 21), "Account [2]");
-    strcpy(msg + (i++ * 21), "Account [3]");
-    strcpy(msg + (i++ * 21), "Account [4]");
-    strcpy(msg + (i++ * 21), "Account [5]");
-    strcpy(msg + (i++ * 21), "Back");
 }
 
 void get_disp_idx_menu(char *msg)
@@ -925,4 +929,15 @@ void get_browser_menu(char *msg)
 
     strcpy(msg + (i++ * 21), "Disabled");
     strcpy(msg + (i++ * 21), "Enabled");
+}
+
+void get_adv_warn_menu(char *msg)
+{
+    memset(msg, '\0', MENU_ADV_WARN_LEN * 21);
+    
+    uint8_t i = 0;
+    
+    strcpy(msg + (i++ * 21), "Are you sure?");
+    strcpy(msg + (i++ * 21), "Yes");
+    strcpy(msg + (i++ * 21), "No");
 }

@@ -40,17 +40,18 @@
 #define STATE_TX_ADDR 7
 #define STATE_TX_APPROVE 8
 #define STATE_TX_DENY 9
-#define STATE_MENU_DISP_ADDR 10
-#define STATE_MENU_DISP_IDX 11
-#define STATE_MENU_ADVANCED 12
-#define STATE_MENU_BROWSER 13
+#define STATE_MENU_DISP_IDX 10
+#define STATE_MENU_ADVANCED 11
+#define STATE_MENU_BROWSER 12
+#define STATE_MENU_ADV_WARN 13
 
 // Size of Menu
 #define MENU_INIT_LEN 5
-#define MENU_WELCOME_LEN 6
+#define MENU_WELCOME_LEN 5
 #define MENU_DISP_ACCOUNTS_LEN 6
 #define MENU_ADVANCED_LEN 2
 #define MENU_BROWSER_LEN 2
+#define MENU_ADV_WARN_LEN 3
 
 /* To create a new UI screen -
  - #define new STATE_ here, incr TOTAL_STATES/STATE_EXIT
