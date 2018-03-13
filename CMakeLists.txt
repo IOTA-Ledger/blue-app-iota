@@ -17,7 +17,6 @@ set(SOURCE_FILES
         src/keccak/sha3.c
         src/keccak/sha3.h
         src/main.c
-        src/main.h
-        Makefile)
+        src/main.h)
 
 add_executable(c_light_wallet ${SOURCE_FILES})
