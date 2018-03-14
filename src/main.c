@@ -1,6 +1,6 @@
 #include "main.h"
 #include "ui.h"
-#include "apdu.h"
+#include "instructions.h"
 #include "aux.h"
 
 // iota-related stuff
@@ -128,66 +128,6 @@ void user_sign()
     bytes_to_chars(bundle_get_hash(&bundle_ctx), output->bundle_hash, 48);
 
     apdu_return(sizeof(TX_OUTPUT));
-}
-
-void __attribute__((noinline))
-ins_set_seed(unsigned char *msg, const uint8_t len)
-{
-    if (CHECK_STATE(state_flags, SET_SEED)) {
-        THROW(INVALID_STATE);
-    }
-    if (len < sizeof(SET_SEED_INPUT)) {
-        THROW(0x6D09);
-    }
-
-    // temporary screen while receiving tx
-    ui_display_recv();
-    ui_force_draw();
-
-    SET_SEED_INPUT *input = (SET_SEED_INPUT *)(msg);
-
-    unsigned int path[BIP44_PATH_LEN];
-    for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
-        if (!ASSIGN(path[i], input->bip44_path[i]))
-            THROW(INVALID_PARAMETER);
-    }
-
-    // we only care about privateKeyData and using this to
-    // generate our iota seed
-    unsigned char entropy[64];
-    os_perso_derive_node_bip32(CX_CURVE_256K1, path, BIP44_PATH_LEN, entropy,
-                               entropy + 32);
-    get_seed(entropy, sizeof(entropy), seed_bytes);
-    // getting the seed resets everything
-    state_flags = SEED_SET;
-
-    // return success
-    THROW(0x9000);
-}
-
-void __attribute__((noinline)) ins_pubkey(unsigned char *msg, const uint8_t len)
-{
-    if (CHECK_STATE(state_flags, PUBKEY)) {
-        THROW(INVALID_STATE);
-    }
-    if (len < sizeof(PUBKEY_INPUT)) {
-        THROW(0x6D09);
-    }
-
-    unsigned char addr_bytes[48];
-
-    PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
-
-    get_public_addr(seed_bytes, input->address_idx, SECURITY_LEVEL, addr_bytes);
-
-    PUBKEY_OUTPUT *output = (PUBKEY_OUTPUT *)(G_io_apdu_buffer);
-    os_memset(output, 0, sizeof(PUBKEY_OUTPUT));
-
-    // convert the 48 byte address into base-27 address
-    bytes_to_chars(addr_bytes, output->address, 48);
-
-    // return success
-    apdu_return(sizeof(PUBKEY_OUTPUT));
 }
 
 void __attribute__((noinline))
@@ -367,29 +307,42 @@ static void IOTA_main()
                 if (G_io_apdu_buffer[0] != CLA)
                     THROW(0x6E00);
 
-                const uint8_t len = G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
+                const unsigned int len =
+                    G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
                 if (rx < len + APDU_HEADER_LENGTH) {
                     THROW(INVALID_STATE);
                 }
-                unsigned char *msg = G_io_apdu_buffer + APDU_HEADER_LENGTH;
+                unsigned char *io_data = G_io_apdu_buffer + APDU_HEADER_LENGTH;
 
                 // check second byte for instruction
                 switch (G_io_apdu_buffer[1]) {
 
-                case INS_SET_SEED: {
-                    ins_set_seed(msg, len);
-                } break;
+                case INS_SET_SEED:
+                    if (CHECK_STATE(state_flags, SET_SEED)) {
+                        THROW(INVALID_STATE);
+                    }
 
-                case INS_PUBKEY: {
-                    ins_pubkey(msg, len);
-                } break;
+                    tx = ins_set_seed(io_data, len);
+                    // getting the seed resets everything
+                    state_flags = SEED_SET;
+
+                    THROW(0x9000);
+
+                case INS_PUBKEY:
+                    if (CHECK_STATE(state_flags, PUBKEY)) {
+                        THROW(INVALID_STATE);
+                    }
+
+                    tx = ins_pubkey(io_data, len);
+
+                    THROW(0x9000);
 
                 case INS_TX: {
-                    ins_tx(msg, len, &flags, &balance, &payment);
+                    ins_tx(io_data, len, &flags, &balance, &payment);
                 } break;
 
                 case INS_SIGN: {
-                    ins_sign(msg, len, &flags);
+                    ins_sign(io_data, len, &flags);
                 } break;
 
                 case 0xFF: // return to dashboard

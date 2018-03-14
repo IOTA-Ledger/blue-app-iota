@@ -1,11 +1,8 @@
-#ifndef APDU_H
-#define APDU_H
+#ifndef INSTRUCTIONS_H
+#define INSTRUCTIONS_H
 
+#include "main.h"
 #include "iota/signing.h"
-
-#define CHECK_STATE(state, INS) ( \
-                (((state) & INS ## _REQUIRED_STATE) != INS ## _REQUIRED_STATE) \
-                || ((state) & INS ## _FORBIDDEN_STATE))
 
 #define CLA 0x80
 
@@ -15,7 +12,12 @@
 #define INS_TX 0x03
 #define INS_SIGN 0x04
 
-// states
+
+#define CHECK_STATE(state, INS) ( \
+                (((state) & INS ## _REQUIRED_STATE) != INS ## _REQUIRED_STATE) \
+                || ((state) & INS ## _FORBIDDEN_STATE))
+
+// state bit flags
 #define SEED_SET (1 << 0)
 #define BUNDLE_INITIALIZED (1 << 1)
 #define BUNDLE_FINALIZED (1 << 2)
@@ -75,4 +77,4 @@ typedef struct __attribute__((__packed__)) SIGN_OUTPUT {
         uint32_t last_fragment;
 } SIGN_OUTPUT;
 
-#endif // APDU_H
+#endif // INSTRUCTIONS_H
