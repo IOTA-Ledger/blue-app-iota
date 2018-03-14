@@ -3,6 +3,7 @@ from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 from struct import Struct
 import time
+import sys
 
 BIP44_PATH = [0x8000002C,
               0x8000107A,
@@ -15,6 +16,7 @@ INS_SET_SEED = 0x01
 INS_PUBKEY = 0x02
 INS_TX = 0x03
 INS_SIGN = 0x04
+INS_DISP_ADDR = 0x05
 
 
 def apdu_command(ins, data, p1=0, p2=0):
@@ -71,6 +73,8 @@ exceptionCount = 0
 start_time = time.time()
 
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
+
+dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(0)))
 
 response = dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(1)))
 print unpack_pubkey_output(response)

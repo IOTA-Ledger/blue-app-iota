@@ -40,6 +40,7 @@
 #define TEST_ERROR 0x9876
 #define BAD_ADDR 0x6D22
 #define NO_SEED_IDX 0x6D28
+#define USER_UNCONFIRMED 0x6D30
 
 
 #define LEDGER_MSG "LEDGER"
@@ -56,6 +57,7 @@ unsigned char io_event(unsigned char channel);
 
 void user_sign();
 void user_deny();
+void init_flash();
 uint32_t get_seed_idx(unsigned int idx);
 uint8_t get_advanced_mode();
 uint8_t get_browser_mode();

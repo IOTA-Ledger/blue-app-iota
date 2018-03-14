@@ -74,12 +74,14 @@ void ui_display_message(void *o, uint8_t sz, uint8_t t,
                       void *o2, uint8_t sz2, uint8_t t2,
                       void *o3, uint8_t sz3, uint8_t t3);
 
-void ui_sign_tx(int64_t b, int64_t o, const char *a, uint8_t len);
 void ui_display_welcome();
 void ui_display_calc();
 void ui_display_recv();
 void ui_display_sending();
+void ui_display_address(char *a, uint8_t len);
 void ui_force_draw();
+
+void ui_sign_tx(int64_t b, int64_t o, const char *a, uint8_t len);
 
 #endif // UI_H
 

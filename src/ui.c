@@ -34,6 +34,9 @@ void ui_handle_button(uint8_t button_mask);
 void ui_handle_menus(uint8_t state, uint8_t translated_mask);
 void ui_transition_state(unsigned int button_mask);
 
+void state_go(uint8_t state, uint8_t idx);
+void state_return(uint8_t state, uint8_t idx);
+
 void glyph_on(char *c);
 void glyph_off(char *c);
 void clear_display();
@@ -112,15 +115,15 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
 /* ------------------- DISPLAY UI FUNCTIONS -------------
  ---------------------------------------------------------
  --------------------------------------------------------- */
-void ui_init(bool first_run)
+void ui_init(bool flash_is_init)
 {
     init_state_transitions();
     menu_idx = 0;
 
-    if (first_run)
-        ui_state = STATE_MENU_INIT;
-    else
+    if (flash_is_init)
         ui_state = STATE_MENU_WELCOME;
+    else
+        ui_state = STATE_MENU_INIT;
 
     ui_display_state();
 }
@@ -169,6 +172,17 @@ void ui_display_recv()
 void ui_display_sending()
 {
     ui_state = STATE_SEND;
+    ui_display_state();
+}
+
+void ui_display_address(char *a, uint8_t len)
+{
+    if(len != 81)
+        return;
+    
+    memcpy(addr, a, 81);
+    state_go(STATE_DISP_ADDR_CHK, 0);
+    
     ui_display_state();
 }
 
@@ -836,12 +850,16 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
 void ui_handle_button(uint8_t button_mask)
 {
     if (button_mask == BUTTON_B) {
+        /* ------------- INIT --------------- */
+        if (ui_state == STATE_MENU_INIT)
+            init_flash();
         /* ------------- APPROVE TX --------------- */
         if (ui_state == STATE_TX_APPROVE)
             user_sign();
         /* ------------- DENY TX --------------- */
         if (ui_state == STATE_TX_DENY)
             user_deny();
+            
     }
 }
 
