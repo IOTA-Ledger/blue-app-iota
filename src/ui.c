@@ -2,6 +2,7 @@
 #include <string.h>
 #include "common.h"
 #include "aux.h"
+#include "iota/addresses.h"
 
 char half_top[21];
 char top_str[21];
@@ -11,7 +12,6 @@ char half_bot[21];
 
 // flags for turning on/off certain glyphs
 char glyph_bar_l[2], glyph_bar_r[2];
-char glyph_bar_l_c[2], glyph_bar_r_c[2];
 char glyph_cross[2], glyph_check[2];
 char glyph_up[2], glyph_down[2];
 char glyph_warn[2], glyph_dash[2], glyph_load[2];
@@ -22,7 +22,7 @@ uint8_t menu_idx;
 // tx information
 int64_t bal = 0;
 int64_t pay = 0;
-char addr[21];
+char addr[81];
 
 // matrix holds layout of state transitions
 static uint8_t state_transitions[TOTAL_STATES][3];
@@ -45,6 +45,7 @@ void get_disp_idx_menu(char *msg);
 void get_advanced_menu(char *msg);
 void get_browser_menu(char *msg);
 void get_adv_warn_menu(char *msg);
+void get_address_menu(char *msg);
 
 unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
 
@@ -85,12 +86,6 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
     
     {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_LESS}, glyph_bar_r, 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 3, 0, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, glyph_bar_l_c, 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 117, 0, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, glyph_bar_r_c, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
         BAGL_GLYPH_ICON_CROSS}, glyph_cross, 0, 0, 0, NULL, NULL, NULL},
@@ -140,18 +135,17 @@ void ui_reset()
     ui_display_state();
 }
 
-void ui_record_addr(const char *a, uint8_t len)
+void abbreviate_addr(char *dest, const char *src, uint8_t len)
 {
-    // length 81 or 82 means full address
-    if (len == 81 || len == 82) {
-        // Convert into abbreviated seeed
-        memcpy(addr, a, 6);          // first 6 chars of address
-        memcpy(addr + 6, "...", 3);  // copy ...
-        memcpy(addr + 9, a + 75, 7); // copy last 6 chars + null
-    }
-    else if (len <= 21) {
-        memcpy(addr, a, len);
-    }
+    // length 81 or 82 means full address with or without '\0'
+    if (len != 81)
+        return;
+
+    // copy the abbreviated address over
+    strncpy(dest, src, 4);
+    strncpy(dest + 4, " ... ", 5);
+    strncpy(dest + 9, src + 77, 4);
+    dest[13] = '\0';
 }
 
 void ui_display_welcome()
@@ -180,9 +174,13 @@ void ui_display_sending()
 
 void ui_sign_tx(int64_t b, int64_t p, const char *a, uint8_t len)
 {
+    // we only accept 81 character addresses - no checksum
+    if (len != 81)
+        return;
+
     bal = b;
     pay = p;
-    ui_record_addr(a, len);
+    memcpy(addr, a, len);
 
     ui_state = STATE_TX_BAL;
 
@@ -350,7 +348,7 @@ void clear_text()
     write_display(NULL, 21, TYPE_STR, BOT_H);
 }
 
-// Turns glyphs on or off
+// Turns a single glyph on or off
 void glyph_on(char *c)
 {
     if (c != NULL)
@@ -370,8 +368,6 @@ void clear_glyphs()
     // turn off all glyphs
     glyph_off(glyph_bar_l);
     glyph_off(glyph_bar_r);
-    glyph_off(glyph_bar_l_c);
-    glyph_off(glyph_bar_r_c);
     glyph_off(glyph_cross);
     glyph_off(glyph_check);
     glyph_off(glyph_up);
@@ -387,7 +383,7 @@ void clear_display()
     clear_glyphs();
 }
 
-// turns on only 2 glyphs
+// turns on 2 glyphs (often glyph on left + right)
 void display_glyphs(char *c1, char *c2)
 {
     clear_glyphs();
@@ -399,20 +395,6 @@ void display_glyphs(char *c1, char *c2)
 
 // combine glyphs with bars along top for confirm
 void display_glyphs_confirm(char *c1, char *c2)
-{
-    clear_glyphs();
-
-    // turn on ones we want
-    glyph_on(glyph_bar_l);
-    glyph_on(glyph_bar_r);
-    glyph_on(glyph_bar_l_c);
-    glyph_on(glyph_bar_r_c);
-    glyph_on(c1);
-    glyph_on(c2);
-}
-
-// combine glyphs with bars along top for exit
-void display_glyphs_exit(char *c1, char *c2)
 {
     clear_glyphs();
 
@@ -437,19 +419,22 @@ uint8_t ui_translate_mask(unsigned int button_mask)
     }
 }
 
-bool state_is(uint8_t state)
+
+// go to state with menu index
+void state_go(uint8_t state, uint8_t idx)
 {
-    return ui_state == state;
+    ui_state = state;
+    menu_idx = idx;
 }
 
-void welcome_menu_return(uint8_t idx)
+void state_return(uint8_t state, uint8_t idx)
 {
-    ui_state = STATE_MENU_WELCOME;
-    menu_idx = idx;
+    state_go(state, idx);
 }
 
 /* ----------------------------------------------------
  ------------------------------------------------------
+            ------- MAIN BUTTON LOGIC -------
         Every button press calls transition_state
  ------------------------------------------------------
  --------------------------------------------------- */
@@ -461,16 +446,19 @@ void ui_transition_state(unsigned int button_mask)
     if (translated_mask == BUTTON_BAD)
         return;
 
+    // See if a special function needs to be called
+    // for instance user_sign or user_deny()
     ui_handle_button(translated_mask);
 
-    // store previous state for menu handling
+    // store current state for menu handling, then transition
+    // into new state
     uint8_t old_state = ui_state;
     ui_state = state_transitions[ui_state][translated_mask];
 
-    // handle menus uniquely (including new state transition)
+    // special handling of menus (including new state transition)
     ui_handle_menus(old_state, translated_mask);
 
-    if (state_is(STATE_EXIT))
+    if (ui_state == STATE_EXIT)
         io_seproxyhal_touch_exit(NULL);
 
     // after transitioning, immediately display new state
@@ -489,19 +477,21 @@ void ui_display_state()
     switch (ui_state) {
         /* ------------ INIT *MENU* -------------- */
     case STATE_MENU_INIT: {
+        // write the actual menu
         char msg[MENU_INIT_LEN * 21];
         get_init_menu(msg);
         write_text_array(msg, MENU_INIT_LEN);
 
-        // special override states
+        // special override display states
         if (menu_idx == 0)
             glyph_on(glyph_warn);
         if (menu_idx == MENU_INIT_LEN - 1) {
-            display_glyphs_exit(glyph_up, NULL);
+            display_glyphs_confirm(glyph_up, NULL);
         }
     } break;
         /* ------------ WELCOME *MENU* -------------- */
     case STATE_MENU_WELCOME: {
+        // write the actual menu
         char msg[MENU_WELCOME_LEN * 21];
         get_welcome_menu(msg);
         write_text_array(msg, MENU_WELCOME_LEN);
@@ -510,13 +500,13 @@ void ui_display_state()
         switch (menu_idx) {
         // turn off BOT_H
         case 0:
-            display_glyphs_exit(NULL, glyph_down);
+            display_glyphs_confirm(NULL, glyph_down);
         case MENU_WELCOME_LEN - 2:
             write_display(NULL, 21, TYPE_STR, BOT_H);
             break;
         // turn off TOP_H
         case MENU_WELCOME_LEN - 1:
-            display_glyphs_exit(glyph_up, glyph_dash);
+            display_glyphs_confirm(glyph_up, glyph_dash);
         case 1:
             write_display(NULL, 21, TYPE_STR, TOP_H);
             break;
@@ -524,6 +514,7 @@ void ui_display_state()
     } break;
         /* ------------ ADVANCED MODE *MENU* -------------- */
     case STATE_MENU_ADVANCED: {
+        // write the actual menu
         char msg[MENU_ADVANCED_LEN * 21];
         get_advanced_menu(msg);
         write_text_array(msg, MENU_ADVANCED_LEN);
@@ -532,31 +523,33 @@ void ui_display_state()
     } break;
         /* ------------ ADVANCED MODE WARNING *MENU* -------------- */
     case STATE_MENU_ADV_WARN: {
+        // write the actual menu
         char msg[MENU_ADV_WARN_LEN * 21];
         get_adv_warn_menu(msg);
         write_text_array(msg, MENU_ADV_WARN_LEN);
-        
+
         // special override display states
-        switch(menu_idx) {
-            case MENU_ADV_WARN_LEN-2: // Yes
-                display_glyphs_exit(glyph_up, glyph_down);
-                // turn off the half menus
-                write_display(NULL, 21, TYPE_STR, BOT_H);
-                write_display(NULL, 21, TYPE_STR, TOP_H);
-                break;
-                
-            case MENU_ADV_WARN_LEN-1: // No
-                display_glyphs_exit(glyph_up, NULL);
-                // turn off the half text
-                write_display(NULL, 21, TYPE_STR, TOP_H);
-                break;
-                
-            default:
-                break;
+        switch (menu_idx) {
+        case MENU_ADV_WARN_LEN - 2: // Yes
+            display_glyphs_confirm(glyph_up, glyph_down);
+            // turn off the half menus
+            write_display(NULL, 21, TYPE_STR, BOT_H);
+            write_display(NULL, 21, TYPE_STR, TOP_H);
+            break;
+
+        case MENU_ADV_WARN_LEN - 1: // No
+            display_glyphs_confirm(glyph_up, NULL);
+            // turn off the half text
+            write_display(NULL, 21, TYPE_STR, TOP_H);
+            break;
+
+        default:
+            break;
         }
     } break;
         /* ------------ BROWSER SUPPORT *MENU* -------------- */
     case STATE_MENU_BROWSER: {
+        // write the actual menu
         char msg[MENU_BROWSER_LEN * 21];
         get_browser_menu(msg);
         write_text_array(msg, MENU_BROWSER_LEN);
@@ -565,22 +558,52 @@ void ui_display_state()
     } break;
         /* ------------ DISPLAY INDEXES *MENU* -------------- */
     case STATE_MENU_DISP_IDX: {
-        char msg[MENU_DISP_ACCOUNTS_LEN * 21];
+        // write the actual menu
+        char msg[MENU_ACCOUNTS_LEN * 21];
         get_disp_idx_menu(msg);
-        write_text_array(msg, MENU_DISP_ACCOUNTS_LEN);
-        
+        write_text_array(msg, MENU_ACCOUNTS_LEN);
+
         // special override display states
         switch (menu_idx) {
-                // turn off BOT_H
-            case MENU_DISP_ACCOUNTS_LEN - 2:
-                write_display(NULL, 21, TYPE_STR, BOT_H);
-                break;
-                // turn off TOP_H
-            case MENU_DISP_ACCOUNTS_LEN - 1:
-                display_glyphs_exit(glyph_up, glyph_dash);
-                write_display(NULL, 21, TYPE_STR, TOP_H);
-                break;
+            // turn off BOT_H
+        case MENU_ACCOUNTS_LEN - 2:
+            write_display(NULL, 21, TYPE_STR, BOT_H);
+            break;
+            // turn off TOP_H
+        case MENU_ACCOUNTS_LEN - 1:
+            display_glyphs_confirm(glyph_up, glyph_dash);
+            write_display(NULL, 21, TYPE_STR, TOP_H);
+            break;
         }
+    } break;
+        /* ------------ DISPLAY ADDRESS *MENU* -------------- */
+    case STATE_MENU_TX_ADDR: // fall through - almost identical display
+    case STATE_MENU_DISP_ADDR: {
+        // write the actual menu
+        char msg[MENU_ADDR_LEN * 21];
+        get_address_menu(msg);
+        write_text_array(msg, MENU_ADDR_LEN);
+
+        glyph_on(glyph_bar_l);
+        glyph_on(glyph_bar_r);
+
+        // special overrides
+        if (menu_idx == 0 && ui_state == STATE_MENU_DISP_ADDR)
+            glyph_on(glyph_up);
+    } break;
+        /* ------------ DISPLAY ADDRESS CHECKSUM -------------- */
+    case STATE_DISP_ADDR_CHK: {
+        clear_display();
+
+        char abbrv[14];
+        abbreviate_addr(abbrv, addr, 81);
+
+        write_display(abbrv, 21, TYPE_STR, TOP);
+        write_display("Chk: ", 21, TYPE_STR, BOT);
+
+        get_address_checksum(addr, bot_str + 5);
+
+        display_glyphs_confirm(NULL, glyph_down);
     } break;
         /* ------------ TX BAL -------------- */
     case STATE_TX_BAL: {
@@ -601,52 +624,58 @@ void ui_display_state()
         /* ------------ TX ADDR -------------- */
     case STATE_TX_ADDR: {
         clear_display();
-        write_display("Dest Address:", 21, TYPE_STR, TOP);
-        write_display(addr, 21, TYPE_STR, BOT);
 
-        display_glyphs(glyph_up, glyph_down);
+        char abbrv[14];
+        abbreviate_addr(abbrv, addr, 81);
+
+        write_display(abbrv, 21, TYPE_STR, TOP);
+        write_display("Chk: ", 21, TYPE_STR, BOT);
+
+        get_address_checksum(addr, bot_str + 5);
+
+        display_glyphs_confirm(glyph_up, glyph_down);
     } break;
         /* ------------ TX APPROVE -------------- */
     case STATE_TX_APPROVE: {
         clear_display();
         write_display("Approve TX", 21, TYPE_STR, MID);
 
-        display_glyphs_exit(glyph_up, glyph_down);
+        display_glyphs_confirm(glyph_up, glyph_down);
     } break;
         /* ------------ TX DENY -------------- */
     case STATE_TX_DENY: {
         clear_display();
         write_display("Deny TX", 21, TYPE_STR, MID);
 
-        display_glyphs_exit(glyph_up, glyph_down);
+        display_glyphs_confirm(glyph_up, glyph_down);
     } break;
         /* ------------ CALCULATING -------------- */
     case STATE_CALC: {
         clear_display();
         write_display("Calculating...", 21, TYPE_STR, MID);
 
-        display_glyphs_exit(glyph_load, NULL);
+        display_glyphs_confirm(glyph_load, NULL);
     } break;
         /* ------------ RECEIVING -------------- */
     case STATE_RECV: {
         clear_display();
         write_display("Receiving TX...", 21, TYPE_STR, MID);
 
-        display_glyphs_exit(glyph_load, NULL);
+        display_glyphs_confirm(glyph_load, NULL);
     } break;
         /* ------------ SENDING -------------- */
     case STATE_SEND: {
         clear_display();
         write_display("Signing TX...", 21, TYPE_STR, MID);
 
-        display_glyphs_exit(glyph_load, NULL);
+        display_glyphs_confirm(glyph_load, NULL);
     } break;
         /* ------------ UNKNOWN STATE -------------- */
     default: {
         clear_display();
         write_display("UI ERROR", 21, TYPE_STR, MID);
 
-        display_glyphs_exit(NULL, NULL);
+        display_glyphs_confirm(NULL, NULL);
     } break;
     }
 
@@ -668,9 +697,8 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
     case STATE_MENU_INIT:
         array_sz = MENU_INIT_LEN - 1;
 
-        if (translated_mask == BUTTON_B && menu_idx == array_sz) {
-            ui_state = STATE_MENU_WELCOME;
-            menu_idx = 0;
+        if (translated_mask == BUTTON_B) {
+            state_go(STATE_MENU_WELCOME, 0);
             return;
         }
         break;
@@ -682,28 +710,25 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
             switch (menu_idx) {
             // Welcome Message
             case 0:
-                ui_state = STATE_EXIT;
+                state_go(STATE_EXIT, 0);
                 return;
             // Advanced Mode
             case 1:
-                ui_state = STATE_MENU_ADVANCED;
-                // default to the currently set mode
-                menu_idx = get_advanced_mode();
+                // get_adv_mode lines up with menu idx
+                state_go(STATE_MENU_ADVANCED, get_advanced_mode());
                 return;
             // Browser Mode
             case 2:
-                ui_state = STATE_MENU_BROWSER;
-                // default to the currently set mode
-                menu_idx = get_browser_mode();
+                // get_browser_mode lines up with menu idx
+                state_go(STATE_MENU_BROWSER, get_browser_mode());
                 return;
             // View Indexes
             case 3:
-                ui_state = STATE_MENU_DISP_IDX;
-                menu_idx = 0;
+                state_go(STATE_MENU_DISP_IDX, 0);
                 return;
             // Exit App
             case MENU_WELCOME_LEN - 1:
-                ui_state = STATE_EXIT;
+                state_go(STATE_EXIT, 0);
                 return;
             }
         }
@@ -711,60 +736,81 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
         /* ------------ STATE ADVANCED MODE -------------- */
     case STATE_MENU_ADVANCED:
         array_sz = MENU_ADVANCED_LEN - 1;
-        
+
         if (translated_mask == BUTTON_B) {
-            
+
             // warn if entering advanced mode
-            if(menu_idx == 1 && get_advanced_mode() == 0) {
-                ui_state = STATE_MENU_ADV_WARN;
-                menu_idx = 0;
-                
+            if (menu_idx == 1 && get_advanced_mode() == 0) {
+                state_go(STATE_MENU_ADV_WARN, 0);
+
                 return;
             }
-            
+
             // menu idx entries line up with modes
             write_advanced_mode(menu_idx);
-            
-            welcome_menu_return(1);
+
+            state_return(STATE_MENU_WELCOME, 1);
             return;
         }
         break;
         /* ------------ STATE ADVANCED MODE WARNING -------------- */
     case STATE_MENU_ADV_WARN:
         array_sz = MENU_ADV_WARN_LEN - 1;
-        
+
         if (translated_mask == BUTTON_B) {
-            
-            switch(menu_idx) {
-                case 1: // Yes
-                    write_advanced_mode(1);
-                case 2: // No
-                    welcome_menu_return(1);
-                    return;
-                default: // "Are you sure?"
-                    break;
+
+            switch (menu_idx) {
+            case 1: // Yes
+                write_advanced_mode(1);
+            case 2: // No
+                state_return(STATE_MENU_WELCOME, 1);
+                return;
+            default: // "Are you sure?"
+                break;
             }
         }
         break;
         /* ------------ STATE BROWSER MODE -------------- */
     case STATE_MENU_BROWSER:
         array_sz = MENU_BROWSER_LEN - 1;
-        
+
         if (translated_mask == BUTTON_B) {
             // menu idx entries line up with modes
             write_browser_mode(menu_idx);
-            
-            welcome_menu_return(2);
+
+            state_return(STATE_MENU_WELCOME, 2);
             return;
         }
         break;
         /* ------------ STATE DISPLAY_INDEXES -------------- */
     case STATE_MENU_DISP_IDX:
-        array_sz = MENU_DISP_ACCOUNTS_LEN - 1;
+        array_sz = MENU_ACCOUNTS_LEN - 1;
 
         // Back
         if (translated_mask == BUTTON_B && menu_idx == array_sz) {
-            welcome_menu_return(3);
+            state_return(STATE_MENU_WELCOME, 3);
+            return;
+        }
+        break;
+        /* ------------ STATE DISPLAY_ADDRESS -------------- */
+    case STATE_MENU_DISP_ADDR:
+        array_sz = MENU_ADDR_LEN - 1;
+
+        if (translated_mask == BUTTON_L && menu_idx == 0) {
+            state_go(STATE_DISP_ADDR_CHK, 0);
+            return;
+        }
+        else if (translated_mask == BUTTON_B) {
+            state_return(STATE_MENU_WELCOME, 0);
+            return;
+        }
+        break;
+        /* ------------ STATE TX_ADDRESS -------------- */
+    case STATE_MENU_TX_ADDR:
+        array_sz = MENU_ADDR_LEN - 1;
+
+        if (translated_mask == BUTTON_B) {
+            state_go(STATE_TX_ADDR, 0);
             return;
         }
         break;
@@ -784,7 +830,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
 
 /* ----------------------------------------------------
  ------------------------------------------------------
-        Special button actions
+            Special button actions
  ------------------------------------------------------
  --------------------------------------------------- */
 void ui_handle_button(uint8_t button_mask)
@@ -854,7 +900,11 @@ void init_state_transitions()
     /* ------------- TX ADDR --------------- */
     state_transitions[STATE_TX_ADDR][BUTTON_L] = STATE_TX_SPEND;
     state_transitions[STATE_TX_ADDR][BUTTON_R] = STATE_TX_APPROVE;
-    state_transitions[STATE_TX_ADDR][BUTTON_B] = STATE_TX_ADDR;
+    state_transitions[STATE_TX_ADDR][BUTTON_B] = STATE_MENU_TX_ADDR;
+    /* ------------- MENU TX ADDR --------------- */
+    state_transitions[STATE_MENU_TX_ADDR][BUTTON_L] = STATE_MENU_TX_ADDR;
+    state_transitions[STATE_MENU_TX_ADDR][BUTTON_R] = STATE_MENU_TX_ADDR;
+    state_transitions[STATE_MENU_TX_ADDR][BUTTON_B] = STATE_MENU_TX_ADDR;
     /* ------------- TX APPROVE --------------- */
     state_transitions[STATE_TX_APPROVE][BUTTON_L] = STATE_TX_ADDR;
     state_transitions[STATE_TX_APPROVE][BUTTON_R] = STATE_TX_DENY;
@@ -863,6 +913,14 @@ void init_state_transitions()
     state_transitions[STATE_TX_DENY][BUTTON_L] = STATE_TX_APPROVE;
     state_transitions[STATE_TX_DENY][BUTTON_R] = STATE_TX_BAL;
     state_transitions[STATE_TX_DENY][BUTTON_B] = STATE_MENU_WELCOME;
+    /* ------------- MENU DISP ADDR --------------- */
+    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_L] = STATE_MENU_DISP_ADDR;
+    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_R] = STATE_MENU_DISP_ADDR;
+    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_B] = STATE_MENU_DISP_ADDR;
+    /* ------------- DISP ADDR --------------- */
+    state_transitions[STATE_DISP_ADDR_CHK][BUTTON_L] = STATE_DISP_ADDR_CHK;
+    state_transitions[STATE_DISP_ADDR_CHK][BUTTON_R] = STATE_MENU_DISP_ADDR;
+    state_transitions[STATE_DISP_ADDR_CHK][BUTTON_B] = STATE_MENU_WELCOME;
 }
 
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
@@ -894,7 +952,7 @@ void get_welcome_menu(char *msg)
 
 void get_disp_idx_menu(char *msg)
 {
-    memset(msg, '\0', MENU_DISP_ACCOUNTS_LEN * 21);
+    memset(msg, '\0', MENU_ACCOUNTS_LEN * 21);
 
     uint8_t i = 0;
 
@@ -934,10 +992,29 @@ void get_browser_menu(char *msg)
 void get_adv_warn_menu(char *msg)
 {
     memset(msg, '\0', MENU_ADV_WARN_LEN * 21);
-    
+
     uint8_t i = 0;
-    
+
     strcpy(msg + (i++ * 21), "Are you sure?");
     strcpy(msg + (i++ * 21), "Yes");
     strcpy(msg + (i++ * 21), "No");
+}
+
+void get_address_menu(char *msg)
+{
+    // address is 81 characters long
+    memset(msg, '\0', MENU_ADDR_LEN * 21);
+
+    uint8_t i = 0, j = 0, c_cpy = 6;
+
+    // 13 chunks of 6 characters
+    for (; i < MENU_ADDR_LEN; i++) {
+        strncpy(msg + (i * 21), addr + (j++ * 6), c_cpy);
+        msg[i * 21 + 6] = ' ';
+
+        if (i == MENU_ADDR_LEN - 1)
+            c_cpy = 3;
+
+        strncpy(msg + (i * 21) + 7, addr + (j++ * 6), c_cpy);
+    }
 }

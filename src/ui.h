@@ -27,7 +27,7 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-#define TOTAL_STATES 14
+#define TOTAL_STATES 17
 #define STATE_EXIT TOTAL_STATES
 
 #define STATE_MENU_INIT 0
@@ -44,14 +44,18 @@
 #define STATE_MENU_ADVANCED 11
 #define STATE_MENU_BROWSER 12
 #define STATE_MENU_ADV_WARN 13
+#define STATE_MENU_DISP_ADDR 14
+#define STATE_MENU_TX_ADDR 15
+#define STATE_DISP_ADDR_CHK 16
 
 // Size of Menu
 #define MENU_INIT_LEN 5
 #define MENU_WELCOME_LEN 5
-#define MENU_DISP_ACCOUNTS_LEN 6
+#define MENU_ACCOUNTS_LEN 6
 #define MENU_ADVANCED_LEN 2
 #define MENU_BROWSER_LEN 2
 #define MENU_ADV_WARN_LEN 3
+#define MENU_ADDR_LEN 7
 
 /* To create a new UI screen -
  - #define new STATE_ here, incr TOTAL_STATES/STATE_EXIT

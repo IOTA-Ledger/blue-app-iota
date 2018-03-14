@@ -82,3 +82,21 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
     // one final squeeze for address
     kerl_squeeze_final_chunk(&digest_sha, address_bytes);
 }
+
+// get 9 character checksum of 81 character address
+void get_address_checksum(const char *address, char *checksum)
+{
+    cx_sha3_t sha;
+    kerl_initialize(&sha);
+
+    unsigned char addr_bytes[48], checksum_bytes[48];
+    chars_to_bytes(address, addr_bytes, 81);
+
+    kerl_absorb_chunk(&sha, addr_bytes);
+    kerl_squeeze_final_chunk(&sha, checksum_bytes);
+
+    char full_checksum[81];
+    bytes_to_chars(checksum_bytes, full_checksum, 48);
+
+    strncpy(checksum, full_checksum + 72, 9);
+}
