@@ -33,24 +33,6 @@ unsigned char seed_bytes[48];
 BUNDLE_CTX bundle_ctx;
 SIGNING_CTX signing_ctx;
 
-// This symbol is defined by the link script to be at the start of the stack
-extern unsigned long _stack;
-
-#define STACK_CANARY (*((volatile uint32_t *)&_stack))
-
-void init_canary()
-{
-    STACK_CANARY = 0xDEADBEEF;
-}
-
-void check_canary()
-{
-    if (STACK_CANARY != 0xDEADBEEF) {
-        THROW(0x0077);
-        // THROW(EXCEPTION_OVERFLOW);
-    }
-}
-
 uint8_t get_advanced_mode()
 {
     return N_storage.advanced_mode;
@@ -370,7 +352,6 @@ static void IOTA_main()
                 // ensure no race in catch_other if io_exchange throws an error
                 tx = 0;
 
-                check_canary();
                 rx = io_exchange(CHANNEL_APDU | flags, rx);
 
                 // flags sets the IO to blocking, make sure to re-enable asynch
@@ -540,8 +521,6 @@ __attribute__((section(".boot"))) int main(void)
 
     // ensure exception will work as planned
     os_boot();
-
-    init_canary();
 
     BEGIN_TRY
     {
