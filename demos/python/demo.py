@@ -75,11 +75,11 @@ response = dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(1)))
 print(unpack_pubkey_output(response))
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 2, 10, b"", 0, 2, 99999)))
+    INS_TX, pack_tx_input(ADDRESS, 0, 10, b"XC", 0, 2, 99999)))
 print(unpack_tx_output(response))
 
-response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 1, -10, b"", 1, 2, 99999)))
+response = dongle.exchange(apdu_command(INS_TX, pack_tx_input(
+    b"MTPYSBLSL9HENRQKP9IPYYZTHEOECLXGYMZIYYUCYAPZYFAECX9ZSFOSFMDNYQAPYHVMTVUX9HNNUKOB9", 1, -10, b"", 1, 2, 99999)))
 print(unpack_tx_output(response))
 
 while True:
