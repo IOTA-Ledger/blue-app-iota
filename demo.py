@@ -80,11 +80,11 @@ dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 #print unpack_pubkey_output(response)
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 2, 730441122, "", 0, 2, 99999)))
+    INS_TX, pack_tx_input(ADDRESS, 2, 3044112, "", 0, 2, 99999)))
 print unpack_tx_output(response)
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 1, -730442112, "", 1, 2, 99999)))
+    INS_TX, pack_tx_input(ADDRESS, 1, -3044112, "", 1, 2, 99999)))
 print unpack_tx_output(response)
 
 while True:

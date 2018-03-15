@@ -882,7 +882,7 @@ bool char_is_num(char c)
     return c - '0' >= 0  && c - '0' <= 9;
 }
 
-void str_add_commas(char *str, uint8_t num_digits)
+void str_add_commas(char *str, uint8_t num_digits, bool full)
 {
     // largest int that can fit with commas
     // and units at end. if bigger, don't write commas
@@ -893,13 +893,29 @@ void str_add_commas(char *str, uint8_t num_digits)
     memcpy(tmp, str, 21);
     
     // first place for a comma
-    uint8_t commaval = num_digits % 3;
+    uint8_t comma_val = num_digits % 3, last_comma;
     
-    if(commaval == 0)
-        commaval = 3;
+    if(comma_val == 0)
+        comma_val = 3;
+    
+    if(full)
+        last_comma = num_digits-1;
+    else
+        last_comma = num_digits-3;
     
     // i traces str, j traces tmp, k counts numbers
     for(int8_t i=0, j=0, k=0; i<20;) {
+        if(!full) {
+            // only store 2 decimal places for short amt
+            if(j == num_digits-1)
+                j++;
+            else if(j == num_digits - 3) {
+                // stop recording comma's and instead put a period
+                comma_val = 0;
+                str[i++] = '.';
+            }
+        }
+        
         // check if number and incr if so
         if(char_is_num(tmp[j]))
             k++;
@@ -908,10 +924,10 @@ void str_add_commas(char *str, uint8_t num_digits)
         str[i++] = tmp[j++];
         
         // if we just copied the 3rd number, add a comma
-        if(k == commaval && j < num_digits-1) {
+        if(k == comma_val && j < last_comma) {
             str[i++] = ',';
             k=0;
-            commaval = 3;
+            comma_val = 3;
         }
     }
     
@@ -921,7 +937,7 @@ void str_add_commas(char *str, uint8_t num_digits)
 void write_full_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
 {
     write_display(&val, TYPE_INT, str_defn);
-    str_add_commas(str_defn_to_ptr(str_defn), num_digits);
+    str_add_commas(str_defn_to_ptr(str_defn), num_digits, true);
     str_add_units(str_defn_to_ptr(str_defn), 0);
 }
 
@@ -931,11 +947,11 @@ void write_readable_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
 
     int64_t new_val = val;
     
-    for(uint8_t i=0; i<base; i++)
+    for(uint8_t i=0; i<base-1; i++)
         new_val /= 1000;
 
     write_display(&new_val, TYPE_INT, str_defn);
-    str_add_commas(str_defn_to_ptr(str_defn), num_digits - (3*base));
+    str_add_commas(str_defn_to_ptr(str_defn), num_digits - (3*(base-1)), false);
     str_add_units(str_defn_to_ptr(str_defn), base);
 }
 
