@@ -13,16 +13,6 @@
 #define BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
 #define BIP44_ACCOUNT 4
 
-#define TYPE_INT 1
-#define TYPE_UINT 2
-#define TYPE_STR 3
-
-#define TOP_H 0
-#define TOP 1
-#define MID 2
-#define BOT 3
-#define BOT_H 4
-
 // data starts at apdu[5]
 #define APDU_HEADER_LENGTH 5
 // defines byte that says length
@@ -40,7 +30,7 @@
 #define TEST_ERROR 0x9876
 #define BAD_ADDR 0x6D22
 #define NO_SEED_IDX 0x6D28
-#define USER_UNCONFIRMED 0x6D30
+#define APP_UNINITIALIZED 0x6D30
 
 
 #define LEDGER_MSG "LEDGER"

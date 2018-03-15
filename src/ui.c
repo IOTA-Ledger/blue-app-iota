@@ -22,6 +22,7 @@ uint8_t menu_idx;
 // tx information
 int64_t bal = 0;
 int64_t pay = 0;
+bool display_full_value;
 char addr[81];
 
 // matrix holds layout of state transitions
@@ -30,9 +31,11 @@ static uint8_t state_transitions[TOTAL_STATES][3];
 // ----------- local function prototypes
 void init_state_transitions(void);
 void ui_display_state(void);
-void ui_handle_button(uint8_t button_mask);
+void ui_handle_button(uint8_t old_state, uint8_t button_mask);
 void ui_handle_menus(uint8_t state, uint8_t translated_mask);
 void ui_transition_state(unsigned int button_mask);
+
+bool display_value(int64_t val, uint8_t str_defn);
 
 void state_go(uint8_t state, uint8_t idx);
 void state_return(uint8_t state, uint8_t idx);
@@ -115,17 +118,24 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
 /* ------------------- DISPLAY UI FUNCTIONS -------------
  ---------------------------------------------------------
  --------------------------------------------------------- */
+void ui_render()
+{
+    UX_DISPLAY(bagl_ui_nanos_screen, NULL);
+}
+
 void ui_init(bool flash_is_init)
 {
     init_state_transitions();
     menu_idx = 0;
+    display_full_value = false;
 
     if (flash_is_init)
         ui_state = STATE_MENU_WELCOME;
     else
         ui_state = STATE_MENU_INIT;
 
-    ui_display_state();
+    ui_build_display();
+    ui_render();
 }
 
 void ui_reset()
@@ -133,9 +143,6 @@ void ui_reset()
     bal = 0;
     pay = 0;
     memset(addr, '\0', sizeof(addr));
-
-    ui_state = STATE_MENU_WELCOME;
-    ui_display_state();
 }
 
 void abbreviate_addr(char *dest, const char *src, uint8_t len)
@@ -151,41 +158,6 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
     dest[13] = '\0';
 }
 
-void ui_display_welcome()
-{
-    ui_state = STATE_MENU_WELCOME;
-    ui_display_state();
-}
-
-void ui_display_calc()
-{
-    ui_state = STATE_CALC;
-    ui_display_state();
-}
-
-void ui_display_recv()
-{
-    ui_state = STATE_RECV;
-    ui_display_state();
-}
-
-void ui_display_sending()
-{
-    ui_state = STATE_SEND;
-    ui_display_state();
-}
-
-void ui_display_address(char *a, uint8_t len)
-{
-    if(len != 81)
-        return;
-    
-    memcpy(addr, a, 81);
-    state_go(STATE_DISP_ADDR_CHK, 0);
-    
-    ui_display_state();
-}
-
 void ui_sign_tx(int64_t b, int64_t p, const char *a, uint8_t len)
 {
     // we only accept 81 character addresses - no checksum
@@ -198,20 +170,17 @@ void ui_sign_tx(int64_t b, int64_t p, const char *a, uint8_t len)
 
     ui_state = STATE_TX_BAL;
 
-    ui_display_state();
+    ui_build_display();
+    ui_render();
 }
 
-// write_display(&words, sizeof(words), TYPE_STR);
-// write_display(&int_val, sizeof(int_val), TYPE_INT);
-void write_display(void *o, uint8_t sz, uint8_t t, uint8_t p)
+// write_display(&words, TYPE_STR, MID);
+// write_display(&int_val, TYPE_INT, MID);
+void write_display(void *o, uint8_t type, uint8_t pos)
 {
-    // don't allow messages greater than 20
-    if (sz > 21)
-        sz = 21;
-
     char *c_ptr = NULL;
 
-    switch (p) {
+    switch (pos) {
     case TOP_H:
         c_ptr = half_top;
         break;
@@ -236,30 +205,13 @@ void write_display(void *o, uint8_t sz, uint8_t t, uint8_t p)
         return;
     }
 
-    // uint32_t/int(half this) [0, 4,294,967,295] -
-    // ledger does not support long - USE %d not %i!
-    if (t == TYPE_INT) {
-        snprintf(c_ptr, sz, "%d", *(int32_t *)o);
-    }
-    else if (t == TYPE_UINT) {
-        snprintf(c_ptr, sz, "%u", *(uint32_t *)o);
-    }
-    else if (t == TYPE_STR) {
-        snprintf(c_ptr, sz, "%s", (char *)o);
-    }
-}
-
-// ui_display_message(top, szof(top), TYPE_TOP,
-//                  mid, szof(mid), TYPE_MID,
-//                  bot, szof(bot) TYPE_BOT);
-void ui_display_message(void *o, uint8_t sz, uint8_t t, void *o2, uint8_t sz2,
-                        uint8_t t2, void *o3, uint8_t sz3, uint8_t t3)
-{
-    write_display(o, sz, t, TOP);
-    write_display(o2, sz2, t2, MID);
-    write_display(o3, sz3, t3, BOT);
-
-    UX_DISPLAY(bagl_ui_nanos_screen, NULL);
+    // ledger does not support printing 64 bit ints
+    // also does not support %i! - Use %d
+    // use custom function to handle 64 bit ints
+    if (type == TYPE_INT)
+        int_to_str(*(int64_t *)o, c_ptr, 21);
+    else if (type == TYPE_STR)
+        snprintf(c_ptr, 21, "%s", (char *)o);
 }
 
 void ui_force_draw()
@@ -341,25 +293,25 @@ void write_text_array(char *array, uint8_t len)
     clear_glyphs();
 
     if (menu_idx > 0) {
-        write_display(array + (21 * (menu_idx - 1)), 21, TYPE_STR, TOP_H);
+        write_display(array + (21 * (menu_idx - 1)), TYPE_STR, TOP_H);
         glyph_on(glyph_up);
     }
 
-    write_display(array + (21 * menu_idx), 21, TYPE_STR, MID);
+    write_display(array + (21 * menu_idx), TYPE_STR, MID);
 
     if (menu_idx < len - 1) {
-        write_display(array + (21 * (menu_idx + 1)), 21, TYPE_STR, BOT_H);
+        write_display(array + (21 * (menu_idx + 1)), TYPE_STR, BOT_H);
         glyph_on(glyph_down);
     }
 }
 
 void clear_text()
 {
-    write_display(NULL, 21, TYPE_STR, TOP_H);
-    write_display(NULL, 21, TYPE_STR, TOP);
-    write_display(NULL, 21, TYPE_STR, MID);
-    write_display(NULL, 21, TYPE_STR, BOT);
-    write_display(NULL, 21, TYPE_STR, BOT_H);
+    write_display(NULL, TYPE_STR, TOP_H);
+    write_display(NULL, TYPE_STR, TOP);
+    write_display(NULL, TYPE_STR, MID);
+    write_display(NULL, TYPE_STR, BOT);
+    write_display(NULL, TYPE_STR, BOT_H);
 }
 
 // Turns a single glyph on or off
@@ -446,6 +398,54 @@ void state_return(uint8_t state, uint8_t idx)
     state_go(state, idx);
 }
 
+void ui_display_welcome()
+{
+    ui_state = STATE_MENU_WELCOME;
+    ui_build_display();
+    ui_render();
+}
+
+/* Not having these coded as actual states preserves the previous
+ state we were in to return to */
+void ui_display_calc()
+{
+    clear_display();
+    write_display("Calculating...", TYPE_STR, MID);
+
+    display_glyphs(glyph_load, NULL);
+    ui_render();
+}
+
+void ui_display_recv()
+{
+    clear_display();
+    write_display("Receiving TX...", TYPE_STR, MID);
+
+    display_glyphs(glyph_load, NULL);
+    ui_render();
+}
+
+void ui_display_sending()
+{
+    clear_display();
+    write_display("Signing TX...", TYPE_STR, MID);
+
+    display_glyphs(glyph_load, NULL);
+    ui_render();
+}
+
+void ui_display_address(char *a, uint8_t len)
+{
+    if (len != 81)
+        return;
+
+    memcpy(addr, a, 81);
+    state_go(STATE_DISP_ADDR_CHK, 0);
+
+    ui_build_display();
+    ui_render();
+}
+
 /* ----------------------------------------------------
  ------------------------------------------------------
             ------- MAIN BUTTON LOGIC -------
@@ -460,23 +460,25 @@ void ui_transition_state(unsigned int button_mask)
     if (translated_mask == BUTTON_BAD)
         return;
 
-    // See if a special function needs to be called
-    // for instance user_sign or user_deny()
-    ui_handle_button(translated_mask);
-
-    // store current state for menu handling, then transition
-    // into new state
+    // store current state for menu/button handling
     uint8_t old_state = ui_state;
     ui_state = state_transitions[ui_state][translated_mask];
 
     // special handling of menus (including new state transition)
     ui_handle_menus(old_state, translated_mask);
 
+    // See if a special function needs to be called
+    // for instance user_sign or user_deny()
+    ui_handle_button(old_state, translated_mask);
+
+    // after transitioning, build new display
+    ui_build_display();
+
     if (ui_state == STATE_EXIT)
         io_seproxyhal_touch_exit(NULL);
 
-    // after transitioning, immediately display new state
-    ui_display_state();
+    // render new display
+    ui_render();
 }
 
 
@@ -486,7 +488,7 @@ void ui_transition_state(unsigned int button_mask)
         * Text menus have special handling
  ------------------------------------------------------
  --------------------------------------------------- */
-void ui_display_state()
+void ui_build_display()
 {
     switch (ui_state) {
         /* ------------ INIT *MENU* -------------- */
@@ -516,13 +518,13 @@ void ui_display_state()
         case 0:
             display_glyphs_confirm(NULL, glyph_down);
         case MENU_WELCOME_LEN - 2:
-            write_display(NULL, 21, TYPE_STR, BOT_H);
+            write_display(NULL, TYPE_STR, BOT_H);
             break;
         // turn off TOP_H
         case MENU_WELCOME_LEN - 1:
             display_glyphs_confirm(glyph_up, glyph_dash);
         case 1:
-            write_display(NULL, 21, TYPE_STR, TOP_H);
+            write_display(NULL, TYPE_STR, TOP_H);
             break;
         }
     } break;
@@ -547,14 +549,14 @@ void ui_display_state()
         case MENU_ADV_WARN_LEN - 2: // Yes
             display_glyphs_confirm(glyph_up, glyph_down);
             // turn off the half menus
-            write_display(NULL, 21, TYPE_STR, BOT_H);
-            write_display(NULL, 21, TYPE_STR, TOP_H);
+            write_display(NULL, TYPE_STR, BOT_H);
+            write_display(NULL, TYPE_STR, TOP_H);
             break;
 
         case MENU_ADV_WARN_LEN - 1: // No
             display_glyphs_confirm(glyph_up, NULL);
             // turn off the half text
-            write_display(NULL, 21, TYPE_STR, TOP_H);
+            write_display(NULL, TYPE_STR, TOP_H);
             break;
 
         default:
@@ -581,12 +583,12 @@ void ui_display_state()
         switch (menu_idx) {
             // turn off BOT_H
         case MENU_ACCOUNTS_LEN - 2:
-            write_display(NULL, 21, TYPE_STR, BOT_H);
+            write_display(NULL, TYPE_STR, BOT_H);
             break;
             // turn off TOP_H
         case MENU_ACCOUNTS_LEN - 1:
             display_glyphs_confirm(glyph_up, glyph_dash);
-            write_display(NULL, 21, TYPE_STR, TOP_H);
+            write_display(NULL, TYPE_STR, TOP_H);
             break;
         }
     } break;
@@ -612,8 +614,8 @@ void ui_display_state()
         char abbrv[14];
         abbreviate_addr(abbrv, addr, 81);
 
-        write_display(abbrv, 21, TYPE_STR, TOP);
-        write_display("Chk: ", 21, TYPE_STR, BOT);
+        write_display(abbrv, TYPE_STR, TOP);
+        write_display("Chk: ", TYPE_STR, BOT);
 
         get_address_checksum(addr, bot_str + 5);
 
@@ -622,18 +624,24 @@ void ui_display_state()
         /* ------------ TX BAL -------------- */
     case STATE_TX_BAL: {
         clear_display();
-        write_display("Total Balance:", 21, TYPE_STR, TOP);
-        write_display(&bal, 21, TYPE_UINT, BOT);
+        write_display("Balance:", TYPE_STR, TOP);
 
-        display_glyphs(glyph_up, glyph_down);
+        // display_value returns true if readable form is possible
+        if (display_value(bal, BOT))
+            display_glyphs_confirm(glyph_up, glyph_down);
+        else
+            display_glyphs(glyph_up, glyph_down);
     } break;
-        /* ------------ TX SPEND -------------- */
-    case STATE_TX_SPEND: {
+        /* ------------ TX PAY -------------- */
+    case STATE_TX_PAY: {
         clear_display();
-        write_display("Total Payments:", 21, TYPE_STR, TOP);
-        write_display(&pay, 21, TYPE_UINT, BOT);
-
-        display_glyphs(glyph_up, glyph_down);
+        write_display("Payment:", TYPE_STR, TOP);
+        
+        // display_value returns true if readable form is possible
+        if (display_value(pay, BOT))
+            display_glyphs_confirm(glyph_up, glyph_down);
+        else
+            display_glyphs(glyph_up, glyph_down);
     } break;
         /* ------------ TX ADDR -------------- */
     case STATE_TX_ADDR: {
@@ -642,8 +650,8 @@ void ui_display_state()
         char abbrv[14];
         abbreviate_addr(abbrv, addr, 81);
 
-        write_display(abbrv, 21, TYPE_STR, TOP);
-        write_display("Chk: ", 21, TYPE_STR, BOT);
+        write_display(abbrv, TYPE_STR, TOP);
+        write_display("Chk: ", TYPE_STR, BOT);
 
         get_address_checksum(addr, bot_str + 5);
 
@@ -652,48 +660,25 @@ void ui_display_state()
         /* ------------ TX APPROVE -------------- */
     case STATE_TX_APPROVE: {
         clear_display();
-        write_display("Approve TX", 21, TYPE_STR, MID);
+        write_display("Approve TX", TYPE_STR, MID);
 
         display_glyphs_confirm(glyph_up, glyph_down);
     } break;
         /* ------------ TX DENY -------------- */
     case STATE_TX_DENY: {
         clear_display();
-        write_display("Deny TX", 21, TYPE_STR, MID);
+        write_display("Deny TX", TYPE_STR, MID);
 
         display_glyphs_confirm(glyph_up, glyph_down);
-    } break;
-        /* ------------ CALCULATING -------------- */
-    case STATE_CALC: {
-        clear_display();
-        write_display("Calculating...", 21, TYPE_STR, MID);
-
-        display_glyphs_confirm(glyph_load, NULL);
-    } break;
-        /* ------------ RECEIVING -------------- */
-    case STATE_RECV: {
-        clear_display();
-        write_display("Receiving TX...", 21, TYPE_STR, MID);
-
-        display_glyphs_confirm(glyph_load, NULL);
-    } break;
-        /* ------------ SENDING -------------- */
-    case STATE_SEND: {
-        clear_display();
-        write_display("Signing TX...", 21, TYPE_STR, MID);
-
-        display_glyphs_confirm(glyph_load, NULL);
     } break;
         /* ------------ UNKNOWN STATE -------------- */
     default: {
         clear_display();
-        write_display("UI ERROR", 21, TYPE_STR, MID);
+        write_display("UI ERROR", TYPE_STR, MID);
 
         display_glyphs_confirm(NULL, NULL);
     } break;
     }
-
-    UX_DISPLAY(bagl_ui_nanos_screen, NULL);
 }
 
 
@@ -841,25 +826,171 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
         menu_idx = MIN(array_sz, menu_idx + 1);
 }
 
+uint8_t get_num_digits(int64_t val)
+{
+    uint8_t i = 0;
+
+    while (val > 0) {
+        val /= 10;
+        i++;
+    }
+
+    return i;
+}
+
+void str_add_units(char *str, uint8_t unit)
+{
+    char unit_str[] = " i\0\0 Ki\0 Mi\0 Gi\0 Ti\0";
+
+    // if there isn't room for units don't write
+    for (uint8_t i = 0; i < 17; i++) {
+        if (str[i] == '\0') {
+            strncpy(str + i, unit_str + (unit * 4), 4);
+            return;
+        }
+    }
+}
+
+char *str_defn_to_ptr(uint8_t str_defn)
+{
+    char *str_ptr;
+
+    switch (str_defn) {
+    case TOP_H:
+        str_ptr = half_top;
+        break;
+    case TOP:
+        str_ptr = top_str;
+        break;
+    case BOT:
+        str_ptr = bot_str;
+        break;
+    case BOT_H:
+        str_ptr = half_bot;
+        break;
+    case MID:
+    default:
+        str_ptr = mid_str;
+        break;
+    }
+
+    return str_ptr;
+}
+
+bool char_is_num(char c)
+{
+    return c - '0' >= 0  && c - '0' <= 9;
+}
+
+void str_add_commas(char *str, uint8_t num_digits)
+{
+    // largest int that can fit with commas
+    // and units at end. if bigger, don't write commas
+    if(num_digits > 13)
+        return;
+    
+    char tmp[21];
+    memcpy(tmp, str, 21);
+    
+    // first place for a comma
+    uint8_t commaval = num_digits % 3;
+    
+    if(commaval == 0)
+        commaval = 3;
+    
+    // i traces str, j traces tmp, k counts numbers
+    for(int8_t i=0, j=0, k=0; i<20;) {
+        // check if number and incr if so
+        if(char_is_num(tmp[j]))
+            k++;
+        
+        // copy over the character
+        str[i++] = tmp[j++];
+        
+        // if we just copied the 3rd number, add a comma
+        if(k == commaval && j < num_digits-1) {
+            str[i++] = ',';
+            k=0;
+            commaval = 3;
+        }
+    }
+    
+    str[20] = '\0';
+}
+
+void write_full_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
+{
+    write_display(&val, TYPE_INT, str_defn);
+    str_add_commas(str_defn_to_ptr(str_defn), num_digits);
+    str_add_units(str_defn_to_ptr(str_defn), 0);
+}
+
+void write_readable_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
+{
+    uint8_t base = MIN(((num_digits - 1) / 3), 4);
+
+    int64_t new_val = val;
+    
+    for(uint8_t i=0; i<base; i++)
+        new_val /= 1000;
+
+    write_display(&new_val, TYPE_INT, str_defn);
+    str_add_commas(str_defn_to_ptr(str_defn), num_digits - (3*base));
+    str_add_units(str_defn_to_ptr(str_defn), base);
+}
+
+bool display_value(int64_t val, uint8_t str_defn)
+{
+    uint8_t num_digits = get_num_digits(val);
+
+    if (num_digits <= 3)
+        display_full_value = true;
+
+    if (display_full_value)
+        write_full_val(val, str_defn, num_digits);
+    else
+        write_readable_val(val, str_defn, num_digits);
+
+    // return whether a shortened version is possible
+    return num_digits > 3;
+}
+
+
+void value_convert_readability()
+{
+    display_full_value = !display_full_value;
+}
 
 /* ----------------------------------------------------
  ------------------------------------------------------
             Special button actions
  ------------------------------------------------------
  --------------------------------------------------- */
-void ui_handle_button(uint8_t button_mask)
+void ui_handle_button(uint8_t state, uint8_t button_mask)
 {
     if (button_mask == BUTTON_B) {
+        switch (state) {
         /* ------------- INIT --------------- */
-        if (ui_state == STATE_MENU_INIT)
+        case STATE_MENU_INIT:
             init_flash();
+            break;
         /* ------------- APPROVE TX --------------- */
-        if (ui_state == STATE_TX_APPROVE)
+        case STATE_TX_APPROVE:
             user_sign();
+            display_full_value = false;
+            break;
         /* ------------- DENY TX --------------- */
-        if (ui_state == STATE_TX_DENY)
+        case STATE_TX_DENY:
             user_deny();
-            
+            display_full_value = false;
+            break;
+        case STATE_TX_BAL:
+        case STATE_TX_PAY:
+            // if there is no "shortened" version
+            // displaying will overwrite to full value
+            value_convert_readability();
+            break;
+        }
     }
 }
 
@@ -895,28 +1026,16 @@ void init_state_transitions()
     state_transitions[STATE_MENU_BROWSER][BUTTON_L] = STATE_MENU_BROWSER;
     state_transitions[STATE_MENU_BROWSER][BUTTON_R] = STATE_MENU_BROWSER;
     state_transitions[STATE_MENU_BROWSER][BUTTON_B] = STATE_MENU_BROWSER;
-    /* ------------- CALCULATING --------------- */
-    state_transitions[STATE_CALC][BUTTON_L] = STATE_CALC;
-    state_transitions[STATE_CALC][BUTTON_R] = STATE_CALC;
-    state_transitions[STATE_CALC][BUTTON_B] = STATE_CALC;
-    /* ------------- RECEIVING --------------- */
-    state_transitions[STATE_RECV][BUTTON_L] = STATE_RECV;
-    state_transitions[STATE_RECV][BUTTON_R] = STATE_RECV;
-    state_transitions[STATE_RECV][BUTTON_B] = STATE_RECV;
-    /* ------------- SENDING --------------- */
-    state_transitions[STATE_SEND][BUTTON_L] = STATE_SEND;
-    state_transitions[STATE_SEND][BUTTON_R] = STATE_SEND;
-    state_transitions[STATE_SEND][BUTTON_B] = STATE_SEND;
     /* ------------- TX BALANCE --------------- */
     state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_DENY;
-    state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_SPEND;
+    state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_PAY;
     state_transitions[STATE_TX_BAL][BUTTON_B] = STATE_TX_BAL;
     /* ------------- TX SPEND --------------- */
-    state_transitions[STATE_TX_SPEND][BUTTON_L] = STATE_TX_BAL;
-    state_transitions[STATE_TX_SPEND][BUTTON_R] = STATE_TX_ADDR;
-    state_transitions[STATE_TX_SPEND][BUTTON_B] = STATE_TX_SPEND;
+    state_transitions[STATE_TX_PAY][BUTTON_L] = STATE_TX_BAL;
+    state_transitions[STATE_TX_PAY][BUTTON_R] = STATE_TX_ADDR;
+    state_transitions[STATE_TX_PAY][BUTTON_B] = STATE_TX_PAY;
     /* ------------- TX ADDR --------------- */
-    state_transitions[STATE_TX_ADDR][BUTTON_L] = STATE_TX_SPEND;
+    state_transitions[STATE_TX_ADDR][BUTTON_L] = STATE_TX_PAY;
     state_transitions[STATE_TX_ADDR][BUTTON_R] = STATE_TX_APPROVE;
     state_transitions[STATE_TX_ADDR][BUTTON_B] = STATE_MENU_TX_ADDR;
     /* ------------- MENU TX ADDR --------------- */

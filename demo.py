@@ -74,17 +74,17 @@ start_time = time.time()
 
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
-dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(0)))
+#dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(0)))
 
-response = dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(1)))
-print unpack_pubkey_output(response)
+#response = dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(1)))
+#print unpack_pubkey_output(response)
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 2, 10, "", 0, 2, 99999)))
+    INS_TX, pack_tx_input(ADDRESS, 2, 730441122, "", 0, 2, 99999)))
 print unpack_tx_output(response)
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 1, -10, "", 1, 2, 99999)))
+    INS_TX, pack_tx_input(ADDRESS, 1, -730442112, "", 1, 2, 99999)))
 print unpack_tx_output(response)
 
 while True:

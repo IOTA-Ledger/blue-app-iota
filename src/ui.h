@@ -11,8 +11,7 @@
 #include "main.h"
 
 #define TYPE_INT 1
-#define TYPE_UINT 2
-#define TYPE_STR 3
+#define TYPE_STR 2
 
 #define TOP_H 0
 #define TOP 1
@@ -27,26 +26,23 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-#define TOTAL_STATES 17
+#define TOTAL_STATES 14
 #define STATE_EXIT TOTAL_STATES
 
 #define STATE_MENU_INIT 0
 #define STATE_MENU_WELCOME 1
-#define STATE_CALC 2
-#define STATE_RECV 3
-#define STATE_SEND 4
-#define STATE_TX_BAL 5
-#define STATE_TX_SPEND 6
-#define STATE_TX_ADDR 7
-#define STATE_TX_APPROVE 8
-#define STATE_TX_DENY 9
-#define STATE_MENU_DISP_IDX 10
-#define STATE_MENU_ADVANCED 11
-#define STATE_MENU_BROWSER 12
-#define STATE_MENU_ADV_WARN 13
-#define STATE_MENU_DISP_ADDR 14
-#define STATE_MENU_TX_ADDR 15
-#define STATE_DISP_ADDR_CHK 16
+#define STATE_TX_BAL 2
+#define STATE_TX_PAY 3
+#define STATE_TX_ADDR 4
+#define STATE_TX_APPROVE 5
+#define STATE_TX_DENY 6
+#define STATE_MENU_DISP_IDX 7
+#define STATE_MENU_ADVANCED 8
+#define STATE_MENU_BROWSER 9
+#define STATE_MENU_ADV_WARN 10
+#define STATE_MENU_DISP_ADDR 11
+#define STATE_MENU_TX_ADDR 12
+#define STATE_DISP_ADDR_CHK 13
 
 // Size of Menu
 #define MENU_INIT_LEN 5
@@ -70,10 +66,9 @@
 
 void ui_init(bool first_run);
 void ui_reset(void);
-void ui_display_message(void *o, uint8_t sz, uint8_t t,
-                      void *o2, uint8_t sz2, uint8_t t2,
-                      void *o3, uint8_t sz3, uint8_t t3);
 
+void ui_render();
+void ui_build_display();
 void ui_display_welcome();
 void ui_display_calc();
 void ui_display_recv();

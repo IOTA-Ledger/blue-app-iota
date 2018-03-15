@@ -30,6 +30,9 @@ unsigned int state_flags;
 
 unsigned char seed_bytes[48];
 
+int64_t balance;
+int64_t payment;
+
 BUNDLE_CTX bundle_ctx;
 SIGNING_CTX signing_ctx;
 
@@ -125,6 +128,9 @@ void apdu_return(unsigned int tx)
 
 void user_deny()
 {
+    balance = 0;
+    payment = 0;
+
     apdu_return(0);
 }
 
@@ -143,15 +149,17 @@ void user_sign()
 
     bytes_to_chars(bundle_get_hash(&bundle_ctx), output->bundle_hash, 48);
 
+    balance = 0;
+    payment = 0;
     apdu_return(sizeof(TX_OUTPUT));
 }
 
 void __attribute__((noinline))
 ins_set_seed(unsigned char *msg, const uint8_t len)
 {
-    if(!flash_is_init())
-        THROW(USER_UNCONFIRMED);
-    
+    if (!flash_is_init())
+        THROW(APP_UNINITIALIZED);
+
     if (CHECK_STATE(state_flags, SET_SEED)) {
         THROW(INVALID_STATE);
     }
@@ -182,16 +190,16 @@ ins_set_seed(unsigned char *msg, const uint8_t len)
 
 void __attribute__((noinline)) ins_pubkey(unsigned char *msg, const uint8_t len)
 {
-    if(!flash_is_init())
-        THROW(USER_UNCONFIRMED);
-    
+    if (!flash_is_init())
+        THROW(APP_UNINITIALIZED);
+
     if (CHECK_STATE(state_flags, PUBKEY)) {
         THROW(INVALID_STATE);
     }
     if (len < sizeof(PUBKEY_INPUT)) {
         THROW(0x6D09);
     }
-    
+
     // temp display screen
     ui_display_calc();
     ui_force_draw();
@@ -207,8 +215,9 @@ void __attribute__((noinline)) ins_pubkey(unsigned char *msg, const uint8_t len)
 
     // convert the 48 byte address into base-27 address
     bytes_to_chars(addr_bytes, output->address, 48);
-    
-    ui_display_welcome();
+
+    ui_build_display();
+    ui_render();
     ui_force_draw();
 
     // return success
@@ -219,16 +228,16 @@ void __attribute__((noinline))
 ins_tx(unsigned char *msg, const uint8_t len, volatile unsigned int *flags,
        volatile int64_t *balance, volatile int64_t *payment)
 {
-    if(!flash_is_init())
-        THROW(USER_UNCONFIRMED);
-    
+    if (!flash_is_init())
+        THROW(APP_UNINITIALIZED);
+
     if (CHECK_STATE(state_flags, TX)) {
         THROW(INVALID_STATE);
     }
     if (len < sizeof(TX_INPUT)) {
         THROW(0x6D09);
     }
-    
+
     // temporary screen while receiving tx
     ui_display_recv();
     ui_force_draw();
@@ -301,9 +310,9 @@ ins_tx(unsigned char *msg, const uint8_t len, volatile unsigned int *flags,
 void __attribute__((noinline))
 ins_sign(unsigned char *msg, const uint8_t len, volatile unsigned int *flags)
 {
-    if(!flash_is_init())
-        THROW(USER_UNCONFIRMED);
-    
+    if (!flash_is_init())
+        THROW(APP_UNINITIALIZED);
+
     if (CHECK_STATE(state_flags, SIGN)) {
         THROW(INVALID_STATE);
     }
@@ -359,29 +368,29 @@ ins_sign(unsigned char *msg, const uint8_t len, volatile unsigned int *flags)
 void __attribute__((noinline))
 ins_display_address(unsigned char *msg, const uint8_t len)
 {
-    if(!flash_is_init())
-        THROW(USER_UNCONFIRMED);
-    
+    if (!flash_is_init())
+        THROW(APP_UNINITIALIZED);
+
     if (len < sizeof(PUBKEY_INPUT)) {
         THROW(0x6D09);
     }
-    
+
     ui_display_calc();
     ui_force_draw();
-    
+
     unsigned char addr_bytes[48];
-    
+
     PUBKEY_INPUT *input = (PUBKEY_INPUT *)(msg);
-    
+
     get_public_addr(seed_bytes, input->address_idx, SECURITY_LEVEL, addr_bytes);
-    
+
     char address[81];
     // convert the 48 byte address into base-27 address
     bytes_to_chars(addr_bytes, address, 48);
-    
-    ui_display_address(address, 81);
-    ui_force_draw();
-    
+
+    // ui_display_address(address, 81);
+    // ui_force_draw();
+
     // return success
     THROW(0x9000);
 }
@@ -392,8 +401,8 @@ static void IOTA_main()
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
 
-    volatile int64_t balance = 0;
-    volatile int64_t payment = 0;
+    balance = 0;
+    payment = 0;
 
     // initialize the UI
     ui_init(flash_is_init());
@@ -455,7 +464,7 @@ static void IOTA_main()
                 case INS_SIGN: {
                     ins_sign(msg, len, &flags);
                 } break;
-                        
+
                 case INS_DISP_ADDR: {
                     ins_display_address(msg, len);
                 } break;

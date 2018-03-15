@@ -6,6 +6,54 @@
 #include "iota/kerl.h"
 #include "iota/conversion.h"
 
+// len specifies max size of buffer
+// if buffer doesn't fit whole int, returns null
+void int_to_str(int64_t num, char *str, uint8_t len)
+{
+    // minimum buffer size of 2 (digit + \0)
+    if (len < 2)
+        return;
+
+    int64_t i = 0;
+    bool isNeg = false;
+
+    // handle 0 first
+    if (num == 0) {
+        str[0] = '0';
+        str[1] = '\0';
+        return;
+    }
+
+    if (num < 0) {
+        isNeg = true;
+        num = -num;
+    }
+
+    while (num != 0) {
+        uint8_t rem = num % 10;
+        str[i++] = rem + '0';
+        num = num / 10;
+
+        // ensure we have room for full int + null term
+        if (i == len || (i == len - 1 && isNeg)) {
+            str[0] = '\0';
+            return;
+        }
+    }
+
+    if (isNeg)
+        str[i++] = '-';
+
+    str[i--] = '\0';
+
+    // reverse the string
+    for (uint8_t j = 0; j < i; j++, i--) {
+        char c = str[j];
+        str[j] = str[i];
+        str[i] = c;
+    }
+}
+
 
 bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding)
 {
