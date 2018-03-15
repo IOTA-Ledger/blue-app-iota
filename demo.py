@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 from struct import Struct
@@ -9,7 +8,7 @@ BIP44_PATH = [0x8000002C,
               0x80000000,
               0x00000000,
               0x00000000]
-ADDRESS = "ADR" * 27 + "\0"
+ADDRESS = b"ADR" * 27
 
 INS_SET_SEED = 0x01
 INS_PUBKEY = 0x02
@@ -73,23 +72,23 @@ start_time = time.time()
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
 response = dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(1)))
-print unpack_pubkey_output(response)
+print(unpack_pubkey_output(response))
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 2, 10, "", 0, 1, 99999)))
-print unpack_tx_output(response)
+    INS_TX, pack_tx_input(ADDRESS, 2, 10, b"", 0, 2, 99999)))
+print(unpack_tx_output(response))
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(ADDRESS, 1, -10, "", 1, 1, 99999)))
-print unpack_tx_output(response)
+    INS_TX, pack_tx_input(ADDRESS, 1, -10, b"", 1, 2, 99999)))
+print(unpack_tx_output(response))
 
 while True:
     response = dongle.exchange(apdu_command(INS_SIGN, pack_sign_input(1)))
     struct = unpack_sign_output(response)
-    print struct
+    print(struct)
 
     if struct[1] == struct[2]:
         break
 
 elapsed_time = time.time() - start_time
-print "Time Elapsed: %d" % elapsed_time
+print("Time Elapsed: %d" % elapsed_time)
