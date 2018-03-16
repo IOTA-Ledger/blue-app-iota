@@ -1,4 +1,5 @@
 #include "common.h"
+#include "addresses.h"
 #include "conversion.h"
 #include "kerl.h"
 #include "bundle.h"
@@ -16,9 +17,9 @@ void bundle_initialize(BUNDLE_CTX *ctx, uint32_t last_index)
     ctx->last_index = last_index;
 }
 
-void bundle_set_address_chars(BUNDLE_CTX *ctx, const char *address)
+void bundle_set_external_address(BUNDLE_CTX *ctx, const char *address)
 {
-    if (ctx->current_index > ctx->last_index) {
+    if (!bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
     }
 
@@ -26,9 +27,16 @@ void bundle_set_address_chars(BUNDLE_CTX *ctx, const char *address)
     chars_to_bytes(address, bytes_ptr, 81);
 }
 
+void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
+                                 uint32_t index)
+{
+    bundle_set_external_address(ctx, address);
+    ctx->indices[ctx->current_index] = index;
+}
+
 void bundle_set_address_bytes(BUNDLE_CTX *ctx, const unsigned char *addresses)
 {
-    if (ctx->current_index > ctx->last_index) {
+    if (!bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
     }
 
@@ -55,7 +63,7 @@ static void create_bundle_bytes(int64_t value, const char *tag,
 uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
                        uint32_t timestamp)
 {
-    if (ctx->current_index > ctx->last_index) {
+    if (!bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
     }
 
@@ -64,6 +72,9 @@ uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
     // the combined trits make up the second part
     create_bundle_bytes(value, tag, timestamp, ctx->current_index,
                         ctx->last_index, bytes_ptr + 48);
+
+    // store the binary value
+    ctx->values[ctx->current_index] = value;
 
     return ctx->current_index++;
 }
@@ -128,38 +139,79 @@ void normalize_hash_bytes(const unsigned char *hash_bytes,
     normalize_hash(normalized_hash_trytes);
 }
 
-static inline void compute_hash(const BUNDLE_CTX *ctx,
-                                unsigned char *hash_bytes)
+static bool validate_txs(const BUNDLE_CTX *ctx, const unsigned char *seed_bytes,
+                         unsigned int security)
+{
+    int64_t balance = 0;
+    for (unsigned int i = 0; i <= ctx->last_index; i++) {
+        balance += ctx->values[i];
+    }
+    if (balance != 0) {
+        return true;
+    }
+
+    for (unsigned int i = 0; i <= ctx->last_index; i++) {
+        if (ctx->values[i] >= 0) {
+            continue;
+        }
+
+        unsigned char addr_bytes[48];
+        get_public_addr(seed_bytes, ctx->indices[i], security, addr_bytes);
+        if (memcmp(addr_bytes, bundle_get_address_bytes(ctx, i), 48) != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static void compute_hash(BUNDLE_CTX *ctx)
 {
     cx_sha3_t sha;
 
     kerl_initialize(&sha);
     kerl_absorb_bytes(&sha, ctx->bytes, TX_BYTES(ctx) - ctx->bytes);
-    kerl_squeeze_final_chunk(&sha, hash_bytes);
+    kerl_squeeze_final_chunk(&sha, ctx->hash);
+}
+
+static bool bundle_validate_hash(BUNDLE_CTX *ctx)
+{
+    tryte_t hash_trytes[81];
+    compute_hash(ctx);
+    normalize_hash_bytes(ctx->hash, hash_trytes);
+
+    if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
+        // if the hash is invalid, reset it to zero
+        os_memset(ctx->hash, 0, 48);
+        return false;
+    }
+
+    return true;
+}
+
+bool bundle_validating_finalize(BUNDLE_CTX *ctx,
+                                const unsigned char *seed_bytes,
+                                unsigned int security)
+{
+    if (bundle_has_open_txs(ctx)) {
+        THROW(INVALID_STATE);
+    }
+
+    return validate_txs(ctx, seed_bytes, security) && bundle_validate_hash(ctx);
 }
 
 unsigned int bundle_finalize(BUNDLE_CTX *ctx)
 {
     unsigned int tag_increment = 0;
 
-    if (ctx->current_index <= ctx->last_index) {
+    if (bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
     }
 
-    while (true) {
-        compute_hash(ctx, ctx->hash);
-
-        tryte_t hash_trytes[81];
-        normalize_hash_bytes(ctx->hash, hash_trytes);
-        if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
-            // increment the tag of the first transaction
-            bytes_increment_trit_area_81(ctx->bytes + 48);
-            tag_increment++;
-        }
-        else {
-            // we found a valid bundle hash
-            break;
-        }
+    while (!bundle_validate_hash(ctx)) {
+        // increment the tag of the first transaction
+        bytes_increment_trit_area_81(ctx->bytes + 48);
+        tag_increment++;
     }
 
     // the not normalized hash is already in the result pointer
@@ -178,10 +230,16 @@ const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
 
 const unsigned char *bundle_get_hash(const BUNDLE_CTX *ctx)
 {
-    if (ctx->current_index <= ctx->last_index) {
+    if (bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
     }
     // TODO check that the bundle has already been finalized
 
     return ctx->hash;
+}
+
+void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes)
+{
+    bytes_to_trytes(bundle_get_hash(ctx), hash_trytes);
+    normalize_hash(hash_trytes);
 }

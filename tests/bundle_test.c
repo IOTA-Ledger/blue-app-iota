@@ -81,7 +81,7 @@ static void construct_bundle(const TX_ENTRY *txs, unsigned int num_txs,
 
     for (unsigned int i = 0; i < num_txs; i++) {
         assert_int_equal(strlen(txs[i].address), 81);
-        bundle_set_address_chars(bundle_ctx, txs[i].address);
+        bundle_set_external_address(bundle_ctx, txs[i].address);
 
         assert_int_equal(strlen(txs[i].tag), 27);
         bundle_add_tx(bundle_ctx, txs[i].value, txs[i].tag, txs[i].timestamp);
@@ -130,11 +130,10 @@ static void test_bundle_hash(void **state)
     BUNDLE_CTX bundle_ctx;
     construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
 
-    unsigned char hash_bytes[NUM_HASH_BYTES];
-    compute_hash(&bundle_ctx, hash_bytes);
+    compute_hash(&bundle_ctx);
 
     char hash_chars[NUM_HASH_TRYTES + 1];
-    bytes_to_chars(hash_bytes, hash_chars, NUM_HASH_BYTES);
+    bytes_to_chars(bundle_get_hash(&bundle_ctx), hash_chars, NUM_HASH_BYTES);
     // make null-terminated
     hash_chars[NUM_HASH_TRYTES] = '\0';
 

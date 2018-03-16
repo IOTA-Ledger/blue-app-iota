@@ -15,6 +15,9 @@ typedef struct BUNDLE_CTX {
         uint32_t current_index;
         uint32_t last_index;
 
+        int64_t values[MAX_BUNDLE_INDEX_SZ];
+        uint32_t indices[MAX_BUNDLE_INDEX_SZ];
+
         unsigned char hash[48]; // bundle hash, when finalized
 } BUNDLE_CTX;
 
@@ -25,12 +28,22 @@ typedef struct BUNDLE_CTX {
  */
 void bundle_initialize(BUNDLE_CTX *ctx, uint32_t last_index);
 
-/** @brief Sets the address for the current transaction.
+/** @brief Sets the address for the current output transaction.
  *  The address must be set befor calling bundle_add_tx().
  *  @param ctx the bundle context used
  *  @param address address in base-27 encoding
  */
-void bundle_set_address_chars(BUNDLE_CTX *ctx, const char *address);
+void bundle_set_external_address(BUNDLE_CTX *ctx, const char *address);
+
+/** @brief Sets the address for the current input transaction.
+ *  The address must be set befor calling bundle_add_tx(). The index must match
+ *  the address, this is verified in bundle_validating_finalize().
+ *  @param ctx the bundle context used
+ *  @param address address in base-27 encoding
+ *  @param index address index
+ */
+void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
+                                 uint32_t index);
 
 /** @brief Sets the address for the current transaction.
  *  The address must be set befor calling bundle_add_tx().
@@ -59,6 +72,19 @@ uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
  */
 unsigned int bundle_finalize(BUNDLE_CTX *ctx);
 
+/** @brief Finalizes the bundle, if it has a valid bundle hash.
+ *  A bundle is valid, if a) values sum up to 0 b) the index of each input
+ *  transaction matches the provided address c) the normalized bundle hash does
+ *  not contain 'M'.
+ *  @param ctx the bundle context used.
+ *  @param seed_bytes seed used for the addresses
+ *  @param security security level used for the addresses
+ *  @return true if the bundle is valid, false otherwise
+ */
+bool bundle_validating_finalize(BUNDLE_CTX *ctx,
+                                const unsigned char *seed_bytes,
+                                unsigned int security);
+
 /** @brief Returns the (not normalized) hash of the finalized bundle.
  *  @param ctx the bundle context used
  */
@@ -74,10 +100,18 @@ const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
                                               uint32_t tx_index);
 
 /** @brief Computes the normalized hash.
- *  @param hash_bytes input hash in 48-byte representation.
- *  @param normalized_hash_trytes target 81-tryte array for the normalized hash
+ *  @param ctx the bundle context used
+ *  @param hash_trytes target 81-tryte array for the normalized hash
  */
-void normalize_hash_bytes(const unsigned char *hash_bytes,
-                          tryte_t *normalized_hash_trytes);
+void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes);
+
+/** @brief Returns whether there are still transactions missing in the bundle.
+ *  @param ctx the bundle context used
+ *  @return true, if transactions are missing, false if the bundle is complete
+ */
+static inline bool bundle_has_open_txs(const BUNDLE_CTX *ctx)
+{
+        return ctx->current_index <= ctx->last_index;
+}
 
 #endif // BUNDLE_H
