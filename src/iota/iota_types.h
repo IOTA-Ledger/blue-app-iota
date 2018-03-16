@@ -1,7 +1,6 @@
 #ifndef IOTA_TYPES_H
 #define IOTA_TYPES_H
 
-#include <string.h>
 #include <stdint.h>
 
 typedef int8_t trit_t;
@@ -17,5 +16,9 @@ typedef int8_t tryte_t;
 
 #define MIN_SECURITY_LEVEL 1
 #define MAX_SECURITY_LEVEL 3
+
+#define NUM_HASH_TRITS 243
+#define NUM_HASH_TRYTES 81
+#define NUM_HASH_BYTES (CX_KECCAK384_SIZE)
 
 #endif // IOTA_TYPES_H

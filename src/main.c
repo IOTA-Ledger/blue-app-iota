@@ -61,7 +61,7 @@ bool init_flash()
         internalStorage_t storage;
 
         storage.initialized = 0x01;
-        memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
+        os_memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
         storage.account_seed[0] = 1;
         storage.account_seed[1] = 4;
         storage.account_seed[2] = 9;

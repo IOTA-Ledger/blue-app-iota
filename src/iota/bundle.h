@@ -1,12 +1,11 @@
 #ifndef BUNDLE_H
 #define BUNDLE_H
 
+#include <stdbool.h>
 #include "iota_types.h"
 
-#define SEC_LVL 2
 
 #define MAX_BUNDLE_INDEX_SZ 8
-#define MAX_BUNDLE_NUM_INPUTS ((MAX_BUNDLE_INDEX_SZ)-2) / (SEC_LVL)
 
 typedef struct BUNDLE_CTX {
         // bundle_bytes holds all of the bundle information in byte encoding

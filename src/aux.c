@@ -1,11 +1,9 @@
 #include "aux.h"
-#include <stdint.h>
-#include "main.h"
+#include <string.h>
 
 #include "iota/iota_types.h"
 #include "iota/kerl.h"
 #include "iota/conversion.h"
-
 
 bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding)
 {
@@ -38,12 +36,12 @@ void get_seed(const unsigned char *entropy, unsigned int n,
     cx_sha3_t sha;
     kerl_initialize(&sha);
 
-    for (unsigned int i = 0; i < n / 48; i++) {
-        kerl_absorb_chunk(&sha, entropy + i * 48);
+    for (unsigned int i = 0; i < n / NUM_HASH_BYTES; i++) {
+        kerl_absorb_chunk(&sha, entropy + i * NUM_HASH_BYTES);
     }
     // TODO: should we use standard padding rules?
-    if (n % 48 != 0) {
-        kerl_absorb_chunk(&sha, entropy + (n - 48));
+    if (n % NUM_HASH_BYTES != 0) {
+        kerl_absorb_chunk(&sha, entropy + (n - NUM_HASH_BYTES));
     }
 
     kerl_squeeze_final_chunk(&sha, seed_bytes);
@@ -51,6 +49,6 @@ void get_seed(const unsigned char *entropy, unsigned int n,
     UNUSED(entropy);
     UNUSED(n);
 
-    chars_to_bytes(DEBUG_SEED, seed_bytes, 81);
+    chars_to_bytes(DEBUG_SEED, seed_bytes, NUM_HASH_TRYTES);
 #endif // DEBUG_SEED
 }

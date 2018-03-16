@@ -1,8 +1,9 @@
+#include "bundle.h"
+#include <string.h>
 #include "common.h"
 #include "addresses.h"
 #include "conversion.h"
 #include "kerl.h"
-#include "bundle.h"
 
 // pointer to the first byte of the current transaction
 #define TX_BYTES(C) ((C)->bytes + (C)->current_index * 96)
