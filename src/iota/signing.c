@@ -57,7 +57,7 @@ static void generate_signature_fragment(unsigned char *state,
 unsigned int signing_next_fragment(SIGNING_CTX *ctx,
                                    unsigned char *signature_bytes)
 {
-    if (ctx->fragment_index > ctx->last_fragment) {
+    if (!signing_has_next_fragment(ctx)) {
         THROW(INVALID_STATE);
     }
 
