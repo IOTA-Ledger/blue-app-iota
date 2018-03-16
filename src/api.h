@@ -26,6 +26,7 @@
 
 typedef IO_STRUCT SET_SEED_INPUT {
         int64_t bip44_path[BIP44_PATH_LEN];
+        int64_t security;
 } SET_SEED_INPUT;
 
 // no SET_SEED_OUTPUT
@@ -35,7 +36,6 @@ typedef IO_STRUCT SET_SEED_INPUT {
 
 typedef IO_STRUCT PUBKEY_INPUT {
         int64_t address_idx;
-        // int64_t security; // use hard-coded security for now
 } PUBKEY_INPUT;
 
 typedef IO_STRUCT PUBKEY_OUTPUT {
@@ -57,7 +57,6 @@ typedef IO_STRUCT TX_INPUT {
 
 typedef IO_STRUCT TX_OUTPUT {
         bool finalized;
-        int64_t tag_increment;
         char bundle_hash[81];
 } TX_OUTPUT;
 
@@ -66,13 +65,11 @@ typedef IO_STRUCT TX_OUTPUT {
 
 typedef IO_STRUCT SIGN_INPUT {
         int64_t transaction_idx;
-        // int64_t security; // use hard-coded security for now
 } SIGN_INPUT;
 
 typedef IO_STRUCT SIGN_OUTPUT {
         char signature_fragment[SIGNATURE_FRAGMENT_SIZE * 81];
-        uint32_t fragment_index;
-        uint32_t last_fragment;
+        bool fragments_remaining;
 } SIGN_OUTPUT;
 
 

@@ -87,10 +87,18 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
 
 #define CEILING(x,y) (((x) + (y) - 1) / (y))
 
-#define ASSIGN(dest,src) ({ \
-                typeof(src)__x=(src); \
-                typeof(dest)__y=__x; \
-                (__x==__y && ((__x<1) == (__y<1)) ? (void)((dest)=__y),1 : 0); \
+#define ASSIGN(dest, src)                                                      \
+        ({                                                                     \
+                typeof(src)_x = (src);                                         \
+                typeof(dest)_y = _x;                                           \
+                (_x == _y && ((_x < 1) == (_y < 1)) ? (void)((dest) = _y),     \
+                 1 : 0);                                                       \
+        })
+
+#define IN_RANGE(x, min, max)                                                  \
+        ({                                                                     \
+                typeof(x)_x = (x);                                             \
+                (_x >= (min) && _x <= (max));                                  \
         })
 
 #endif // COMMON_H

@@ -19,7 +19,7 @@ void apdu_send(const void *ptr, unsigned int length);
 typedef struct API_CTX {
 
     unsigned char seed_bytes[48];
-    // uint8_t security; // use hard-coded security for now
+    uint8_t security; // use hard-coded security for now
 
     BUNDLE_CTX bundle_ctx;
     SIGNING_CTX signing_ctx;
@@ -56,6 +56,12 @@ unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
         }
     }
 
+    if (!ASSIGN(api.security, input->security) ||
+        !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
+        // invalid security
+        THROW(INVALID_PARAMETER);
+    }
+
     // we only care about privateKeyData and using this to
     // generate our iota seed
     unsigned char entropy[64];
@@ -86,7 +92,7 @@ unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
     }
 
     unsigned char addr_bytes[48];
-    get_public_addr(api.seed_bytes, address_idx, 2, addr_bytes);
+    get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
 
     PUBKEY_OUTPUT output;
     bytes_to_chars(addr_bytes, output.address, 48);
@@ -112,14 +118,14 @@ void user_sign()
     ui_display_calc();
     ui_force_draw();
 
-    if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes, 2)) {
+    if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
+                                    api.security)) {
         THROW(INVALID_STATE);
     }
     api.state_flags |= BUNDLE_FINALIZED;
 
     TX_OUTPUT output;
     output.finalized = true;
-    output.tag_increment = 0;
     bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
 
     apdu_send(&output, sizeof(output));
@@ -171,6 +177,10 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
         bundle_set_external_address(&api.bundle_ctx, input->address);
     }
 
+    if (!IN_RANGE(input->value, -MAX_IOTA_VALUE, MAX_IOTA_VALUE)) {
+        // value out of bounds
+        THROW(INVALID_PARAMETER);
+    }
     if (!validate_chars(input->tag, 27, true)) {
         // invalid tag
         THROW(INVALID_PARAMETER);
@@ -204,7 +214,7 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
                     payment += api.bundle_ctx.values[i];
                 }
             }
-            ui_sign_tx(0, 0, address, 81);
+            ui_sign_tx(0, payment, address, 81);
         }
 
         return IO_ASYNCH_REPLY;
@@ -217,13 +227,15 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
     return 0;
 }
 
-static void next_fragment(SIGNING_CTX *ctx, SIGN_OUTPUT *output)
+static bool next_signatrue_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 {
     unsigned char fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
-    output->fragment_index = signing_next_fragment(ctx, fragment_bytes);
+    signing_next_fragment(ctx, fragment_bytes);
 
-    bytes_to_chars(fragment_bytes, output->signature_fragment,
+    bytes_to_chars(fragment_bytes, signature_fragment,
                    SIGNATURE_FRAGMENT_SIZE * 48);
+
+    return signing_has_next_fragment(ctx);
 }
 
 unsigned int api_sign(unsigned char *input_data, unsigned int len)
@@ -257,7 +269,7 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
         bundle_get_normalized_hash(&api.bundle_ctx, normalized_hash);
 
         signing_initialize(&api.signing_ctx, api.seed_bytes,
-                           api.bundle_ctx.indices[idx], SECURITY_LEVEL,
+                           api.bundle_ctx.indices[idx], api.security,
                            normalized_hash);
 
         api.state_flags |= SIGNING_STARTED;
@@ -266,12 +278,12 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
     // TODO: check that the transaction idx has not changed
 
     SIGN_OUTPUT output;
-    output.last_fragment = NUM_SIGNATURE_FRAGMENTS(SECURITY_LEVEL) - 1;
-    next_fragment(&api.signing_ctx, &output);
+    output.fragments_remaining =
+        next_signatrue_fragment(&api.signing_ctx, output.signature_fragment);
 
     apdu_send(&output, sizeof(output));
 
-    if (signing_has_next_fragment(&api.signing_ctx)) {
+    if (output.fragments_remaining) {
         return 0;
     }
 

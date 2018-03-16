@@ -15,4 +15,7 @@ typedef int8_t tryte_t;
 
 #define MAX_IOTA_VALUE INT64_C(2779530283277761) // (3^33-1) / 2
 
+#define MIN_SECURITY_LEVEL 1
+#define MAX_SECURITY_LEVEL 3
+
 #endif // IOTA_TYPES_H
