@@ -1,6 +1,6 @@
 #include "main.h"
 #include "ui.h"
-#include "api.h"
+#include "iota_io.h"
 
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {
@@ -83,99 +83,33 @@ uint32_t get_seed_idx(unsigned int idx)
     return N_storage.account_seed[idx];
 }
 
-/** @brief This is called by the API to transfer data while ignoring responses.
- *  This function must be called exactly onece from withing each api command.
- */
-void apdu_send(const void *ptr, unsigned int length)
-{
-    if (length > IO_APDU_BUFFER_SIZE) {
-        THROW(INVALID_PARAMETER);
-    }
-
-    os_memcpy(G_io_apdu_buffer, ptr, length);
-    G_io_apdu_buffer[length++] = 0x90;
-    G_io_apdu_buffer[length++] = 0x00;
-
-    // just send, the response is handled in the main loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, length);
-}
-
 static void IOTA_main()
 {
-    volatile unsigned int rx = 0;
-    volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
 
     // init the UI and flash (and if first run use that on ui_init())
     ui_init(init_flash());
-    // init the APDU api
-    api_initialize();
+    // init the API
+    io_initialize();
 
     for (;;) {
-        volatile unsigned short sw = 0;
-
         BEGIN_TRY
         {
             TRY
             {
-                rx = tx;
-                // ensure no race in catch_other if io_exchange throws an error
-                tx = 0;
+                // data is always sent separatly
+                const unsigned int rx = io_exchange(CHANNEL_APDU | flags, 0);
 
-                rx = io_exchange(CHANNEL_APDU | flags, rx);
-
-                // flags sets the IO to blocking, make sure to re-enable asynch
-                flags = 0;
-
-                // no apdu received, well, reset the session, and reset the
-                // bootloader configuration
-                if (rx == 0)
-                    THROW(0x6982);
-
-                // If it doesnt start with the magic byte return error
-                // CLA is 0x80
-                if (G_io_apdu_buffer[0] != CLA)
-                    THROW(0x6E00);
-
-                const unsigned int len =
-                    G_io_apdu_buffer[APDU_BODY_LENGTH_OFFSET];
-                if (rx < len + APDU_HEADER_LENGTH) {
-                    THROW(INVALID_STATE);
+                // check header consistency
+                if (rx < OFFSET_P3 ||
+                    rx < G_io_apdu_buffer[OFFSET_P3] + OFFSET_P3) {
+                    THROW(SW_INCORRECT_LENGTH_P3);
                 }
-                unsigned char *input_data =
-                    G_io_apdu_buffer + APDU_HEADER_LENGTH;
-
-                // check second byte for instruction
-                switch (G_io_apdu_buffer[1]) {
-
-                case INS_SET_SEED:
-                    flags = api_set_seed(input_data, len);
-                    break;
-
-                case INS_PUBKEY:
-                    flags = api_pubkey(input_data, len);
-                    break;
-
-                case INS_TX:
-                    flags = api_tx(input_data, len);
-                    break;
-
-                case INS_SIGN:
-                    flags = api_sign(input_data, len);
-                    break;
-
-                case 0xFF: // return to dashboard
-                    goto return_to_dashboard;
-
-                    // unknown command ??
-                default:
-                    THROW(0x6D00);
-                    break;
-                }
+                flags = iota_dispatch();
             }
             CATCH_OTHER(e)
             {
-                // ui_reset();
+                unsigned short sw;
 
                 switch (e & 0xF000) {
                 case 0x6000:
@@ -183,13 +117,14 @@ static void IOTA_main()
                     sw = e;
                     break;
                 default:
-                    sw = 0x6800 | (e & 0x7FF);
-                    break;
+                    sw = SW_UNKNOWN | (e & 0x0FF);
                 }
-                // Unexpected exception => report
-                G_io_apdu_buffer[tx] = sw >> 8;
-                G_io_apdu_buffer[tx + 1] = sw;
-                tx += 2;
+
+                // send  response code and reset ui
+                // TODO: what happens if io_send throws an exception
+                io_send(NULL, 0, sw);
+                ui_reset();
+                flags = 0;
             }
             FINALLY
             {
@@ -197,9 +132,6 @@ static void IOTA_main()
         }
         END_TRY;
     }
-
-return_to_dashboard:
-    return;
 }
 
 

@@ -2,6 +2,7 @@
 #include "common.h"
 #include "ui.h"
 #include "aux.h"
+#include "iota_io.h"
 
 // iota-related stuff
 #include "iota/conversion.h"
@@ -12,9 +13,6 @@
 #define CHECK_STATE(state, INS)                                                \
     ((((state)&INS##_REQUIRED_STATE) != INS##_REQUIRED_STATE) ||               \
      ((state)&INS##_FORBIDDEN_STATE))
-
-// must be defined in main code file
-void apdu_send(const void *ptr, unsigned int length);
 
 typedef struct API_CTX {
 
@@ -38,10 +36,10 @@ void api_initialize()
 unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
 {
     if (CHECK_STATE(api.state_flags, SET_SEED)) {
-        THROW(INVALID_STATE);
+        THROW(SW_COMMAND_INVALID_STATE);
     }
     if (len < sizeof(SET_SEED_INPUT)) {
-        THROW(0x6D09);
+        THROW(SW_WRONG_LENGTH);
     }
     const SET_SEED_INPUT *input = (SET_SEED_INPUT *)(input_data);
 
@@ -71,17 +69,17 @@ unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
 
     api.state_flags |= SEED_SET;
 
-    apdu_send(NULL, 0);
+    io_send(NULL, 0, SW_OK);
     return 0;
 }
 
 unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
 {
     if (CHECK_STATE(api.state_flags, PUBKEY)) {
-        THROW(INVALID_STATE);
+        THROW(SW_COMMAND_INVALID_STATE);
     }
     if (len < sizeof(PUBKEY_INPUT)) {
-        THROW(0x6D09);
+        THROW(SW_WRONG_LENGTH);
     }
     const PUBKEY_INPUT *input = (PUBKEY_INPUT *)(input_data);
 
@@ -97,7 +95,7 @@ unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
     PUBKEY_OUTPUT output;
     bytes_to_chars(addr_bytes, output.address, 48);
 
-    apdu_send(&output, sizeof(output));
+    io_send(&output, sizeof(output), SW_OK);
     return 0;
 }
 
@@ -108,8 +106,7 @@ void user_deny()
     os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
     api.state_flags &= ~BUNDLE_INITIALIZED;
 
-    // TODO: what core should we throw?
-    THROW(0x6D09);
+    THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
 /** @brief This functions gets called, when bundle is accepted. */
@@ -120,7 +117,7 @@ void user_sign()
 
     if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
                                     api.security)) {
-        THROW(INVALID_STATE);
+        THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
     }
     api.state_flags |= BUNDLE_FINALIZED;
 
@@ -128,16 +125,16 @@ void user_sign()
     output.finalized = true;
     bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
 
-    apdu_send(&output, sizeof(output));
+    io_send(&output, sizeof(output), SW_OK);
 }
 
 unsigned int api_tx(unsigned char *input_data, unsigned int len)
 {
     if (CHECK_STATE(api.state_flags, TX)) {
-        THROW(INVALID_STATE);
+        THROW(SW_COMMAND_INVALID_STATE);
     }
     if (len < sizeof(TX_INPUT)) {
-        THROW(0x6D09);
+        THROW(SW_WRONG_LENGTH);
     }
     TX_INPUT *input = (TX_INPUT *)(input_data);
 
@@ -223,7 +220,7 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
     TX_OUTPUT output;
     output.finalized = false;
 
-    apdu_send(&output, sizeof(output));
+    io_send(&output, sizeof(output), SW_OK);
     return 0;
 }
 
@@ -241,16 +238,12 @@ static bool next_signatrue_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 unsigned int api_sign(unsigned char *input_data, unsigned int len)
 {
     if (CHECK_STATE(api.state_flags, SIGN)) {
-        THROW(INVALID_STATE);
+        THROW(SW_COMMAND_INVALID_STATE);
     }
     if (len < sizeof(SIGN_INPUT)) {
-        THROW(0x6D09);
+        THROW(SW_WRONG_LENGTH);
     }
     const SIGN_INPUT *input = (SIGN_INPUT *)(input_data);
-
-    // temporary screen during signing process
-    ui_display_sending();
-    ui_force_draw();
 
     unsigned int idx;
     if (!ASSIGN(idx, input->transaction_idx) ||
@@ -260,6 +253,10 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
     }
 
     if ((api.state_flags & SIGNING_STARTED) == 0) {
+        // temporary screen during signing process
+        ui_display_sending();
+        ui_force_draw();
+
         if (api.bundle_ctx.values[idx] >= 0) {
             // no input transaction
             THROW(INVALID_PARAMETER);
@@ -281,15 +278,14 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
     output.fragments_remaining =
         next_signatrue_fragment(&api.signing_ctx, output.signature_fragment);
 
-    apdu_send(&output, sizeof(output));
+    io_send(&output, sizeof(output), SW_OK);
 
-    if (output.fragments_remaining) {
-        return 0;
+    if (!output.fragments_remaining) {
+
+        // signing is finished
+        api.state_flags &= ~SIGNING_STARTED;
+        ui_display_welcome();
     }
 
-    // signing is finished
-    api.state_flags &= ~SIGNING_STARTED;
-
-    ui_display_welcome();
-    return IO_ASYNCH_REPLY;
+    return 0;
 }

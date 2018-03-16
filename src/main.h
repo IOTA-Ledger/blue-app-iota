@@ -23,27 +23,7 @@
 #define BOT 3
 #define BOT_H 4
 
-// data starts at apdu[5]
-#define APDU_HEADER_LENGTH 5
-// defines byte that says length
-#define APDU_BODY_LENGTH_OFFSET 4
-#define APDU_TX_TYPE 3
-#define APDU_MORE 2
-
-
-// Error codes
-#define INCOMPLETE_TX 0x6D18
-#define UNKNOWN_TX_TYPE 0x6D00
-#define LAST_IDX_ERROR 0x6D04
-#define IDX_OUT_OF_ORDER 0x6D08
-#define UNBALANCED_TX 0x6D10
-#define TEST_ERROR 0x9876
-#define BAD_ADDR 0x6D22
-#define NO_SEED_IDX 0x6D28
-
-
 #define LEDGER_MSG "LEDGER"
-#define SECURITY_LEVEL 2
 #define DEBUG_SEED "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR"
 
 extern unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
