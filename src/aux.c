@@ -1,5 +1,7 @@
 #include "aux.h"
+#include <stdint.h>
 #include <string.h>
+#include "main.h"
 
 #include "iota/iota_types.h"
 #include "iota/kerl.h"
@@ -29,7 +31,7 @@ void get_seed(const unsigned char *entropy, unsigned int n,
 {
 #ifndef DEBUG_SEED
     // at least one chunk of entropy required
-    if (n < 48) {
+    if (n < NUM_HASH_BYTES) {
         THROW(INVALID_PARAMETER);
     }
 
