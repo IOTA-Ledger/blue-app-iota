@@ -29,6 +29,7 @@ void display_glyphs_confirm(char *c1, char *c2);
 
 void write_text_array(char *array, uint8_t len);
 
+uint8_t get_num_digits(int64_t val);
 bool display_value(int64_t val, uint8_t str_defn);
 void value_convert_readability();
 

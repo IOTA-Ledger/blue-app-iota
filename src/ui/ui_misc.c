@@ -340,10 +340,7 @@ bool display_value(int64_t val, uint8_t str_defn)
 {
     uint8_t num_digits = get_num_digits(val);
     
-    if (num_digits <= 3)
-        ui_state.display_full_value = true;
-    
-    if (ui_state.display_full_value)
+    if (ui_state.display_full_value || num_digits <= 3)
         write_full_val(val, str_defn, num_digits);
     else
         write_readable_val(val, str_defn, num_digits);

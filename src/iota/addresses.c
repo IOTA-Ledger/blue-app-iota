@@ -2,6 +2,7 @@
 #include "common.h"
 #include "conversion.h"
 #include "kerl.h"
+#include <string.h>
 
 static void digest_single_chunk(unsigned char *key_fragment,
                                 cx_sha3_t *digest_sha3, cx_sha3_t *round_sha3)

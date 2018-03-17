@@ -54,28 +54,26 @@ void write_browser_mode(uint8_t mode)
         nvm_write(&N_storage.browser_mode, (void *)&mode, sizeof(uint8_t));
 }
 
-bool init_flash()
+bool flash_is_init()
 {
-    // not initialized
-    if (N_storage.initialized != 0x01) {
-        internalStorage_t storage;
+    return N_storage.initialized == 0x01;
+}
 
-        storage.initialized = 0x01;
-        os_memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
-        storage.account_seed[0] = 1;
-        storage.account_seed[1] = 4;
-        storage.account_seed[2] = 9;
-        storage.account_seed[3] = 22;
-        storage.account_seed[4] = 762;
-        storage.advanced_mode = 0;
-        storage.browser_mode = 0;
+void init_flash()
+{
+    internalStorage_t storage;
 
-        nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
+    storage.initialized = 0x01;
+    os_memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
+    storage.account_seed[0] = 1;
+    storage.account_seed[1] = 4;
+    storage.account_seed[2] = 9;
+    storage.account_seed[3] = 22;
+    storage.account_seed[4] = 762;
+    storage.advanced_mode = 0;
+    storage.browser_mode = 0;
 
-        return true;
-    }
-
-    return false;
+    nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 }
 
 uint32_t get_seed_idx(unsigned int idx)
@@ -87,8 +85,7 @@ static void IOTA_main()
 {
     volatile unsigned int flags = 0;
 
-    // init the UI and flash (and if first run use that on ui_init())
-    ui_init(init_flash());
+    ui_init(flash_is_init());
     // init the API
     io_initialize();
 

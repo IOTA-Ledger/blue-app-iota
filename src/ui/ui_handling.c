@@ -359,6 +359,7 @@ void ui_handle_button(uint8_t state, uint8_t button_mask)
         switch (state) {
                 /* ------------- INIT --------------- */
             case STATE_MENU_INIT:
+                // TODO ensure menu_idx is last (forcing user to read)
                 init_flash();
                 break;
                 /* ------------- APPROVE TX --------------- */
@@ -373,10 +374,12 @@ void ui_handle_button(uint8_t state, uint8_t button_mask)
                 break;
                 /* ------------- BAL/PAY SWAP READABLE --------------- */
             case STATE_TX_BAL:
+                if(get_num_digits(ui_state.bal) > 3)
+                    value_convert_readability();
+                break;
             case STATE_TX_PAY:
-                // if there is no "readable" version
-                // displaying will overwrite to full value
-                value_convert_readability();
+                if(get_num_digits(ui_state.pay) > 3)
+                    value_convert_readability();
                 break;
         }
     }

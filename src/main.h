@@ -13,16 +13,6 @@
 #define BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
 #define BIP44_ACCOUNT 4
 
-#define TYPE_INT 1
-#define TYPE_UINT 2
-#define TYPE_STR 3
-
-#define TOP_H 0
-#define TOP 1
-#define MID 2
-#define BOT 3
-#define BOT_H 4
-
 #define LEDGER_MSG "LEDGER"
 #define DEBUG_SEED "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR"
 
@@ -41,5 +31,7 @@ uint8_t get_advanced_mode();
 uint8_t get_browser_mode();
 void write_advanced_mode(uint8_t mode);
 void write_browser_mode(uint8_t mode);
+
+void init_flash();
 
 #endif // MAIN_H

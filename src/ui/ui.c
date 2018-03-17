@@ -214,13 +214,6 @@ unsigned int bagl_ui_nanos_screen_button(unsigned int button_mask,
     return 0;
 }
 
-const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e)
-{
-    // Go back to the dashboard
-    os_sched_exit(0);
-    return NULL;
-}
-
 uint8_t ui_translate_mask(unsigned int button_mask)
 {
     switch (button_mask) {
@@ -264,7 +257,8 @@ void ui_transition_state(unsigned int button_mask)
     ui_build_display();
     
     if (ui_state.state == STATE_EXIT)
-        io_seproxyhal_touch_exit(NULL);
+        // Go back to the dashboard
+        os_sched_exit(0);
     
     // render new display
     ui_render();

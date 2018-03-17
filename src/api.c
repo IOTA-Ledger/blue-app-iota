@@ -99,35 +99,6 @@ unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
     return 0;
 }
 
-/** @brief This functions gets called, when bundle is denied. */
-void user_deny()
-{
-    // reset the bundle
-    os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
-    api.state_flags &= ~BUNDLE_INITIALIZED;
-
-    THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
-}
-
-/** @brief This functions gets called, when bundle is accepted. */
-void user_sign()
-{
-    ui_display_calc();
-    ui_force_draw();
-
-    if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
-                                    api.security)) {
-        THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
-    }
-    api.state_flags |= BUNDLE_FINALIZED;
-
-    TX_OUTPUT output;
-    output.finalized = true;
-    bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
-
-    io_send(&output, sizeof(output), SW_OK);
-}
-
 unsigned int api_tx(unsigned char *input_data, unsigned int len)
 {
     if (CHECK_STATE(api.state_flags, TX)) {
@@ -205,13 +176,15 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
             char address[81];
             bytes_to_chars(addr_bytes, address, 48);
 
-            int64_t payment = 0;
+            int64_t payment = 0, balance = 0;
             for (unsigned int i = 0; i <= api.bundle_ctx.last_index; i++) {
                 if (api.bundle_ctx.values[i] > 0) {
                     payment += api.bundle_ctx.values[i];
                 }
+                else
+                    balance -= api.bundle_ctx.values[i];
             }
-            ui_sign_tx(0, payment, address, 81);
+            ui_sign_tx(balance, payment, address, 81);
         }
 
         return IO_ASYNCH_REPLY;
@@ -288,4 +261,33 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
     }
 
     return 0;
+}
+
+/** @brief This functions gets called, when bundle is denied. */
+void user_deny()
+{
+    // reset the bundle
+    os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
+    api.state_flags &= ~BUNDLE_INITIALIZED;
+    
+    THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
+}
+
+/** @brief This functions gets called, when bundle is accepted. */
+void user_sign()
+{
+    ui_display_calc();
+    ui_force_draw();
+    
+    if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
+                                    api.security)) {
+        THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
+    }
+    api.state_flags |= BUNDLE_FINALIZED;
+    
+    TX_OUTPUT output;
+    output.finalized = true;
+    bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
+    
+    io_send(&output, sizeof(output), SW_OK);
 }
