@@ -38,7 +38,7 @@ static void init_shas(const unsigned char *seed_bytes, uint32_t idx,
 
 // generate public address in byte format
 void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
-                     uint8_t security, unsigned char *address_bytes)
+                     unsigned int security, unsigned char *address_bytes)
 {
     if (security < 1 || security > MAX_SECURITY) {
         THROW(INVALID_PARAMETER);

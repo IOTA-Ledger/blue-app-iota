@@ -9,6 +9,7 @@
 #include <assert.h>
 #include "common.h"
 
+#include "iota_types.h"
 #include "hash_file.h"
 
 #ifndef TEST_FOLDER
@@ -16,9 +17,6 @@
 #endif
 
 #define MAX_NUM_HASHES 5
-#define NUM_HASH_TRITS 243
-#define NUM_HASH_TRYTES 81
-#define NUM_HASH_BYTES 48
 
 #define NUM_TRYTES(X) (((X) / NUM_HASH_TRITS) * NUM_HASH_TRYTES)
 #define NUM_BYTES(X) (((X) / NUM_HASH_TRITS) * NUM_HASH_BYTES)

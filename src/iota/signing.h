@@ -1,6 +1,7 @@
 #ifndef SIGNING_H
 #define SIGNING_H
 
+#include "stdbool.h"
 #include "iota_types.h"
 
 // the number of chunks in one signature fragment
@@ -38,5 +39,14 @@ void signing_initialize(SIGNING_CTX *ctx, const unsigned char *seed_bytes,
  */
 unsigned int signing_next_fragment(SIGNING_CTX *ctx,
                                    unsigned char *signature_bytes);
+
+/** @brief Return wether there are remaining signatrue fragments
+ *  @param ctx the signing context used
+ *  @return true, if there is another fragment, false otherwise
+ */
+static inline bool signing_has_next_fragment(const SIGNING_CTX *ctx)
+{
+        return ctx->fragment_index <= ctx->last_fragment;
+}
 
 #endif // SIGNING_H

@@ -7,8 +7,6 @@
 
 #include "common.h"
 
-#define KERL_HASH_NUM_BYTES (CX_KECCAK384_SIZE)
-
 /** @brief Initializes the context for Kerl.
  *  @param sha3 the SHA context used.
  */
