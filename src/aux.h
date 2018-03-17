@@ -2,9 +2,6 @@
 #define AUX_H
 
 #include <stdbool.h>
-#include <stdint.h>
-
-void int_to_str(int64_t num, char *str, uint8_t len);
 
 bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding);
 

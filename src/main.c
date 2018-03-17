@@ -1,5 +1,5 @@
 #include "main.h"
-#include "ui.h"
+#include "ui/ui.h"
 #include "apdu.h"
 #include "aux.h"
 
