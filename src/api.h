@@ -11,6 +11,7 @@
 #define INS_PUBKEY 0x02
 #define INS_TX 0x03
 #define INS_SIGN 0x04
+#define INS_DISP_ADDR 0x05
 
 
 // state bit flags

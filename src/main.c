@@ -123,7 +123,7 @@ static void IOTA_main()
                 // send  response code and reset ui
                 // TODO: what happens if io_send throws an exception
                 io_send(NULL, 0, sw);
-                ui_reset();
+                ui_display_welcome();
                 flags = 0;
             }
             FINALLY
