@@ -257,10 +257,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
     unsigned char addr_bytes[48];
     get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
 
-    char address[81];
-    bytes_to_chars(addr_bytes, address, 48);
-
-    ui_display_address(address, sizeof(address));
+    ui_display_address(addr_bytes);
 
     io_send(NULL, 0, SW_OK);
     return 0;

@@ -47,9 +47,7 @@ void ui_read_bundle(BUNDLE_CTX *bundle_ctx)
 {
     const unsigned char *addr_bytes = bundle_get_address_bytes(bundle_ctx, 0);
 
-    char address[81];
-    bytes_to_chars(addr_bytes, address, 48);
-    memcpy(ui_state.addr, address, sizeof(address));
+    get_address_with_checksum(addr_bytes, ui_state.addr);
 
     int64_t payment = 0, balance = 0;
 

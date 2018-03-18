@@ -24,7 +24,7 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
     // fgcolor, bgcolor, fontid, iconid}, text .....
     {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
         0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_LABELINE, 0x01, 0, 3, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         ui_text.half_top, 0, 0, 0, NULL, NULL, NULL},
@@ -40,14 +40,14 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
     {{BAGL_LABELINE, 0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_LABELINE, 0x01, 0, 36, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
         ui_text.half_bot, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_LESS}, ui_glyphs.glyph_bar_l, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_LESS}, ui_glyphs.glyph_bar_r, 0, 0, 0, NULL, NULL, NULL},
 
@@ -59,16 +59,16 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
         BAGL_GLYPH_ICON_UP}, ui_glyphs.glyph_up, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_DOWN}, ui_glyphs.glyph_down, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_WARNING_BADGE}, ui_glyphs.glyph_warn, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_LOADING_BADGE}, ui_glyphs.glyph_load, 0, 0, 0, NULL, NULL, NULL},
-    
+
     {{BAGL_ICON, 0x00, 24, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
         BAGL_GLYPH_ICON_DASHBOARD_BADGE}, ui_glyphs.glyph_dash, 0, 0, 0, NULL, NULL, NULL}};
 // clang-format on
@@ -194,12 +194,9 @@ void ui_display_signing()
     ui_force_draw();
 }
 
-void ui_display_address(char *a, uint8_t len)
+void ui_display_address(const unsigned char *addr_bytes)
 {
-    if (len != 81)
-        return;
-
-    memcpy(ui_state.addr, a, 81);
+    get_address_with_checksum(addr_bytes, ui_state.addr);
     state_go(STATE_DISP_ADDR_CHK, 0);
 
     ui_build_display();

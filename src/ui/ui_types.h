@@ -1,6 +1,8 @@
 #ifndef UI_TYPES_H
 #define UI_TYPES_H
 
+#include <stdint.h>
+
 #define TYPE_INT 0
 #define TYPE_STR 1
 
@@ -79,7 +81,7 @@ typedef struct UI_STATE_CTX {
     int64_t bal;
     int64_t pay;
     bool display_full_value;
-    char addr[81];
+    char addr[90];
 
 } UI_STATE_CTX;
 

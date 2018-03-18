@@ -32,7 +32,7 @@ void ui_display_welcome();
 void ui_display_calc();
 void ui_display_recv();
 void ui_display_signing();
-void ui_display_address(char *a, uint8_t len);
+void ui_display_address(const unsigned char *addr_bytes);
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
 void ui_restore();
 

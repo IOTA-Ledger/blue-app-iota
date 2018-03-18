@@ -139,7 +139,8 @@ void ui_build_display()
         write_display(abbrv, TYPE_STR, TOP);
         write_display("Chk: ", TYPE_STR, BOT);
 
-        get_address_checksum(ui_state.addr, ui_text.bot_str + 5);
+        // copy the remaining 9 chars in the buffer
+        memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
 
         display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
     } break;
@@ -175,7 +176,8 @@ void ui_build_display()
         write_display(abbrv, TYPE_STR, TOP);
         write_display("Chk: ", TYPE_STR, BOT);
 
-        get_address_checksum(ui_state.addr, ui_text.bot_str + 5);
+        // copy the remaining 9 chars in the buffer
+        memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
 
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
     } break;
