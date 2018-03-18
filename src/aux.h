@@ -7,9 +7,15 @@
  *  Input is checked until num_chars or zero character is reached.
  *  @param chars string to check
  *  @param num_chars number of expected charecters
- *  @param zero_padding true, if the string should be padded with '9's
  */
-bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding);
+bool validate_chars(const char *chars, unsigned int num_chars);
+
+/** @brief Copies chars and adds padding if shorter than the expected length.
+ *  @param destination target string
+ *  @param source string to copy and pad
+ *  @param num_chars number of expected charecters
+ */
+void rpad_chars(char *destination, const char *source, unsigned int num_chars);
 
 /** @brief Computes a valid IOTA seed based on the provided entropy.
  *  @param n number of entropy bytes
