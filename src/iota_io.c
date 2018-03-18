@@ -50,6 +50,9 @@ unsigned int iota_dispatch()
 
     case INS_SIGN:
         return api_sign(input_data, len);
+            
+    case INS_DISP_ADDR:
+        return api_display_pubkey(input_data, len);
 
     // unknown command ??
     default:

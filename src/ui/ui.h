@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "main.h"
+#include "../iota/bundle.h"
 
 #include "ui_types.h"
 #include "ui_misc.h"
@@ -25,17 +26,15 @@
  - Create msg to display [ui_misc.c]
  - Define behavior (ui_handle_menus) [ui_handling.c] */
 
-void ui_render();
-void ui_force_draw();
-
 void ui_init(bool flash_is_init);
 
 void ui_display_welcome();
 void ui_display_calc();
 void ui_display_recv();
-void ui_display_sending();
+void ui_display_signing();
 void ui_display_address(char *a, uint8_t len);
-void ui_sign_tx(int64_t b, int64_t p, const char *a, uint8_t len);
+void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
+void ui_restore();
 
 #endif // UI_H
 

@@ -193,6 +193,10 @@ void ui_build_display()
             
             display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         } break;
+            /* ------------ IGNORE STATE -------------- */
+        case STATE_IGNORE: {
+            return;
+        }
             /* ------------ UNKNOWN STATE -------------- */
         default: {
             clear_display();
@@ -335,6 +339,8 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
                 return;
             }
             break;
+        case STATE_IGNORE:
+            return;
             /* ------------ DEFAULT -------------- */
         default:
             ui_state.menu_idx = 0;

@@ -35,6 +35,9 @@ void api_initialize()
 
 unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
 {
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
     if (CHECK_STATE(api.state_flags, SET_SEED)) {
         THROW(SW_COMMAND_INVALID_STATE);
     }
@@ -75,12 +78,18 @@ unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
 
 unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
 {
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
     if (CHECK_STATE(api.state_flags, PUBKEY)) {
         THROW(SW_COMMAND_INVALID_STATE);
     }
     if (len < sizeof(PUBKEY_INPUT)) {
         THROW(SW_WRONG_LENGTH);
     }
+    
+    ui_display_calc();
+    
     const PUBKEY_INPUT *input = (PUBKEY_INPUT *)(input_data);
 
     uint32_t address_idx;
@@ -94,6 +103,8 @@ unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
 
     PUBKEY_OUTPUT output;
     bytes_to_chars(addr_bytes, output.address, 48);
+    
+    ui_restore();
 
     io_send(&output, sizeof(output), SW_OK);
     return 0;
@@ -101,12 +112,19 @@ unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
 
 unsigned int api_tx(unsigned char *input_data, unsigned int len)
 {
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
     if (CHECK_STATE(api.state_flags, TX)) {
         THROW(SW_COMMAND_INVALID_STATE);
     }
     if (len < sizeof(TX_INPUT)) {
         THROW(SW_WRONG_LENGTH);
     }
+    
+    // TODO handle not receiving complete tx
+    ui_display_recv();
+    
     TX_INPUT *input = (TX_INPUT *)(input_data);
 
     if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
@@ -167,25 +185,7 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
     }
 
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
-
-        // TODO: this should becaome a method in ui, taking the ctx as input
-        {
-            const unsigned char *addr_bytes =
-                bundle_get_address_bytes(&api.bundle_ctx, 0);
-
-            char address[81];
-            bytes_to_chars(addr_bytes, address, 48);
-
-            int64_t payment = 0, balance = 0;
-            for (unsigned int i = 0; i <= api.bundle_ctx.last_index; i++) {
-                if (api.bundle_ctx.values[i] > 0) {
-                    payment += api.bundle_ctx.values[i];
-                }
-                else
-                    balance -= api.bundle_ctx.values[i];
-            }
-            ui_sign_tx(balance, payment, address, 81);
-        }
+        ui_sign_tx(&api.bundle_ctx);
 
         return IO_ASYNCH_REPLY;
     }
@@ -210,6 +210,9 @@ static bool next_signatrue_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 
 unsigned int api_sign(unsigned char *input_data, unsigned int len)
 {
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
     if (CHECK_STATE(api.state_flags, SIGN)) {
         THROW(SW_COMMAND_INVALID_STATE);
     }
@@ -227,8 +230,7 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
 
     if ((api.state_flags & SIGNING_STARTED) == 0) {
         // temporary screen during signing process
-        ui_display_sending();
-        ui_force_draw();
+        ui_display_signing();
 
         if (api.bundle_ctx.values[idx] >= 0) {
             // no input transaction
@@ -263,6 +265,37 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
     return 0;
 }
 
+unsigned int api_display_pubkey(unsigned char *input_data, unsigned int len)
+{
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    if (len < sizeof(PUBKEY_INPUT)) {
+        THROW(SW_WRONG_LENGTH);
+    }
+    
+    ui_display_calc();
+    
+    const PUBKEY_INPUT *input = (PUBKEY_INPUT *)(input_data);
+    
+    uint32_t address_idx;
+    if (!ASSIGN(address_idx, input->address_idx)) {
+        // address index overflow
+        THROW(INVALID_PARAMETER);
+    }
+    
+    unsigned char addr_bytes[48];
+    get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
+    
+    char address[81];
+    bytes_to_chars(addr_bytes, address, 48);
+    
+    ui_display_address(address, sizeof(address));
+    
+    io_send(NULL, 0, SW_OK);
+    return 0;
+}
+
 /** @brief This functions gets called, when bundle is denied. */
 void user_deny()
 {
@@ -270,14 +303,13 @@ void user_deny()
     os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
     api.state_flags &= ~BUNDLE_INITIALIZED;
     
-    THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
+    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
 /** @brief This functions gets called, when bundle is accepted. */
 void user_sign()
 {
     ui_display_calc();
-    ui_force_draw();
     
     if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
                                     api.security)) {

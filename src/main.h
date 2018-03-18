@@ -26,6 +26,8 @@ unsigned char io_event(unsigned char channel);
 
 void user_sign();
 void user_deny();
+
+bool flash_is_init();
 uint32_t get_seed_idx(unsigned int idx);
 uint8_t get_advanced_mode();
 uint8_t get_browser_mode();

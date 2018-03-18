@@ -119,6 +119,7 @@ void ctx_initialize()
     os_memset(&ui_state, 0, sizeof(ui_state.state));
     
     ui_state.menu_idx = 0;
+    ui_state.backup_menu_idx = 0;
     ui_state.display_full_value = false;
 }
 
@@ -127,10 +128,14 @@ void ui_init(bool flash_is_init)
     ctx_initialize();
     init_state_transitions();
 
-    if (flash_is_init)
+    if (flash_is_init) {
         ui_state.state = STATE_MENU_WELCOME;
-    else
+        ui_state.backup_state = STATE_MENU_WELCOME;
+    }
+    else {
         ui_state.state = STATE_MENU_INIT;
+        ui_state.backup_state = STATE_MENU_INIT;
+    }
 
     ui_build_display();
     ui_render();
@@ -144,15 +149,19 @@ void ui_display_welcome()
     ui_render();
 }
 
-/* Not having these coded as actual states preserves the previous
- state we were in to return to */
 void ui_display_calc()
 {
     clear_display();
     write_display("Calculating...", TYPE_STR, MID);
     
     display_glyphs(ui_glyphs.glyph_load, NULL);
+    
+    backup_state();
+    
+    ui_state.state = STATE_IGNORE;
+    
     ui_render();
+    ui_force_draw();
 }
 
 void ui_display_recv()
@@ -161,16 +170,28 @@ void ui_display_recv()
     write_display("Receiving TX...", TYPE_STR, MID);
     
     display_glyphs(ui_glyphs.glyph_load, NULL);
+    
+    backup_state();
+    
+    ui_state.state = STATE_IGNORE;
+    
     ui_render();
+    ui_force_draw();
 }
 
-void ui_display_sending()
+void ui_display_signing()
 {
     clear_display();
     write_display("Signing TX...", TYPE_STR, MID);
     
     display_glyphs(ui_glyphs.glyph_load, NULL);
+    
+    backup_state();
+    
+    ui_state.state = STATE_IGNORE;
+    
     ui_render();
+    ui_force_draw();
 }
 
 void ui_display_address(char *a, uint8_t len)
@@ -183,23 +204,26 @@ void ui_display_address(char *a, uint8_t len)
     
     ui_build_display();
     ui_render();
+    ui_force_draw();
 }
 
-// Generates user prompt for tx
-void ui_sign_tx(int64_t b, int64_t p, const char *a, uint8_t len)
+void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
-    // we only accept 81 character addresses - no checksum
-    if (len != 81)
-        return;
-    
-    ui_state.bal = b;
-    ui_state.pay = p;
-    memcpy(ui_state.addr, a, len);
+    ui_read_bundle(bundle_ctx);
     
     ui_state.state = STATE_TX_BAL;
     
     ui_build_display();
     ui_render();
+}
+
+void ui_restore()
+{
+    restore_state();
+    
+    ui_build_display();
+    ui_render();
+    ui_force_draw();
 }
 
 
@@ -280,6 +304,10 @@ void init_state_transitions()
     state_transitions[STATE_MENU_WELCOME][BUTTON_L] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_R] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_B] = STATE_MENU_WELCOME;
+    /* ------------- MENU WELCOME --------------- */
+    state_transitions[STATE_IGNORE][BUTTON_L] = STATE_IGNORE;
+    state_transitions[STATE_IGNORE][BUTTON_R] = STATE_IGNORE;
+    state_transitions[STATE_IGNORE][BUTTON_B] = STATE_IGNORE;
     /* ------------- MENU VIEW IDX --------------- */
     state_transitions[STATE_MENU_DISP_IDX][BUTTON_L] = STATE_MENU_DISP_IDX;
     state_transitions[STATE_MENU_DISP_IDX][BUTTON_R] = STATE_MENU_DISP_IDX;

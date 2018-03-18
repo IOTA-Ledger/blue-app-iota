@@ -17,23 +17,24 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-#define TOTAL_STATES 14
+#define TOTAL_STATES 15
 #define STATE_EXIT TOTAL_STATES
 
 #define STATE_MENU_INIT 0
 #define STATE_MENU_WELCOME 1
-#define STATE_TX_BAL 2
-#define STATE_TX_PAY 3
-#define STATE_TX_ADDR 4
-#define STATE_TX_APPROVE 5
-#define STATE_TX_DENY 6
-#define STATE_MENU_DISP_IDX 7
-#define STATE_MENU_ADVANCED 8
-#define STATE_MENU_BROWSER 9
-#define STATE_MENU_ADV_WARN 10
-#define STATE_MENU_DISP_ADDR 11
-#define STATE_MENU_TX_ADDR 12
-#define STATE_DISP_ADDR_CHK 13
+#define STATE_IGNORE 2
+#define STATE_TX_BAL 3
+#define STATE_TX_PAY 4
+#define STATE_TX_ADDR 5
+#define STATE_TX_APPROVE 6
+#define STATE_TX_DENY 7
+#define STATE_MENU_DISP_IDX 8
+#define STATE_MENU_ADVANCED 9
+#define STATE_MENU_BROWSER 10
+#define STATE_MENU_ADV_WARN 11
+#define STATE_MENU_DISP_ADDR 12
+#define STATE_MENU_TX_ADDR 13
+#define STATE_DISP_ADDR_CHK 14
 
 // Size of Menu
 #define MENU_INIT_LEN 5
@@ -70,6 +71,9 @@ typedef struct UI_STATE_CTX {
 
     uint8_t state;
     uint8_t menu_idx;
+    
+    uint8_t backup_state;
+    uint8_t backup_menu_idx;
 
     // tx information
     int64_t bal;

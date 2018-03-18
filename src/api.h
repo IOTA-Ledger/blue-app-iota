@@ -4,16 +4,6 @@
 #include "main.h"
 #include "iota/signing.h"
 
-#define CLA 0x80
-
-// Instructions
-#define INS_SET_SEED 0x01
-#define INS_PUBKEY 0x02
-#define INS_TX 0x03
-#define INS_SIGN 0x04
-#define INS_DISP_ADDR 0x05
-
-
 // state bit flags
 #define SEED_SET (1 << 0)
 #define BUNDLE_INITIALIZED (1 << 1)
@@ -80,5 +70,6 @@ unsigned int api_set_seed(unsigned char *input_data, unsigned int len);
 unsigned int api_pubkey(unsigned char *input_data, unsigned int len);
 unsigned int api_tx(unsigned char *input_data, unsigned int len);
 unsigned int api_sign(unsigned char *input_data, unsigned int len);
+unsigned int api_display_pubkey(unsigned char *input_data, unsigned int len);
 
 #endif // API_H

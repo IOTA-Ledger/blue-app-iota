@@ -1,6 +1,7 @@
 #include "ui_misc.h"
 #include <string.h>
 #include "common.h"
+#include "../iota/conversion.h"
 #include "iota/addresses.h"
 
 // go to state with menu index
@@ -15,6 +16,20 @@ void state_return(uint8_t state, uint8_t idx)
     state_go(state, idx);
 }
 
+void backup_state()
+{
+    ui_state.backup_state = ui_state.state;
+    ui_state.backup_menu_idx = ui_state.menu_idx;
+}
+
+void restore_state()
+{
+    state_return(ui_state.backup_state, ui_state.backup_menu_idx);
+    
+    ui_state.backup_state = STATE_MENU_WELCOME;
+    ui_state.backup_menu_idx = 0;
+}
+
 void abbreviate_addr(char *dest, const char *src, uint8_t len)
 {
     // length 81 or 82 means full address with or without '\0'
@@ -26,6 +41,30 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
     strncpy(dest + 4, " ... ", 5);
     strncpy(dest + 9, src + 77, 4);
     dest[13] = '\0';
+}
+
+void ui_read_bundle(BUNDLE_CTX *bundle_ctx)
+{
+    const unsigned char *addr_bytes =
+    bundle_get_address_bytes(bundle_ctx, 0);
+    
+    char address[81];
+    bytes_to_chars(addr_bytes, address, 48);
+    memcpy(ui_state.addr, address, sizeof(address));
+    
+    int64_t payment = 0, balance = 0;
+    
+    for (unsigned int i = 0; i <= bundle_ctx->last_index; i++) {
+        if (bundle_ctx->values[i] > 0) {
+            payment += bundle_ctx->values[i];
+        }
+        else {
+            balance -= bundle_ctx->values[i];
+        }
+    }
+    
+    ui_state.pay = payment;
+    ui_state.bal = balance;
 }
 
 // len specifies max size of buffer

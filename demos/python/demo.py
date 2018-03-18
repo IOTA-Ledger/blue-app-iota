@@ -99,5 +99,8 @@ while True:
     if struct[1] == False:
         break
 
+
+dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
+
 elapsed_time = time.time() - start_time
 print("Time Elapsed: %d" % elapsed_time)
