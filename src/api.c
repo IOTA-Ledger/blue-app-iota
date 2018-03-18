@@ -1,8 +1,8 @@
 #include "api.h"
 #include "common.h"
-#include "ui.h"
 #include "aux.h"
 #include "iota_io.h"
+#include "ui/ui.h"
 
 // iota-related stuff
 #include "iota/conversion.h"
@@ -13,6 +13,17 @@
 #define CHECK_STATE(state, INS)                                                \
     ((((state)&INS##_REQUIRED_STATE) != INS##_REQUIRED_STATE) ||               \
      ((state)&INS##_FORBIDDEN_STATE))
+
+#define GET_INPUT(input_data, len, INS)                                        \
+    ({                                                                         \
+        if (!flash_is_init())                                                  \
+            THROW(SW_APP_NOT_INITIALIZED);                                     \
+        if (CHECK_STATE(api.state_flags, INS))                                 \
+            THROW(SW_COMMAND_INVALID_STATE);                                   \
+        if (len < sizeof(INS##_INPUT))                                         \
+            THROW(SW_WRONG_LENGTH);                                            \
+        (INS##_INPUT *)(input_data);                                           \
+    })
 
 typedef struct API_CTX {
 
@@ -35,18 +46,9 @@ void api_initialize()
     os_memset(&api, 0, sizeof(api));
 }
 
-unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
+unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
 {
-    if(!flash_is_init()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
-    if (CHECK_STATE(api.state_flags, SET_SEED)) {
-        THROW(SW_COMMAND_INVALID_STATE);
-    }
-    if (len < sizeof(SET_SEED_INPUT)) {
-        THROW(SW_WRONG_LENGTH);
-    }
-    const SET_SEED_INPUT *input = (SET_SEED_INPUT *)(input_data);
+    const SET_SEED_INPUT *input = GET_INPUT(input_data, len, SET_SEED);
 
     // setting the seed resets everything
     api_initialize();
@@ -81,21 +83,11 @@ unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
     return 0;
 }
 
-unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
+unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
 {
-    if(!flash_is_init()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
-    if (CHECK_STATE(api.state_flags, PUBKEY)) {
-        THROW(SW_COMMAND_INVALID_STATE);
-    }
-    if (len < sizeof(PUBKEY_INPUT)) {
-        THROW(SW_WRONG_LENGTH);
-    }
-    
+    const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
+
     ui_display_calc();
-    
-    const PUBKEY_INPUT *input = (PUBKEY_INPUT *)(input_data);
 
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
@@ -108,29 +100,19 @@ unsigned int api_pubkey(unsigned char *input_data, unsigned int len)
 
     PUBKEY_OUTPUT output;
     bytes_to_chars(addr_bytes, output.address, 48);
-    
+
     ui_restore();
 
     io_send(&output, sizeof(output), SW_OK);
     return 0;
 }
 
-unsigned int api_tx(unsigned char *input_data, unsigned int len)
+unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 {
-    if(!flash_is_init()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
-    if (CHECK_STATE(api.state_flags, TX)) {
-        THROW(SW_COMMAND_INVALID_STATE);
-    }
-    if (len < sizeof(TX_INPUT)) {
-        THROW(SW_WRONG_LENGTH);
-    }
-    
+    const TX_INPUT *input = GET_INPUT(input_data, len, TX);
+
     // TODO handle not receiving complete tx
     ui_display_recv();
-    
-    TX_INPUT *input = (TX_INPUT *)(input_data);
 
     if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
         uint32_t last_index;
@@ -150,7 +132,7 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
         THROW(INVALID_STATE);
     }
 
-    if (!validate_chars(input->address, 81, false)) {
+    if (!validate_chars(input->address, 81)) {
         // invalid address
         THROW(INVALID_PARAMETER);
     }
@@ -172,7 +154,10 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
         // value out of bounds
         THROW(INVALID_PARAMETER);
     }
-    if (!validate_chars(input->tag, 27, true)) {
+
+    char padded_tag[27];
+    rpad_chars(padded_tag, input->tag, 27);
+    if (!validate_chars(padded_tag, 27)) {
         // invalid tag
         THROW(INVALID_PARAMETER);
     }
@@ -181,12 +166,12 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
         // timestamp overflow
         THROW(INVALID_PARAMETER);
     }
-    bundle_add_tx(&api.bundle_ctx, input->value, input->tag, timestamp);
+    bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
 
     if (input->value < 0) {
         // create meta tx for input
         bundle_set_external_address(&api.bundle_ctx, input->address);
-        bundle_add_tx(&api.bundle_ctx, 0, input->tag, timestamp);
+        bundle_add_tx(&api.bundle_ctx, 0, padded_tag, timestamp);
     }
 
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
@@ -214,18 +199,9 @@ static bool next_signatrue_fragment(SIGNING_CTX *ctx, char *signature_fragment)
     return signing_has_next_fragment(ctx);
 }
 
-unsigned int api_sign(unsigned char *input_data, unsigned int len)
+unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 {
-    if(!flash_is_init()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
-    if (CHECK_STATE(api.state_flags, SIGN)) {
-        THROW(SW_COMMAND_INVALID_STATE);
-    }
-    if (len < sizeof(SIGN_INPUT)) {
-        THROW(SW_WRONG_LENGTH);
-    }
-    const SIGN_INPUT *input = (SIGN_INPUT *)(input_data);
+    const SIGN_INPUT *input = GET_INPUT(input_data, len, SIGN);
 
     unsigned int idx;
     if (!ASSIGN(idx, input->transaction_idx) ||
@@ -273,33 +249,24 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
     return 0;
 }
 
-unsigned int api_display_pubkey(unsigned char *input_data, unsigned int len)
+unsigned int api_display_pubkey(const unsigned char *input_data,
+                                unsigned int len)
 {
-    if(!flash_is_init()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
-    if (len < sizeof(PUBKEY_INPUT)) {
-        THROW(SW_WRONG_LENGTH);
-    }
-    
+    const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
+
     ui_display_calc();
-    
-    const PUBKEY_INPUT *input = (PUBKEY_INPUT *)(input_data);
-    
+
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
         // address index overflow
         THROW(INVALID_PARAMETER);
     }
-    
+
     unsigned char addr_bytes[48];
     get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
-    
-    char address[81];
-    bytes_to_chars(addr_bytes, address, 48);
-    
-    ui_display_address(address, sizeof(address));
-    
+
+    ui_display_address(addr_bytes);
+
     io_send(NULL, 0, SW_OK);
     return 0;
 }
@@ -310,7 +277,7 @@ void user_deny()
     // reset the bundle
     os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
     api.state_flags &= ~BUNDLE_INITIALIZED;
-    
+
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
@@ -318,17 +285,17 @@ void user_deny()
 void user_sign()
 {
     ui_display_calc();
-    
+
     if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
                                     api.security)) {
         THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
     }
     api.state_flags |= BUNDLE_FINALIZED;
-    
+
     TX_OUTPUT output;
     output.finalized = true;
     bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
-    
+
     io_send(&output, sizeof(output), SW_OK);
 }
 

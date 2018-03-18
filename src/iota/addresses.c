@@ -4,6 +4,8 @@
 #include "kerl.h"
 #include <string.h>
 
+#define CHECKSUM_CHARS 9
+
 static void digest_single_chunk(unsigned char *key_fragment,
                                 cx_sha3_t *digest_sha3, cx_sha3_t *round_sha3)
 {
@@ -22,7 +24,7 @@ static void init_shas(const unsigned char *seed_bytes, uint32_t idx,
                       cx_sha3_t *key_sha, cx_sha3_t *digest_sha)
 {
     // use temp bigint so seed not destroyed
-    unsigned char bytes[48];
+    unsigned char bytes[NUM_HASH_BYTES];
     os_memcpy(bytes, seed_bytes, sizeof(bytes));
 
     bytes_add_u32_mem(bytes, idx);
@@ -41,7 +43,7 @@ static void init_shas(const unsigned char *seed_bytes, uint32_t idx,
 void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
                      unsigned int security, unsigned char *address_bytes)
 {
-    if (security < 1 || security > MAX_SECURITY) {
+    if (!IN_RANGE(security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
         THROW(INVALID_PARAMETER);
     }
 
@@ -52,11 +54,11 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
     init_shas(seed_bytes, idx, &key_sha, &digest_sha);
 
     // buffer for the digests of each security level
-    unsigned char digest[48 * security];
+    unsigned char digest[NUM_HASH_BYTES * security];
 
     // only store a single fragment of the private key at a time
     // use last chunk of buffer, as this is only used after the key is generated
-    unsigned char *key_f = digest + 48 * (security - 1);
+    unsigned char *key_f = digest + NUM_HASH_BYTES * (security - 1);
 
     for (uint8_t i = 0; i < security; i++) {
         for (uint8_t j = 0; j < 27; j++) {
@@ -71,33 +73,35 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
             // as key_sha has been tainted, reinitialize with the saved state
             kerl_reinitialize(&key_sha, state);
         }
-        kerl_squeeze_final_chunk(&digest_sha, digest + 48 * i);
+        kerl_squeeze_final_chunk(&digest_sha, digest + NUM_HASH_BYTES * i);
 
         // reset digest sha for next digest
         kerl_initialize(&digest_sha);
     }
 
     // absorb the digest for each security
-    kerl_absorb_bytes(&digest_sha, digest, 48 * security);
+    kerl_absorb_bytes(&digest_sha, digest, NUM_HASH_BYTES * security);
 
     // one final squeeze for address
     kerl_squeeze_final_chunk(&digest_sha, address_bytes);
 }
 
-// get 9 character checksum of 81 character address
-void get_address_checksum(const char *address, char *checksum)
+// get 9 character checksum of NUM_HASH_TRYTES character address
+void get_address_with_checksum(const unsigned char *address_bytes,
+                               char *full_address)
 {
     cx_sha3_t sha;
     kerl_initialize(&sha);
 
-    unsigned char addr_bytes[48], checksum_bytes[48];
-    chars_to_bytes(address, addr_bytes, 81);
-
-    kerl_absorb_chunk(&sha, addr_bytes);
+    unsigned char checksum_bytes[NUM_HASH_BYTES];
+    kerl_absorb_chunk(&sha, address_bytes);
     kerl_squeeze_final_chunk(&sha, checksum_bytes);
 
-    char full_checksum[81];
-    bytes_to_chars(checksum_bytes, full_checksum, 48);
+    char full_checksum[NUM_HASH_TRYTES];
+    bytes_to_chars(checksum_bytes, full_checksum, NUM_HASH_BYTES);
 
-    strncpy(checksum, full_checksum + 72, 9);
+    bytes_to_chars(address_bytes, full_address, NUM_HASH_BYTES);
+
+    os_memcpy(full_address + NUM_HASH_TRYTES,
+              full_checksum + NUM_HASH_TRYTES - CHECKSUM_CHARS, CHECKSUM_CHARS);
 }

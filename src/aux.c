@@ -1,13 +1,16 @@
 #include "aux.h"
 #include <stdint.h>
 #include <string.h>
+#include "common.h"
 #include "main.h"
 
 #include "iota/iota_types.h"
 #include "iota/kerl.h"
 #include "iota/conversion.h"
 
-bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding)
+#define PAD_CHAR '9'
+
+bool validate_chars(const char *chars, unsigned int num_chars)
 {
     const size_t len = strnlen(chars, num_chars);
     for (unsigned int i = 0; i < len; i++) {
@@ -17,13 +20,14 @@ bool validate_chars(char *chars, unsigned int num_chars, bool zero_padding)
         }
     }
 
-    if (zero_padding) {
-        for (unsigned int i = len; i < num_chars; i++) {
-            chars[i] = '9';
-        }
-    }
-
     return true;
+}
+
+void rpad_chars(char *destination, const char *source, unsigned int num_chars)
+{
+    const size_t len = strnlen(source, num_chars);
+    os_memcpy(destination, source, len);
+    os_memset(destination + len, PAD_CHAR, num_chars - len);
 }
 
 void get_seed(const unsigned char *entropy, unsigned int n,

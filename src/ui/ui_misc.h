@@ -48,5 +48,3 @@ void get_adv_warn_menu(char *msg);
 void get_address_menu(char *msg);
 
 #endif // UI_MISC_H
-
-

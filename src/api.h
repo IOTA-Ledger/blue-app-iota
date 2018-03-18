@@ -82,11 +82,11 @@ typedef IO_STRUCT INIT_LEDGER_INPUT {
 
 void api_initialize();
 
-unsigned int api_set_seed(unsigned char *input_data, unsigned int len);
-unsigned int api_pubkey(unsigned char *input_data, unsigned int len);
-unsigned int api_tx(unsigned char *input_data, unsigned int len);
-unsigned int api_sign(unsigned char *input_data, unsigned int len);
-unsigned int api_display_pubkey(unsigned char *input_data, unsigned int len);
+unsigned int api_set_seed(const unsigned char *input_data, unsigned int len);
+unsigned int api_pubkey(const unsigned char *input_data, unsigned int len);
+unsigned int api_tx(const unsigned char *input_data, unsigned int len);
+unsigned int api_sign(const unsigned char *input_data, unsigned int len);
+unsigned int api_display_pubkey(const unsigned char *input_data, unsigned int len);
 
 unsigned int api_basic_pubkey(unsigned char *input_data, unsigned int len);
 unsigned int api_seed_idx(unsigned char *input_data, unsigned int len);
