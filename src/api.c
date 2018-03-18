@@ -18,6 +18,8 @@ typedef struct API_CTX {
 
     unsigned char seed_bytes[48];
     uint8_t security; // use hard-coded security for now
+    
+    unsigned int active_seed;
 
     BUNDLE_CTX bundle_ctx;
     SIGNING_CTX signing_ctx;
@@ -56,6 +58,9 @@ unsigned int api_set_seed(unsigned char *input_data, unsigned int len)
             THROW(INVALID_PARAMETER);
         }
     }
+    
+    // set our currently active seed
+    api.active_seed = path[BIP44_PATH_LEN-1];
 
     if (!ASSIGN(api.security, input->security) ||
         !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
@@ -185,6 +190,7 @@ unsigned int api_tx(unsigned char *input_data, unsigned int len)
     }
 
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
+        // TODO: - Basic mode check for change != 0
         ui_sign_tx(&api.bundle_ctx);
 
         return IO_ASYNCH_REPLY;
@@ -248,6 +254,7 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
     }
 
     // TODO: check that the transaction idx has not changed
+    // TODO: verify change address belongs to us in basic
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
@@ -259,6 +266,7 @@ unsigned int api_sign(unsigned char *input_data, unsigned int len)
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
+        incr_seed_idx(api.active_seed);
         ui_display_welcome();
     }
 
@@ -322,4 +330,88 @@ void user_sign()
     bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
     
     io_send(&output, sizeof(output), SW_OK);
+}
+
+
+
+
+
+
+/* ---------------- Basic mode functions
+ */
+
+unsigned int api_basic_pubkey(unsigned char *input_data, unsigned int len)
+{
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    if (CHECK_STATE(api.state_flags, PUBKEY)) {
+        THROW(SW_COMMAND_INVALID_STATE);
+    }
+    if (len < sizeof(PUBKEY_INPUT_BASIC)) {
+        THROW(SW_WRONG_LENGTH);
+    }
+    if(api.active_seed > 4) {
+        THROW(SW_BAD_SEED);
+    }
+    
+    ui_display_calc();
+    
+    const PUBKEY_INPUT_BASIC *input = (PUBKEY_INPUT_BASIC *)(input_data);
+    
+    uint32_t address_idx = get_seed_idx(api.active_seed);
+    
+    // asking for next addr (tx change address)
+    if(input->next)
+        address_idx++;
+    
+    unsigned char addr_bytes[48];
+    get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
+    
+    PUBKEY_OUTPUT output;
+    bytes_to_chars(addr_bytes, output.address, 48);
+    
+    ui_restore();
+    
+    io_send(&output, sizeof(output), SW_OK);
+    return 0;
+}
+
+unsigned int api_seed_idx(unsigned char *input_data, unsigned int len)
+{
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    
+    const SEED_IDX_INPUT *input = (SEED_IDX_INPUT *)(input_data);
+    
+    if(input->account > 4)
+        THROW(INVALID_PARAMETER);
+    
+    SEED_IDX_OUTPUT output;
+    output.seed_idx = get_seed_idx(input->account);
+    
+    io_send(&output, sizeof(output), SW_OK);
+    return 0;
+}
+
+unsigned int api_init_ledger(unsigned char *input_data, unsigned int len)
+{
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    
+    // don't init ledger in advanced mode
+    if(get_advanced_mode())
+        THROW(SW_COMMAND_INVALID_STATE);
+    
+    const INIT_LEDGER_INPUT *input = (INIT_LEDGER_INPUT *)(input_data);
+    
+    // write all 5 seed indexes
+    for(uint8_t i = 0; i < 5; i++) {
+        write_seed_indexes(i, (unsigned int)input->seed_indexes[i]);
+    }
+    
+    io_send(NULL, 0, SW_OK);
+    return 0;
 }

@@ -9,13 +9,15 @@ unsigned int iota_dispatch();
 
 /* ---  INS  --- */
 
-#define INS_NONE        0x00
+#define INS_NONE            0x00
 
-#define INS_SET_SEED    0x01
-#define INS_PUBKEY      0x02
-#define INS_TX          0x03
-#define INS_SIGN        0x04
-#define INS_DISP_ADDR   0x05
+#define INS_SET_SEED        0x01
+#define INS_PUBKEY          0x02
+#define INS_TX              0x03
+#define INS_SIGN            0x04
+#define INS_DISP_ADDR       0x05
+#define INS_SEED_IDX        0x06
+#define INS_INIT_LEDGER     0x07
 
 /* ---  IO constants  --- */
 
@@ -40,6 +42,7 @@ unsigned int iota_dispatch();
 #define SW_COMMAND_INVALID_DATA  0x6984
 #define SW_COMMAND_INVALID_STATE 0x6985
 #define SW_APP_NOT_INITIALIZED   0x6986
+#define SW_BAD_SEED              0x6987
 
 #define SW_UNKNOWN               0x6f00
 

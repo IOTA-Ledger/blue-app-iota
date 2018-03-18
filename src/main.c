@@ -65,7 +65,7 @@ void init_flash()
 
     storage.initialized = 0x01;
     os_memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
-    storage.account_seed[0] = 1;
+    storage.account_seed[0] = 0;
     storage.account_seed[1] = 4;
     storage.account_seed[2] = 9;
     storage.account_seed[3] = 22;
@@ -76,9 +76,30 @@ void init_flash()
     nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 }
 
-uint32_t get_seed_idx(unsigned int idx)
+void incr_seed_idx(unsigned int account)
 {
-    return N_storage.account_seed[idx];
+    // can't keep track of indexes in advanced mode
+    if(get_advanced_mode())
+        return;
+    
+    uint32_t seed_idx = N_storage.account_seed[account];
+    seed_idx++;
+    
+    nvm_write(&N_storage.account_seed[account], (void *)&seed_idx, sizeof(uint32_t));
+}
+uint32_t get_seed_idx(unsigned int account)
+{
+    return N_storage.account_seed[account];
+}
+
+void write_seed_indexes(unsigned int account, const unsigned int seed_idx)
+{
+    // can't keep track of indexes in advanced mode
+    if(get_advanced_mode())
+        return;
+    
+    nvm_write(&N_storage.account_seed[account],
+              (void *)&seed_idx, sizeof(uint32_t));
 }
 
 static void IOTA_main()

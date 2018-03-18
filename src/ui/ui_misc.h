@@ -16,6 +16,7 @@
 void state_go(uint8_t state, uint8_t idx);
 void state_return(uint8_t state, uint8_t idx);
 void backup_state();
+void set_backup(uint8_t state, uint8_t menu_idx);
 void restore_state();
 
 void ui_read_bundle(BUNDLE_CTX *bundle_ctx);

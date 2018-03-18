@@ -33,6 +33,10 @@ typedef IO_STRUCT PUBKEY_OUTPUT {
         char address[81];
 } PUBKEY_OUTPUT;
 
+typedef IO_STRUCT PUBKEY_INPUT_BASIC {
+        bool next;
+} PUBKEY_INPUT_BASIC;
+
 #define TX_REQUIRED_STATE (SEED_SET)
 #define TX_FORBIDDEN_STATE (BUNDLE_FINALIZED)
 
@@ -63,6 +67,18 @@ typedef IO_STRUCT SIGN_OUTPUT {
         bool fragments_remaining;
 } SIGN_OUTPUT;
 
+typedef IO_STRUCT SEED_IDX_INPUT {
+    int64_t account;
+} SEED_IDX_INPUT;
+
+typedef IO_STRUCT SEED_IDX_OUTPUT {
+    int64_t seed_idx;
+} SEED_IDX_OUTPUT;
+
+typedef IO_STRUCT INIT_LEDGER_INPUT {
+    int64_t seed_indexes[5];
+} INIT_LEDGER_INPUT;
+
 
 void api_initialize();
 
@@ -71,5 +87,9 @@ unsigned int api_pubkey(unsigned char *input_data, unsigned int len);
 unsigned int api_tx(unsigned char *input_data, unsigned int len);
 unsigned int api_sign(unsigned char *input_data, unsigned int len);
 unsigned int api_display_pubkey(unsigned char *input_data, unsigned int len);
+
+unsigned int api_basic_pubkey(unsigned char *input_data, unsigned int len);
+unsigned int api_seed_idx(unsigned char *input_data, unsigned int len);
+unsigned int api_init_ledger(unsigned char *input_data, unsigned int len);
 
 #endif // API_H

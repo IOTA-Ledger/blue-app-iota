@@ -20,6 +20,8 @@ INS_PUBKEY = 0x02
 INS_TX = 0x03
 INS_SIGN = 0x04
 INS_DISP_ADDR = 0x05
+INS_SEED_IDX = 0x06
+INS_INIT_LEDGER = 0x07
 
 
 def apdu_command(ins, data, p1=0, p2=0):
@@ -41,9 +43,29 @@ def pack_set_seed_input(bip44_path):
     return struct.pack(bip44_path[0], bip44_path[1], bip44_path[2], bip44_path[3], bip44_path[4], SECURITY_LEVEL)
 
 
+def pack_seed_idx_input(account):
+    struct = Struct("<q")
+    return struct.pack(account)
+
+
+def unpack_seed_idx_output(data):
+    struct = Struct("<q")
+    return struct.unpack(data)
+
+
+def pack_init_ledger_input(idx1, idx2, idx3, idx4, idx5):
+    struct = Struct("<qqqqq")
+    return struct.pack(idx1, idx2, idx3, idx4, idx5)
+
+
 def pack_pub_key_input(address_idx):
     struct = Struct("<q")
     return struct.pack(address_idx)
+
+
+def pack_pub_key_input_basic(next):
+    struct = Struct("<?")
+    return struct.pack(next);
 
 
 def unpack_pubkey_output(data):
@@ -75,13 +97,44 @@ dongle = getDongle(True)
 exceptionCount = 0
 start_time = time.time()
 
+dongle.exchange(apdu_command(INS_INIT_LEDGER,
+    pack_init_ledger_input(8, 16, 32, 112, 80)))
+
+response = dongle.exchange(apdu_command(
+    INS_SEED_IDX, pack_seed_idx_input(0)))
+print(unpack_seed_idx_output(response))
+
+response = dongle.exchange(apdu_command(
+    INS_SEED_IDX, pack_seed_idx_input(1)))
+print(unpack_seed_idx_output(response))
+
+response = dongle.exchange(apdu_command(
+    INS_SEED_IDX, pack_seed_idx_input(2)))
+print(unpack_seed_idx_output(response))
+
+response = dongle.exchange(apdu_command(
+    INS_SEED_IDX, pack_seed_idx_input(3)))
+print(unpack_seed_idx_output(response))
+
+response = dongle.exchange(apdu_command(
+    INS_SEED_IDX, pack_seed_idx_input(4)))
+print(unpack_seed_idx_output(response))
+
+sys.exit(0)
+
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
 response = dongle.exchange(apdu_command(
-    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
+    INS_PUBKEY, pack_pub_key_input_basic(True)))
 struct = unpack_pubkey_output(response)
 print(struct)
 address = struct[0]
+
+#response = dongle.exchange(apdu_command(
+#    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
+#struct = unpack_pubkey_output(response)
+#print(struct)
+#address = struct[0]
 
 response = dongle.exchange(apdu_command(
     INS_TX, pack_tx_input(DEST_ADDRESS, 0, 10, b"XC", 0, 2, 99999)))
@@ -101,6 +154,10 @@ while True:
 
 
 dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
+
+response = dongle.exchange(apdu_command(
+    INS_SEED_IDX, pack_seed_idx_input(4)))
+print(unpack_seed_idx_output(response))
 
 elapsed_time = time.time() - start_time
 print("Time Elapsed: %d" % elapsed_time)

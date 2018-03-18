@@ -22,9 +22,17 @@ void backup_state()
     ui_state.backup_menu_idx = ui_state.menu_idx;
 }
 
+void set_backup(uint8_t state, uint8_t menu_idx)
+{
+    ui_state.backup_state = state;
+    ui_state.backup_menu_idx = menu_idx;
+}
+
 void restore_state()
 {
-    state_return(ui_state.backup_state, ui_state.backup_menu_idx);
+    // TODO remove backup state and always default back to welcome menu
+    //state_return(ui_state.backup_state, ui_state.backup_menu_idx);
+    state_return(STATE_MENU_WELCOME, 0);
     
     ui_state.backup_state = STATE_MENU_WELCOME;
     ui_state.backup_menu_idx = 0;
@@ -54,7 +62,9 @@ void ui_read_bundle(BUNDLE_CTX *bundle_ctx)
     
     int64_t payment = 0, balance = 0;
     
-    for (unsigned int i = 0; i <= bundle_ctx->last_index; i++) {
+    // don't include the very last tx (change address) otherwise
+    // payment will be meaningless
+    for (unsigned int i = 0; i <= bundle_ctx->last_index-1; i++) {
         if (bundle_ctx->values[i] > 0) {
             payment += bundle_ctx->values[i];
         }
