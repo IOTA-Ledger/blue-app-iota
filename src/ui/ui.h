@@ -20,7 +20,7 @@
  - Define what to display (ui_build_display) [ui_handling.c]
  - Define state transitions (init_state_transitions) [ui.c]
  - Define special button functions (ui_handle_button) [ui_handling.c]
- 
+
  - If scrollable menu screen, also do:
  - #define Size of Menu [ui_types.h]
  - Create msg to display [ui_misc.c]
@@ -37,5 +37,3 @@ void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
 void ui_restore();
 
 #endif // UI_H
-
-

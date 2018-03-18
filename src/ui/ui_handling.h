@@ -18,5 +18,3 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask);
 void ui_handle_button(uint8_t state, uint8_t button_mask);
 
 #endif // UI_HANDLING_H
-
-

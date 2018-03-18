@@ -88,24 +88,24 @@ void ui_force_draw()
         io_seproxyhal_general_status();
         io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
                                sizeof(G_io_seproxyhal_spi_buffer), 0);
-        
+
         // manually handle events
         switch (G_io_seproxyhal_spi_buffer[0]) {
-            case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-                if (UX_DISPLAYED()) {
-                    ux_done = true;
-                    break;
-                }
-                else {
-                    UX_DISPLAYED_EVENT();
-                }
+        case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
+            if (UX_DISPLAYED()) {
+                ux_done = true;
                 break;
-            default:
-                // ignore any other event
-                break;
+            }
+            else {
+                UX_DISPLAYED_EVENT();
+            }
+            break;
+        default:
+            // ignore any other event
+            break;
         }
     }
-    
+
     // now everything is in the buffer, the next general status renders it
     io_seproxyhal_general_status();
     io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
@@ -117,7 +117,7 @@ void ctx_initialize()
     os_memset(&ui_text, 0, sizeof(ui_text));
     os_memset(&ui_glyphs, 0, sizeof(ui_glyphs));
     os_memset(&ui_state, 0, sizeof(ui_state.state));
-    
+
     ui_state.menu_idx = 0;
     ui_state.backup_menu_idx = 0;
     ui_state.display_full_value = false;
@@ -153,13 +153,13 @@ void ui_display_calc()
 {
     clear_display();
     write_display("Calculating...", TYPE_STR, MID);
-    
+
     display_glyphs(ui_glyphs.glyph_load, NULL);
-    
+
     backup_state();
-    
+
     ui_state.state = STATE_IGNORE;
-    
+
     ui_render();
     ui_force_draw();
 }
@@ -168,13 +168,13 @@ void ui_display_recv()
 {
     clear_display();
     write_display("Receiving TX...", TYPE_STR, MID);
-    
+
     display_glyphs(ui_glyphs.glyph_load, NULL);
-    
+
     backup_state();
-    
+
     ui_state.state = STATE_IGNORE;
-    
+
     ui_render();
     ui_force_draw();
 }
@@ -183,13 +183,13 @@ void ui_display_signing()
 {
     clear_display();
     write_display("Signing TX...", TYPE_STR, MID);
-    
+
     display_glyphs(ui_glyphs.glyph_load, NULL);
-    
+
     backup_state();
-    
+
     ui_state.state = STATE_IGNORE;
-    
+
     ui_render();
     ui_force_draw();
 }
@@ -198,10 +198,10 @@ void ui_display_address(char *a, uint8_t len)
 {
     if (len != 81)
         return;
-    
+
     memcpy(ui_state.addr, a, 81);
     state_go(STATE_DISP_ADDR_CHK, 0);
-    
+
     ui_build_display();
     ui_render();
     ui_force_draw();
@@ -210,9 +210,9 @@ void ui_display_address(char *a, uint8_t len)
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
     ui_read_bundle(bundle_ctx);
-    
+
     ui_state.state = STATE_TX_BAL;
-    
+
     ui_build_display();
     ui_render();
 }
@@ -220,7 +220,7 @@ void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 void ui_restore()
 {
     restore_state();
-    
+
     ui_build_display();
     ui_render();
     ui_force_draw();
@@ -261,29 +261,29 @@ uint8_t ui_translate_mask(unsigned int button_mask)
 void ui_transition_state(unsigned int button_mask)
 {
     uint8_t translated_mask = ui_translate_mask(button_mask);
-    
+
     // make sure we only transition on valid button presses
     if (translated_mask == BUTTON_BAD)
         return;
-    
+
     // store current state for menu/button handling
     uint8_t old_state = ui_state.state;
     ui_state.state = state_transitions[ui_state.state][translated_mask];
-    
+
     // special handling of menus (including new state transition)
     ui_handle_menus(old_state, translated_mask);
-    
+
     // See if a special function needs to be called
     // for instance user_sign or user_deny()
     ui_handle_button(old_state, translated_mask);
-    
+
     // after transitioning, build new display
     ui_build_display();
-    
+
     if (ui_state.state == STATE_EXIT)
         // Go back to the dashboard
         os_sched_exit(0);
-    
+
     // render new display
     ui_render();
 }
