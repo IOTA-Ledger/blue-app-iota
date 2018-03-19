@@ -32,80 +32,43 @@ static void test_address(const char *seed, uint32_t idx, uint8_t security,
     assert_string_equal(output, expected);
 }
 
-static void test_security_level_one(void **state)
+static void test_vector(void **state, const TEST_VECTOR *vector,
+                        uint8_t security)
 {
     uint32_t idx = (uintptr_t)*state;
     assert_in_range(idx, 0, MAX_ADDRESS_INDEX);
 
-    const uint8_t security = 1;
-    test_address(PETER_VECTOR.seed, idx, security,
-                 PETER_VECTOR.addresses[security][idx]);
+    test_address(vector->seed, idx, security, vector->addresses[security][idx]);
+}
+
+static void test_security_level_one(void **state)
+{
+    test_vector(state, &PETER_VECTOR, 1);
 }
 
 static void test_security_level_two(void **state)
 {
-    uint32_t idx = (uintptr_t)*state;
-    assert_in_range(idx, 0, MAX_ADDRESS_INDEX);
-
-    const uint8_t security = 2;
-    test_address(PETER_VECTOR.seed, idx, security,
-                 PETER_VECTOR.addresses[security][idx]);
+    test_vector(state, &PETER_VECTOR, 2);
 }
 
 static void test_security_level_three(void **state)
 {
-    uint32_t idx = (uintptr_t)*state;
-    assert_in_range(idx, 0, MAX_ADDRESS_INDEX);
-
-    const uint8_t security = 3;
-    test_address(PETER_VECTOR.seed, idx, security,
-                 PETER_VECTOR.addresses[security][idx]);
+    test_vector(state, &PETER_VECTOR, 3);
 }
 
-static void test_242trits_overflow_seed(void **state)
+static void test_overflow_seed_level_one(void **state)
 {
-    const char *seed =
-        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
-        "MMMMMMMMMMD";
-    const char *address[] = {
-        "VSSIPYVZYLPSMIB9HFPIM9ONASKJHETXRMJNIBRBZNJRWIMD9WVITVUC9FZHIZHGLBKAY9"
-        "HAPGIZVQOQA",
-        "MDWYEJJHJDIUVPKDY9EACGDJUOP9TLYDWETUBOYCBLYXYYYJYUXYUTCTPTDGJYFKMQMCNZ"
-        "DQPTBE9AFIW",
-        "BRCRVAASDLAZPTSHELUSJGNEWQSCLY9WHEARHXSJBQFNSMTES9OQULMXNNLWSZDE9K9HOW"
-        "QHPMTVNHEMD",
-        "BVTCAAJ9KVBYCDXUATNBFOIOVALZZJCVEMWSWHHKBLCQ9BXRFZPN9ER9WXUROWIJVRWREW"
-        "JNAWTOGH9OW",
-        "BPBX9PPTMYXBYSELTKUJVROKMFLCSQMCGKMMYMXSFPQNDWRQ9RWJBEEERFAO9ZHWGTKTWE"
-        "BMCDBRUUAHC"};
-
-    uint32_t idx = (uintptr_t)*state;
-    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
-
-    test_address(seed, idx, 2, address[idx]);
+    test_vector(state, &OVERFLOW_VECTOR, 1);
 }
 
-static void test_243trits_overflow_seed(void **state)
+static void test_overflow_seed_level_two(void **state)
 {
-    const char *seed =
-        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
-        "MMMMMMMMMMM";
-    const char *address[] = {
-        "VSSIPYVZYLPSMIB9HFPIM9ONASKJHETXRMJNIBRBZNJRWIMD9WVITVUC9FZHIZHGLBKAY9"
-        "HAPGIZVQOQA",
-        "MDWYEJJHJDIUVPKDY9EACGDJUOP9TLYDWETUBOYCBLYXYYYJYUXYUTCTPTDGJYFKMQMCNZ"
-        "DQPTBE9AFIW",
-        "BRCRVAASDLAZPTSHELUSJGNEWQSCLY9WHEARHXSJBQFNSMTES9OQULMXNNLWSZDE9K9HOW"
-        "QHPMTVNHEMD",
-        "BVTCAAJ9KVBYCDXUATNBFOIOVALZZJCVEMWSWHHKBLCQ9BXRFZPN9ER9WXUROWIJVRWREW"
-        "JNAWTOGH9OW",
-        "BPBX9PPTMYXBYSELTKUJVROKMFLCSQMCGKMMYMXSFPQNDWRQ9RWJBEEERFAO9ZHWGTKTWE"
-        "BMCDBRUUAHC"};
+    test_vector(state, &OVERFLOW_VECTOR, 2);
+}
 
-    uint32_t idx = (uintptr_t)*state;
-    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
-
-    test_address(seed, idx, 2, address[idx]);
+static void test_overflow_seed_level_three(void **state)
+{
+    test_vector(state, &OVERFLOW_VECTOR, 3);
 }
 
 static void test_n_addresses_for_seed(void **state)
@@ -140,16 +103,26 @@ int main(void)
         cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)2),
         cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)3),
         cmocka_unit_test_prestate(test_security_level_three, (uint32_t *)4),
-        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)0),
-        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)1),
-        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)2),
-        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)3),
-        cmocka_unit_test_prestate(test_242trits_overflow_seed, (uint32_t *)4),
-        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)0),
-        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)1),
-        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)2),
-        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)3),
-        cmocka_unit_test_prestate(test_243trits_overflow_seed, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_overflow_seed_level_one, (uint32_t *)0),
+        cmocka_unit_test_prestate(test_overflow_seed_level_one, (uint32_t *)1),
+        cmocka_unit_test_prestate(test_overflow_seed_level_one, (uint32_t *)2),
+        cmocka_unit_test_prestate(test_overflow_seed_level_one, (uint32_t *)3),
+        cmocka_unit_test_prestate(test_overflow_seed_level_one, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_overflow_seed_level_two, (uint32_t *)0),
+        cmocka_unit_test_prestate(test_overflow_seed_level_two, (uint32_t *)1),
+        cmocka_unit_test_prestate(test_overflow_seed_level_two, (uint32_t *)2),
+        cmocka_unit_test_prestate(test_overflow_seed_level_two, (uint32_t *)3),
+        cmocka_unit_test_prestate(test_overflow_seed_level_two, (uint32_t *)4),
+        cmocka_unit_test_prestate(test_overflow_seed_level_three,
+                                  (uint32_t *)0),
+        cmocka_unit_test_prestate(test_overflow_seed_level_three,
+                                  (uint32_t *)1),
+        cmocka_unit_test_prestate(test_overflow_seed_level_three,
+                                  (uint32_t *)2),
+        cmocka_unit_test_prestate(test_overflow_seed_level_three,
+                                  (uint32_t *)3),
+        cmocka_unit_test_prestate(test_overflow_seed_level_three,
+                                  (uint32_t *)4),
         cmocka_unit_test(test_n_addresses_for_seed)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
