@@ -12,10 +12,9 @@
 /* -                      DEFINES AND MACROS                             - */
 /* ----------------------------------------------------------------------- */
 
-// no catching supported, just abort while printing the code name to stderr
-#define THROW(x) \
-        ({ fprintf(stderr, "EXCEPTION: " #x "\n"); \
-           abort(); })
+void throw_exception(const char *expression, const char *file, int line);
+
+#define THROW(x) throw_exception(#x, __FILE__, __LINE__)
 
 #define UNUSED(x) (void)(x)
 

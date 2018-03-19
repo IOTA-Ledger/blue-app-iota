@@ -3,6 +3,11 @@
 #include "iota/bundle.h"
 #include "keccak/sha3.h"
 
+void throw_exception(const char *expression, const char *file, int line)
+{
+    mock_assert(false, expression, file, line);
+}
+
 void ui_display_welcome()
 {
 }
