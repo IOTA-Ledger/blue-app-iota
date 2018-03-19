@@ -29,9 +29,15 @@ void ui_display_address(const unsigned char *addr_bytes)
     UNUSED(addr_bytes);
 }
 
+// forward declaration
+void user_sign();
+
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
     UNUSED(bundle_ctx);
+
+    // the user signs everything
+    user_sign();
 }
 
 void ui_restore()
