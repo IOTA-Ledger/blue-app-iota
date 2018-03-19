@@ -95,6 +95,30 @@ static void test_valid_index_level_three(void **state)
     }
 }
 
+static void test_change_security(void **state)
+{
+    UNUSED(state);
+
+    SEED_INIT(PETER_VECTOR.seed);
+
+    api_initialize();
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, 1};
+        EXPECT_API_OK(set_seed, input);
+    }
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, 2};
+        EXPECT_API_OK(set_seed, input);
+    }
+    {
+        PUBKEY_INPUT input = {0};
+        PUBKEY_OUTPUT output;
+        strncpy(output.address, PETER_VECTOR.addresses[2][0], NUM_HASH_TRYTES);
+
+        EXPECT_API_DATA_OK(pubkey, input, output);
+    }
+}
+
 static void test_negative_index(void **state)
 {
     UNUSED(state);
@@ -131,14 +155,28 @@ static void test_index_overflow(void **state)
     }
 }
 
+static void test_not_set_seed(void **state)
+{
+    UNUSED(state);
+
+    api_initialize();
+    {
+        PUBKEY_INPUT input = {0};
+
+        EXPECT_API_EXCEPTION(pubkey, input);
+    }
+}
+
 int main(void)
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_valid_index_level_one),
         cmocka_unit_test(test_valid_index_level_two),
         cmocka_unit_test(test_valid_index_level_three),
+        cmocka_unit_test(test_change_security),
         cmocka_unit_test(test_negative_index),
-        cmocka_unit_test(test_index_overflow)};
+        cmocka_unit_test(test_index_overflow),
+        cmocka_unit_test(test_not_set_seed)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
