@@ -1,17 +1,13 @@
 #include "test_common.h"
+#include <string.h>
+#include "test_vectors.h"
 #include "iota/addresses.h"
 #include "iota/conversion.h"
-
-#define MAX_SECURITY 3
-
-// for purely coincidental reasons this seed was intialy used in the development
-const char PETER_SEED[] = "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPE"
-                          "TERPETERPETERPETERPETERPETERR";
 
 static void seed_address(const char *seed_chars, uint32_t idx, uint8_t security,
                          char *address_chars)
 {
-    if (security > MAX_SECURITY || strlen(seed_chars) != NUM_HASH_TRYTES) {
+    if (security > 3 || strlen(seed_chars) != NUM_HASH_TRYTES) {
         address_chars = "";
         return;
     }
@@ -38,62 +34,32 @@ static void test_address(const char *seed, uint32_t idx, uint8_t security,
 
 static void test_security_level_one(void **state)
 {
-    const char *address[] = {
-        "WLRSPFNMBJRWS9DFXCGIROJCZCPJQG9PMOO9CUZNQXTLLQAYXGXT9LECGEQ9MQIWIBGQRE"
-        "FHULPOETHNZ",
-        "UMDTJXHIFVYVCHXKZNMQWMDHNLVQNMJMRULXUFRLNFVVUMKYZOAETVQOWSDUAKTXVNDSVA"
-        "JCASTRQNV9D",
-        "LHWIEGUADQXNMRKQSBDJOAFMBIFKHHZXYEFOU9WFRMBGODSNJAPGFHOUOSGDICSFVA9KOU"
-        "PPCMLAHPHAW",
-        "GDTLKEWSSLKLQYF9UYSFM9XOVWZYMPMCQOCJMCYJFEESUHBAFPCLNGOLMDHZSXX9WSSFUN"
-        "DORMGADKIEA",
-        "DJJTBISBQNSJTYYVRRXFQVTGHTNGOEJSVOXIJKW9NBHOZBZIUASYVI9FA9YYR9KVNQP9OL"
-        "LUFGSZAZDDA"};
-
     uint32_t idx = (uintptr_t)*state;
-    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
+    assert_in_range(idx, 0, MAX_ADDRESS_INDEX);
 
-    test_address(PETER_SEED, idx, 1, address[idx]);
+    const uint8_t security = 1;
+    test_address(PETER_VECTOR.seed, idx, security,
+                 PETER_VECTOR.addresses[security][idx]);
 }
 
 static void test_security_level_two(void **state)
 {
-    const char *address[] = {
-        "GUIOZDLUNXIGC9DCV9ZIEDBWRHHPILAYOYRVPTFPRAUZWLWDIXBSPCZGENHWDFHMQGCTOK"
-        "MXITVVDMEFB",
-        "MTPYSBLSL9HENRQKP9IPYYZTHEOECLXGYMZIYYUCYAPZYFAECX9ZSFOSFMDNYQAPYHVMTV"
-        "UX9HNNUKOB9",
-        "RKPTFXPROTSKXBKXLNSLOPOQGWASCLAECQQRWOKCJPNYHIFBUJXE9GHQJPIZHKYXXHC9BZ"
-        "JPHAROKBGSD",
-        "JYJFIYFNTDPTPGSJWAKUFK9OLTISGIKSQPTLIVRVHLHRRCSJCEFQRTGWVTBUQFXHFRZICM"
-        "FDTPDKNKDFW",
-        "WPF9CTKYVMEWXHXL9NKR9XON9TPBP9UNM9FPWBUISVSHNULLVHSU9PMBNNR9FSZUPCNBXG"
-        "JWLGRKKSLHW"};
-
     uint32_t idx = (uintptr_t)*state;
-    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
+    assert_in_range(idx, 0, MAX_ADDRESS_INDEX);
 
-    test_address(PETER_SEED, idx, 2, address[idx]);
+    const uint8_t security = 2;
+    test_address(PETER_VECTOR.seed, idx, security,
+                 PETER_VECTOR.addresses[security][idx]);
 }
 
 static void test_security_level_three(void **state)
 {
-    const char *address[] = {
-        "GL9YTIZWBXCPSCBRAVAUBMNNCHIHZWABOYQ9NBXOMZCNCCZPQWTMRBKKJDZWUIWRUXHZVE"
-        "XBCGYBMEMQX",
-        "PROKBRGUUTYILP9KB9QVTXDODVRRWHP9IITVHYCYHWRDZFLIPRVARUXWURXDTUWNPWDFGT"
-        "NSLXYUTWQTW",
-        "AYVJGXBZOGIKYOCSDAMFNBZVSBKEVB9YNYD9EWONVIYPPYKWKWYXPBZSBEIZTRBZ9SDXYR"
-        "IGWOERSSRDA",
-        "PDBLCSZPTJTAVBBBHOYKVHETZG9RTLUIHAIPWJ9VNYPNXLYNCTCIIECH9OJHXOSGCORBR9"
-        "OJCMCUQWWUX",
-        "FDEBHWMDYRZCMJULJRUDTUCNCYMHJBYGUOTSIKQUANCY9YMYKAWKFNIWOUWOKYQLTZOIVX"
-        "RITMJTNRMB9"};
-
     uint32_t idx = (uintptr_t)*state;
-    assert_in_range(idx, 0, sizeof(address) / sizeof(address[0]) - 1);
+    assert_in_range(idx, 0, MAX_ADDRESS_INDEX);
 
-    test_address(PETER_SEED, idx, 3, address[idx]);
+    const uint8_t security = 3;
+    test_address(PETER_VECTOR.seed, idx, security,
+                 PETER_VECTOR.addresses[security][idx]);
 }
 
 static void test_242trits_overflow_seed(void **state)
