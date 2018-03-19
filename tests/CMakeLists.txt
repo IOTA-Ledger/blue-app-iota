@@ -55,3 +55,7 @@ add_test(bundle_test ${CMAKE_CURRENT_BINARY_DIR}/bundle_test)
 add_executable(signing_test signing_test.c test_mocks.c)
 target_link_libraries(signing_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(signing_test ${CMAKE_CURRENT_BINARY_DIR}/signing_test)
+
+add_executable(api_test api_test.c test_mocks.c)
+target_link_libraries(api_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(api_test ${CMAKE_CURRENT_BINARY_DIR}/api_test)
