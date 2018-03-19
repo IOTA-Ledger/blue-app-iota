@@ -174,7 +174,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         return IO_ASYNCH_REPLY;
     }
 
-    TX_OUTPUT output;
+    TX_OUTPUT output = {0};
     output.finalized = false;
 
     io_send(&output, sizeof(output), SW_OK);
