@@ -8,7 +8,11 @@
 #include "iota/conversion.h"
 #include "iota/addresses.h"
 #include "iota/bundle.h"
+#include "iota/seed.h"
 #include "iota/signing.h"
+
+// TODO: we don't want to include main.h
+bool flash_is_init();
 
 #define CHECK_STATE(state, INS)                                                \
     ((((state)&INS##_REQUIRED_STATE) != INS##_REQUIRED_STATE) ||               \
@@ -65,12 +69,7 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
         THROW(INVALID_PARAMETER);
     }
 
-    // we only care about privateKeyData and using this to
-    // generate our iota seed
-    unsigned char entropy[64];
-    os_perso_derive_node_bip32(CX_CURVE_256K1, path, BIP44_PATH_LEN, entropy,
-                               entropy + 32);
-    get_seed(entropy, sizeof(entropy), api.seed_bytes);
+    derive_seed_bip32(path, BIP44_PATH_LEN, api.seed_bytes);
 
     api.state_flags |= SEED_SET;
 
