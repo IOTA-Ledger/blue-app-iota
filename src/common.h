@@ -70,6 +70,12 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
         }
 }
 
+/* ----------------------------------------------------------------------- */
+/* -                                 IO                                  - */
+/* ----------------------------------------------------------------------- */
+
+#define IO_ASYNCH_REPLY 1
+
 #else // ifdef NO_BOLOS
 
 /* ----------------------------------------------------------------------- */
@@ -82,6 +88,8 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
 /* ----------------------------------------------------------------------- */
 /* -                            COMMON                                   - */
 /* ----------------------------------------------------------------------- */
+
+#define DEBUG_SEED "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR"
 
 #define CX_KECCAK384_SIZE 48
 

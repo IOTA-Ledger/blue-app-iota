@@ -1,6 +1,13 @@
 #include "ui.h"
 #include <string.h>
 #include "common.h"
+#include "bagl.h"
+#include "os_io_seproxyhal.h"
+
+#include "ui_types.h"
+#include "ui_misc.h"
+#include "ui_handling.h"
+
 #include "iota/addresses.h"
 
 UI_TEXT_CTX ui_text;

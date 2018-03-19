@@ -1,6 +1,10 @@
 #ifndef IOTA_IO_H
 #define IOTA_IO_H
 
+#define BIP44_PATH_LEN 5
+#define BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
+#define BIP44_ACCOUNT 4
+
 void io_initialize();
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
 unsigned int iota_dispatch();
