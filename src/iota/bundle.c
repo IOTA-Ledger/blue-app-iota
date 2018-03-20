@@ -140,8 +140,18 @@ void normalize_hash_bytes(const unsigned char *hash_bytes,
     normalize_hash(normalized_hash_trytes);
 }
 
-static bool validate_txs(const BUNDLE_CTX *ctx, const unsigned char *seed_bytes,
-                         unsigned int security)
+static bool validate_address(const unsigned char *addr_bytes,
+                             const unsigned char *seed_bytes, uint32_t idx,
+                             unsigned int security)
+{
+    unsigned char computed_addr[48];
+    get_public_addr(seed_bytes, idx, security, computed_addr);
+
+    return (memcmp(addr_bytes, computed_addr, 48) == 0);
+}
+
+static bool validate_txs(const BUNDLE_CTX *ctx, unsigned int change_tx_index,
+                         const unsigned char *seed_bytes, unsigned int security)
 {
     int64_t balance = 0;
     for (unsigned int i = 0; i <= ctx->last_index; i++) {
@@ -152,14 +162,14 @@ static bool validate_txs(const BUNDLE_CTX *ctx, const unsigned char *seed_bytes,
     }
 
     for (unsigned int i = 0; i <= ctx->last_index; i++) {
-        if (ctx->values[i] >= 0) {
-            continue;
-        }
+        // only check the change and input addresses
+        if (i == change_tx_index || ctx->values[i] < 0) {
+            const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
 
-        unsigned char addr_bytes[48];
-        get_public_addr(seed_bytes, ctx->indices[i], security, addr_bytes);
-        if (memcmp(addr_bytes, bundle_get_address_bytes(ctx, i), 48) != 0) {
-            return false;
+            if (!validate_address(addr_bytes, seed_bytes, ctx->indices[i],
+                                  security)) {
+                return false;
+            }
         }
     }
 
@@ -190,7 +200,7 @@ static bool bundle_validate_hash(BUNDLE_CTX *ctx)
     return true;
 }
 
-bool bundle_validating_finalize(BUNDLE_CTX *ctx,
+bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint32_t change_index,
                                 const unsigned char *seed_bytes,
                                 unsigned int security)
 {
@@ -198,7 +208,8 @@ bool bundle_validating_finalize(BUNDLE_CTX *ctx,
         THROW(INVALID_STATE);
     }
 
-    return validate_txs(ctx, seed_bytes, security) && bundle_validate_hash(ctx);
+    return validate_txs(ctx, change_index, seed_bytes, security) &&
+           bundle_validate_hash(ctx);
 }
 
 unsigned int bundle_finalize(BUNDLE_CTX *ctx)

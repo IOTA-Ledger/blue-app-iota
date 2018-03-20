@@ -76,11 +76,12 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx);
  *  transaction matches the provided address c) the normalized bundle hash does
  *  not contain 'M'.
  *  @param ctx the bundle context used.
+ *  @param change_index the index of the change transaction
  *  @param seed_bytes seed used for the addresses
  *  @param security security level used for the addresses
  *  @return true if the bundle is valid, false otherwise
  */
-bool bundle_validating_finalize(BUNDLE_CTX *ctx,
+bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint32_t change_index,
                                 const unsigned char *seed_bytes,
                                 unsigned int security);
 
