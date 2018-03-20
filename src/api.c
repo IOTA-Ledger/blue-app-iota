@@ -101,6 +101,38 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
     return 0;
 }
 
+static void validate_tx_indices(const TX_INPUT *input)
+{
+    if (input->last_index != api.bundle_ctx.last_index) {
+        THROW(SW_TX_INVALID_INDEX);
+    }
+    if (input->current_index != api.bundle_ctx.current_index) {
+        THROW(SW_TX_INVALID_INDEX);
+    }
+}
+
+static void validate_tx_order(const TX_INPUT *input)
+{
+    // the receiving addresses are only allowed first or last
+    if (input->value >= 0 && api.bundle_ctx.current_index > 0 &&
+        api.bundle_ctx.current_index < api.bundle_ctx.last_index) {
+        THROW(SW_TX_INVALID_ORDER);
+    }
+    // the output address must come first
+    if (input->value < 0 && api.bundle_ctx.current_index == 0) {
+        THROW(SW_TX_INVALID_ORDER);
+    }
+}
+
+static void get_padded_valid_tag(const char *input_tag, char *padded_tag)
+{
+    rpad_chars(padded_tag, input_tag, 27);
+    if (!validate_chars(padded_tag, 27)) {
+        // invalid tag
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+}
+
 unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 {
     const TX_INPUT *input = GET_INPUT(input_data, len, TX);
@@ -118,13 +150,8 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         api.state_flags |= BUNDLE_INITIALIZED;
     }
 
-    // validate transaction indices
-    if (input->last_index != api.bundle_ctx.last_index) {
-        THROW(INVALID_STATE);
-    }
-    if (input->current_index != api.bundle_ctx.current_index) {
-        THROW(INVALID_STATE);
-    }
+    validate_tx_indices(input);
+    validate_tx_order(input);
 
     if (!validate_chars(input->address, 81)) {
         // invalid address
@@ -150,11 +177,8 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     }
 
     char padded_tag[27];
-    rpad_chars(padded_tag, input->tag, 27);
-    if (!validate_chars(padded_tag, 27)) {
-        // invalid tag
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
+    get_padded_valid_tag(input->tag, padded_tag);
+
     uint32_t timestamp;
     if (!ASSIGN(timestamp, input->timestamp)) {
         // timestamp overflow
@@ -272,13 +296,24 @@ void user_deny()
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
+static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
+{
+    // there only is a proper change transaction if the value is positive
+    if (ctx->values[ctx->last_index] > 0) {
+        return ctx->last_index;
+    }
+    // return something out of bounds
+    return ctx->last_index + 1;
+}
+
 /** @brief This functions gets called, when bundle is accepted. */
 void user_sign()
 {
     ui_display_calc();
 
-    if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
-                                    api.security)) {
+    if (!bundle_validating_finalize(&api.bundle_ctx,
+                                    get_change_tx_index(&api.bundle_ctx),
+                                    api.seed_bytes, api.security)) {
         THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
     }
     api.state_flags |= BUNDLE_FINALIZED;

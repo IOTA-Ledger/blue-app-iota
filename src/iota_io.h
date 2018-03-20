@@ -45,6 +45,9 @@ unsigned int iota_dispatch();
 #define SW_COMMAND_INVALID_STATE 0x6985
 #define SW_APP_NOT_INITIALIZED   0x6986
 
+#define SW_TX_INVALID_INDEX      0x6991
+#define SW_TX_INVALID_ORDER      0x6992
+
 #define SW_UNKNOWN               0x6f00
 
 #endif // IOTA_IO_H
