@@ -51,10 +51,214 @@ static void test_valid_output_input_bundle(void **state)
     }
 }
 
+// TODO: adapt tag for valid bundle
+static void test_valid_output_input_change_bundle(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    SEED_INIT(PETER_VECTOR.seed);
+    api_initialize();
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, security};
+        EXPECT_API_OK(set_seed, input);
+    }
+    { // output transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        input.current_index = 0;
+        input.last_index = 3;
+
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    { // input transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+        input.current_index = 1;
+        input.last_index = 3;
+
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    { // 0-value change transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        input.value = 0;
+        input.current_index = 3;
+        input.last_index = 3;
+
+        EXPECT_API_EXCEPTION(tx, input);
+    }
+}
+
+static void test_invalid_input_address_index(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    SEED_INIT(PETER_VECTOR.seed);
+    api_initialize();
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, security};
+        EXPECT_API_OK(set_seed, input);
+    }
+    { // output transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    { // input transaciton
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+        input.address_idx += 1;
+
+        EXPECT_API_EXCEPTION(tx, input);
+    }
+}
+
+static void test_invalid_tx_order(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    SEED_INIT(PETER_VECTOR.seed);
+    api_initialize();
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, security};
+        EXPECT_API_OK(set_seed, input);
+    }
+    { // input transaciton as the first transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+        input.current_index = 0;
+
+        EXPECT_API_EXCEPTION(tx, input);
+    }
+}
+
+static void test_tx_index_twice(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    SEED_INIT(PETER_VECTOR.seed);
+    api_initialize();
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, security};
+        EXPECT_API_OK(set_seed, input);
+    }
+    {
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    {
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+        input.current_index = 0;
+
+        EXPECT_API_EXCEPTION(tx, input);
+    }
+}
+
+static void test_missing_meta_tx_index(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    SEED_INIT(PETER_VECTOR.seed);
+    api_initialize();
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, security};
+        EXPECT_API_OK(set_seed, input);
+    }
+    { // output transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        input.current_index = 0;
+        input.last_index = 3;
+
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    { // input transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+        input.current_index = 1;
+        input.last_index = 3;
+
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    { // 0-value change transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        input.value = 0;
+        input.current_index = 2;
+        input.last_index = 3;
+
+        EXPECT_API_EXCEPTION(tx, input);
+    }
+}
+
+static void test_invalid_value_transaction(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    SEED_INIT(PETER_VECTOR.seed);
+    api_initialize();
+    {
+        SET_SEED_INPUT input = {BIP32_PATH, security};
+        EXPECT_API_OK(set_seed, input);
+    }
+    { // output transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        input.value = MAX_IOTA_VALUE + 1;
+
+        EXPECT_API_EXCEPTION(tx, input);
+    }
+}
+
+static void test_not_set_seed(void **state)
+{
+    UNUSED(state);
+
+    api_initialize();
+    {
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+
+        EXPECT_API_EXCEPTION(tx, input);
+    }
+}
+
 int main(void)
 {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_valid_output_input_bundle)};
+        cmocka_unit_test(test_valid_output_input_bundle),
+        cmocka_unit_test(test_invalid_input_address_index),
+        cmocka_unit_test(test_invalid_tx_order),
+        cmocka_unit_test(test_tx_index_twice),
+        cmocka_unit_test(test_missing_meta_tx_index),
+        cmocka_unit_test(test_invalid_value_transaction),
+        cmocka_unit_test(test_not_set_seed)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
