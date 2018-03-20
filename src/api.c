@@ -59,14 +59,14 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
     for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
         if (!ASSIGN(path[i], input->bip44_path[i])) {
             // path overflow
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
     }
 
     if (!ASSIGN(api.security, input->security) ||
         !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
         // invalid security
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     derive_seed_bip32(path, BIP44_PATH_LEN, api.seed_bytes);
@@ -86,7 +86,7 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
         // address index overflow
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     unsigned char addr_bytes[48];
@@ -112,7 +112,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         uint32_t last_index;
         if (!ASSIGN(last_index, input->last_index)) {
             // last index overflow
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
         bundle_initialize(&api.bundle_ctx, last_index);
         api.state_flags |= BUNDLE_INITIALIZED;
@@ -128,13 +128,13 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     if (!validate_chars(input->address, 81)) {
         // invalid address
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
     if (input->value < 0) {
         uint32_t address_idx;
         if (!ASSIGN(address_idx, input->address_idx)) {
             // index overflow
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
         bundle_set_internal_address(&api.bundle_ctx, input->address,
                                     address_idx);
@@ -146,19 +146,19 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     if (!IN_RANGE(input->value, -MAX_IOTA_VALUE, MAX_IOTA_VALUE)) {
         // value out of bounds
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     char padded_tag[27];
     rpad_chars(padded_tag, input->tag, 27);
     if (!validate_chars(padded_tag, 27)) {
         // invalid tag
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
     uint32_t timestamp;
     if (!ASSIGN(timestamp, input->timestamp)) {
         // timestamp overflow
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
     bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
 
@@ -200,7 +200,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
     if (!ASSIGN(idx, input->transaction_idx) ||
         idx > api.bundle_ctx.last_index) {
         // index is out of bounds
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     if ((api.state_flags & SIGNING_STARTED) == 0) {
@@ -209,7 +209,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
         if (api.bundle_ctx.values[idx] >= 0) {
             // no input transaction
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
 
         tryte_t normalized_hash[81];
@@ -250,7 +250,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
         // address index overflow
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     unsigned char addr_bytes[48];
