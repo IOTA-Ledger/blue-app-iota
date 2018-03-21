@@ -32,6 +32,9 @@ add_library(iota-ledger SHARED
     "../src/iota/kerl.c"
     "../src/iota/signing.c"
     "../src/keccak/sha3.c"
+    "../src/api.c"
+    "../src/aux.c"
+    "test_mocks.c"
 )
 
 add_executable(conversion_test conversion_test.c)
@@ -53,3 +56,19 @@ add_test(bundle_test ${CMAKE_CURRENT_BINARY_DIR}/bundle_test)
 add_executable(signing_test signing_test.c)
 target_link_libraries(signing_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(signing_test ${CMAKE_CURRENT_BINARY_DIR}/signing_test)
+
+add_executable(set_seed_test set_seed_test.c)
+target_link_libraries(set_seed_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(set_seed_test ${CMAKE_CURRENT_BINARY_DIR}/set_seed_test)
+
+add_executable(pubkey_test pubkey_test.c)
+target_link_libraries(pubkey_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(pubkey_test ${CMAKE_CURRENT_BINARY_DIR}/pubkey_test)
+
+add_executable(tx_test tx_test.c)
+target_link_libraries(tx_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(tx_test ${CMAKE_CURRENT_BINARY_DIR}/tx_test)
+
+add_executable(sign_test sign_test.c)
+target_link_libraries(sign_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(sign_test ${CMAKE_CURRENT_BINARY_DIR}/sign_test)

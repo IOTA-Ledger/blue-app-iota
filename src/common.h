@@ -12,10 +12,9 @@
 /* -                      DEFINES AND MACROS                             - */
 /* ----------------------------------------------------------------------- */
 
-// no catching supported, just abort while printing the code name to stderr
-#define THROW(x) \
-        ({ fprintf(stderr, "EXCEPTION: " #x "\n"); \
-           abort(); })
+void throw_exception(const char *expression, const char *file, int line);
+
+#define THROW(x) throw_exception(#x, __FILE__, __LINE__)
 
 #define UNUSED(x) (void)(x)
 
@@ -70,6 +69,12 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
         }
 }
 
+/* ----------------------------------------------------------------------- */
+/* -                                 IO                                  - */
+/* ----------------------------------------------------------------------- */
+
+#define IO_ASYNCH_REPLY 1
+
 #else // ifdef NO_BOLOS
 
 /* ----------------------------------------------------------------------- */
@@ -82,6 +87,8 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
 /* ----------------------------------------------------------------------- */
 /* -                            COMMON                                   - */
 /* ----------------------------------------------------------------------- */
+
+#define DEBUG_SEED "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR"
 
 #define CX_KECCAK384_SIZE 48
 

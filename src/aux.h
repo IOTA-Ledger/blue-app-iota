@@ -17,11 +17,4 @@ bool validate_chars(const char *chars, unsigned int num_chars);
  */
 void rpad_chars(char *destination, const char *source, unsigned int num_chars);
 
-/** @brief Computes a valid IOTA seed based on the provided entropy.
- *  @param n number of entropy bytes
- *  @param seed_bytes target array to store the seed in 48 byte encoding
- */
-void get_seed(const unsigned char *entropy, unsigned int n,
-              unsigned char *seed_bytes);
-
 #endif // AUX_H

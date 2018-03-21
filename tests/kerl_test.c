@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "test_common.h"
 #include "iota/conversion.h"
 #include "iota/kerl.h"

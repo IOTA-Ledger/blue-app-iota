@@ -15,15 +15,15 @@ static void initialize_state(const unsigned char *seed_bytes,
     kerl_squeeze_final_chunk(&sha, state);
 }
 
-void signing_initialize(SIGNING_CTX *ctx, const unsigned char *seed_bytes,
-                        uint32_t address_idx, uint8_t security,
-                        const tryte_t *normalized_hash)
+void signing_initialize(SIGNING_CTX *ctx, uint8_t tx_index,
+                        const unsigned char *seed_bytes, uint32_t address_idx,
+                        uint8_t security, const tryte_t *normalized_hash)
 {
-    // TODO: check parameters
     os_memset(ctx, 0, sizeof(SIGNING_CTX));
 
     initialize_state(seed_bytes, address_idx, ctx->state);
     ctx->last_fragment = NUM_SIGNATURE_FRAGMENTS(security) - 1;
+    ctx->tx_index = tx_index;
 
     os_memcpy(ctx->hash, normalized_hash, 81);
 }

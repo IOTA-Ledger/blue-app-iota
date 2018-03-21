@@ -1,20 +1,9 @@
 #ifndef UI_H
 #define UI_H
 
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
-#include "bagl.h"
 #include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
-#include "main.h"
-#include "../iota/bundle.h"
-#include "../api.h"
-
-#include "ui_types.h"
-#include "ui_misc.h"
-#include "ui_handling.h"
+#include "iota/bundle.h"
+#include "api.h"
 
 /* To create a new UI screen -
  - #define new STATE_ , incr TOTAL_STATES/STATE_EXIT [ui_types.h]
