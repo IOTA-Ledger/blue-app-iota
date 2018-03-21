@@ -68,3 +68,7 @@ add_test(pubkey_test ${CMAKE_CURRENT_BINARY_DIR}/pubkey_test)
 add_executable(tx_test tx_test.c)
 target_link_libraries(tx_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(tx_test ${CMAKE_CURRENT_BINARY_DIR}/tx_test)
+
+add_executable(sign_test sign_test.c)
+target_link_libraries(sign_test ${CMOCKA_LIBRARIES} iota-ledger)
+add_test(sign_test ${CMAKE_CURRENT_BINARY_DIR}/sign_test)
