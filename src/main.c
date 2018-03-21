@@ -78,6 +78,7 @@ void init_flash()
 
 void incr_seed_idx(unsigned int account)
 {
+    // TODO - still write the index of the last TX in bundle (change)
     // can't keep track of indexes in advanced mode
     if(get_advanced_mode())
         return;

@@ -385,7 +385,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
             ui_state.input = NULL;
             return;
         }
-        else if(translated_mask == BUTTON_B && ui_state.menu_idx == array_sz-1) {
+        else if(translated_mask == BUTTON_B) {// TODO } && ui_state.menu_idx == array_sz-1) {
             // Approve
             init_ledger_approve(ui_state.input);
             state_return(STATE_MENU_WELCOME, 0);
