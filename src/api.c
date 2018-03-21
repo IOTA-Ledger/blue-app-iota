@@ -220,9 +220,9 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 {
     const SIGN_INPUT *input = GET_INPUT(input_data, len, SIGN);
 
-    unsigned int idx;
-    if (!ASSIGN(idx, input->transaction_idx) ||
-        idx > api.bundle_ctx.last_index) {
+    uint8_t tx_idx;
+    if (!ASSIGN(tx_idx, input->transaction_idx) ||
+        tx_idx > api.bundle_ctx.last_index) {
         // index is out of bounds
         THROW(SW_COMMAND_INVALID_DATA);
     }
@@ -231,7 +231,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         // temporary screen during signing process
         ui_display_signing();
 
-        if (api.bundle_ctx.values[idx] >= 0) {
+        if (api.bundle_ctx.values[tx_idx] >= 0) {
             // no input transaction
             THROW(SW_COMMAND_INVALID_DATA);
         }
@@ -239,14 +239,16 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         tryte_t normalized_hash[81];
         bundle_get_normalized_hash(&api.bundle_ctx, normalized_hash);
 
-        signing_initialize(&api.signing_ctx, api.seed_bytes,
-                           api.bundle_ctx.indices[idx], api.security,
+        signing_initialize(&api.signing_ctx, tx_idx, api.seed_bytes,
+                           api.bundle_ctx.indices[tx_idx], api.security,
                            normalized_hash);
 
         api.state_flags |= SIGNING_STARTED;
     }
-
-    // TODO: check that the transaction idx has not changed
+    else if (tx_idx != api.signing_ctx.tx_index) {
+        // transaction changed after initialization
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
 
     SIGN_OUTPUT output;
     output.fragments_remaining =

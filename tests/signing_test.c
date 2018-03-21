@@ -113,7 +113,7 @@ static void generate_signature(const unsigned char *seed_bytes,
     SIGNING_CTX ctx;
     unsigned char signature_fragment[SIGNATURE_FRAGMENT_SIZE * NUM_HASH_BYTES];
 
-    signing_initialize(&ctx, seed_bytes, address_idx, security,
+    signing_initialize(&ctx, 0, seed_bytes, address_idx, security,
                        NORMALIZED_HASH);
 
     for (int i = 0; i < NUM_SIGNATURE_FRAGMENTS(security); i++) {
