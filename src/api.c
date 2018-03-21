@@ -299,6 +299,23 @@ void user_sign()
     io_send(&output, sizeof(output), SW_OK);
 }
 
+void init_ledger_approve(const INIT_LEDGER_INPUT *input)
+{
+    // TODO test large values are properly casted
+    
+    // write all 5 seed indexes
+    for(uint8_t i = 0; i < 5; i++) {
+        write_seed_index(i, (unsigned int)input->seed_indexes[i]);
+    }
+    
+    io_send(NULL, 0, SW_OK);
+}
+
+void init_ledger_deny()
+{
+    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
+}
+
 
 
 
@@ -332,6 +349,8 @@ unsigned int api_basic_pubkey(unsigned char *input_data, unsigned int len)
     if(input->next)
         address_idx++;
     
+    // TODO store address globally (as getting change addr will be last thing
+    // called before submitting tx)
     unsigned char addr_bytes[48];
     get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
     
@@ -368,17 +387,8 @@ unsigned int api_init_ledger(unsigned char *input_data, unsigned int len)
         THROW(SW_APP_NOT_INITIALIZED);
     }
     
-    // don't init ledger in advanced mode
-    if(get_advanced_mode())
-        THROW(SW_COMMAND_INVALID_STATE);
-    
     const INIT_LEDGER_INPUT *input = (INIT_LEDGER_INPUT *)(input_data);
     
-    // write all 5 seed indexes
-    for(uint8_t i = 0; i < 5; i++) {
-        write_seed_indexes(i, (unsigned int)input->seed_indexes[i]);
-    }
-    
-    io_send(NULL, 0, SW_OK);
-    return 0;
+    ui_display_init_ledger(input);
+    return IO_ASYNCH_REPLY;
 }

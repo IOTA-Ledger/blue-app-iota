@@ -498,3 +498,28 @@ void get_address_menu(char *msg)
         strncpy(msg + (i * 21) + 7, ui_state.addr + (j++ * 6), c_cpy);
     }
 }
+
+void get_init_ledger_menu(char *msg)
+{
+    memset(msg, '\0', MENU_INIT_LEDGER_LEN * 21);
+    
+    if(ui_state.input == NULL)
+        return;
+    
+    uint8_t i = 0;
+    
+    strcpy(msg + (i++ * 21), "WARNING!");
+    strcpy(msg + (i++ * 21), "Init Ledger Idx's");
+    strcpy(msg + (i * 21), "[1]: ");
+    snprintf(msg + (i++ * 21) + 5, 16, "%u", (unsigned int)ui_state.input->seed_indexes[0]);
+    strcpy(msg + (i * 21), "[2]: ");
+    snprintf(msg + (i++ * 21) + 5, 16, "%u", (unsigned int)ui_state.input->seed_indexes[1]);
+    strcpy(msg + (i * 21), "[3]: ");
+    snprintf(msg + (i++ * 21) + 5, 16, "%u", (unsigned int)ui_state.input->seed_indexes[2]);
+    strcpy(msg + (i * 21), "[4]: ");
+    snprintf(msg + (i++ * 21) + 5, 16, "%u", (unsigned int)ui_state.input->seed_indexes[3]);
+    strcpy(msg + (i * 21), "[5]: ");
+    snprintf(msg + (i++ * 21) + 5, 16, "%u", (unsigned int)ui_state.input->seed_indexes[4]);
+    strcpy(msg + (i++ * 21), "Approve");
+    strcpy(msg + (i++ * 21), "Deny");
+}

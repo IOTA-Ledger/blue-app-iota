@@ -214,6 +214,15 @@ void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
     ui_render();
 }
 
+void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
+{
+    ui_state.input = input;
+    state_go(STATE_MENU_INIT_LEDGER, 0);
+    
+    ui_build_display();
+    ui_render();
+}
+
 void ui_restore()
 {
     restore_state();
@@ -321,6 +330,10 @@ void init_state_transitions()
     state_transitions[STATE_MENU_BROWSER][BUTTON_L] = STATE_MENU_BROWSER;
     state_transitions[STATE_MENU_BROWSER][BUTTON_R] = STATE_MENU_BROWSER;
     state_transitions[STATE_MENU_BROWSER][BUTTON_B] = STATE_MENU_BROWSER;
+    /* ------------- MENU INIT LEDGER --------------- */
+    state_transitions[STATE_MENU_INIT_LEDGER][BUTTON_L] = STATE_MENU_INIT_LEDGER;
+    state_transitions[STATE_MENU_INIT_LEDGER][BUTTON_R] = STATE_MENU_INIT_LEDGER;
+    state_transitions[STATE_MENU_INIT_LEDGER][BUTTON_B] = STATE_MENU_INIT_LEDGER;
     /* ------------- TX BALANCE --------------- */
     state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_DENY;
     state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_PAY;

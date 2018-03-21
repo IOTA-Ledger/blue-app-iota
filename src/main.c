@@ -92,12 +92,8 @@ uint32_t get_seed_idx(unsigned int account)
     return N_storage.account_seed[account];
 }
 
-void write_seed_indexes(unsigned int account, const unsigned int seed_idx)
+void write_seed_index(unsigned int account, const unsigned int seed_idx)
 {
-    // can't keep track of indexes in advanced mode
-    if(get_advanced_mode())
-        return;
-    
     nvm_write(&N_storage.account_seed[account],
               (void *)&seed_idx, sizeof(uint32_t));
 }

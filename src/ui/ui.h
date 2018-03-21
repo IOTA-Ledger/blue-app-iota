@@ -10,6 +10,7 @@
 #include <math.h>
 #include "main.h"
 #include "../iota/bundle.h"
+#include "../api.h"
 
 #include "ui_types.h"
 #include "ui_misc.h"
@@ -34,6 +35,7 @@ void ui_display_recv();
 void ui_display_signing();
 void ui_display_address(const unsigned char *addr_bytes);
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
+void ui_display_init_ledger(const INIT_LEDGER_INPUT *input);
 void ui_restore();
 
 #endif // UI_H

@@ -199,6 +199,31 @@ void ui_build_display()
     case STATE_IGNORE: {
         return;
     }
+        /* ------------ INIT LEDGER *MENU* -------------- */
+    case STATE_MENU_INIT_LEDGER: {
+        // write the actual menu
+        char msg[MENU_INIT_LEDGER_LEN * 21];
+        get_init_ledger_menu(msg);
+        write_text_array(msg, MENU_ADDR_LEN);
+        
+        // special override display states
+        switch (ui_state.menu_idx) {
+            case 0:
+                glyph_on(ui_glyphs.glyph_warn);
+                break;
+                // turn off BOT_H and TOP_H
+            case MENU_INIT_LEDGER_LEN - 2:
+                display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+                write_display(NULL, TYPE_STR, BOT_H);
+                write_display(NULL, TYPE_STR, TOP_H);
+                break;
+                // turn off TOP_H
+            case MENU_INIT_LEDGER_LEN - 1:
+                display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+                write_display(NULL, TYPE_STR, TOP_H);
+                break;
+        }
+    } break;
         /* ------------ UNKNOWN STATE -------------- */
     default: {
         clear_display();
@@ -343,6 +368,25 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
         break;
     case STATE_IGNORE:
         return;
+        /* ------------ STATE INIT LEDGER -------------- */
+    case STATE_MENU_INIT_LEDGER:
+        array_sz = MENU_INIT_LEDGER_LEN - 1;
+        
+        // Deny
+        if (translated_mask == BUTTON_B && ui_state.menu_idx == array_sz) {
+            init_ledger_deny();
+            state_return(STATE_MENU_WELCOME, 0);
+            ui_state.input = NULL;
+            return;
+        }
+        else if(translated_mask == BUTTON_B && ui_state.menu_idx == array_sz-1) {
+            // Approve
+            init_ledger_approve(ui_state.input);
+            state_return(STATE_MENU_WELCOME, 0);
+            ui_state.input = NULL;
+            return;
+        }
+        break;
         /* ------------ DEFAULT -------------- */
     default:
         ui_state.menu_idx = 0;

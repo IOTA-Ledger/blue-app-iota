@@ -2,6 +2,7 @@
 #define UI_TYPES_H
 
 #include <stdint.h>
+#include "api.h"
 
 #define TYPE_INT 0
 #define TYPE_STR 1
@@ -19,9 +20,10 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-#define TOTAL_STATES 15
+#define TOTAL_STATES 16
 #define STATE_EXIT TOTAL_STATES
 
+// TODO organize order
 #define STATE_MENU_INIT 0
 #define STATE_MENU_WELCOME 1
 #define STATE_IGNORE 2
@@ -37,6 +39,7 @@
 #define STATE_MENU_DISP_ADDR 12
 #define STATE_MENU_TX_ADDR 13
 #define STATE_DISP_ADDR_CHK 14
+#define STATE_MENU_INIT_LEDGER 15
 
 // Size of Menu
 #define MENU_INIT_LEN 5
@@ -46,6 +49,7 @@
 #define MENU_BROWSER_LEN 2
 #define MENU_ADV_WARN_LEN 3
 #define MENU_ADDR_LEN 7
+#define MENU_INIT_LEDGER_LEN 9
 
 typedef struct UI_TEXT_CTX {
 
@@ -82,6 +86,9 @@ typedef struct UI_STATE_CTX {
     int64_t pay;
     bool display_full_value;
     char addr[90];
+    
+    // init ledger indexes
+    const INIT_LEDGER_INPUT *input;
 
 } UI_STATE_CTX;
 
