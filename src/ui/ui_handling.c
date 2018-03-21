@@ -224,6 +224,11 @@ void ui_build_display()
                 break;
         }
     } break;
+        /* ------------ ADVANCED TX INFO *PSEUDO-MENU* -------------- */
+    case STATE_TX_ADVANCED_INFO: {
+        // custom function to handle advanced transaction display
+        display_advanced_tx_info();
+    } break;
         /* ------------ UNKNOWN STATE -------------- */
     default: {
         clear_display();
@@ -357,12 +362,13 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
             return;
         }
         break;
-        /* ------------ STATE TX_ADDRESS -------------- */
+        /* ------------ STATE MENU_TX_ADDRESS -------------- */
     case STATE_MENU_TX_ADDR:
         array_sz = MENU_ADDR_LEN - 1;
 
         if (translated_mask == BUTTON_B) {
-            state_go(STATE_TX_ADDR, 0);
+            restore_state();
+            //state_go(STATE_TX_ADDR, 0);
             return;
         }
         break;
@@ -387,6 +393,51 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
             return;
         }
         break;
+        /* ------------ ADVANCED TX INFO *PSEUDO-MENU* -------------- */
+    case STATE_TX_ADVANCED_INFO:
+        // Define a psuedo menu.
+        // not a true menu, it's just a dynamic loop over the same
+        // state until all transactions have been shown
+        array_sz = ((ui_state.bundle_ctx->last_index + 1) * 2) - 1;
+            
+        // manually handle increment/decrement
+        if(translated_mask == BUTTON_R) {
+            ui_state.menu_idx++;
+            
+            int64_t val = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+            
+            // bypass displaying confirmations for meta-tx's
+            while(val == 0 && ui_state.menu_idx <= array_sz) {
+                ui_state.menu_idx += 2;
+                val = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+            }
+            
+            // if we've displayed all transactions, go to approve
+            if(ui_state.menu_idx > array_sz) {
+                backup_state();
+                state_go(STATE_TX_APPROVE, 0);
+            }
+        }
+        else if(translated_mask == BUTTON_L) {
+            // if this is very first tx, left goes to deny
+            if(ui_state.menu_idx == 0) {
+                backup_state();
+                state_go(STATE_TX_DENY, 0);
+                return;
+            }
+            
+            ui_state.menu_idx--;
+            
+            int64_t val = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+            
+            // bypass displaying confirmations for meta-tx's
+            while(val == 0 && ui_state.menu_idx >= 2) {
+                ui_state.menu_idx -= 2;
+                val = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+            }
+        }
+        
+        return;
         /* ------------ DEFAULT -------------- */
     default:
         ui_state.menu_idx = 0;
@@ -406,8 +457,31 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
  ------------------------------------------------------
  --------------------------------------------------- */
 void ui_handle_button(uint8_t state, uint8_t button_mask)
-{
-    if (button_mask == BUTTON_B) {
+{/*
+    // TODO restore_state will take you back to wrong actual value...
+    if(button_mask == BUTTON_L) {
+        switch(state) {
+            case STATE_TX_BAL:
+                set_backup(STATE_TX_BAL, 0);
+                state_go(STATE_TX_APPROVE, 0);
+                break;
+            case STATE_TX_APPROVE:
+                restore_state();
+                break;
+        }
+    }
+    else if(button_mask == BUTTON_R) {
+        switch(state) {
+            case STATE_TX_ADDR:
+                set_backup(STATE_TX_ADDR, 0);
+                state_go(STATE_TX_APPROVE, 0);
+                break;
+            case STATE_TX_DENY:
+                restore_state();
+                break;
+        }
+    }
+    else */if (button_mask == BUTTON_B) {
         switch (state) {
             /* ------------- INIT --------------- */
         case STATE_MENU_INIT:
@@ -432,6 +506,23 @@ void ui_handle_button(uint8_t state, uint8_t button_mask)
         case STATE_TX_PAY:
             if (get_num_digits(ui_state.pay) > 3)
                 value_convert_readability();
+            break;
+        case STATE_TX_ADDR:
+            set_backup(STATE_TX_ADDR, 0);
+            break;
+            /* ------------- BAL/PAY SWAP READABLE --------------- */
+        case STATE_TX_ADVANCED_INFO:
+                if(ui_state.menu_idx % 2 == 0) {
+                    // on a value screen
+                    if(get_num_digits(ui_state.bal) > 3)
+                        // ui_state.bal always holds the value for advanced display
+                        value_convert_readability();
+                }
+                else {
+                    // on an address screen
+                    backup_state();
+                    state_go(STATE_MENU_TX_ADDR, 0);
+                }
             break;
         }
     }

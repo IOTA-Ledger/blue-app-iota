@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "main.h"
-#include "api.h"
 
 #include "ui_types.h"
 #include "ui_misc.h"

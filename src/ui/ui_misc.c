@@ -31,8 +31,8 @@ void set_backup(uint8_t state, uint8_t menu_idx)
 void restore_state()
 {
     // TODO remove backup state and always default back to welcome menu
-    //state_return(ui_state.backup_state, ui_state.backup_menu_idx);
-    state_return(STATE_MENU_WELCOME, 0);
+    state_return(ui_state.backup_state, ui_state.backup_menu_idx);
+    //state_return(STATE_MENU_WELCOME, 0);
 
     ui_state.backup_state = STATE_MENU_WELCOME;
     ui_state.backup_menu_idx = 0;
@@ -400,6 +400,72 @@ bool display_value(int64_t val, uint8_t str_defn)
 void value_convert_readability()
 {
     ui_state.display_full_value = !ui_state.display_full_value;
+}
+
+void display_advanced_tx_value()
+{
+    // we will always use bal to store the value during advanced display
+    ui_state.bal = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+    
+    // bypass displaying confirmations for meta-tx's
+    while(ui_state.bal == 0) {
+        ui_state.menu_idx += 2;
+        ui_state.bal = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+        
+        // transition if final tx is a meta tx
+        if(ui_state.menu_idx > ((ui_state.bundle_ctx->last_index + 1) * 2) - 1) {
+            state_go(STATE_TX_APPROVE, 0);
+            ui_build_display(); // rebuild the display
+            return;
+        }
+    }
+    
+    if(ui_state.bal > 0) // outgoing tx
+        write_display("Output:", TYPE_STR, TOP);
+    else {
+        // input tx (not meta)
+        write_display("Input:", TYPE_STR, TOP);
+        ui_state.bal = -ui_state.bal;
+    }
+    
+    // display_value returns true if readable form is possible
+    if (display_value(ui_state.bal, BOT))
+        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+    else
+        display_glyphs(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+}
+
+void display_advanced_tx_address()
+{
+    const unsigned char *addr_bytes = bundle_get_address_bytes(ui_state.bundle_ctx,
+                                                               ui_state.menu_idx/2);
+    
+    // TODO ensure backup state works fully (which is required for
+    // full addr in advanced tx)
+    // TODO remove full_addr and only use ui_state.addr
+    //char full_addr[90];
+    get_address_with_checksum(addr_bytes, ui_state.addr);
+    
+    char abbrv[14];
+    abbreviate_addr(abbrv, ui_state.addr, 81);
+    
+    write_display(abbrv, TYPE_STR, TOP);
+    write_display("Chk: ", TYPE_STR, BOT);
+    
+    // copy the remaining 9 chars in the buffer
+    memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
+    
+    display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+}
+
+void display_advanced_tx_info()
+{
+    clear_display();
+    // this would be an amount to display (either payment or balance)
+    if(ui_state.menu_idx % 2 == 0)
+        display_advanced_tx_value();
+    else // this would be an address to display
+        display_advanced_tx_address();
 }
 
 

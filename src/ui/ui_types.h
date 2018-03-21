@@ -2,7 +2,8 @@
 #define UI_TYPES_H
 
 #include <stdint.h>
-#include "api.h"
+#include "../api.h"
+#include "../iota/bundle.h"
 
 #define TYPE_INT 0
 #define TYPE_STR 1
@@ -20,7 +21,7 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-#define TOTAL_STATES 16
+#define TOTAL_STATES 17
 #define STATE_EXIT TOTAL_STATES
 
 // TODO organize order
@@ -40,6 +41,7 @@
 #define STATE_MENU_TX_ADDR 13
 #define STATE_DISP_ADDR_CHK 14
 #define STATE_MENU_INIT_LEDGER 15
+#define STATE_TX_ADVANCED_INFO 16
 
 // Size of Menu
 #define MENU_INIT_LEN 5
@@ -87,6 +89,7 @@ typedef struct UI_STATE_CTX {
     bool display_full_value;
     char addr[90];
     
+    BUNDLE_CTX *bundle_ctx;
     // init ledger indexes
     const INIT_LEDGER_INPUT *input;
 

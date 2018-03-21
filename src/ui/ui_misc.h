@@ -12,6 +12,7 @@
 #include "../iota/bundle.h"
 
 #include "ui_types.h"
+#include "ui_handling.h"
 
 void state_go(uint8_t state, uint8_t idx);
 void state_return(uint8_t state, uint8_t idx);
@@ -37,6 +38,7 @@ void write_text_array(char *array, uint8_t len);
 uint8_t get_num_digits(int64_t val);
 bool display_value(int64_t val, uint8_t str_defn);
 void value_convert_readability();
+void display_advanced_tx_info();
 
 // Menu creation
 void get_init_menu(char *msg);

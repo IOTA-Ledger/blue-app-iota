@@ -144,7 +144,7 @@ void ui_init(bool flash_is_init)
 // Entry points for main to modify display
 void ui_display_welcome()
 {
-    ui_state.state = STATE_MENU_WELCOME;
+    state_go(STATE_MENU_WELCOME, 0);
     ui_build_display();
     ui_render();
 }
@@ -207,8 +207,9 @@ void ui_display_address(const unsigned char *addr_bytes)
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
     ui_read_bundle(bundle_ctx);
+    ui_state.bundle_ctx = bundle_ctx;
 
-    ui_state.state = STATE_TX_BAL;
+    state_go(STATE_TX_ADVANCED_INFO, 0);
 
     ui_build_display();
     ui_render();
@@ -225,7 +226,9 @@ void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
 
 void ui_restore()
 {
-    restore_state();
+    // TODO recovery state not fully functional
+    //restore_state();
+    state_go(STATE_MENU_WELCOME, 0);
 
     ui_build_display();
     ui_render();
@@ -366,4 +369,8 @@ void init_state_transitions()
     state_transitions[STATE_DISP_ADDR_CHK][BUTTON_L] = STATE_DISP_ADDR_CHK;
     state_transitions[STATE_DISP_ADDR_CHK][BUTTON_R] = STATE_MENU_DISP_ADDR;
     state_transitions[STATE_DISP_ADDR_CHK][BUTTON_B] = STATE_MENU_WELCOME;
+    /* ------------- MENU INIT LEDGER --------------- */
+    state_transitions[STATE_TX_ADVANCED_INFO][BUTTON_L] = STATE_TX_ADVANCED_INFO;
+    state_transitions[STATE_TX_ADVANCED_INFO][BUTTON_R] = STATE_TX_ADVANCED_INFO;
+    state_transitions[STATE_TX_ADVANCED_INFO][BUTTON_B] = STATE_TX_ADVANCED_INFO;
 }

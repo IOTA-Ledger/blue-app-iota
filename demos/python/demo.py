@@ -98,7 +98,7 @@ exceptionCount = 0
 start_time = time.time()
 
 dongle.exchange(apdu_command(INS_INIT_LEDGER,
-    pack_init_ledger_input(8, 16, 32, 112, 80)))
+    pack_init_ledger_input(0, 16, 32, 112, 80)))
 
 response = dongle.exchange(apdu_command(
     INS_SEED_IDX, pack_seed_idx_input(0)))
@@ -120,10 +120,9 @@ response = dongle.exchange(apdu_command(
     INS_SEED_IDX, pack_seed_idx_input(4)))
 print(unpack_seed_idx_output(response))
 
-sys.exit(0)
-
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
+# TODO basic doesn't work when I fix approve/deny restore????
 response = dongle.exchange(apdu_command(
     INS_PUBKEY, pack_pub_key_input_basic(True)))
 struct = unpack_pubkey_output(response)
@@ -141,8 +140,12 @@ response = dongle.exchange(apdu_command(
 print(unpack_tx_output(response))
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(address, 1, -10, b"", SRC_INDEX, 2, 99999)))
+    INS_TX, pack_tx_input(address, SRC_INDEX, -10, b"", 1, 2, 99999)))
 print(unpack_tx_output(response))
+
+#response = dongle.exchange(apdu_command(
+#    INS_TX, pack_tx_input(DEST_ADDRESS, 0, 1492234, b"", 3, 3, 99999)))
+#print(unpack_tx_output(response))
 
 while True:
     response = dongle.exchange(apdu_command(INS_SIGN, pack_sign_input(1)))
