@@ -1,6 +1,10 @@
 #ifndef IOTA_IO_H
 #define IOTA_IO_H
 
+#define BIP44_PATH_LEN 5
+#define BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
+#define BIP44_ACCOUNT 4
+
 void io_initialize();
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
 unsigned int iota_dispatch();
@@ -40,6 +44,9 @@ unsigned int iota_dispatch();
 #define SW_COMMAND_INVALID_DATA  0x6984
 #define SW_COMMAND_INVALID_STATE 0x6985
 #define SW_APP_NOT_INITIALIZED   0x6986
+
+#define SW_TX_INVALID_INDEX      0x6991
+#define SW_TX_INVALID_ORDER      0x6992
 
 #define SW_UNKNOWN               0x6f00
 

@@ -1,7 +1,7 @@
 #ifndef API_H
 #define API_H
 
-#include "main.h"
+#include "iota_io.h"
 #include "iota/signing.h"
 
 // state bit flags

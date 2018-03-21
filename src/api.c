@@ -8,7 +8,11 @@
 #include "iota/conversion.h"
 #include "iota/addresses.h"
 #include "iota/bundle.h"
+#include "iota/seed.h"
 #include "iota/signing.h"
+
+// TODO: we don't want to include main.h
+bool flash_is_init();
 
 #define CHECK_STATE(state, INS)                                                \
     ((((state)&INS##_REQUIRED_STATE) != INS##_REQUIRED_STATE) ||               \
@@ -55,22 +59,17 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
     for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
         if (!ASSIGN(path[i], input->bip44_path[i])) {
             // path overflow
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
     }
 
     if (!ASSIGN(api.security, input->security) ||
         !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
         // invalid security
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    // we only care about privateKeyData and using this to
-    // generate our iota seed
-    unsigned char entropy[64];
-    os_perso_derive_node_bip32(CX_CURVE_256K1, path, BIP44_PATH_LEN, entropy,
-                               entropy + 32);
-    get_seed(entropy, sizeof(entropy), api.seed_bytes);
+    derive_seed_bip32(path, BIP44_PATH_LEN, api.seed_bytes);
 
     api.state_flags |= SEED_SET;
 
@@ -87,7 +86,7 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
         // address index overflow
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     unsigned char addr_bytes[48];
@@ -102,6 +101,38 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
     return 0;
 }
 
+static void validate_tx_indices(const TX_INPUT *input)
+{
+    if (input->last_index != api.bundle_ctx.last_index) {
+        THROW(SW_TX_INVALID_INDEX);
+    }
+    if (input->current_index != api.bundle_ctx.current_index) {
+        THROW(SW_TX_INVALID_INDEX);
+    }
+}
+
+static void validate_tx_order(const TX_INPUT *input)
+{
+    // the receiving addresses are only allowed first or last
+    if (input->value >= 0 && api.bundle_ctx.current_index > 0 &&
+        api.bundle_ctx.current_index < api.bundle_ctx.last_index) {
+        THROW(SW_TX_INVALID_ORDER);
+    }
+    // the output address must come first
+    if (input->value < 0 && api.bundle_ctx.current_index == 0) {
+        THROW(SW_TX_INVALID_ORDER);
+    }
+}
+
+static void get_padded_valid_tag(const char *input_tag, char *padded_tag)
+{
+    rpad_chars(padded_tag, input_tag, 27);
+    if (!validate_chars(padded_tag, 27)) {
+        // invalid tag
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+}
+
 unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 {
     const TX_INPUT *input = GET_INPUT(input_data, len, TX);
@@ -113,29 +144,24 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         uint32_t last_index;
         if (!ASSIGN(last_index, input->last_index)) {
             // last index overflow
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
         bundle_initialize(&api.bundle_ctx, last_index);
         api.state_flags |= BUNDLE_INITIALIZED;
     }
 
-    // validate transaction indices
-    if (input->last_index != api.bundle_ctx.last_index) {
-        THROW(INVALID_STATE);
-    }
-    if (input->current_index != api.bundle_ctx.current_index) {
-        THROW(INVALID_STATE);
-    }
+    validate_tx_indices(input);
+    validate_tx_order(input);
 
     if (!validate_chars(input->address, 81)) {
         // invalid address
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
     if (input->value < 0) {
         uint32_t address_idx;
         if (!ASSIGN(address_idx, input->address_idx)) {
             // index overflow
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
         bundle_set_internal_address(&api.bundle_ctx, input->address,
                                     address_idx);
@@ -147,19 +173,16 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     if (!IN_RANGE(input->value, -MAX_IOTA_VALUE, MAX_IOTA_VALUE)) {
         // value out of bounds
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     char padded_tag[27];
-    rpad_chars(padded_tag, input->tag, 27);
-    if (!validate_chars(padded_tag, 27)) {
-        // invalid tag
-        THROW(INVALID_PARAMETER);
-    }
+    get_padded_valid_tag(input->tag, padded_tag);
+
     uint32_t timestamp;
     if (!ASSIGN(timestamp, input->timestamp)) {
         // timestamp overflow
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
     bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
 
@@ -175,7 +198,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         return IO_ASYNCH_REPLY;
     }
 
-    TX_OUTPUT output;
+    TX_OUTPUT output = {0};
     output.finalized = false;
 
     io_send(&output, sizeof(output), SW_OK);
@@ -197,33 +220,35 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 {
     const SIGN_INPUT *input = GET_INPUT(input_data, len, SIGN);
 
-    unsigned int idx;
-    if (!ASSIGN(idx, input->transaction_idx) ||
-        idx > api.bundle_ctx.last_index) {
+    uint8_t tx_idx;
+    if (!ASSIGN(tx_idx, input->transaction_idx) ||
+        tx_idx > api.bundle_ctx.last_index) {
         // index is out of bounds
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     if ((api.state_flags & SIGNING_STARTED) == 0) {
         // temporary screen during signing process
         ui_display_signing();
 
-        if (api.bundle_ctx.values[idx] >= 0) {
+        if (api.bundle_ctx.values[tx_idx] >= 0) {
             // no input transaction
-            THROW(INVALID_PARAMETER);
+            THROW(SW_COMMAND_INVALID_DATA);
         }
 
         tryte_t normalized_hash[81];
         bundle_get_normalized_hash(&api.bundle_ctx, normalized_hash);
 
-        signing_initialize(&api.signing_ctx, api.seed_bytes,
-                           api.bundle_ctx.indices[idx], api.security,
+        signing_initialize(&api.signing_ctx, tx_idx, api.seed_bytes,
+                           api.bundle_ctx.indices[tx_idx], api.security,
                            normalized_hash);
 
         api.state_flags |= SIGNING_STARTED;
     }
-
-    // TODO: check that the transaction idx has not changed
+    else if (tx_idx != api.signing_ctx.tx_index) {
+        // transaction changed after initialization
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
@@ -251,7 +276,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
         // address index overflow
-        THROW(INVALID_PARAMETER);
+        THROW(SW_COMMAND_INVALID_DATA);
     }
 
     unsigned char addr_bytes[48];
@@ -273,13 +298,24 @@ void user_deny()
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
+static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
+{
+    // there only is a proper change transaction if the value is positive
+    if (ctx->values[ctx->last_index] > 0) {
+        return ctx->last_index;
+    }
+    // return something out of bounds
+    return ctx->last_index + 1;
+}
+
 /** @brief This functions gets called, when bundle is accepted. */
 void user_sign()
 {
     ui_display_calc();
 
-    if (!bundle_validating_finalize(&api.bundle_ctx, api.seed_bytes,
-                                    api.security)) {
+    if (!bundle_validating_finalize(&api.bundle_ctx,
+                                    get_change_tx_index(&api.bundle_ctx),
+                                    api.seed_bytes, api.security)) {
         THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
     }
     api.state_flags |= BUNDLE_FINALIZED;

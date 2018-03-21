@@ -15,22 +15,25 @@
 typedef struct SIGNING_CTX {
         unsigned char state[48]; // state of the last Kerl squeeze
 
-        uint32_t fragment_index; // index of the next fragment
-        uint32_t last_fragment; // final fragment
+        // bitfield storing all the indices
+        uint32_t fragment_index : 8; // index of the next fragment
+        uint32_t last_fragment : 8; // final fragment
+        uint32_t tx_index : 8; // index of the signed transaction
 
         tryte_t hash[81]; // bundle hash used for signing
 } SIGNING_CTX;
 
 /** @brief Initializes the signing context for one complete signature.
  *  @param ctx the signing context used
+ *  @param tx_index index of the transaciton to be signed
  *  @param seed_bytes seed in 48 byte big endian encoding
  *  @param address_idx index of the address
  *  @param security security level, either 1,2 or 3
  *  @param normalized_hash bundle hash as a 81 elemet tryte array
  */
-void signing_initialize(SIGNING_CTX *ctx, const unsigned char *seed_bytes,
-                        uint32_t address_idx, uint8_t security,
-                        const tryte_t *normalized_hash);
+void signing_initialize(SIGNING_CTX *ctx, uint8_t tx_index,
+                        const unsigned char *seed_bytes, uint32_t address_idx,
+                        uint8_t security, const tryte_t *normalized_hash);
 
 /** @brief Computes the next signature fragment.
  *  @param ctx the signing context used

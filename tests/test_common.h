@@ -29,7 +29,4 @@
 #undef assert
 #define assert(X) mock_assert((int)(X), #X, __FILE__, __LINE__)
 
-#undef THROW
-#define THROW(X) mock_assert(false, #X, __FILE__, __LINE__)
-
 #endif // TEST_COMMON_H
