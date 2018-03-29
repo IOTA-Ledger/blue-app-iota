@@ -70,7 +70,7 @@ void chars_to_bytes(const char *chars, unsigned char *bytes, unsigned int chars_
  *  @param len length of the input
  */
 int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
-                    unsigned int len)
+                    unsigned int len);
 
 /** @brief Converts a big-endian binary integer into a balanced ternary number
  *         in base-27 encoding.
