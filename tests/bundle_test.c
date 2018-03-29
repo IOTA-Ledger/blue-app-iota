@@ -39,7 +39,7 @@ static void test_normalize_hash(void **state)
     chars_to_trytes(test_hash, hash_trytes, NUM_HASH_TRYTES);
     normalize_hash(hash_trytes);
 
-    // all zero hash is already normalized
+    // exp_trytes is taken directly from iota.lib.js
     tryte_t exp_trytes[NUM_HASH_TRYTES] = { 13, 9, -8, 3, 2, 9, 10, -12, 6, -4, 8, 6, 12, -8, -3, 10, -5, 0, -1, 5, -13, -13, -7, -13, -4, -7, 5, -13, 6, 6, 13, -1, 11, -7, 0, -6, 2, -4, -9, 8, -5, -12, 10, -9, 12, -6, 12, -10, 5, 12, -3, -4, -8, 0, -6, 8, -11, 7, -5, 2, -6, -7, 1, -5, 13, 3, -11, 8, 9, 13, -9, -4, -8, 8, -4, 13, -8, -2, 1, 11, -11  };
     assert_memory_equal(hash_trytes, exp_trytes, NUM_HASH_TRYTES);
 }
