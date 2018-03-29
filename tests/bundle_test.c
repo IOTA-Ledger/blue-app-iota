@@ -28,6 +28,22 @@ static void test_increment_tag(void **state)
     assert_memory_equal(bytes, exp_bytes, NUM_HASH_BYTES);
 }
 
+static void test_normalize_hash(void **state)
+{
+    UNUSED(state);
+
+    tryte_t hash_trytes[NUM_HASH_TRYTES] = {0};
+
+    // test_hash is randomly generated using KeePass. Not an actual hash (but shoudln't matter).
+    char test_hash[] = "IGSCBIJOFWHFLSXJV9ZENNTNWTEWGFMZKT9UBWRHVOJRLULQELXWS9ZHPGVBUTAVMCPHIMRWSHWMSYAKP";
+    chars_to_trytes(test_hash, hash_trytes, NUM_HASH_TRYTES);
+    normalize_hash(hash_trytes);
+
+    // all zero hash is already normalized
+    tryte_t exp_trytes[NUM_HASH_TRYTES] = { 13, 9, -8, 3, 2, 9, 10, -12, 6, -4, 8, 6, 12, -8, -3, 10, -5, 0, -1, 5, -13, -13, -7, -13, -4, -7, 5, -13, 6, 6, 13, -1, 11, -7, 0, -6, 2, -4, -9, 8, -5, -12, 10, -9, 12, -6, 12, -10, 5, 12, -3, -4, -8, 0, -6, 8, -11, 7, -5, 2, -6, -7, 1, -5, 13, 3, -11, 8, 9, 13, -9, -4, -8, 8, -4, 13, -8, -2, 1, 11, -11  };
+    assert_memory_equal(hash_trytes, exp_trytes, NUM_HASH_TRYTES);
+}
+
 static void test_normalize_hash_zero(void **state)
 {
     UNUSED(state);
@@ -205,6 +221,7 @@ int main(void)
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_increment_tag),
+        cmocka_unit_test(test_normalize_hash),
         cmocka_unit_test(test_normalize_hash_zero),
         cmocka_unit_test(test_normalize_hash_one),
         cmocka_unit_test(test_normalize_hash_neg_one),
