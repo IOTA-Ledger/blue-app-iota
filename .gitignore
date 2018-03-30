@@ -55,3 +55,9 @@ Module.symvers
 Mkfile.old
 dkms.conf
 demo.sh
+
+# IDE Settings
+.vscode/
+
+# Python Virtual Environment
+.pyenv/
