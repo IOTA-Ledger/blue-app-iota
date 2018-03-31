@@ -22,7 +22,7 @@ chmod +x activate_virt_env.sh
 
 ### Preparing development environment in other distributions
 
-- Clone this repo, and set up your development environment according to this: <https://github.com/LedgerHQ/ledger-nano-s>
+- Clone this repo, and set up your development environment according to this: [LedgerHQ Getting Started](https://github.com/LedgerHQ/ledger-dev-doc/blob/master/source/userspace/getting_started.rst)
 - ATTENTION: Ledger Python 2 library seems to be broken, so you have to use Python 3 and the latest version of the ledger Python lib from their [GitHub](https://github.com/LedgerHQ/blue-loader-python). Have a look here:
 
 > I was unable to install the recent update of the Ledger SDK with their direct instructions. Instead, follow everything from the link above, except for the Python SDK.
