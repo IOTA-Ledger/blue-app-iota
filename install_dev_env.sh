@@ -15,6 +15,11 @@ function print_warn { printf "${_bold}${_yellow}%s${_reset}\n" "$@"; }
 ## Linux Distribution and Version Check
 print_ok "Installing development environment for blue-app-iota..."
 
+if ! type "gawk" &> /dev/null; then
+  print_err "ERROR: gawk is missing! If you're on Ubuntu, please run 'sudo apt install -y gawk'"
+  exit 1
+fi
+
 linux_distr=`gawk -F= '/^NAME/{print $2}' /etc/os-release`
 linux_codename=`gawk -F= '/^VERSION_CODENAME/{print $2}' /etc/os-release`
 if [ ${linux_distr} != '"Ubuntu"' ];
@@ -37,10 +42,10 @@ DIR_ARM_GCC=${BOLOS_ENV}/gcc-arm-none-eabi-5_3-2016q1/
 DIR_CLANG=${BOLOS_ENV}/clang-arm-fropi/
 
 print_ok "Updating Packages..."
-sudo apt update && sudo apt dist-upgrade
+sudo apt update && sudo apt dist-upgrade -y
 
 print_ok "Installing build-essential, libc6, libudev, libusb and Python3 virtual environment..."
-sudo apt install build-essential libc6-i386 libc6-dev-i386 libudev-dev libusb-1.0-0-dev virtualenv python3-dev python3-pip python3-virtualenv python3-venv
+sudo apt install -y build-essential libc6-i386 libc6-dev-i386 libudev-dev libusb-1.0-0-dev virtualenv python3-dev python3-pip python3-virtualenv python3-venv
 
 if [ ! -d ${BOLOS_ENV} ]; then
     mkdir -p ${BOLOS_ENV}
