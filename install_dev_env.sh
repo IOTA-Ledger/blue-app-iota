@@ -37,10 +37,10 @@ DIR_ARM_GCC=${BOLOS_ENV}/gcc-arm-none-eabi-5_3-2016q1/
 DIR_CLANG=${BOLOS_ENV}/clang-arm-fropi/
 
 print_ok "Updating Packages..."
-sudo apt update && sudo apt dist-upgrade
+sudo apt update && sudo apt dist-upgrade -y
 
 print_ok "Installing build-essential, libc6, libudev, libusb and Python3 virtual environment..."
-sudo apt install build-essential libc6-i386 libc6-dev-i386 libudev-dev libusb-1.0-0-dev virtualenv python3-dev python3-pip python3-virtualenv python3-venv
+sudo apt install -y build-essential libc6-i386 libc6-dev-i386 libudev-dev libusb-1.0-0-dev virtualenv python3-dev python3-pip python3-virtualenv python3-venv
 
 if [ ! -d ${BOLOS_ENV} ]; then
     mkdir -p ${BOLOS_ENV}

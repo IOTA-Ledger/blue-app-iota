@@ -15,7 +15,7 @@ See [Ledger's documentation](http://ledger.readthedocs.io) to get more info abou
 ```
 cd blue-app-iota
 chmod +x install_dev_env.sh
-chmod +x activate_virt_env.sh 
+chmod +x activate_virt_env.sh
 ./install_dev_env.sh
 ```
 - If you execute it for the first time, maybe you have to log out and log in again to get correct group rights
@@ -36,7 +36,10 @@ chmod +x activate_virt_env.sh
 - Run the following commands to compile the app from source and load it
 ```
 cd blue-app-iota
+
+# If you have installed using the automated script:
 ./activate_virt_env.sh
+
 make load
 ```
 - Accept all the messages on the Ledger
