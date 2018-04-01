@@ -1,12 +1,10 @@
 const IOTA = require('iota.lib.js')
 var iota = new IOTA({
-  provider: 'https://nodes.testnet.iota.org:443'
+  provider: 'https://nodes.testnet.iota.org:443/'
 })
-const remoteCurl = require('@iota/curl-remote')
-remoteCurl(iota, 'https://powbox.testnet.iota.org');
+const seed = "EJBNGIAVDNSE9KKQIJYBQUWLARELMIWFSRRGQCWTQDGASDHCFCBPXLJTBDOENLTEVKMVSXQDDFMPDIH9P";
 
 function addressTest() {
-  const seed = "SSEWOZSDXOVIURQRBTBDLQXWIXOLEUXHYBGAVASVPZ9HBTYJJEWBR9PDTGMXZGKPTGSUDW9QLFPJHTIEQ";
   iota.api.getNewAddress(seed, {
     index: 0,
     security: 2,
@@ -17,25 +15,21 @@ function addressTest() {
 }
 
 function prepareTransfersTest() {
-  iota.api.prepareTransfers('SSEWOZSDXOVIURQRBTBDLQXWIXOLEUXHYBGAVASVPZ9HBTYJJEWBR9PDTGMXZGKPTGSUDW9QLFPJHTIEQ', [{
-      'address': 'YADBKU9RYDMITS9JYO9AWTMCCVDXPBHXUDCBISLWFVWUMBV9GURNRGATEIJPCJDKDHLALGABKBBOGPIGW',
-      'value': 10000
+  iota.api.prepareTransfers(seed, [{
+      'address': 'DLMWEZOASDZXGFYAOBPIDUSLWYTQWHVPTKXXFIUWBJOTXUYPNHJUEZRTNNEPZVCBYOYDQCZGUXQJQMODC',
+      'value': 1000,
+      'message': ''
     }], {
       'inputs': [{
-        address: 'WRZVVTBRAFZJOANBVGPTDSURL9ATRDAXOEVDQRNLEOFDYK9FLQZIJZYAEVUHCQCMAXWSZJPTUMQBPOLBY',
-        balance: 1500,
+        address: 'OC9HFEZLOXLLBJ9HHTFTJPDYYFDXGCDAJTCLBARZGNJJTQSZR9WOG9TV9MEIYBRWXTSNQXAUGDTAWXCPD',
+        balance: 1000,
         keyIndex: 0,
-        security: 2
-      }, {
-        address: 'VBFKTULDJHSGXIHIGKJYGUZFZMU9IZRMCCKBCITGSRFHYCNTBQK9PNMUZKDUG9VXFMEXWNSOVVYWO9BPW',
-        balance: 8500,
-        keyIndex: 1,
         security: 2
       }]
     },
     function(e, s) {
       console.log('prepareTransfers result', e, s);
-      iota.api.sendTrytes(s, 2, 6, (e, r) => {
+      iota.api.sendTrytes(s, 2, 9, (e, r) => {
         console.log('sendTrytes', e, r);
       });
     })
@@ -53,6 +47,6 @@ function bundleTest(signatureSize) {
 }
 
 addressTest();
-prepareTransfersTest();
-bundleTest(1);
-bundleTest(2);
+// prepareTransfersTest();
+// bundleTest(1);
+// bundleTest(2);
