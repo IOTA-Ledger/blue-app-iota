@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "iota.lib.js": "^0.4.6"
+    "@iota/curl-remote": "^0.0.3",
+    "iota.lib.js": "git+https://github.com/IOTA-Ledger/iota.lib.js.git#exposed-lowlevel-functions"
   }
 }

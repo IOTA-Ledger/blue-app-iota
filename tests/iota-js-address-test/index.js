@@ -1,7 +1,9 @@
 const IOTA = require('iota.lib.js')
 var iota = new IOTA({
-
+  provider: 'https://nodes.testnet.iota.org:443'
 })
+const remoteCurl = require('@iota/curl-remote')
+remoteCurl(iota, 'https://powbox.testnet.iota.org');
 
 function addressTest() {
   const seed = "SSEWOZSDXOVIURQRBTBDLQXWIXOLEUXHYBGAVASVPZ9HBTYJJEWBR9PDTGMXZGKPTGSUDW9QLFPJHTIEQ";
@@ -32,7 +34,10 @@ function prepareTransfersTest() {
       }]
     },
     function(e, s) {
-      console.log(e, s);
+      console.log('prepareTransfers result', e, s);
+      iota.api.sendTrytes(s, 2, 6, (e, r) => {
+        console.log('sendTrytes', e, r);
+      });
     })
 }
 
