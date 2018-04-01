@@ -15,6 +15,11 @@ function print_warn { printf "${_bold}${_yellow}%s${_reset}\n" "$@"; }
 ## Linux Distribution and Version Check
 print_ok "Installing development environment for blue-app-iota..."
 
+if ! type "gawk" &> /dev/null; then
+  print_err "ERROR: gawk is missing! If you're on Ubuntu, please run 'sudo apt install -y gawk'"
+  exit 1
+fi
+
 linux_distr=`gawk -F= '/^NAME/{print $2}' /etc/os-release`
 linux_codename=`gawk -F= '/^VERSION_CODENAME/{print $2}' /etc/os-release`
 if [ ${linux_distr} != '"Ubuntu"' ];
