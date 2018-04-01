@@ -185,16 +185,8 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_DATA);
     }
     bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
-
-    if (input->value < 0) {
-        // create meta tx for input
-        bundle_set_external_address(&api.bundle_ctx, input->address);
-        bundle_add_tx(&api.bundle_ctx, 0, padded_tag, timestamp);
-    }
-
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
         ui_sign_tx(&api.bundle_ctx);
-
         return IO_ASYNCH_REPLY;
     }
 
