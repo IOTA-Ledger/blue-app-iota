@@ -43,7 +43,21 @@ static void test_valid_output_input_bundle(void **state)
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
 
-        TX_OUTPUT output;
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    {
+        // Meta TX
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+
+        // Changes for Meta TX
+        input.value = 0;
+        input.current_index++;
+        // End Changes for Meta TX
+
+        TX_OUTPUT output = {0};
         output.finalized = true;
         strncpy(output.bundle_hash, PETER_VECTOR.bundle_hash, 81);
 
@@ -115,7 +129,16 @@ static void test_invalid_input_address_index(void **state)
 
         EXPECT_API_DATA_OK(tx, input, output);
     }
-    { // input transaciton
+    { // input transaction
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+        input.address_idx += 1;
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    { // input transaction
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
         input.address_idx += 1;
@@ -135,7 +158,7 @@ static void test_invalid_tx_order(void **state)
         SET_SEED_INPUT input = {BIP32_PATH, security};
         EXPECT_API_OK(set_seed, input);
     }
-    { // input transaciton as the first transaction
+    { // input transaction as the first transaction
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
         input.current_index = 0;
