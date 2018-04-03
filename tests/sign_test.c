@@ -40,6 +40,21 @@ static void input_valid_bundle(uint8_t security)
         memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
 
         TX_OUTPUT output;
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, input, output);
+    }
+    {
+        // Meta TX
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+
+        // Changes for Meta TX
+        input.value = 0;
+        input.current_index++;
+        // End Changes for Meta TX
+
+        TX_OUTPUT output;
         output.finalized = true;
         strncpy(output.bundle_hash, PETER_VECTOR.bundle_hash, 81);
 
