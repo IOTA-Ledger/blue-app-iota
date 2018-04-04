@@ -150,17 +150,45 @@ static bool validate_address(const unsigned char *addr_bytes,
     return (memcmp(addr_bytes, computed_addr, 48) == 0);
 }
 
-static bool validate_txs(const BUNDLE_CTX *ctx, unsigned int change_tx_index,
-                         const unsigned char *seed_bytes, unsigned int security)
+static bool validate_balance(const BUNDLE_CTX *ctx)
 {
     int64_t balance = 0;
     for (unsigned int i = 0; i <= ctx->last_index; i++) {
         balance += ctx->values[i];
     }
-    if (balance != 0) {
-        return true;
+
+    return balance == 0;
+}
+
+/** @brief Checks that every input transaction has meta transactions. */
+static bool validate_meta_txs(const BUNDLE_CTX *ctx, unsigned int security)
+{
+    for (unsigned int i = 0; i <= ctx->last_index; i++) {
+        if (ctx->values[i] < 0) {
+            const unsigned char *input_addr_bytes =
+                bundle_get_address_bytes(ctx, i);
+
+            for (unsigned int j = 1; j < security; j++) {
+                if (i + j > ctx->last_index || ctx->values[i + j] != 0) {
+                    return false;
+                }
+                if (memcmp(input_addr_bytes,
+                           bundle_get_address_bytes(ctx, i + j),
+                           NUM_HASH_BYTES) != 0) {
+                    return false;
+                }
+            }
+        }
     }
 
+    return true;
+}
+
+static bool validate_address_indices(const BUNDLE_CTX *ctx,
+                                     unsigned int change_tx_index,
+                                     const unsigned char *seed_bytes,
+                                     unsigned int security)
+{
     for (unsigned int i = 0; i <= ctx->last_index; i++) {
         // only check the change and input addresses
         if (i == change_tx_index || ctx->values[i] < 0) {
@@ -171,6 +199,50 @@ static bool validate_txs(const BUNDLE_CTX *ctx, unsigned int change_tx_index,
                 return false;
             }
         }
+    }
+
+    return true;
+}
+
+static bool validate_address_reuse(const BUNDLE_CTX *ctx)
+{
+    for (unsigned int i = 0; i <= ctx->last_index; i++) {
+
+        if (ctx->values[i] == 0) {
+            continue;
+        }
+        const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
+
+        for (unsigned int j = i + 1; j <= ctx->last_index; j++) {
+            if (ctx->values[j] != 0 &&
+                memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
+                       NUM_HASH_BYTES) == 0) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+static bool validate_bundle(const BUNDLE_CTX *ctx, unsigned int change_tx_index,
+                            const unsigned char *seed_bytes,
+                            unsigned int security)
+{
+    if (!validate_balance(ctx)) {
+        return false;
+    }
+
+    if (!validate_meta_txs(ctx, security)) {
+        return false;
+    }
+
+    if (!validate_address_indices(ctx, change_tx_index, seed_bytes, security)) {
+        return false;
+    }
+
+    if (!validate_address_reuse(ctx)) {
+        return false;
     }
 
     return true;
@@ -208,7 +280,7 @@ bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint32_t change_index,
         THROW(INVALID_STATE);
     }
 
-    return validate_txs(ctx, change_index, seed_bytes, security) &&
+    return validate_bundle(ctx, change_index, seed_bytes, security) &&
            bundle_validate_hash(ctx);
 }
 
