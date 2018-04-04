@@ -32,8 +32,8 @@
 
 #define SEED_INIT(seed)                                                        \
         ({                                                                     \
-                will_return_always (derive_seed_bip32,                         \
-                                    cast_ptr_to_largest_integral_type(seed));  \
+                will_return (derive_seed_bip32,                                \
+                            cast_ptr_to_largest_integral_type(seed));          \
         })
 
 #endif

@@ -24,9 +24,8 @@ static void extract_hashes(char *string, char *hashes[], size_t num_hashes)
 
 void test_for_each_line(const char *file_name, void (*test)(char **))
 {
-
     char path_name[BUFFER_LEN];
-    snprintf(path_name, sizeof(path_name), "%s/%s", TEST_FOLDER, file_name);
+    snprintf(path_name, sizeof(path_name), "%s/%s", KERL_TEST_FOLDER, file_name);
 
     FILE *file;
     if ((file = fopen(path_name, "r")) == NULL) {

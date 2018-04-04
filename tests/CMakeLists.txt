@@ -22,7 +22,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow -Wcast-align")
 # enable compilation on host
 add_definitions(
     -DNO_BOLOS
-    -DTEST_FOLDER="${CMAKE_SOURCE_DIR}/kerl-spec/test_vectors"
+    -DKERL_TEST_FOLDER="${CMAKE_SOURCE_DIR}/kerl-spec/test_vectors"
+    -DTEST_FOLDER="${CMAKE_SOURCE_DIR}/test_vectors"
 )
 
 add_library(iota-ledger SHARED
@@ -65,7 +66,7 @@ add_executable(pubkey_test pubkey_test.c)
 target_link_libraries(pubkey_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(pubkey_test ${CMAKE_CURRENT_BINARY_DIR}/pubkey_test)
 
-add_executable(tx_test tx_test.c)
+add_executable(tx_test tx_test.c transaction_file.c)
 target_link_libraries(tx_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(tx_test ${CMAKE_CURRENT_BINARY_DIR}/tx_test)
 
