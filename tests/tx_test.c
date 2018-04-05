@@ -88,10 +88,8 @@ static void test_invalid_input_address_index(void **state)
     }
     { // meta transaction
         TX_INPUT input;
-        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
+        memcpy(&input, &PETER_VECTOR.bundle[2], sizeof(input));
         input.address_idx += 1;
-        input.value = 0;
-        input.current_index++;
 
         EXPECT_API_EXCEPTION(tx, input);
     }

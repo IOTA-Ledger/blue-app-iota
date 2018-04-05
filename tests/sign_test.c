@@ -47,12 +47,7 @@ static void input_valid_bundle(uint8_t security)
     {
         // Meta TX
         TX_INPUT input;
-        memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
-
-        // Changes for Meta TX
-        input.value = 0;
-        input.current_index++;
-        // End Changes for Meta TX
+        memcpy(&input, &PETER_VECTOR.bundle[2], sizeof(input));
 
         TX_OUTPUT output;
         output.finalized = true;
