@@ -140,7 +140,7 @@ static void validate_tx_order(const TX_INPUT *input)
         current_index < api.bundle_ctx.last_index) {
         // this must be a meta transaction
         if (!has_reference_transaction(current_index)) {
-            THROW(SW_TX_INVALID_ORDER);
+            THROW(SW_TX_INVALID_META);
         }
     }
 
