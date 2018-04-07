@@ -50,9 +50,12 @@ static void test_bundles_for_seed_from_file(void **state)
 {
     UNUSED(state);
 
-    void test(char *seed, TX_INPUT *tx, char *bundle_hash)
+    void test(char *seed, TX_INPUT *txs, char *bundle_hash,
+              char signatures[][SIGNATURE_LENGTH])
     {
-        test_valid_bundle(seed, 2, tx, 5, bundle_hash);
+        UNUSED(signatures);
+
+        test_valid_bundle(seed, 2, txs, 5, bundle_hash);
     }
 
     test_for_each_bundle("generateBundlesForSeed", test);
