@@ -172,7 +172,7 @@ static void test_not_set_seed(void **state)
         SIGN_INPUT input;
         input.transaction_idx = 0;
 
-        EXPECT_API_EXCEPTION(tx, input);
+        EXPECT_API_EXCEPTION(sign, input);
     }
 }
 
