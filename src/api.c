@@ -144,9 +144,9 @@ static void validate_tx_order(const TX_INPUT *input)
         }
     }
 
-    // the output address must come first
-    if (input->value < 0 && current_index == 0) {
-        THROW(SW_TX_INVALID_ORDER);
+    // the output address must come first and have positive value
+    if (input->value <= 0 && current_index == 0) {
+        THROW(SW_TX_INVALID_OUTPUT);
     }
 }
 
