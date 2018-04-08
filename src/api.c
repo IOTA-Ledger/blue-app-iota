@@ -111,16 +111,42 @@ static void validate_tx_indices(const TX_INPUT *input)
     }
 }
 
+static bool has_reference_transaction(uint32_t current_index)
+{
+    for (unsigned int i = 1; i < api.security; i++) {
+        if (current_index < i || api.bundle_ctx.values[current_index - i] > 0) {
+            return false;
+        }
+        if (api.bundle_ctx.values[current_index - i] < 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static void validate_tx_order(const TX_INPUT *input)
 {
+    const uint32_t current_index = api.bundle_ctx.current_index;
+
     // the receiving addresses are only allowed first or last
-    if (input->value >= 0 && api.bundle_ctx.current_index > 0 &&
-        api.bundle_ctx.current_index < api.bundle_ctx.last_index) {
+    if (input->value > 0 && current_index > 0 &&
+        current_index < api.bundle_ctx.last_index) {
         THROW(SW_TX_INVALID_ORDER);
     }
-    // the output address must come first
-    if (input->value < 0 && api.bundle_ctx.current_index == 0) {
-        THROW(SW_TX_INVALID_ORDER);
+
+    // a meta transaction must have a valid reference input transaction
+    if (input->value == 0 && current_index > 0 &&
+        current_index < api.bundle_ctx.last_index) {
+        // this must be a meta transaction
+        if (!has_reference_transaction(current_index)) {
+            THROW(SW_TX_INVALID_META);
+        }
+    }
+
+    // the output address must come first and have positive value
+    if (input->value <= 0 && current_index == 0) {
+        THROW(SW_TX_INVALID_OUTPUT);
     }
 }
 
@@ -157,7 +183,9 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         // invalid address
         THROW(SW_COMMAND_INVALID_DATA);
     }
-    if (input->value < 0) {
+
+    if (input->value < 0 ||
+        api.bundle_ctx.current_index == api.bundle_ctx.last_index) {
         uint32_t address_idx;
         if (!ASSIGN(address_idx, input->address_idx)) {
             // index overflow

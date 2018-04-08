@@ -1,6 +1,7 @@
+#include "test_common.h"
 #include <stdio.h>
 #include <string.h>
-#include "test_common.h"
+#include "hash_file.h"
 #include "iota/conversion.h"
 #include "iota/kerl.h"
 

@@ -10,10 +10,13 @@
 #include "common.h"
 
 #include "iota_types.h"
-#include "hash_file.h"
+
+#ifndef KERL_TEST_FOLDER
+#define KERL_TEST_FOLDER "kerl-spec/test_vectors"
+#endif
 
 #ifndef TEST_FOLDER
-#define TEST_FOLDER "kerl-spec/test_vectors"
+#define TEST_FOLDER "test_vectors"
 #endif
 
 #define MAX_NUM_HASHES 5

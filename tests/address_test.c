@@ -1,6 +1,7 @@
 #include "test_common.h"
 #include <string.h>
 #include "test_vectors.h"
+#include "hash_file.h"
 #include "iota/addresses.h"
 #include "iota/conversion.h"
 

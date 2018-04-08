@@ -13,6 +13,7 @@ SECURITY_LEVEL = 2
 
 DEST_ADDRESS = b"ADR" * 27
 SRC_INDEX = 1
+TIMESTAMP = 99999
 
 # APDU instructions
 INS_SET_SEED = 0x01
@@ -84,11 +85,16 @@ print(struct)
 address = struct[0]
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(DEST_ADDRESS, 0, 10, b"XC", 0, 2, 99999)))
+    INS_TX, pack_tx_input(DEST_ADDRESS, 0, 10, b"XC", 0, 2, TIMESTAMP)))
 print(unpack_tx_output(response))
 
 response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(address, 1, -10, b"", SRC_INDEX, 2, 99999)))
+    INS_TX, pack_tx_input(address, SRC_INDEX, -10, b"", 1, 2, TIMESTAMP)))
+print(unpack_tx_output(response))
+
+# Meta transaction
+response = dongle.exchange(apdu_command(
+    INS_TX, pack_tx_input(address, SRC_INDEX, 0, b"", 2, 2, TIMESTAMP)))
 print(unpack_tx_output(response))
 
 while True:

@@ -47,6 +47,8 @@ unsigned int iota_dispatch();
 
 #define SW_TX_INVALID_INDEX      0x6991
 #define SW_TX_INVALID_ORDER      0x6992
+#define SW_TX_INVALID_META       0x6993
+#define SW_TX_INVALID_OUTPUT     0x6994
 
 #define SW_UNKNOWN               0x6f00
 
