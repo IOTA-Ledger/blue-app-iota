@@ -88,6 +88,7 @@ void incr_seed_idx(unsigned int account)
     
     nvm_write(&N_storage.account_seed[account], (void *)&seed_idx, sizeof(uint32_t));
 }
+
 uint32_t get_seed_idx(unsigned int account)
 {
     return N_storage.account_seed[account];

@@ -28,6 +28,30 @@ static void test_increment_tag(void **state)
     assert_memory_equal(bytes, exp_bytes, NUM_HASH_BYTES);
 }
 
+static void test_normalize_hash(void **state)
+{
+    UNUSED(state);
+
+    tryte_t hash_trytes[NUM_HASH_TRYTES] = {0};
+
+    // test_hash is randomly generated using KeePass. Not an actual hash (but
+    // shoudln't matter).
+    char test_hash[] = "IGSCBIJOFWHFLSXJV9ZENNTNWTEWGFMZKT9UBWRHVOJRLULQELXWS9Z"
+                       "HPGVBUTAVMCPHIMRWSHWMSYAKP";
+    chars_to_trytes(test_hash, hash_trytes, NUM_HASH_TRYTES);
+    normalize_hash(hash_trytes);
+
+    // exp_trytes is taken directly from iota.lib.js
+    tryte_t exp_trytes[NUM_HASH_TRYTES] = {
+        13,  9,  -8, 3,  2,  9,   10,  -12, 6,  -4,  8,   6,  12, -8,
+        -3,  10, -5, 0,  -1, 5,   -13, -13, -7, -13, -4,  -7, 5,  -13,
+        6,   6,  13, -1, 11, -7,  0,   -6,  2,  -4,  -9,  8,  -5, -12,
+        10,  -9, 12, -6, 12, -10, 5,   12,  -3, -4,  -8,  0,  -6, 8,
+        -11, 7,  -5, 2,  -6, -7,  1,   -5,  13, 3,   -11, 8,  9,  13,
+        -9,  -4, -8, 8,  -4, 13,  -8,  -2,  1,  11,  -11};
+    assert_memory_equal(hash_trytes, exp_trytes, NUM_HASH_TRYTES);
+}
+
 static void test_normalize_hash_zero(void **state)
 {
     UNUSED(state);
@@ -117,15 +141,15 @@ static void test_bundle_hash(void **state)
     const TX_ENTRY txs[] = {
         {"LHWIEGUADQXNMRKQSBDJOAFMBIFKHHZXYEFOU9WFRMBGODSNJAPGFHOUOSGDICSFVA9K"
          "OUPPCMLAHPHAW",
-         10, "999999999999999999999999999", 0},
+         10, "ZOA999999999999999999999999", 0},
         {"WLRSPFNMBJRWS9DFXCGIROJCZCPJQG9PMOO9CUZNQXTLLQAYXGXT9LECGEQ9MQIWIBGQ"
          "REFHULPOETHNZ",
          -5, "999999999999999999999999999", 0},
         {"UMDTJXHIFVYVCHXKZNMQWMDHNLVQNMJMRULXUFRLNFVVUMKYZOAETVQOWSDUAKTXVNDS"
          "VAJCASTRQNV9D",
          -5, "999999999999999999999999999", 0}};
-    const char exp_hash[] = "QYPTXEAWEIIAXHUKFMNJAWTWLKVXNVCQUCTF9EBPZBVVHJBOJT"
-                            "HTAGEQEAEWRFBG9MBWFPCR9OAYHZ9AC";
+    const char exp_hash[] = "VMSEGGHKOUYTE9JNZEQIZWFUYHATWEVXAIJNPG9EDPCQRFAFWP"
+                            "CVGHYJDJWXAFNWRGUUPULXOCEJDBUVD";
 
     BUNDLE_CTX bundle_ctx;
     construct_bundle(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
@@ -205,6 +229,7 @@ int main(void)
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_increment_tag),
+        cmocka_unit_test(test_normalize_hash),
         cmocka_unit_test(test_normalize_hash_zero),
         cmocka_unit_test(test_normalize_hash_one),
         cmocka_unit_test(test_normalize_hash_neg_one),
