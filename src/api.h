@@ -95,4 +95,7 @@ unsigned int api_init_ledger(unsigned char *input_data, unsigned int len);
 void init_ledger_approve(const INIT_LEDGER_INPUT *input);
 void init_ledger_deny();
 
+void user_sign_tx();
+void user_deny_tx();
+
 #endif // API_H

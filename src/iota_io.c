@@ -2,6 +2,9 @@
 #include "common.h"
 #include "api.h"
 
+
+#include "storage.h"
+
 extern unsigned char G_io_apdu_buffer[IO_APDU_BUFFER_SIZE];
 
 void io_initialize()

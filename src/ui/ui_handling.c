@@ -490,12 +490,12 @@ void ui_handle_button(uint8_t state, uint8_t button_mask)
             break;
             /* ------------- APPROVE TX --------------- */
         case STATE_TX_APPROVE:
-            user_sign();
+            user_sign_tx();
             ui_state.display_full_value = false;
             break;
             /* ------------- DENY TX --------------- */
         case STATE_TX_DENY:
-            user_deny();
+            user_deny_tx();
             ui_state.display_full_value = false;
             break;
             /* ------------- BAL/PAY SWAP READABLE --------------- */

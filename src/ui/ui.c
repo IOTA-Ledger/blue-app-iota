@@ -290,7 +290,7 @@ void ui_transition_state(unsigned int button_mask)
     ui_handle_menus(old_state, translated_mask);
 
     // See if a special function needs to be called
-    // for instance user_sign or user_deny()
+    // for instance user_sign_tx or user_deny_tx()
     ui_handle_button(old_state, translated_mask);
 
     // after transitioning, build new display

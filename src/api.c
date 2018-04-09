@@ -11,6 +11,8 @@
 #include "iota/seed.h"
 #include "iota/signing.h"
 
+#include "storage.h"
+
 // TODO: we don't want to include main.h
 bool flash_is_init();
 
@@ -224,7 +226,9 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         return IO_ASYNCH_REPLY;
     }
 
-    TX_OUTPUT output = {0};
+    TX_OUTPUT output;
+    os_memset(&output, 0, sizeof(TX_OUTPUT));
+    
     output.finalized = false;
 
     io_send(&output, sizeof(output), SW_OK);
@@ -318,7 +322,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
 }
 
 /** @brief This functions gets called, when bundle is denied. */
-void user_deny()
+void user_deny_tx()
 {
     // reset the bundle
     os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
@@ -338,7 +342,7 @@ static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 }
 
 /** @brief This functions gets called, when bundle is accepted. */
-void user_sign()
+void user_sign_tx()
 {
     ui_display_calc();
 

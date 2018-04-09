@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
-#include "main.h"
+#include "../storage.h"
 #include "../iota/bundle.h"
 
 #include "ui_types.h"
