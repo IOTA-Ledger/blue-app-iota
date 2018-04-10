@@ -5,7 +5,7 @@
 #ifndef CONVERSION_H
 #define CONVERSION_H
 
-#include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include "iota_types.h"
 
@@ -26,7 +26,7 @@ void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len);
  */
 bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
 
-/** @brief Converts a balanced ternary number into a big-enadian binary integer.
+/** @brief Converts a balanced ternary number into a big-endian binary integer.
  *  The input must consist of exactly one 243-trit chunk and is converted into
  *  one big-endian 48-byte integer.
  *  @param trits trit array consisting of exectly 243 trits
@@ -34,8 +34,25 @@ bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
  */
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes);
 
-/** @brief Converts a balanced ternary number in base-27 encoding into a
- *         big-enadian binary integer.
+/** @brief Converts a balanced ternary number in tryte (3-trit) representation
+ *         into a big-endian binary integer.
+ *  The input must consist of exactly one 81-tryte (243-trit) chunk and is
+ *  converted into one big-endian 48-byte integer.
+ *  @param trytes tryte array consisting of exectly 81 trytes
+ *  @param bytes target byte array
+ */
+void trytes_to_bytes(const tryte_t *trytes, unsigned char *bytes);
+
+/** @brief Converts a big-endian binary integer into a balanced ternary number
+ *         in tryte (3-trit) representation.
+ *  The input must consist of exactly one big-endian 48-byte integer and is
+ *  converted into one 81-tryte (243-trit) chunk.
+ *  @param bytes input big-endian 48-byte integers
+ *  @param trytes target tryte array
+ */
+void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes);
+
+/** @brief Converts an array of chars into a big-endian binary integer.
  *  The input must consist of multiples of 81-char chunks, each chunk is
  *  converted into a big-endian 48-byte integer
  *  @param chars base-27 encoded ternary number
@@ -44,7 +61,18 @@ void trits_to_bytes(const trit_t *trits, unsigned char *bytes);
  */
 void chars_to_bytes(const char *chars, unsigned char *bytes, unsigned int chars_len);
 
-/** @brief Converts a big-enadian binary integer into a balanced ternary number
+/** @brief Converts an array of chars into a balanced ternary number
+ *         in tryte (3-trit) representation.
+ *  The input must consist of multiples of 81-char chunks, each chunk is
+ *  converted into a big-endian 48-byte integer
+ *  @param chars_in base-27 encoded ternary number
+ *  @param trytes_out target tryte array
+ *  @param len length of the input
+ */
+int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
+                    unsigned int len);
+
+/** @brief Converts a big-endian binary integer into a balanced ternary number
  *         in base-27 encoding.
  *  The input must consist of one or more big-endian 48-byte integers, each
  *  integer is sequentially converted into 81 chars and zero-terminated in the end.
@@ -62,7 +90,12 @@ void bytes_to_chars(const unsigned char *bytes, char *chars, unsigned int bytes_
  */
 void bytes_set_last_trit_zero(unsigned char *bytes);
 
-/** @brief Adds a single integer to a 48-byte big-enadian integer.
+/** @brief Increment the 82nd trit without carrying overflows across 162nd trit.
+ *  @param bytes array consisting of 48 bytes.
+ */
+void bytes_increment_trit_area_81(unsigned char *bytes);
+
+/** @brief Adds a single integer to a 48-byte big-endian integer.
  *  The bytes are changed in such a way, that they are still a vaild big-endian
  *  binary representation of a ternary number, i.e. the 243th trit is set to 0.
  *  @param bytes input big-endian 48-byte integer

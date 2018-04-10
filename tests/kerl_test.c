@@ -1,12 +1,7 @@
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stddef.h>
+#include "test_common.h"
 #include <stdio.h>
-
-#include <cmocka.h>
-
+#include <string.h>
 #include "hash_file.h"
-#include "test_constants.h"
 #include "iota/conversion.h"
 #include "iota/kerl.h"
 
@@ -26,6 +21,8 @@ static void kerl(const char *input, const size_t squeeze_num_trits,
     kerl_squeeze_bytes(&kerl, bytes, NUM_BYTES(squeeze_num_trits));
 
     bytes_to_chars(bytes, output, NUM_BYTES(squeeze_num_trits));
+    // make null-terminated
+    output[NUM_TRYTES(squeeze_num_trits)] = '\0';
 }
 
 static void test_kerl(const char *input, const size_t length,

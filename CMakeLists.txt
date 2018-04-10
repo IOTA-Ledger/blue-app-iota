@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 11)
 set(SOURCE_FILES
         src/iota/addresses.c
         src/iota/addresses.h
+        src/iota/bundle.c
+        src/iota/bundle.h
+        src/iota/signing.c
+        src/iota/signing.h
         src/iota/common.h
         src/iota/conversion.c
         src/iota/conversion.h
@@ -16,7 +20,9 @@ set(SOURCE_FILES
         src/keccak/options.h
         src/keccak/sha3.c
         src/keccak/sha3.h
-        src/main.c
+        src/aux.c
+	src/aux.h
+	src/main.c
         src/main.h)
 
 add_executable(c_light_wallet ${SOURCE_FILES})

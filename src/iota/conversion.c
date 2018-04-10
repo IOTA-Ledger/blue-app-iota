@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include "common.h"
 
+// #define USE_UNSAFE_INCREMENT_TAG
+
 #define INT_LENGTH 12
 // base of the ternary system
 #define BASE 3
@@ -17,9 +19,15 @@ static const uint32_t NEG_HALF_3[12] = {
     0x865b38fd, 0xb74451c9, 0x56097f74, 0x55f957fa, 0x57805420, 0xa1961410};
 
 // representing the value of the highes trit in the feasible domain, i.e 3^242
-static const uint32_t LAST_TRIT[12] = {
+static const uint32_t TRIT_243[12] = {
     0x4b9d12c9, 0x3e00ecd3, 0x2908a09f, 0x75bc01b2, 0x184890dc, 0xa12f3aae,
     0xf3498e04, 0x91775c6c, 0x53ed0116, 0x540d500b, 0x50ff57bf, 0xbcd3d7df};
+
+#ifdef USE_UNSAFE_INCREMENT_TAG
+// representing the value of the 82nd trit, i.e. 3^81
+static const uint32_t TRIT_82[12] = {0xd56d7cc3, 0xb6bf0c69, 0xa149e834,
+                                     0x4d98d5ce, 0x1};
+#endif // USE_UNSAFE_INCREMENT_TAG
 
 static const trit_t trits_mapping[27][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
@@ -199,7 +207,7 @@ static uint32_t bigint_div_byte_mem(uint32_t *a, uint8_t divisor)
     uint32_t remainder = 0;
 
     for (unsigned int i = 12; i-- > 0;) {
-        const uint64_t v = (uint64_t)0x100000000 * remainder + a[i];
+        const uint64_t v = UINT64_C(0x100000000) * remainder + a[i];
 
         remainder = v % divisor;
         a[i] = (v / divisor) & 0xFFFFFFFF;
@@ -216,13 +224,13 @@ static bool bigint_set_last_trit_zero(uint32_t *bigint)
 {
     if (bigint_is_negative(bigint)) {
         if (bigint_cmp(bigint, NEG_HALF_3) < 0) {
-            bigint_add(bigint, bigint, LAST_TRIT);
+            bigint_add(bigint, bigint, TRIT_243);
             return true;
         }
     }
     else {
         if (bigint_cmp(bigint, HALF_3) > 0) {
-            bigint_sub(bigint, bigint, LAST_TRIT);
+            bigint_sub(bigint, bigint, TRIT_243);
             return true;
         }
     }
@@ -325,12 +333,14 @@ bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits)
  */
 static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
 {
-    uint32_t *p = (uint32_t *)bytes;
-
     // reverse word order
-    for (unsigned int i = 12; i-- > 0;) {
-        // convert byte order if necessary
-        *p++ = os_swap_u32(bigint[i]);
+    for (unsigned int i = 12; i-- > 0; bytes += 4) {
+        const uint32_t num = bigint[i];
+
+        bytes[0] = (num >> 24) & 0xFF;
+        bytes[1] = (num >> 16) & 0xFF;
+        bytes[2] = (num >> 8) & 0xFF;
+        bytes[3] = (num >> 0) & 0xFF;
     }
 }
 
@@ -340,13 +350,10 @@ static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
  */
 static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
 {
-    const uint32_t *p = (const uint32_t *)bytes;
-
     // reverse word order
-    for (unsigned int i = 12; i-- > 0;) {
-        // convert byte order if necessary
-        bigint[i] = os_swap_u32(*p);
-        p++;
+    for (unsigned int i = 12; i-- > 0; bytes += 4) {
+        bigint[i] = (uint32_t)bytes[0] << 24 | (uint32_t)bytes[1] << 16 |
+                    (uint32_t)bytes[2] << 8 | (uint32_t)bytes[3] << 0;
     }
 }
 
@@ -355,6 +362,13 @@ void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
     uint32_t bigint[12];
     trits_to_bigint(trits, bigint);
     bigint_to_bytes(bigint, bytes);
+}
+
+void trytes_to_bytes(const tryte_t *trytes, unsigned char *bytes)
+{
+    trit_t trits[243];
+    trytes_to_trits(trytes, trits, 81);
+    trits_to_bytes(trits, bytes);
 }
 
 void chars_to_bytes(const char *chars, unsigned char *bytes,
@@ -377,21 +391,21 @@ static inline void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
     bigint_to_trits_mem(bigint, trits);
 }
 
+void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
+{
+    trit_t trits[243];
+    bytes_to_trits(bytes, trits);
+    trits_to_trytes(trits, trytes, 243);
+}
+
 void bytes_to_chars(const unsigned char *bytes, char *chars,
                     unsigned int bytes_len)
 {
     for (unsigned int i = 0; i < bytes_len / 48; i++) {
         tryte_t trytes[81];
-        {
-            trit_t trits[243];
-            bytes_to_trits(bytes + i * 48, trits);
-            trits_to_trytes(trits, trytes, 243);
-        }
+        bytes_to_trytes(bytes + i * 48, trytes);
         trytes_to_chars(trytes, chars + i * 81, 81);
     }
-
-    // make zero termnated
-    chars[(bytes_len / 48) * 81] = '\0';
 }
 
 void bytes_set_last_trit_zero(unsigned char *bytes)
@@ -401,6 +415,36 @@ void bytes_set_last_trit_zero(unsigned char *bytes)
     if (bigint_set_last_trit_zero(bigint)) {
         bigint_to_bytes(bigint, bytes);
     }
+}
+
+static void increment_trit_aera(trit_t *trits, unsigned int start_trit,
+                                unsigned int num_trits)
+{
+    trit_t *trit = trits + start_trit;
+
+    for (unsigned int i = 0; i < num_trits; i++, trit++) {
+        if (*trit < MAX_TRIT_VALUE) {
+            *trit += 1;
+            break;
+        }
+        *trit = MIN_TRIT_VALUE;
+    }
+}
+
+// TODO: there are faster and more efficient algos for this, but is it worth it?
+void bytes_increment_trit_area_81(unsigned char *bytes)
+{
+#ifdef USE_UNSAFE_INCREMENT_TAG
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    bigint_add(bigint, bigint, TRIT_82);
+    bigint_to_bytes(bigint, bytes);
+#else
+    trit_t trits[243];
+    bytes_to_trits(bytes, trits);
+    increment_trit_aera(trits, 81, 81);
+    trits_to_bytes(trits, bytes);
+#endif // USE_UNSAFE_INCREMENT_TAG
 }
 
 void bytes_add_u32_mem(unsigned char *bytes, uint32_t summand)
