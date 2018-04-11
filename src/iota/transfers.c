@@ -50,6 +50,12 @@ static void get_address(const unsigned char *seed_bytes, uint32_t idx,
     bytes_to_chars(bytes, address, 48);
 }
 
+static char *char_copy(char *destination, const char *source, unsigned int len)
+{
+    memcpy(destination, source, len);
+    return destination + len;
+}
+
 static void get_transaction_chars(const TX_OBJECT tx, char *transaction_chars)
 {
     // just to make sure
@@ -57,17 +63,13 @@ static void get_transaction_chars(const TX_OBJECT tx, char *transaction_chars)
 
     char *c = transaction_chars;
 
-    memcpy(c, tx.signatureMessageFragment, 2187);
-    c += 2187;
-
-    memcpy(c, tx.address, 81);
-    c += 81;
+    c = char_copy(c, tx.signatureMessageFragment, 2187);
+    c = char_copy(c, tx.address, 81);
 
     int64_to_chars(tx.value, c, 27);
     c += 27;
 
-    memcpy(c, tx.obsoleteTag, 27);
-    c += 27;
+    c = char_copy(c, tx.obsoleteTag, 27);
 
     int64_to_chars(tx.timestamp, c, 9);
     c += 9;
@@ -78,17 +80,10 @@ static void get_transaction_chars(const TX_OBJECT tx, char *transaction_chars)
     int64_to_chars(tx.currentIndex, c, 9);
     c += 9;
 
-    memcpy(c, tx.bundle, 81);
-    c += 81;
-
-    memcpy(c, tx.trunkTransaction, 81);
-    c += 81;
-
-    memcpy(c, tx.branchTransaction, 81);
-    c += 81;
-
-    memcpy(c, tx.tag, 27);
-    c += 27;
+    c = char_copy(c, tx.bundle, 81);
+    c = char_copy(c, tx.trunkTransaction, 81);
+    c = char_copy(c, tx.branchTransaction, 81);
+    c = char_copy(c, tx.tag, 27);
 
     int64_to_chars(tx.attachmentTimestamp, c, 9);
     c += 9;
@@ -99,8 +94,7 @@ static void get_transaction_chars(const TX_OBJECT tx, char *transaction_chars)
     int64_to_chars(tx.attachmentTimestampUpperBound, c, 9);
     c += 9;
 
-    memcpy(c, tx.nonce, 27);
-    // c += 27;
+    c = char_copy(c, tx.nonce, 27);
 }
 
 static void increment_obsolute_tag(unsigned int tag_increment, TX_OBJECT *tx)
@@ -131,7 +125,7 @@ static void set_bundle_hash(const BUNDLE_CTX *bundle_ctx, TX_OBJECT *txs,
 
 void prepare_transfers(char *seed, uint8_t security, TX_OUTPUT *outputs,
                        int num_outputs, TX_INPUT *inputs, int num_inputs,
-                       char **transaction_chars)
+                       char transaction_chars[][2673])
 {
     // TODO use a timestamp
     const uint32_t timestamp = 0;
@@ -160,17 +154,17 @@ void prepare_transfers(char *seed, uint8_t security, TX_OUTPUT *outputs,
     for (unsigned int i = 0; i < num_inputs; i++) {
 
         memcpy(&txs[idx], &DEFAULT_TX, sizeof(TX_OBJECT));
-        get_address(seed_bytes, inputs[i].key_index, security,
-                    txs[idx].address);
+
+        char *address = txs[idx].address;
+        get_address(seed_bytes, inputs[i].key_index, security, address);
         txs[idx].value = -inputs[i].balance;
         txs[idx].timestamp = timestamp;
         idx++;
 
-        const char *address = txs[idx].address;
-
         // add meta transactions
         for (unsigned int j = 1; j < security; j++) {
 
+            memcpy(&txs[idx], &DEFAULT_TX, sizeof(TX_OBJECT));
             memcpy(txs[idx].address, address, 81);
             txs[idx].value = 0;
             txs[idx].timestamp = timestamp;
@@ -204,7 +198,7 @@ void prepare_transfers(char *seed, uint8_t security, TX_OUTPUT *outputs,
                            security, normalized_bundle_hash);
         unsigned int idx = num_outputs + i * security;
 
-        for (unsigned int j = 1; j < security; j++) {
+        for (unsigned int j = 0; j < security; j++) {
 
             unsigned char signature_bytes[27 * 48];
             signing_next_fragment(&signing_ctx, signature_bytes);
