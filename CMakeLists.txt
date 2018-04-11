@@ -16,6 +16,8 @@ set(SOURCE_FILES
         src/iota/iota_types.h
         src/iota/kerl.c
         src/iota/kerl.h
+	src/iota/transfers.h
+	src/iota/transfers.c
         src/keccak/macros.h
         src/keccak/options.h
         src/keccak/sha3.c
