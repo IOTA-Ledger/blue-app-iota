@@ -77,7 +77,7 @@ static void get_transaction_chars(const TX_OBJECT tx, char *transaction_chars)
     int64_to_chars(tx.currentIndex, c, 9);
     c += 9;
 
-    int64_to_chars(tx.currentIndex, c, 9);
+    int64_to_chars(tx.lastIndex, c, 9);
     c += 9;
 
     c = char_copy(c, tx.bundle, 81);
@@ -148,6 +148,8 @@ void prepare_transfers(char *seed, uint8_t security, TX_OUTPUT *outputs,
         rpad_chars(txs[idx].tag, outputs[i].tag, 27);
         rpad_chars(txs[idx].obsoleteTag, outputs[i].tag, 27);
         txs[idx].timestamp = timestamp;
+        txs[idx].currentIndex = idx;
+        txs[idx].lastIndex = num_txs - 1;
         idx++;
     }
 
@@ -159,6 +161,8 @@ void prepare_transfers(char *seed, uint8_t security, TX_OUTPUT *outputs,
         get_address(seed_bytes, inputs[i].key_index, security, address);
         txs[idx].value = -inputs[i].balance;
         txs[idx].timestamp = timestamp;
+        txs[idx].currentIndex = idx;
+        txs[idx].lastIndex = num_txs - 1;
         idx++;
 
         // add meta transactions
@@ -168,6 +172,8 @@ void prepare_transfers(char *seed, uint8_t security, TX_OUTPUT *outputs,
             memcpy(txs[idx].address, address, 81);
             txs[idx].value = 0;
             txs[idx].timestamp = timestamp;
+            txs[idx].currentIndex = idx;
+            txs[idx].lastIndex = num_txs - 1;
             idx++;
         }
     }
