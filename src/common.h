@@ -88,8 +88,6 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
 /* -                            COMMON                                   - */
 /* ----------------------------------------------------------------------- */
 
-#define DEBUG_SEED "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR"
-
 #define CX_KECCAK384_SIZE 48
 
 #define CEILING(x,y) (((x) + (y) - 1) / (y))
