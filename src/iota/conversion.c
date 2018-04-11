@@ -106,6 +106,13 @@ void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
     trytes_to_trits(trytes, trits, chars_len);
 }
 
+void trits_to_chars(const trit_t *trits, char *chars, unsigned int trit_len)
+{
+    tryte_t trytes[trit_len / 3];
+    trits_to_trytes(trits, trytes, trit_len);
+    trytes_to_chars(trytes, chars, trit_len / 3);
+}
+
 /** @brief Returns true, if the long little-endian integer represents a negative
  *         number in two's complement.
  */

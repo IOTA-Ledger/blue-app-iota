@@ -17,6 +17,13 @@
  */
 void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len);
 
+/** @brief Converts a balanced ternary number into base-27
+ *  @param trits input trit array
+ *  @param chars target char array
+ *  @param chars_len length of the input char array
+ */
+void trits_to_chars(const trit_t *trits, char *chars, unsigned int trit_len);
+
 /** @brief Converts a single signed integer into its ternary representation.
  *  @param value signed integer to convert
  *  @param trits target trit array
