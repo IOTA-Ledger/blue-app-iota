@@ -210,6 +210,6 @@ void prepare_transfers(char *seed, uint8_t security, TX_OUTPUT *outputs,
 
     // convert everything into trytes
     for (unsigned int i = 0; i < num_txs; i++) {
-        get_transaction_chars(txs[i], transaction_chars[i]);
+        get_transaction_chars(txs[i], transaction_chars[last_tx_index - i]);
     }
 }
