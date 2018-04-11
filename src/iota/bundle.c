@@ -74,8 +74,17 @@ uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
     create_bundle_bytes(value, tag, timestamp, ctx->current_index,
                         ctx->last_index, bytes_ptr + 48);
 
-    // store the binary value
-    ctx->values[ctx->current_index] = value;
+    if (value > 0) {
+        ctx->payment += value;
+        ctx->value_signs[ctx->current_index] = 1;
+    }
+    else if (value < 0) {
+        ctx->balance += -value;
+        ctx->value_signs[ctx->current_index] = -1;
+    }
+    else {
+        ctx->value_signs[ctx->current_index] = 0;
+    }
 
     return ctx->current_index++;
 }
@@ -152,24 +161,19 @@ static bool validate_address(const unsigned char *addr_bytes,
 
 static bool validate_balance(const BUNDLE_CTX *ctx)
 {
-    int64_t balance = 0;
-    for (unsigned int i = 0; i <= ctx->last_index; i++) {
-        balance += ctx->values[i];
-    }
-
-    return balance == 0;
+    return ctx->payment == ctx->balance;
 }
 
 /** @brief Checks that every input transaction has meta transactions. */
 static bool validate_meta_txs(const BUNDLE_CTX *ctx, unsigned int security)
 {
     for (unsigned int i = 0; i <= ctx->last_index; i++) {
-        if (ctx->values[i] < 0) {
+        if (ctx->value_signs[i] < 0) {
             const unsigned char *input_addr_bytes =
                 bundle_get_address_bytes(ctx, i);
 
             for (unsigned int j = 1; j < security; j++) {
-                if (i + j > ctx->last_index || ctx->values[i + j] != 0) {
+                if (i + j > ctx->last_index || ctx->value_signs[i + j] != 0) {
                     return false;
                 }
                 if (memcmp(input_addr_bytes,
@@ -191,7 +195,7 @@ static bool validate_address_indices(const BUNDLE_CTX *ctx,
 {
     for (unsigned int i = 0; i <= ctx->last_index; i++) {
         // only check the change and input addresses
-        if (i == change_tx_index || ctx->values[i] < 0) {
+        if (i == change_tx_index || ctx->value_signs[i] < 0) {
             const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
 
             if (!validate_address(addr_bytes, seed_bytes, ctx->indices[i],
@@ -208,13 +212,13 @@ static bool validate_address_reuse(const BUNDLE_CTX *ctx)
 {
     for (unsigned int i = 0; i <= ctx->last_index; i++) {
 
-        if (ctx->values[i] == 0) {
+        if (ctx->value_signs[i] == 0) {
             continue;
         }
         const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
 
         for (unsigned int j = i + 1; j <= ctx->last_index; j++) {
-            if (ctx->values[j] != 0 &&
+            if (ctx->value_signs[j] != 0 &&
                 memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
                        NUM_HASH_BYTES) == 0) {
                 return false;
