@@ -6,16 +6,16 @@
 #include "kerl.h"
 
 // pointer to the first byte of the current transaction
-#define TX_BYTES(C) ((C)->bytes + (C)->current_index * 96)
+#define TX_BYTES(C) ((C)->bytes + (C)->current_tx_index * 96)
 
-void bundle_initialize(BUNDLE_CTX *ctx, uint32_t last_index)
+void bundle_initialize(BUNDLE_CTX *ctx, uint8_t last_tx_index)
 {
-    if (last_index < 1 || last_index >= MAX_BUNDLE_INDEX_SZ) {
+    if (last_tx_index < 1 || last_tx_index >= MAX_BUNDLE_INDEX_SZ) {
         THROW(INVALID_PARAMETER);
     }
 
     os_memset(ctx, 0, sizeof(BUNDLE_CTX));
-    ctx->last_index = last_index;
+    ctx->last_tx_index = last_tx_index;
 }
 
 void bundle_set_external_address(BUNDLE_CTX *ctx, const char *address)
@@ -32,7 +32,7 @@ void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
                                  uint32_t index)
 {
     bundle_set_external_address(ctx, address);
-    ctx->indices[ctx->current_index] = index;
+    ctx->indices[ctx->current_tx_index] = index;
 }
 
 void bundle_set_address_bytes(BUNDLE_CTX *ctx, const unsigned char *addresses)
@@ -46,16 +46,16 @@ void bundle_set_address_bytes(BUNDLE_CTX *ctx, const unsigned char *addresses)
 }
 
 static void create_bundle_bytes(int64_t value, const char *tag,
-                                uint32_t timestamp, uint32_t current_index,
-                                uint32_t last_index, unsigned char *bytes)
+                                uint32_t timestamp, uint8_t current_tx_index,
+                                uint8_t last_tx_index, unsigned char *bytes)
 {
     trit_t bundle_essence_trits[243] = {0};
 
     int64_to_trits(value, bundle_essence_trits, 81);
     chars_to_trits(tag, bundle_essence_trits + 81, 27);
     int64_to_trits(timestamp, bundle_essence_trits + 162, 27);
-    int64_to_trits(current_index, bundle_essence_trits + 189, 27);
-    int64_to_trits(last_index, bundle_essence_trits + 216, 27);
+    int64_to_trits(current_tx_index, bundle_essence_trits + 189, 27);
+    int64_to_trits(last_tx_index, bundle_essence_trits + 216, 27);
 
     // now we have exactly one chunk of 243 trits
     trits_to_bytes(bundle_essence_trits, bytes);
@@ -71,22 +71,22 @@ uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
     unsigned char *bytes_ptr = TX_BYTES(ctx);
 
     // the combined trits make up the second part
-    create_bundle_bytes(value, tag, timestamp, ctx->current_index,
-                        ctx->last_index, bytes_ptr + 48);
+    create_bundle_bytes(value, tag, timestamp, ctx->current_tx_index,
+                        ctx->last_tx_index, bytes_ptr + 48);
 
     if (value > 0) {
         ctx->payment += value;
-        ctx->value_signs[ctx->current_index] = 1;
+        ctx->value_signs[ctx->current_tx_index] = 1;
     }
     else if (value < 0) {
         ctx->balance += -value;
-        ctx->value_signs[ctx->current_index] = -1;
+        ctx->value_signs[ctx->current_tx_index] = -1;
     }
     else {
-        ctx->value_signs[ctx->current_index] = 0;
+        ctx->value_signs[ctx->current_tx_index] = 0;
     }
 
-    return ctx->current_index++;
+    return ctx->current_tx_index++;
 }
 
 static inline int decrement_tryte(int max, tryte_t *tryte)
@@ -165,15 +165,16 @@ static bool validate_balance(const BUNDLE_CTX *ctx)
 }
 
 /** @brief Checks that every input transaction has meta transactions. */
-static bool validate_meta_txs(const BUNDLE_CTX *ctx, unsigned int security)
+static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
 {
-    for (unsigned int i = 0; i <= ctx->last_index; i++) {
+    for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
         if (ctx->value_signs[i] < 0) {
             const unsigned char *input_addr_bytes =
                 bundle_get_address_bytes(ctx, i);
 
             for (unsigned int j = 1; j < security; j++) {
-                if (i + j > ctx->last_index || ctx->value_signs[i + j] != 0) {
+                if (i + j > ctx->last_tx_index ||
+                    ctx->value_signs[i + j] != 0) {
                     return false;
                 }
                 if (memcmp(input_addr_bytes,
@@ -189,11 +190,11 @@ static bool validate_meta_txs(const BUNDLE_CTX *ctx, unsigned int security)
 }
 
 static bool validate_address_indices(const BUNDLE_CTX *ctx,
-                                     unsigned int change_tx_index,
+                                     uint8_t change_tx_index,
                                      const unsigned char *seed_bytes,
-                                     unsigned int security)
+                                     uint8_t security)
 {
-    for (unsigned int i = 0; i <= ctx->last_index; i++) {
+    for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
         // only check the change and input addresses
         if (i == change_tx_index || ctx->value_signs[i] < 0) {
             const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
@@ -210,14 +211,14 @@ static bool validate_address_indices(const BUNDLE_CTX *ctx,
 
 static bool validate_address_reuse(const BUNDLE_CTX *ctx)
 {
-    for (unsigned int i = 0; i <= ctx->last_index; i++) {
+    for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
 
         if (ctx->value_signs[i] == 0) {
             continue;
         }
         const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
 
-        for (unsigned int j = i + 1; j <= ctx->last_index; j++) {
+        for (unsigned int j = i + 1; j <= ctx->last_tx_index; j++) {
             if (ctx->value_signs[j] != 0 &&
                 memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
                        NUM_HASH_BYTES) == 0) {
@@ -229,9 +230,8 @@ static bool validate_address_reuse(const BUNDLE_CTX *ctx)
     return true;
 }
 
-static bool validate_bundle(const BUNDLE_CTX *ctx, unsigned int change_tx_index,
-                            const unsigned char *seed_bytes,
-                            unsigned int security)
+static bool validate_bundle(const BUNDLE_CTX *ctx, uint8_t change_tx_index,
+                            const unsigned char *seed_bytes, uint8_t security)
 {
     if (!validate_balance(ctx)) {
         return false;
@@ -276,9 +276,9 @@ static bool bundle_validate_hash(BUNDLE_CTX *ctx)
     return true;
 }
 
-bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint32_t change_index,
+bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_index,
                                 const unsigned char *seed_bytes,
-                                unsigned int security)
+                                uint8_t security)
 {
     if (bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
@@ -307,9 +307,9 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx)
 }
 
 const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
-                                              uint32_t tx_index)
+                                              uint8_t tx_index)
 {
-    if (tx_index >= ctx->current_index) {
+    if (tx_index >= ctx->current_tx_index) {
         THROW(INVALID_PARAMETER);
     }
 

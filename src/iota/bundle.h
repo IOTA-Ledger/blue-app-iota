@@ -4,23 +4,26 @@
 #include <stdbool.h>
 #include "iota_types.h"
 
+#define MAX_NUM_INPUT_TX 2
+
 // TODO: increase back to 8, once the mememory issues have been resolved
 #define MAX_BUNDLE_INDEX_SZ 7
+// #define MAX_BUNDLE_INDEX_SZ  (1 + MAX_NUM_INPUT_TX * MAX_SECURITY_LEVEL + 1)
 
 typedef struct BUNDLE_CTX {
         // bundle_bytes holds all of the bundle information in byte encoding
-        unsigned char bytes[MAX_BUNDLE_INDEX_SZ * 96];
-
-        uint32_t current_index;
-        uint32_t last_index;
+        unsigned char bytes[MAX_BUNDLE_INDEX_SZ * 2 * NUM_HASH_BYTES];
 
         int64_t balance;
         int64_t payment;
-
         int8_t value_signs[MAX_BUNDLE_INDEX_SZ];
+
         uint32_t indices[MAX_BUNDLE_INDEX_SZ];
 
-        unsigned char hash[48]; // bundle hash, when finalized
+        uint8_t current_tx_index;
+        uint8_t last_tx_index;
+
+        unsigned char hash[NUM_HASH_BYTES]; // bundle hash, when finalized
 } BUNDLE_CTX;
 
 /** @brief Initializes the bundle context for a fixed number of transactions.
@@ -28,7 +31,7 @@ typedef struct BUNDLE_CTX {
  *  @param last_index index of the last transaction in the bundle. Must be at
  *         least 1 as at least an output and an input transaction is required
  */
-void bundle_initialize(BUNDLE_CTX *ctx, uint32_t last_index);
+void bundle_initialize(BUNDLE_CTX *ctx, uint8_t last_tx_index);
 
 /** @brief Sets the address for the current output transaction.
  *  The address must be set befor calling bundle_add_tx().
@@ -84,9 +87,9 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx);
  *  @param security security level used for the addresses
  *  @return true if the bundle is valid, false otherwise
  */
-bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint32_t change_index,
+bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
                                 const unsigned char *seed_bytes,
-                                unsigned int security);
+                                uint8_t security);
 
 /** @brief Returns the (not normalized) hash of the finalized bundle.
  *  @param ctx the bundle context used
@@ -100,7 +103,7 @@ const unsigned char* bundle_get_hash(const BUNDLE_CTX *ctx);
  *  @param tx_index transaction index
  */
 const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
-                                              uint32_t tx_index);
+                                              uint8_t tx_index);
 
 /** @brief Computes the normalized hash.
  *  @param ctx the bundle context used
@@ -114,7 +117,7 @@ void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes);
  */
 static inline bool bundle_has_open_txs(const BUNDLE_CTX *ctx)
 {
-        return ctx->current_index <= ctx->last_index;
+        return ctx->current_tx_index <= ctx->last_tx_index;
 }
 
 #endif // BUNDLE_H

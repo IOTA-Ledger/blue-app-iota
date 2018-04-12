@@ -103,10 +103,10 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
 
 static void validate_tx_indices(const TX_INPUT *input)
 {
-    if (input->last_index != api.bundle_ctx.last_index) {
+    if (input->last_index != api.bundle_ctx.last_tx_index) {
         THROW(SW_TX_INVALID_INDEX);
     }
-    if (input->current_index != api.bundle_ctx.current_index) {
+    if (input->current_index != api.bundle_ctx.current_tx_index) {
         THROW(SW_TX_INVALID_INDEX);
     }
 }
@@ -128,17 +128,17 @@ static bool has_reference_transaction(uint32_t current_index)
 
 static void validate_tx_order(const TX_INPUT *input)
 {
-    const uint32_t current_index = api.bundle_ctx.current_index;
+    const uint32_t current_index = api.bundle_ctx.current_tx_index;
 
     // the receiving addresses are only allowed first or last
     if (input->value > 0 && current_index > 0 &&
-        current_index < api.bundle_ctx.last_index) {
+        current_index < api.bundle_ctx.last_tx_index) {
         THROW(SW_TX_INVALID_ORDER);
     }
 
     // a meta transaction must have a valid reference input transaction
     if (input->value == 0 && current_index > 0 &&
-        current_index < api.bundle_ctx.last_index) {
+        current_index < api.bundle_ctx.last_tx_index) {
         // this must be a meta transaction
         if (!has_reference_transaction(current_index)) {
             THROW(SW_TX_INVALID_META);
@@ -168,12 +168,11 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     ui_display_recv();
 
     if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
-        uint32_t last_index;
-        if (!ASSIGN(last_index, input->last_index)) {
-            // last index overflow
+        if (!IN_RANGE(input->last_index, 2, MAX_BUNDLE_INDEX_SZ - 1)) {
+            // last index invalid range
             THROW(SW_COMMAND_INVALID_DATA);
         }
-        bundle_initialize(&api.bundle_ctx, last_index);
+        bundle_initialize(&api.bundle_ctx, input->last_index);
         api.state_flags |= BUNDLE_INITIALIZED;
     }
 
@@ -186,7 +185,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     }
 
     if (input->value < 0 ||
-        api.bundle_ctx.current_index == api.bundle_ctx.last_index) {
+        api.bundle_ctx.current_tx_index == api.bundle_ctx.last_tx_index) {
         uint32_t address_idx;
         if (!ASSIGN(address_idx, input->address_idx)) {
             // index overflow
@@ -242,7 +241,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
     uint8_t tx_idx;
     if (!ASSIGN(tx_idx, input->transaction_idx) ||
-        tx_idx > api.bundle_ctx.last_index) {
+        tx_idx > api.bundle_ctx.last_tx_index) {
         // index is out of bounds
         THROW(SW_COMMAND_INVALID_DATA);
     }
@@ -321,11 +320,11 @@ void user_deny()
 static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 {
     // there only is a proper change transaction if the value is positive
-    if (ctx->value_signs[ctx->last_index] > 0) {
-        return ctx->last_index;
+    if (ctx->value_signs[ctx->last_tx_index] > 0) {
+        return ctx->last_tx_index;
     }
     // return something out of bounds
-    return ctx->last_index + 1;
+    return ctx->last_tx_index + 1;
 }
 
 /** @brief This functions gets called, when bundle is accepted. */
