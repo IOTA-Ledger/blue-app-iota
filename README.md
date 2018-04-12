@@ -45,9 +45,8 @@ char address_two[82] = {0};
 char *tag = "ANTAG"; //27 ternary characters
 
 //Define the output array, where the coins must go to.
-TX_OUTPUT output_txs[] = {{.address = "", .value = 10000, .message = "", .tag = ""}};
-//Set the address of each transaction
-memcpy(output_txs[0].address, "ANADDRESS", 81); // ANADDRESS => 81 ternary characters
+TX_OUTPUT output_txs[] = 
+    {{.address = "ANADDRESS", .value = 10000, .message = "", .tag = ""}}; //ANADDRESS => 81 ternary characters
 
 
 //Define the input array. Where the coins come from
