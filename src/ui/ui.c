@@ -123,7 +123,7 @@ void ctx_initialize()
 {
     os_memset(&ui_text, 0, sizeof(ui_text));
     os_memset(&ui_glyphs, 0, sizeof(ui_glyphs));
-    os_memset(&ui_state, 0, sizeof(ui_state.state));
+    os_memset(&ui_state, 0, sizeof(ui_state));
 
     ui_state.menu_idx = 0;
     ui_state.backup_menu_idx = 0;

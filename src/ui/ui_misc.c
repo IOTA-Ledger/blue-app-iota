@@ -46,22 +46,10 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
 void ui_read_bundle(BUNDLE_CTX *bundle_ctx)
 {
     const unsigned char *addr_bytes = bundle_get_address_bytes(bundle_ctx, 0);
-
     get_address_with_checksum(addr_bytes, ui_state.addr);
 
-    int64_t payment = 0, balance = 0;
-
-    for (unsigned int i = 0; i <= bundle_ctx->last_index; i++) {
-        if (bundle_ctx->values[i] > 0) {
-            payment += bundle_ctx->values[i];
-        }
-        else {
-            balance -= bundle_ctx->values[i];
-        }
-    }
-
-    ui_state.pay = payment;
-    ui_state.bal = balance;
+    ui_state.pay = bundle_ctx->payment;
+    ui_state.bal = bundle_ctx->balance;
 }
 
 // len specifies max size of buffer

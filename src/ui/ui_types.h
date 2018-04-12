@@ -71,17 +71,17 @@ typedef struct UI_GLYPH_CTX {
 
 typedef struct UI_STATE_CTX {
 
-    uint8_t state;
-    uint8_t menu_idx;
-
-    uint8_t backup_state;
-    uint8_t backup_menu_idx;
-
     // tx information
     int64_t bal;
     int64_t pay;
-    bool display_full_value;
+
     char addr[90];
+    bool display_full_value;
+
+    uint8_t state;
+    uint8_t menu_idx;
+    uint8_t backup_state;
+    uint8_t backup_menu_idx;
 
 } UI_STATE_CTX;
 

@@ -24,11 +24,9 @@ include $(BOLOS_SDK)/Makefile.defines
 
 APPNAME = "IOTA"
 APPVERSION = 0.0.1
-APP_LOAD_PARAMS = --appFlags 0x00 $(COMMON_LOAD_PARAMS)
+APP_LOAD_PARAMS = --path "44'/4218'" --appFlags 0x00 $(COMMON_LOAD_PARAMS)
 
-ICONNAME=icon.gif # if error - byte array vs string, find:
-# /lib/python2.7/site-packages/ledgerblue/hexloader.py
-#change line 148 to -    data += struct.pack('>B', len(icon)) + str(icon)
+ICONNAME = icon.gif
 
 # Build configuration
 
@@ -40,6 +38,12 @@ DEFINES += APPVERSION=\"$(APPVERSION)\"
 DEFINES += OS_IO_SEPROXYHAL IO_SEPROXYHAL_BUFFER_SIZE_B=128
 DEFINES += HAVE_BAGL HAVE_SPRINTF
 DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=6 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
+
+# U2F support
+SDK_SOURCE_PATH += lib_u2f
+DEFINES += USB_SEGMENT_SIZE=64
+DEFINES += U2F_PROXY_MAGIC=\"IOTA\"
+DEFINES += HAVE_IO_U2F HAVE_U2F
 
 # Development flags
 DEFINES += HAVE_BOLOS_APP_STACK_CANARY HAVE_PRINTF PRINTF=screen_printf

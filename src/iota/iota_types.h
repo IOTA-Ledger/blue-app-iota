@@ -2,6 +2,7 @@
 #define IOTA_TYPES_H
 
 #include <stdint.h>
+#include "common.h"
 
 typedef int8_t trit_t;
 typedef int8_t tryte_t;
