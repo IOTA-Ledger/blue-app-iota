@@ -252,6 +252,7 @@ static bool validate_bundle(const BUNDLE_CTX *ctx, uint8_t change_tx_index,
     return true;
 }
 
+NO_INLINE
 static void compute_hash(BUNDLE_CTX *ctx)
 {
     cx_sha3_t sha;
@@ -264,7 +265,6 @@ static void compute_hash(BUNDLE_CTX *ctx)
 static bool bundle_validate_hash(BUNDLE_CTX *ctx)
 {
     tryte_t hash_trytes[81];
-    compute_hash(ctx);
     normalize_hash_bytes(ctx->hash, hash_trytes);
 
     if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
@@ -284,8 +284,12 @@ bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_index,
         THROW(INVALID_STATE);
     }
 
-    return validate_bundle(ctx, change_index, seed_bytes, security) &&
-           bundle_validate_hash(ctx);
+    if (!validate_bundle(ctx, change_index, seed_bytes, security)) {
+        return false;
+    }
+
+    compute_hash(ctx);
+    return bundle_validate_hash(ctx);
 }
 
 unsigned int bundle_finalize(BUNDLE_CTX *ctx)
@@ -296,9 +300,11 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx)
         THROW(INVALID_STATE);
     }
 
+    compute_hash(ctx);
     while (!bundle_validate_hash(ctx)) {
         // increment the tag of the first transaction
         bytes_increment_trit_area_81(ctx->bytes + 48);
+        compute_hash(ctx);
         tag_increment++;
     }
 
