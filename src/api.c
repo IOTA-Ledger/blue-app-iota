@@ -151,13 +151,28 @@ static void validate_tx_order(const TX_INPUT *input)
     }
 }
 
-static void get_padded_valid_tag(const char *input_tag, char *padded_tag)
+NO_INLINE
+static void add_tx(const TX_INPUT *input)
 {
-    rpad_chars(padded_tag, input_tag, 27);
+    if (!IN_RANGE(input->value, -MAX_IOTA_VALUE, MAX_IOTA_VALUE)) {
+        // value out of bounds
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    char padded_tag[27];
+    rpad_chars(padded_tag, input->tag, 27);
     if (!validate_chars(padded_tag, 27)) {
         // invalid tag
         THROW(SW_COMMAND_INVALID_DATA);
     }
+
+    uint32_t timestamp;
+    if (!ASSIGN(timestamp, input->timestamp)) {
+        // timestamp overflow
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
 }
 
 unsigned int api_tx(const unsigned char *input_data, unsigned int len)
@@ -168,7 +183,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     ui_display_recv();
 
     if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
-        if (!IN_RANGE(input->last_index, 2, MAX_BUNDLE_INDEX_SZ - 1)) {
+        if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
             // last index invalid range
             THROW(SW_COMMAND_INVALID_DATA);
         }
@@ -199,27 +214,13 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         bundle_set_external_address(&api.bundle_ctx, input->address);
     }
 
-    if (!IN_RANGE(input->value, -MAX_IOTA_VALUE, MAX_IOTA_VALUE)) {
-        // value out of bounds
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-
-    char padded_tag[27];
-    get_padded_valid_tag(input->tag, padded_tag);
-
-    uint32_t timestamp;
-    if (!ASSIGN(timestamp, input->timestamp)) {
-        // timestamp overflow
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-    bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
+    add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
         ui_sign_tx(&api.bundle_ctx);
         return IO_ASYNCH_REPLY;
     }
 
     TX_OUTPUT output = {false, {0}};
-
     io_send(&output, sizeof(output), SW_OK);
     return 0;
 }
@@ -327,6 +328,16 @@ static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
     return ctx->last_tx_index + 1;
 }
 
+NO_INLINE
+static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
+{
+    TX_OUTPUT output;
+    output.finalized = true;
+    bytes_to_chars(bundle_get_hash(ctx), output.bundle_hash, 48);
+
+    io_send(&output, sizeof(output), SW_OK);
+}
+
 /** @brief This functions gets called, when bundle is accepted. */
 void user_sign()
 {
@@ -339,9 +350,5 @@ void user_sign()
     }
     api.state_flags |= BUNDLE_FINALIZED;
 
-    TX_OUTPUT output;
-    output.finalized = true;
-    bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
-
-    io_send(&output, sizeof(output), SW_OK);
+    io_send_bundle_hash(&api.bundle_ctx);
 }
