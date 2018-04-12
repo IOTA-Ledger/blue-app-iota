@@ -1,8 +1,6 @@
 from ledgerblue.comm import getDongle
-from ledgerblue.commException import CommException
 from struct import Struct
 import time
-import sys
 
 BIP44_PATH = [0x8000002C,
               0x8000107A,
@@ -10,10 +8,7 @@ BIP44_PATH = [0x8000002C,
               0x00000000,
               0x00000000]
 SECURITY_LEVEL = 2
-
-DEST_ADDRESS = b"ADR" * 27
-SRC_INDEX = 1
-TIMESTAMP = 99999
+SRC_INDEX = 0
 
 # APDU instructions
 INS_SET_SEED = 0x01
@@ -52,61 +47,21 @@ def unpack_pubkey_output(data):
     return struct.unpack(data)
 
 
-def pack_tx_input(address, address_idx, value, tag, tx_idx, tx_len, tx_time):
-    tx_struct = Struct("<81sqq27sqqq")
-    return tx_struct.pack(address, address_idx, value, tag, tx_idx, tx_len, tx_time)
-
-
-def unpack_tx_output(data):
-    struct = Struct("<?81s")
-    return struct.unpack(data)
-
-
-def pack_sign_input(transaction_idx):
-    struct = Struct("<q")
-    return struct.pack(transaction_idx)
-
-
-def unpack_sign_output(data):
-    struct = Struct("<243s?")
-    return struct.unpack(data)
-
-
 dongle = getDongle(True)
 exceptionCount = 0
 start_time = time.time()
 
+print("Initializing IOTA seed for security-level=%d..." % SECURITY_LEVEL)
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
+print("\nGenerating address for index=%d..." % SRC_INDEX)
 response = dongle.exchange(apdu_command(
     INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
 struct = unpack_pubkey_output(response)
-print(struct)
-address = struct[0]
+print("  Address: %s" % struct[0].decode("utf-8"))
 
-response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(DEST_ADDRESS, 0, 10, b"XC", 0, 2, TIMESTAMP)))
-print(unpack_tx_output(response))
-
-response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(address, SRC_INDEX, -10, b"", 1, 2, TIMESTAMP)))
-print(unpack_tx_output(response))
-
-# Meta transaction
-response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(address, SRC_INDEX, 0, b"", 2, 2, TIMESTAMP)))
-print(unpack_tx_output(response))
-
-while True:
-    response = dongle.exchange(apdu_command(INS_SIGN, pack_sign_input(1)))
-    struct = unpack_sign_output(response)
-    print(struct)
-
-    if struct[1] == False:
-        break
-
-
+print("\nDisplaying address on the Ledger Nano...")
 dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
 
 elapsed_time = time.time() - start_time
-print("Time Elapsed: %d" % elapsed_time)
+print("\nTime Elapsed: %ds" % elapsed_time)
