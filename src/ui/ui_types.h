@@ -71,19 +71,17 @@ typedef struct UI_GLYPH_CTX {
 
 typedef struct UI_STATE_CTX {
 
-    // only 4 bits each
-    unsigned int state : 4;
-    unsigned int menu_idx : 4;
-
-    // only 4 bits each
-    unsigned int backup_state : 4;
-    unsigned int backup_menu_idx : 4;
-
     // tx information
     int64_t bal;
     int64_t pay;
-    bool display_full_value;
+
     char addr[90];
+    bool display_full_value;
+
+    uint8_t state;
+    uint8_t menu_idx;
+    uint8_t backup_state;
+    uint8_t backup_menu_idx;
 
 } UI_STATE_CTX;
 
