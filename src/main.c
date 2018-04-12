@@ -4,8 +4,10 @@
 
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {
-    uint8_t initialized;
+
     uint32_t account_seed[5];
+
+    uint8_t initialized;
     uint8_t advanced_mode;
     uint8_t browser_mode;
 
