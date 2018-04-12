@@ -6,9 +6,8 @@
 
 #define MAX_NUM_INPUT_TX 2
 
-// TODO: increase back to 8, once the mememory issues have been resolved
-#define MAX_BUNDLE_INDEX_SZ 7
-// #define MAX_BUNDLE_INDEX_SZ  (1 + MAX_NUM_INPUT_TX * MAX_SECURITY_LEVEL + 1)
+// one output, input plus remainder txs
+#define MAX_BUNDLE_INDEX_SZ  (1 + MAX_NUM_INPUT_TX * MAX_SECURITY_LEVEL + 1)
 
 typedef struct BUNDLE_CTX {
         // bundle_bytes holds all of the bundle information in byte encoding
