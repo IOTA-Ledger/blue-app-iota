@@ -231,15 +231,22 @@ void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
     ui_render();
 }
 
-void ui_restore()
+void ui_reset()
 {
-    // TODO recovery state not fully functional
-    //restore_state();
     state_go(STATE_MENU_WELCOME, 0);
-
+    
+    // reset bundle as well
+    os_memset(ui_state.bundle_ctx, 0, sizeof(ui_state.bundle_ctx));
+    
     ui_build_display();
     ui_render();
     ui_force_draw();
+}
+
+void ui_restore()
+{
+    // TODO recovery state not fully functional
+    restore_state();
 }
 
 

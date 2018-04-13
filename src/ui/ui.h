@@ -25,6 +25,10 @@ void ui_display_signing();
 void ui_display_address(const unsigned char *addr_bytes);
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
 void ui_display_init_ledger(const INIT_LEDGER_INPUT *input);
+void ui_reset();
 void ui_restore();
+
+void ui_render();
+void ui_force_draw();
 
 #endif // UI_H

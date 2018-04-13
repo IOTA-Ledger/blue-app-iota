@@ -2,6 +2,7 @@
 #include <string.h>
 #include "common.h"
 #include "iota/addresses.h"
+#include "ui.h"
 
 
 /* ----------------------------------------------------
@@ -481,7 +482,8 @@ void ui_handle_button(uint8_t state, uint8_t button_mask)
                 break;
         }
     }
-    else */if (button_mask == BUTTON_B) {
+    else */
+    if (button_mask == BUTTON_B) {
         switch (state) {
             /* ------------- INIT --------------- */
         case STATE_MENU_INIT:
