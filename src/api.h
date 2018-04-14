@@ -72,4 +72,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len);
 unsigned int api_sign(const unsigned char *input_data, unsigned int len);
 unsigned int api_display_pubkey(const unsigned char *input_data, unsigned int len);
 
+void user_sign();
+void user_deny();
+
 #endif // API_H

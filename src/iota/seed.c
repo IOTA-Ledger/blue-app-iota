@@ -30,7 +30,7 @@ void derive_seed_bip32(const unsigned int *path, unsigned int pathLength,
 {
     // we only care about privateKey and chain to use as entropy for the seed
     unsigned char entropy[64];
-    os_perso_derive_node_bip32(CX_CURVE_256K1, path, pathLength, entropy,
+    os_perso_derive_node_bip32(CX_CURVE_256K1, (unsigned int *)path, pathLength, entropy,
                                entropy + 32);
 
     derive_seed_entropy(entropy, sizeof(entropy), seed_bytes);
