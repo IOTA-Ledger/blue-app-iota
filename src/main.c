@@ -42,9 +42,11 @@ static void IOTA_main()
                 }
 
                 // send  response code and reset ui
+                
                 // TODO: what happens if io_send throws an exception
                 io_send(NULL, 0, sw);
-                ui_restore();
+                // TODO: does this reset the display completely?
+                ui_display_welcome();
                 flags = 0;
             }
             FINALLY
