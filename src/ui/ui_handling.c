@@ -215,7 +215,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
     case STATE_MENU_INIT:
         array_sz = MENU_INIT_LEN - 1;
 
-        if (translated_mask == BUTTON_B) {
+        if (translated_mask == BUTTON_B && ui_state.menu_idx == array_sz) {
             state_go(STATE_MENU_WELCOME, 0);
             return;
         }
@@ -289,7 +289,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
 
         // Back
         if (translated_mask == BUTTON_B && ui_state.menu_idx == array_sz) {
-            state_return(STATE_MENU_WELCOME, 3);
+            state_return(STATE_MENU_WELCOME, 2);
             return;
         }
         break;

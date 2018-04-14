@@ -41,11 +41,6 @@ void init_flash()
     
     storage.initialized = 0x01;
     os_memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
-    storage.account_seed[0] = 0;
-    storage.account_seed[1] = 4;
-    storage.account_seed[2] = 9;
-    storage.account_seed[3] = 22;
-    storage.account_seed[4] = 762;
     storage.advanced_mode = 0;
     
     nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
