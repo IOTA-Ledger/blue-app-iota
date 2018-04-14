@@ -10,7 +10,7 @@
 
 void bundle_initialize(BUNDLE_CTX *ctx, uint32_t last_index)
 {
-    if (last_index < 1 || last_index >= MAX_BUNDLE_INDEX_SZ) {
+    if (last_index >= MAX_BUNDLE_INDEX_SZ) {
         THROW(INVALID_PARAMETER);
     }
 
