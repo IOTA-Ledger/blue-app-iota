@@ -403,7 +403,6 @@ void get_welcome_menu(char *msg)
 
     strcpy(msg + (i++ * 21), " Welcome to IOTA");
     strcpy(msg + (i++ * 21), "Advanced Mode");
-    strcpy(msg + (i++ * 21), "Browser Support");
     strcpy(msg + (i++ * 21), "Account Indexes");
     strcpy(msg + (i++ * 21), "Exit App");
 }
@@ -435,16 +434,6 @@ void get_advanced_menu(char *msg)
 
     strcpy(msg + (i++ * 21), "Default");
     strcpy(msg + (i++ * 21), "Advanced");
-}
-
-void get_browser_menu(char *msg)
-{
-    memset(msg, '\0', MENU_BROWSER_LEN * 21);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * 21), "Disabled");
-    strcpy(msg + (i++ * 21), "Enabled");
 }
 
 void get_adv_warn_menu(char *msg)

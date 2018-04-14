@@ -308,7 +308,7 @@ void init_state_transitions()
     state_transitions[STATE_MENU_WELCOME][BUTTON_L] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_R] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_B] = STATE_MENU_WELCOME;
-    /* ------------- MENU WELCOME --------------- */
+    /* ------------- IGNORE STATE --------------- */
     state_transitions[STATE_IGNORE][BUTTON_L] = STATE_IGNORE;
     state_transitions[STATE_IGNORE][BUTTON_R] = STATE_IGNORE;
     state_transitions[STATE_IGNORE][BUTTON_B] = STATE_IGNORE;
@@ -324,10 +324,6 @@ void init_state_transitions()
     state_transitions[STATE_MENU_ADV_WARN][BUTTON_L] = STATE_MENU_ADV_WARN;
     state_transitions[STATE_MENU_ADV_WARN][BUTTON_R] = STATE_MENU_ADV_WARN;
     state_transitions[STATE_MENU_ADV_WARN][BUTTON_B] = STATE_MENU_ADV_WARN;
-    /* ------------- MENU BROWSER MODE --------------- */
-    state_transitions[STATE_MENU_BROWSER][BUTTON_L] = STATE_MENU_BROWSER;
-    state_transitions[STATE_MENU_BROWSER][BUTTON_R] = STATE_MENU_BROWSER;
-    state_transitions[STATE_MENU_BROWSER][BUTTON_B] = STATE_MENU_BROWSER;
     /* ------------- TX BALANCE --------------- */
     state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_DENY;
     state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_PAY;

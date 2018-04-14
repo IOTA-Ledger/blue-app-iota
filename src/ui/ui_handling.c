@@ -85,15 +85,6 @@ void ui_build_display()
             break;
         }
     } break;
-        /* ------------ BROWSER SUPPORT *MENU* -------------- */
-    case STATE_MENU_BROWSER: {
-        // write the actual menu
-        char msg[MENU_BROWSER_LEN * 21];
-        get_browser_menu(msg);
-        write_text_array(msg, MENU_BROWSER_LEN);
-
-        // no special overrides
-    } break;
         /* ------------ DISPLAY INDEXES *MENU* -------------- */
     case STATE_MENU_DISP_IDX: {
         // write the actual menu
@@ -244,13 +235,8 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
                 // get_adv_mode lines up with menu idx
                 state_go(STATE_MENU_ADVANCED, get_advanced_mode());
                 return;
-                // Browser Mode
-            case 2:
-                // get_browser_mode lines up with menu idx
-                state_go(STATE_MENU_BROWSER, get_browser_mode());
-                return;
                 // View Indexes
-            case 3:
+            case 2:
                 state_go(STATE_MENU_DISP_IDX, 0);
                 return;
                 // Exit App
@@ -295,18 +281,6 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
             default: // "Are you sure?"
                 break;
             }
-        }
-        break;
-        /* ------------ STATE BROWSER MODE -------------- */
-    case STATE_MENU_BROWSER:
-        array_sz = MENU_BROWSER_LEN - 1;
-
-        if (translated_mask == BUTTON_B) {
-            // menu idx entries line up with modes
-            write_browser_mode(ui_state.menu_idx);
-
-            state_return(STATE_MENU_WELCOME, 2);
-            return;
         }
         break;
         /* ------------ STATE DISPLAY_INDEXES -------------- */

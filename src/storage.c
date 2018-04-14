@@ -5,7 +5,6 @@ typedef struct internalStorage_t {
     uint8_t initialized;
     uint32_t account_seed[5];
     uint8_t advanced_mode;
-    uint8_t browser_mode;
     
 } internalStorage_t;
 
@@ -16,11 +15,6 @@ WIDE internalStorage_t N_storage_real;
 uint8_t get_advanced_mode()
 {
     return N_storage.advanced_mode;
-}
-
-uint8_t get_browser_mode()
-{
-    return N_storage.browser_mode;
 }
 
 void write_advanced_mode(uint8_t mode)
@@ -34,19 +28,6 @@ void write_advanced_mode(uint8_t mode)
     // only write if mode is different
     if (mode != N_storage.advanced_mode)
         nvm_write(&N_storage.advanced_mode, (void *)&mode, sizeof(uint8_t));
-}
-
-void write_browser_mode(uint8_t mode)
-{
-    // something must have gone wrong to receive a mode > 1
-    if (mode > 1) {
-        os_sched_exit(0);
-        return;
-    }
-    
-    // only write if mode is different
-    if (mode != N_storage.browser_mode)
-        nvm_write(&N_storage.browser_mode, (void *)&mode, sizeof(uint8_t));
 }
 
 bool flash_is_init()
@@ -66,7 +47,6 @@ void init_flash()
     storage.account_seed[3] = 22;
     storage.account_seed[4] = 762;
     storage.advanced_mode = 0;
-    storage.browser_mode = 0;
     
     nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 }

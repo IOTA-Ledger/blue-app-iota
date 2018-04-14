@@ -42,7 +42,6 @@ void get_init_menu(char *msg);
 void get_welcome_menu(char *msg);
 void get_disp_idx_menu(char *msg);
 void get_advanced_menu(char *msg);
-void get_browser_menu(char *msg);
 void get_adv_warn_menu(char *msg);
 void get_address_menu(char *msg);
 
