@@ -225,7 +225,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     return 0;
 }
 
-static bool next_signatrue_fragment(SIGNING_CTX *ctx, char *signature_fragment)
+static bool next_signature_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 {
     unsigned char fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
     signing_next_fragment(ctx, fragment_bytes);
@@ -272,11 +272,13 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
-        next_signatrue_fragment(&api.signing_ctx, output.signature_fragment);
+        next_signature_fragment(&api.signing_ctx, output.signature_fragment);
 
     io_send(&output, sizeof(output), SW_OK);
 
     if (!output.fragments_remaining) {
+        // check if the last tx was a change tx
+        if(api.bundle_ctx.indices[api.bundle_ctx.last_tx_index])
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
