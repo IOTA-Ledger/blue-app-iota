@@ -25,6 +25,15 @@ typedef struct BUNDLE_CTX {
         unsigned char hash[NUM_HASH_BYTES]; // bundle hash, when finalized
 } BUNDLE_CTX;
 
+enum BundleRetCode {
+        OK,
+        UNSECURE_HASH,
+        NONZERO_BALANCE,
+        INVALID_META_TX,
+        INVALID_ADDRESS_INDEX,
+        ADDRESS_REUSED
+};
+
 /** @brief Initializes the bundle context for a fixed number of transactions.
  *  @param ctx the bundle context used
  *  @param last_index index of the last transaction in the bundle. Must be at
@@ -86,9 +95,9 @@ unsigned int bundle_finalize(BUNDLE_CTX *ctx);
  *  @param security security level used for the addresses
  *  @return true if the bundle is valid, false otherwise
  */
-bool bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
-                                const unsigned char *seed_bytes,
-                                uint8_t security);
+int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
+                               const unsigned char *seed_bytes,
+                               uint8_t security);
 
 /** @brief Returns the (not normalized) hash of the finalized bundle.
  *  @param ctx the bundle context used
