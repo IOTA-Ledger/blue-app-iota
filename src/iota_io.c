@@ -46,10 +46,7 @@ unsigned int iota_dispatch()
             return api_set_seed(input_data, len);
             
         case INS_PUBKEY:
-            if(get_advanced_mode())
-                return api_pubkey(input_data, len);
-            else
-                return api_basic_pubkey(input_data, len);
+            return api_pubkey(input_data, len);
             
         case INS_TX:
             return api_tx(input_data, len);

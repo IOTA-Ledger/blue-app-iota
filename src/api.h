@@ -33,10 +33,6 @@ typedef IO_STRUCT PUBKEY_OUTPUT {
         char address[81];
 } PUBKEY_OUTPUT;
 
-typedef IO_STRUCT PUBKEY_INPUT_BASIC {
-        bool next;
-} PUBKEY_INPUT_BASIC;
-
 #define TX_REQUIRED_STATE (SEED_SET)
 #define TX_FORBIDDEN_STATE (BUNDLE_FINALIZED)
 
@@ -87,8 +83,6 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len);
 unsigned int api_tx(const unsigned char *input_data, unsigned int len);
 unsigned int api_sign(const unsigned char *input_data, unsigned int len);
 unsigned int api_display_pubkey(const unsigned char *input_data, unsigned int len);
-
-unsigned int api_basic_pubkey(unsigned char *input_data, unsigned int len);
 unsigned int api_seed_idx(unsigned char *input_data, unsigned int len);
 unsigned int api_init_ledger(unsigned char *input_data, unsigned int len);
 

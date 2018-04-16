@@ -439,6 +439,8 @@ void ui_handle_button(uint8_t state, uint8_t button_mask)
 {
     if (button_mask == BUTTON_B) {
         switch (state) {
+        // TODO remove state TX_APPROVE and TX_DENY and SPEND etc
+        // It's all covered in advanced tx info
             /* ------------- APPROVE TX --------------- */
         case STATE_TX_APPROVE:
             user_sign_tx();

@@ -498,6 +498,7 @@ void get_welcome_menu(char *msg)
     uint8_t i = 0;
 
     strcpy(msg + (i++ * 21), " Welcome to IOTA");
+    // TODO turn advanced mode into warnings on/off?
     strcpy(msg + (i++ * 21), "Advanced Mode");
     strcpy(msg + (i++ * 21), "Account Indexes");
     strcpy(msg + (i++ * 21), "Exit App");

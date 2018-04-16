@@ -123,18 +123,11 @@ print(unpack_seed_idx_output(response))
 
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
-# TODO basic doesn't work when I fix approve/deny restore????
 response = dongle.exchange(apdu_command(
-    INS_PUBKEY, pack_pub_key_input_basic(True)))
+    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
 struct = unpack_pubkey_output(response)
 print(struct)
 address = struct[0]
-
-#response = dongle.exchange(apdu_command(
-#    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
-#struct = unpack_pubkey_output(response)
-#print(struct)
-#address = struct[0]
 
 response = dongle.exchange(apdu_command(
     INS_TX, pack_tx_input(DEST_ADDRESS, 0, 10, b"XC", 0, 2, TIMESTAMP)))

@@ -245,9 +245,10 @@ void ui_reset()
     ui_force_draw();
 }
 
+// external function for main to restore previous state
+// ui_reset generally used instead though
 void ui_restore()
 {
-    // TODO recovery state is functional but not always best (generally reset)
     restore_state();
 }
 

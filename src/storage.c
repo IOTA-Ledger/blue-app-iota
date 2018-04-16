@@ -46,19 +46,6 @@ void init_flash()
     nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 }
 
-void incr_seed_idx(unsigned int account)
-{
-    // TODO - still write the index of the last TX in bundle (change)
-    // can't keep track of indexes in advanced mode
-    if(get_advanced_mode())
-        return;
-    
-    uint32_t seed_idx = N_storage.account_seed[account];
-    seed_idx++;
-    
-    nvm_write(&N_storage.account_seed[account], (void *)&seed_idx, sizeof(uint32_t));
-}
-
 uint32_t get_seed_idx(unsigned int account)
 {
     return N_storage.account_seed[account];

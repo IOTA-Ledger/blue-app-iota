@@ -280,10 +280,18 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
     }
 
     // ----- TODO : no current way to test?
-    // if last tx is change, ensure it's ours
+    // if last tx is change, ensure it's ours, and not used
     if(api.bundle_ctx.values[api.bundle_ctx.last_index] > 0) {
         unsigned char addr_bytes[48];
-        get_public_addr(api.seed_bytes, api.bundle_ctx.indices[api.bundle_ctx.last_index],
+        
+        uint32_t change_idx = api.bundle_ctx.indices[api.bundle_ctx.last_index];
+        
+        // don't allow change address to go backwards
+        // TODO - warn about going backwards instead of ban
+        if(change_idx < get_seed_idx(api.active_seed))
+            THROW(SW_TX_INVALID_OUTPUT);
+        
+        get_public_addr(api.seed_bytes, change_idx,
                         api.security, addr_bytes);
         
         const unsigned char *change_ptr = bundle_get_address_bytes(&api.bundle_ctx,
@@ -305,7 +313,10 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
-        incr_seed_idx(api.active_seed);
+        
+        // if we had change tx, write it to ledger
+        if(api.bundle_ctx.values[api.bundle_ctx.last_index] > 0)
+            write_seed_index(api.active_seed, api.bundle_ctx.indices[api.bundle_ctx.last_index]);
         ui_display_welcome();
     }
 
@@ -390,53 +401,7 @@ void init_ledger_deny()
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
-
-
-
-
-
-/* ---------------- Basic mode functions
- */
-
-unsigned int api_basic_pubkey(unsigned char *input_data, unsigned int len)
-{
-    if(!flash_is_init()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
-    if (CHECK_STATE(api.state_flags, PUBKEY)) {
-        THROW(SW_COMMAND_INVALID_STATE);
-    }
-    if (len < sizeof(PUBKEY_INPUT_BASIC)) {
-        THROW(SW_WRONG_LENGTH);
-    }
-    if(api.active_seed > 4) {
-        THROW(SW_BAD_SEED);
-    }
-    
-    ui_display_calc();
-    
-    const PUBKEY_INPUT_BASIC *input = (PUBKEY_INPUT_BASIC *)(input_data);
-    
-    uint32_t address_idx = get_seed_idx(api.active_seed);
-    
-    // asking for next addr (tx change address)
-    if(input->next)
-        address_idx++;
-    
-    // TODO store address globally (as getting change addr will be last thing
-    // called before submitting tx)
-    unsigned char addr_bytes[48];
-    get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
-    
-    PUBKEY_OUTPUT output;
-    bytes_to_chars(addr_bytes, output.address, 48);
-    
-    ui_restore();
-    
-    io_send(&output, sizeof(output), SW_OK);
-    return 0;
-}
-
+// get index of a given account
 unsigned int api_seed_idx(unsigned char *input_data, unsigned int len)
 {
     if(!flash_is_init()) {
@@ -445,7 +410,7 @@ unsigned int api_seed_idx(unsigned char *input_data, unsigned int len)
     
     const SEED_IDX_INPUT *input = (SEED_IDX_INPUT *)(input_data);
     
-    if(input->account > 4)
+    if(input->account > 4 || input->account < 0)
         THROW(INVALID_PARAMETER);
     
     SEED_IDX_OUTPUT output;
@@ -455,6 +420,7 @@ unsigned int api_seed_idx(unsigned char *input_data, unsigned int len)
     return 0;
 }
 
+// receive list of account indexes to write to ledger
 unsigned int api_init_ledger(unsigned char *input_data, unsigned int len)
 {
     if(!flash_is_init()) {
