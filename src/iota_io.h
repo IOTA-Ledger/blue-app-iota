@@ -37,6 +37,7 @@ unsigned int iota_dispatch();
 #define SW_WRONG_LENGTH          0x6700
 
 #define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
+#define SW_BUNDLE_NOT_VALID     0x6983
 
 #define SW_WRONG_P1P2            0x6b00
 #define SW_INCORRECT_LENGTH_P3   0x6c00

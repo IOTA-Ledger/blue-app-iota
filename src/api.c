@@ -386,7 +386,7 @@ void user_sign_tx()
     if (!bundle_validating_finalize(&api.bundle_ctx,
                                     get_change_tx_index(&api.bundle_ctx),
                                     api.seed_bytes, api.security)) {
-        THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
+        THROW(SW_BUNDLE_NOT_VALID);
     }
     api.state_flags |= BUNDLE_FINALIZED;
 

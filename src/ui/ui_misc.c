@@ -58,7 +58,7 @@ void ui_read_bundle(BUNDLE_CTX *bundle_ctx)
 
     // don't include the very last tx (change address) otherwise
     // payment will be meaningless
-    for (unsigned int i = 0; i <= bundle_ctx->last_index-1; i++) {
+    for (unsigned int i = 0; i <= bundle_ctx->last_tx_index-1; i++) {
         if (bundle_ctx->values[i] > 0) {
             payment += bundle_ctx->values[i];
         }
@@ -442,7 +442,7 @@ uint8_t get_tx_arr_sz()
 {
     uint8_t i = 0, counter = 0;
     
-    while(i <= ui_state.bundle_ctx->last_index) {
+    while(i <= ui_state.bundle_ctx->last_tx_index) {
         if(ui_state.bundle_ctx->values[i] != 0)
             counter++;
         

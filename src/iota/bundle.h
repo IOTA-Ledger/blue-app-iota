@@ -15,8 +15,11 @@ typedef struct BUNDLE_CTX {
 
         int64_t balance;
         int64_t payment;
-        int8_t value_signs[MAX_BUNDLE_INDEX_SZ];
-
+    
+        // TODO *** remove value signs?
+        uint8_t value_signs[MAX_BUNDLE_INDEX_SZ];
+    
+        int64_t values[MAX_BUNDLE_INDEX_SZ];
         uint32_t indices[MAX_BUNDLE_INDEX_SZ];
 
         uint8_t current_tx_index;
