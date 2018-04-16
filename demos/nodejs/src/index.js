@@ -2,10 +2,10 @@ import Transport from "@ledgerhq/hw-transport-node-hid";
 import IOTALedger from "hw-app-iota";
 import IOTA from "iota.lib.js";
 
+// use testnet path
 const BIP44_PATH = [
     0x8000002C,
-    // use testnet path
-    0x80000001, // 0x8000107A,
+    0x80000001,
     0x80000000,
     0x00000000,
     0x00000000
