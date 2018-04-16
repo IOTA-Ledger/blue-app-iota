@@ -2,16 +2,22 @@
   "name": "iota-nodejs-demo",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rimraf dist/ && babel ./src --out-dir dist/ --ignore ./node_modules --copy-files",
+    "start": "npm run build && node dist/index.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@ledgerhq/hw-transport-node-hid": "^4.7.6",
-    "babel-runtime": "^6.26.0",
     "hw-app-iota": "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git",
     "iota.lib.js": "git+https://github.com/IOTA-Ledger/iota.lib.js.git#exposed-lowlevel-functions"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "rimraf": "^2.6.2"
   }
 }
