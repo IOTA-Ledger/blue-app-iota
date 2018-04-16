@@ -467,6 +467,8 @@ void display_advanced_tx_info()
         return;
     }
     
+    // TODO (final tx if change notify it's change address)
+    
     // even indices (not include approve/deny)
     // will be amounts, odd will be addr
     if(ui_state.menu_idx % 2 == 0)

@@ -431,6 +431,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
         ui_state.menu_idx = MIN(array_sz, ui_state.menu_idx + 1);
 }
 
+// TODO - merge buttons and menus and put all into unique function/files
 /* ----------------------------------------------------
  ------------------------------------------------------
                 Special button actions
