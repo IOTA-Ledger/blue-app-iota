@@ -98,8 +98,8 @@ dongle = getDongle(True)
 exceptionCount = 0
 start_time = time.time()
 
-dongle.exchange(apdu_command(INS_INIT_LEDGER,
-    pack_init_ledger_input(0, 16, 32, 112, 80)))
+#dongle.exchange(apdu_command(INS_INIT_LEDGER,
+#    pack_init_ledger_input(0, 16, 32, 112, 80)))
 
 response = dongle.exchange(apdu_command(
     INS_SEED_IDX, pack_seed_idx_input(0)))
@@ -162,11 +162,11 @@ while True:
         break
 
 
-dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
+#dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
 
-response = dongle.exchange(apdu_command(
-    INS_SEED_IDX, pack_seed_idx_input(4)))
-print(unpack_seed_idx_output(response))
+#response = dongle.exchange(apdu_command(
+#    INS_SEED_IDX, pack_seed_idx_input(4)))
+#print(unpack_seed_idx_output(response))
 
 elapsed_time = time.time() - start_time
 print("Time Elapsed: %d" % elapsed_time)

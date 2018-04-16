@@ -30,9 +30,7 @@ void set_backup(uint8_t state, uint8_t menu_idx)
 
 void restore_state()
 {
-    // TODO remove backup state and always default back to welcome menu
     state_return(ui_state.backup_state, ui_state.backup_menu_idx);
-    //state_return(STATE_MENU_WELCOME, 0);
 
     ui_state.backup_state = STATE_MENU_WELCOME;
     ui_state.backup_menu_idx = 0;
@@ -407,19 +405,6 @@ void display_advanced_tx_value()
     // we will always use bal to store the value during advanced display
     ui_state.bal = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
     
-    // bypass displaying confirmations for meta-tx's
-    while(ui_state.bal == 0) {
-        ui_state.menu_idx += 2;
-        ui_state.bal = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
-        
-        // transition if final tx is a meta tx
-        if(ui_state.menu_idx > ((ui_state.bundle_ctx->last_index + 1) * 2) - 1) {
-            state_go(STATE_TX_APPROVE, 0);
-            ui_build_display(); // rebuild the display
-            return;
-        }
-    }
-    
     if(ui_state.bal > 0) // outgoing tx
         write_display("Output:", TYPE_STR, TOP);
     else {
@@ -440,10 +425,6 @@ void display_advanced_tx_address()
     const unsigned char *addr_bytes = bundle_get_address_bytes(ui_state.bundle_ctx,
                                                                ui_state.menu_idx/2);
     
-    // TODO ensure backup state works fully (which is required for
-    // full addr in advanced tx)
-    // TODO remove full_addr and only use ui_state.addr
-    //char full_addr[90];
     get_address_with_checksum(addr_bytes, ui_state.addr);
     
     char abbrv[14];
@@ -458,13 +439,40 @@ void display_advanced_tx_address()
     display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
 }
 
+uint8_t get_tx_arr_sz()
+{
+    uint8_t i = 0, counter = 0;
+    
+    while(i <= ui_state.bundle_ctx->last_index) {
+        if(ui_state.bundle_ctx->values[i] != 0)
+            counter++;
+        
+        i++;
+    }
+    
+    return (counter * 2) + 2;
+}
+
 void display_advanced_tx_info()
 {
     clear_display();
-    // this would be an amount to display (either payment or balance)
+    
+    if(ui_state.menu_idx == get_tx_arr_sz()-1) {
+        write_display("Approve", TYPE_STR, MID);
+        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        return;
+    }
+    else if(ui_state.menu_idx == get_tx_arr_sz()) {
+        write_display("Deny", TYPE_STR, MID);
+        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        return;
+    }
+    
+    // even indices (not include approve/deny)
+    // will be amounts, odd will be addr
     if(ui_state.menu_idx % 2 == 0)
         display_advanced_tx_value();
-    else // this would be an address to display
+    else
         display_advanced_tx_address();
 }
 
@@ -491,7 +499,6 @@ void get_welcome_menu(char *msg)
 
     strcpy(msg + (i++ * 21), " Welcome to IOTA");
     strcpy(msg + (i++ * 21), "Advanced Mode");
-    strcpy(msg + (i++ * 21), "Browser Support");
     strcpy(msg + (i++ * 21), "Account Indexes");
     strcpy(msg + (i++ * 21), "Exit App");
 }
@@ -523,16 +530,6 @@ void get_advanced_menu(char *msg)
 
     strcpy(msg + (i++ * 21), "Default");
     strcpy(msg + (i++ * 21), "Advanced");
-}
-
-void get_browser_menu(char *msg)
-{
-    memset(msg, '\0', MENU_BROWSER_LEN * 21);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * 21), "Disabled");
-    strcpy(msg + (i++ * 21), "Enabled");
 }
 
 void get_adv_warn_menu(char *msg)

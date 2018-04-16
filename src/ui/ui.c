@@ -152,6 +152,8 @@ void ui_init(bool flash_is_init)
 void ui_display_welcome()
 {
     state_go(STATE_MENU_WELCOME, 0);
+    backup_state();
+    
     ui_build_display();
     ui_render();
 }
@@ -245,7 +247,7 @@ void ui_reset()
 
 void ui_restore()
 {
-    // TODO recovery state not fully functional
+    // TODO recovery state is functional but not always best (generally reset)
     restore_state();
 }
 
@@ -327,7 +329,7 @@ void init_state_transitions()
     state_transitions[STATE_MENU_WELCOME][BUTTON_L] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_R] = STATE_MENU_WELCOME;
     state_transitions[STATE_MENU_WELCOME][BUTTON_B] = STATE_MENU_WELCOME;
-    /* ------------- MENU WELCOME --------------- */
+    /* ------------- STATE IGNORE --------------- */
     state_transitions[STATE_IGNORE][BUTTON_L] = STATE_IGNORE;
     state_transitions[STATE_IGNORE][BUTTON_R] = STATE_IGNORE;
     state_transitions[STATE_IGNORE][BUTTON_B] = STATE_IGNORE;
@@ -343,10 +345,6 @@ void init_state_transitions()
     state_transitions[STATE_MENU_ADV_WARN][BUTTON_L] = STATE_MENU_ADV_WARN;
     state_transitions[STATE_MENU_ADV_WARN][BUTTON_R] = STATE_MENU_ADV_WARN;
     state_transitions[STATE_MENU_ADV_WARN][BUTTON_B] = STATE_MENU_ADV_WARN;
-    /* ------------- MENU BROWSER MODE --------------- */
-    state_transitions[STATE_MENU_BROWSER][BUTTON_L] = STATE_MENU_BROWSER;
-    state_transitions[STATE_MENU_BROWSER][BUTTON_R] = STATE_MENU_BROWSER;
-    state_transitions[STATE_MENU_BROWSER][BUTTON_B] = STATE_MENU_BROWSER;
     /* ------------- MENU INIT LEDGER --------------- */
     state_transitions[STATE_MENU_INIT_LEDGER][BUTTON_L] = STATE_MENU_INIT_LEDGER;
     state_transitions[STATE_MENU_INIT_LEDGER][BUTTON_R] = STATE_MENU_INIT_LEDGER;
@@ -368,12 +366,12 @@ void init_state_transitions()
     state_transitions[STATE_MENU_TX_ADDR][BUTTON_R] = STATE_MENU_TX_ADDR;
     state_transitions[STATE_MENU_TX_ADDR][BUTTON_B] = STATE_MENU_TX_ADDR;
     /* ------------- TX APPROVE --------------- */
-    state_transitions[STATE_TX_APPROVE][BUTTON_L] = STATE_TX_ADDR;
+    state_transitions[STATE_TX_APPROVE][BUTTON_L] = STATE_TX_APPROVE;
     state_transitions[STATE_TX_APPROVE][BUTTON_R] = STATE_TX_DENY;
     state_transitions[STATE_TX_APPROVE][BUTTON_B] = STATE_TX_APPROVE;
     /* ------------- TX DENY --------------- */
     state_transitions[STATE_TX_DENY][BUTTON_L] = STATE_TX_APPROVE;
-    state_transitions[STATE_TX_DENY][BUTTON_R] = STATE_TX_BAL;
+    state_transitions[STATE_TX_DENY][BUTTON_R] = STATE_TX_DENY;
     state_transitions[STATE_TX_DENY][BUTTON_B] = STATE_MENU_WELCOME;
     /* ------------- MENU DISP ADDR --------------- */
     state_transitions[STATE_MENU_DISP_ADDR][BUTTON_L] = STATE_MENU_DISP_ADDR;
@@ -383,7 +381,7 @@ void init_state_transitions()
     state_transitions[STATE_DISP_ADDR_CHK][BUTTON_L] = STATE_DISP_ADDR_CHK;
     state_transitions[STATE_DISP_ADDR_CHK][BUTTON_R] = STATE_MENU_DISP_ADDR;
     state_transitions[STATE_DISP_ADDR_CHK][BUTTON_B] = STATE_MENU_WELCOME;
-    /* ------------- MENU INIT LEDGER --------------- */
+    /* ------------- MENU TX ADVANCED INFO --------------- */
     state_transitions[STATE_TX_ADVANCED_INFO][BUTTON_L] = STATE_TX_ADVANCED_INFO;
     state_transitions[STATE_TX_ADVANCED_INFO][BUTTON_R] = STATE_TX_ADVANCED_INFO;
     state_transitions[STATE_TX_ADVANCED_INFO][BUTTON_B] = STATE_TX_ADVANCED_INFO;
