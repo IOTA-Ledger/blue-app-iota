@@ -109,10 +109,10 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
 
 static void validate_tx_indices(const TX_INPUT *input)
 {
-    if (input->last_index != api.bundle_ctx.last_index) {
+    if (input->last_index != api.bundle_ctx.last_tx_index) {
         THROW(SW_TX_INVALID_INDEX);
     }
-    if (input->current_index != api.bundle_ctx.current_index) {
+    if (input->current_index != api.bundle_ctx.current_tx_index) {
         THROW(SW_TX_INVALID_INDEX);
     }
 }
@@ -120,10 +120,11 @@ static void validate_tx_indices(const TX_INPUT *input)
 static bool has_reference_transaction(uint32_t current_index)
 {
     for (unsigned int i = 1; i < api.security; i++) {
-        if (current_index < i || api.bundle_ctx.values[current_index - i] > 0) {
+        if (current_index < i ||
+            api.bundle_ctx.value_signs[current_index - i] > 0) {
             return false;
         }
-        if (api.bundle_ctx.values[current_index - i] < 0) {
+        if (api.bundle_ctx.value_signs[current_index - i] < 0) {
             return true;
         }
     }
@@ -133,17 +134,17 @@ static bool has_reference_transaction(uint32_t current_index)
 
 static void validate_tx_order(const TX_INPUT *input)
 {
-    const uint32_t current_index = api.bundle_ctx.current_index;
+    const uint32_t current_index = api.bundle_ctx.current_tx_index;
 
     // the receiving addresses are only allowed first or last
     if (input->value > 0 && current_index > 0 &&
-        current_index < api.bundle_ctx.last_index) {
+        current_index < api.bundle_ctx.last_tx_index) {
         THROW(SW_TX_INVALID_ORDER);
     }
 
     // a meta transaction must have a valid reference input transaction
     if (input->value == 0 && current_index > 0 &&
-        current_index < api.bundle_ctx.last_index) {
+        current_index < api.bundle_ctx.last_tx_index) {
         // this must be a meta transaction
         if (!has_reference_transaction(current_index)) {
             THROW(SW_TX_INVALID_META);
@@ -156,13 +157,28 @@ static void validate_tx_order(const TX_INPUT *input)
     }
 }
 
-static void get_padded_valid_tag(const char *input_tag, char *padded_tag)
+NO_INLINE
+static void add_tx(const TX_INPUT *input)
 {
-    rpad_chars(padded_tag, input_tag, 27);
+    if (!IN_RANGE(input->value, -MAX_IOTA_VALUE, MAX_IOTA_VALUE)) {
+        // value out of bounds
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    char padded_tag[27];
+    rpad_chars(padded_tag, input->tag, 27);
     if (!validate_chars(padded_tag, 27)) {
         // invalid tag
         THROW(SW_COMMAND_INVALID_DATA);
     }
+
+    uint32_t timestamp;
+    if (!ASSIGN(timestamp, input->timestamp)) {
+        // timestamp overflow
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
 }
 
 unsigned int api_tx(const unsigned char *input_data, unsigned int len)
@@ -173,12 +189,11 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     ui_display_recv();
 
     if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
-        uint32_t last_index;
-        if (!ASSIGN(last_index, input->last_index)) {
-            // last index overflow
+        if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
+            // last index invalid range
             THROW(SW_COMMAND_INVALID_DATA);
         }
-        bundle_initialize(&api.bundle_ctx, last_index);
+        bundle_initialize(&api.bundle_ctx, input->last_index);
         api.state_flags |= BUNDLE_INITIALIZED;
     }
 
@@ -192,7 +207,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     // if input, or change address then set internal
     if (input->value < 0 ||
-        api.bundle_ctx.current_index == api.bundle_ctx.last_index) {
+        api.bundle_ctx.current_tx_index == api.bundle_ctx.last_tx_index) {
         uint32_t address_idx;
         if (!ASSIGN(address_idx, input->address_idx)) {
             // index overflow
@@ -206,20 +221,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         bundle_set_external_address(&api.bundle_ctx, input->address);
     }
 
-    if (!IN_RANGE(input->value, -MAX_IOTA_VALUE, MAX_IOTA_VALUE)) {
-        // value out of bounds
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-
-    char padded_tag[27];
-    get_padded_valid_tag(input->tag, padded_tag);
-
-    uint32_t timestamp;
-    if (!ASSIGN(timestamp, input->timestamp)) {
-        // timestamp overflow
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-    bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
+    add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
         ui_sign_tx(&api.bundle_ctx);
         return IO_ASYNCH_REPLY;
@@ -227,14 +229,13 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     TX_OUTPUT output;
     os_memset(&output, 0, sizeof(TX_OUTPUT));
-    
     output.finalized = false;
-
+    
     io_send(&output, sizeof(output), SW_OK);
     return 0;
 }
 
-static bool next_signatrue_fragment(SIGNING_CTX *ctx, char *signature_fragment)
+static bool next_signature_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 {
     unsigned char fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
     signing_next_fragment(ctx, fragment_bytes);
@@ -251,7 +252,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
     uint8_t tx_idx;
     if (!ASSIGN(tx_idx, input->transaction_idx) ||
-        tx_idx > api.bundle_ctx.last_index) {
+        tx_idx > api.bundle_ctx.last_tx_index) {
         // index is out of bounds
         THROW(SW_COMMAND_INVALID_DATA);
     }
@@ -260,7 +261,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         // temporary screen during signing process
         ui_display_signing();
 
-        if (api.bundle_ctx.values[tx_idx] >= 0) {
+        if (api.bundle_ctx.value_signs[tx_idx] >= 0) {
             // no input transaction
             THROW(SW_COMMAND_INVALID_DATA);
         }
@@ -281,10 +282,10 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
     // ----- TODO : no current way to test?
     // if last tx is change, ensure it's ours, and not used
-    if(api.bundle_ctx.values[api.bundle_ctx.last_index] > 0) {
+    if(api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0) {
         unsigned char addr_bytes[48];
         
-        uint32_t change_idx = api.bundle_ctx.indices[api.bundle_ctx.last_index];
+        uint32_t change_idx = api.bundle_ctx.indices[api.bundle_ctx.last_tx_index];
         
         // don't allow change address to go backwards
         // TODO - warn about going backwards instead of ban
@@ -295,7 +296,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
                         api.security, addr_bytes);
         
         const unsigned char *change_ptr = bundle_get_address_bytes(&api.bundle_ctx,
-                                 api.bundle_ctx.last_index);
+                                 api.bundle_ctx.last_tx_index);
         
         // the address provided != our address at that idx
         if(memcmp(addr_bytes, change_ptr, 48))
@@ -305,18 +306,20 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
-        next_signatrue_fragment(&api.signing_ctx, output.signature_fragment);
+        next_signature_fragment(&api.signing_ctx, output.signature_fragment);
 
     io_send(&output, sizeof(output), SW_OK);
 
     if (!output.fragments_remaining) {
+        // check if the last tx was a change tx
+        if(api.bundle_ctx.indices[api.bundle_ctx.last_tx_index])
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
         
         // if we had change tx, write it to ledger
-        if(api.bundle_ctx.values[api.bundle_ctx.last_index] > 0)
-            write_seed_index(api.active_seed, api.bundle_ctx.indices[api.bundle_ctx.last_index]);
+        if(api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0)
+            write_seed_index(api.active_seed, api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
         ui_display_welcome();
     }
 
@@ -358,11 +361,21 @@ void user_deny_tx()
 static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 {
     // there only is a proper change transaction if the value is positive
-    if (ctx->values[ctx->last_index] > 0) {
-        return ctx->last_index;
+    if (ctx->value_signs[ctx->last_tx_index] > 0) {
+        return ctx->last_tx_index;
     }
     // return something out of bounds
-    return ctx->last_index + 1;
+    return ctx->last_tx_index + 1;
+}
+
+NO_INLINE
+static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
+{
+    TX_OUTPUT output;
+    output.finalized = true;
+    bytes_to_chars(bundle_get_hash(ctx), output.bundle_hash, 48);
+
+    io_send(&output, sizeof(output), SW_OK);
 }
 
 /** @brief This functions gets called, when bundle is accepted. */
@@ -377,11 +390,7 @@ void user_sign_tx()
     }
     api.state_flags |= BUNDLE_FINALIZED;
 
-    TX_OUTPUT output;
-    output.finalized = true;
-    bytes_to_chars(bundle_get_hash(&api.bundle_ctx), output.bundle_hash, 48);
-
-    io_send(&output, sizeof(output), SW_OK);
+    io_send_bundle_hash(&api.bundle_ctx);
 }
 
 void init_ledger_approve(const INIT_LEDGER_INPUT *input)

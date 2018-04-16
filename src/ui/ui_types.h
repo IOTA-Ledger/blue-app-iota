@@ -73,11 +73,12 @@ typedef struct UI_GLYPH_CTX {
 
 } UI_GLYPH_CTX;
 
+// TODO update for advanced only tx's
 typedef struct UI_STATE_CTX {
-
+    
     uint8_t state;
     uint8_t menu_idx;
-
+    
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
@@ -85,6 +86,7 @@ typedef struct UI_STATE_CTX {
     int64_t bal;
     int64_t pay;
     bool display_full_value;
+
     char addr[90];
     
     BUNDLE_CTX *bundle_ctx;

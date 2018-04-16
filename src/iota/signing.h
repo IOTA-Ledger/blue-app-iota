@@ -15,10 +15,9 @@
 typedef struct SIGNING_CTX {
         unsigned char state[48]; // state of the last Kerl squeeze
 
-        // bitfield storing all the indices
-        uint32_t fragment_index : 8; // index of the next fragment
-        uint32_t last_fragment : 8; // final fragment
-        uint32_t tx_index : 8; // index of the signed transaction
+        uint8_t fragment_index; // index of the next fragment
+        uint8_t last_fragment; // final fragment
+        uint8_t tx_index; // index of the signed transaction
 
         tryte_t hash[81]; // bundle hash used for signing
 } SIGNING_CTX;

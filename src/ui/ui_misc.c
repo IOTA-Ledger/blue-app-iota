@@ -52,7 +52,6 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
 void ui_read_bundle(BUNDLE_CTX *bundle_ctx)
 {
     const unsigned char *addr_bytes = bundle_get_address_bytes(bundle_ctx, 0);
-
     get_address_with_checksum(addr_bytes, ui_state.addr);
 
     int64_t payment = 0, balance = 0;

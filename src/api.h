@@ -92,4 +92,7 @@ void init_ledger_deny();
 void user_sign_tx();
 void user_deny_tx();
 
+void user_sign();
+void user_deny();
+
 #endif // API_H

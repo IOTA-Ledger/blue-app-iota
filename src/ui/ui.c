@@ -123,7 +123,7 @@ void ctx_initialize()
 {
     os_memset(&ui_text, 0, sizeof(ui_text));
     os_memset(&ui_glyphs, 0, sizeof(ui_glyphs));
-    os_memset(&ui_state, 0, sizeof(ui_state.state));
+    os_memset(&ui_state, 0, sizeof(ui_state));
 
     ui_state.menu_idx = 0;
     ui_state.backup_menu_idx = 0;
@@ -215,7 +215,7 @@ void ui_display_address(const unsigned char *addr_bytes)
 
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
-    ui_read_bundle(bundle_ctx);
+    //ui_read_bundle(bundle_ctx);
     ui_state.bundle_ctx = bundle_ctx;
 
     state_go(STATE_TX_ADVANCED_INFO, 0);

@@ -88,7 +88,7 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
 /* -                            COMMON                                   - */
 /* ----------------------------------------------------------------------- */
 
-#define DEBUG_SEED "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERR"
+#define NO_INLINE __attribute__((noinline))
 
 #define CX_KECCAK384_SIZE 48
 

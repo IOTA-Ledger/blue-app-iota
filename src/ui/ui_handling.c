@@ -267,6 +267,7 @@ void ui_handle_menus(uint8_t state, uint8_t translated_mask)
                 // get_adv_mode lines up with menu idx
                 state_go(STATE_MENU_ADVANCED, get_advanced_mode());
                 return;
+                // View Indexes
             case 2:
                 state_go(STATE_MENU_DISP_IDX, 0);
                 return;

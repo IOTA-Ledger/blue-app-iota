@@ -1,8 +1,6 @@
 from ledgerblue.comm import getDongle
-from ledgerblue.commException import CommException
 from struct import Struct
 import time
-import sys
 
 BIP44_PATH = [0x8000002C,
               0x8000107A,
@@ -10,10 +8,7 @@ BIP44_PATH = [0x8000002C,
               0x00000000,
               0x00000000]
 SECURITY_LEVEL = 2
-
-DEST_ADDRESS = b"ADR" * 27
-SRC_INDEX = 1
-TIMESTAMP = 99999
+SRC_INDEX = 0
 
 # APDU instructions
 INS_SET_SEED = 0x01
@@ -21,13 +16,11 @@ INS_PUBKEY = 0x02
 INS_TX = 0x03
 INS_SIGN = 0x04
 INS_DISP_ADDR = 0x05
-INS_SEED_IDX = 0x06
-INS_INIT_LEDGER = 0x07
 
 
 def apdu_command(ins, data, p1=0, p2=0):
     b = bytes(data)
-
+    
     command = bytearray()
     command.append(0x80)  # Instruction class (1)
     command.append(ins)  # Instruction code (1)
@@ -35,7 +28,7 @@ def apdu_command(ins, data, p1=0, p2=0):
     command.append(len(b))  # length of data (1)
     command.extend(b)  # Command data
     command.append(0)
-
+    
     return command
 
 
@@ -44,29 +37,9 @@ def pack_set_seed_input(bip44_path):
     return struct.pack(bip44_path[0], bip44_path[1], bip44_path[2], bip44_path[3], bip44_path[4], SECURITY_LEVEL)
 
 
-def pack_seed_idx_input(account):
-    struct = Struct("<q")
-    return struct.pack(account)
-
-
-def unpack_seed_idx_output(data):
-    struct = Struct("<q")
-    return struct.unpack(data)
-
-
-def pack_init_ledger_input(idx1, idx2, idx3, idx4, idx5):
-    struct = Struct("<qqqqq")
-    return struct.pack(idx1, idx2, idx3, idx4, idx5)
-
-
 def pack_pub_key_input(address_idx):
     struct = Struct("<q")
     return struct.pack(address_idx)
-
-
-def pack_pub_key_input_basic(next):
-    struct = Struct("<?")
-    return struct.pack(next);
 
 
 def unpack_pubkey_output(data):
@@ -74,92 +47,21 @@ def unpack_pubkey_output(data):
     return struct.unpack(data)
 
 
-def pack_tx_input(address, address_idx, value, tag, tx_idx, tx_len, tx_time):
-    tx_struct = Struct("<81sqq27sqqq")
-    return tx_struct.pack(address, address_idx, value, tag, tx_idx, tx_len, tx_time)
-
-
-def unpack_tx_output(data):
-    struct = Struct("<?81s")
-    return struct.unpack(data)
-
-
-def pack_sign_input(transaction_idx):
-    struct = Struct("<q")
-    return struct.pack(transaction_idx)
-
-
-def unpack_sign_output(data):
-    struct = Struct("<243s?")
-    return struct.unpack(data)
-
-
 dongle = getDongle(True)
 exceptionCount = 0
 start_time = time.time()
 
-#dongle.exchange(apdu_command(INS_INIT_LEDGER,
-#    pack_init_ledger_input(0, 16, 32, 112, 80)))
-
-response = dongle.exchange(apdu_command(
-    INS_SEED_IDX, pack_seed_idx_input(0)))
-print(unpack_seed_idx_output(response))
-
-response = dongle.exchange(apdu_command(
-    INS_SEED_IDX, pack_seed_idx_input(1)))
-print(unpack_seed_idx_output(response))
-
-response = dongle.exchange(apdu_command(
-    INS_SEED_IDX, pack_seed_idx_input(2)))
-print(unpack_seed_idx_output(response))
-
-response = dongle.exchange(apdu_command(
-    INS_SEED_IDX, pack_seed_idx_input(3)))
-print(unpack_seed_idx_output(response))
-
-response = dongle.exchange(apdu_command(
-    INS_SEED_IDX, pack_seed_idx_input(4)))
-print(unpack_seed_idx_output(response))
-
+print("Initializing IOTA seed for security-level=%d..." % SECURITY_LEVEL)
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
+print("\nGenerating address for index=%d..." % SRC_INDEX)
 response = dongle.exchange(apdu_command(
-    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
+                                        INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
 struct = unpack_pubkey_output(response)
-print(struct)
-address = struct[0]
+print("  Address: %s" % struct[0].decode("utf-8"))
 
-response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(DEST_ADDRESS, 0, 10, b"XC", 0, 2, TIMESTAMP)))
-print(unpack_tx_output(response))
-
-response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(address, SRC_INDEX, -10, b"", 1, 2, TIMESTAMP)))
-print(unpack_tx_output(response))
-
-# Meta transaction
-response = dongle.exchange(apdu_command(
-    INS_TX, pack_tx_input(address, SRC_INDEX, 0, b"", 2, 2, TIMESTAMP)))
-print(unpack_tx_output(response))
-
-#response = dongle.exchange(apdu_command(
-#    INS_TX, pack_tx_input(DEST_ADDRESS, 0, 1492234, b"", 3, 3, 99999)))
-#print(unpack_tx_output(response))
-
-while True:
-    response = dongle.exchange(apdu_command(INS_SIGN, pack_sign_input(1)))
-    struct = unpack_sign_output(response)
-    print(struct)
-
-    if struct[1] == False:
-        break
-
-
-#dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
-
-#response = dongle.exchange(apdu_command(
-#    INS_SEED_IDX, pack_seed_idx_input(4)))
-#print(unpack_seed_idx_output(response))
+print("\nDisplaying address on the Ledger Nano...")
+dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
 
 elapsed_time = time.time() - start_time
-print("Time Elapsed: %d" % elapsed_time)
+print("\nTime Elapsed: %ds" % elapsed_time)
