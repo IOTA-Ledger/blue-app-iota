@@ -2,7 +2,9 @@
 #include "common.h"
 #include "aux.h"
 #include "iota_io.h"
+#include "storage.h"
 #include "ui/ui.h"
+#include <string.h>
 
 // iota-related stuff
 #include "iota/conversion.h"
@@ -11,9 +13,6 @@
 #include "iota/seed.h"
 #include "iota/signing.h"
 
-#include "storage.h"
-
-// TODO: we don't want to include main.h
 bool flash_is_init();
 
 #define CHECK_STATE(state, INS)                                                \
@@ -191,6 +190,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
+    // if input, or change address then set internal
     if (input->value < 0 ||
         api.bundle_ctx.current_index == api.bundle_ctx.last_index) {
         uint32_t address_idx;
@@ -221,7 +221,6 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     }
     bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
-        // TODO: - Basic mode check for change != 0
         ui_sign_tx(&api.bundle_ctx);
         return IO_ASYNCH_REPLY;
     }
@@ -280,7 +279,21 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    // TODO: verify change address belongs to us in basic
+    // ----- TODO : no current way to test?
+    // if last tx is change, ensure it's ours
+    if(api.bundle_ctx.values[api.bundle_ctx.last_index] > 0) {
+        unsigned char addr_bytes[48];
+        get_public_addr(api.seed_bytes, api.bundle_ctx.indices[api.bundle_ctx.last_index],
+                        api.security, addr_bytes);
+        
+        const unsigned char *change_ptr = bundle_get_address_bytes(&api.bundle_ctx,
+                                 api.bundle_ctx.last_index);
+        
+        // the address provided != our address at that idx
+        if(memcmp(addr_bytes, change_ptr, 48))
+            THROW(SW_TX_INVALID_OUTPUT);
+    }
+    // -----
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
