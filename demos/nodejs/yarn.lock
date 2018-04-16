@@ -935,8 +935,8 @@ http-signature@~1.1.0:
     sshpk "^1.7.0"
 
 "hw-app-iota@git+https://github.com/IOTA-Ledger/hw-app-iota.js.git":
-  version "0.1.0"
-  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#f7114a87ad067c447459c8cd1f2f5fe205846b4e"
+  version "0.1.1"
+  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#214c9bca33f5c643cf4f47b9126f0dc027d25f7d"
   dependencies:
     struct "0.0.12"
 
@@ -1305,8 +1305,8 @@ performance-now@^0.2.0:
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-0.2.0.tgz#33ef30c5c77d4ea21c5a53869d91b56d8f2555e5"
 
 prebuild-install@^2.2.2:
-  version "2.5.2"
-  resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-2.5.2.tgz#8bdfb6325b98610bfd6832c7d0074bf1b59da848"
+  version "2.5.3"
+  resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-2.5.3.tgz#9f65f242782d370296353710e9bc843490c19f69"
   dependencies:
     detect-libc "^1.0.3"
     expand-template "^1.0.2"
