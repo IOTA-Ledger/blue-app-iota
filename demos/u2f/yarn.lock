@@ -1573,7 +1573,7 @@ https-browserify@^1.0.0:
 
 "hw-app-iota@git+https://github.com/IOTA-Ledger/hw-app-iota.js.git":
   version "0.1.1"
-  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#214c9bca33f5c643cf4f47b9126f0dc027d25f7d"
+  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#cd8e7b52b998c3cc12069bf80df466f488dbd2b0"
   dependencies:
     struct "0.0.12"
 
