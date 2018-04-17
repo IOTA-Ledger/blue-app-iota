@@ -1,5 +1,7 @@
 #!/bin/bash
 
+LEDGER_NANO_SDK_VERSION=1421
+
 ## Functions
 _bold=$(tput bold)
 _reset=$(tput sgr0)
@@ -72,12 +74,13 @@ if [ -d ${BOLOS_SDK} ]; then
    print_ok "Updating nanos-secure-sdk..."
    cd ${BOLOS_SDK}
    git pull origin master
-   git checkout tags/nanos-141
+   git fetch && git fetch --tags
+   git checkout tags/nanos-${LEDGER_NANO_SDK_VERSION}
 else
    print_ok "Downloading nanos-secure-sdk..."
    cd ..
    git clone https://github.com/LedgerHQ/nanos-secure-sdk.git
-   git checkout tags/nanos-141
+   git checkout tags/nanos-${LEDGER_NANO_SDK_VERSION}
 fi
 
 ## Adding environment variables t0 .bashrc
