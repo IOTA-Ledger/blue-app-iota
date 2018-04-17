@@ -22,13 +22,11 @@ const getBtcAddress = async () => {
 };
 
 const getIotaAddress = async () => {
-
     const transport = await Transport.create();
     transport.setDebugMode(true);
-    // transport.setScrambleKey("IOTA");
-    const iota = new AppIota(transport);
+    const ledger = new AppIota(transport);
 
-    await iota.setSeedInput(BIP44_PATH, SECURITY_LEVEL);
+    await ledger.setSeedInput(BIP44_PATH, SECURITY_LEVEL);
     return await ledger.getPubKey(0);
 };
 
