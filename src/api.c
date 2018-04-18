@@ -286,11 +286,9 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
     io_send(&output, sizeof(output), SW_OK);
 
     if (!output.fragments_remaining) {
-        // check if the last tx was a change tx
-        if (api.bundle_ctx.indices[api.bundle_ctx.last_tx_index])
 
-            // signing is finished
-            api.state_flags &= ~SIGNING_STARTED;
+        // signing is finished
+        api.state_flags &= ~SIGNING_STARTED;
 
         // if we had change tx, write it to ledger
         if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0)
