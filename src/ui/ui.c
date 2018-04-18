@@ -236,9 +236,6 @@ void ui_reset()
 {
     state_go(STATE_MENU_WELCOME, 0);
 
-    // reset bundle as well
-    os_memset(ui_state.bundle_ctx, 0, sizeof(ui_state.bundle_ctx));
-
     ui_build_display();
     ui_render();
     ui_force_draw();
@@ -249,6 +246,10 @@ void ui_reset()
 void ui_restore()
 {
     restore_state();
+    
+    ui_build_display();
+    ui_render();
+    ui_force_draw();
 }
 
 

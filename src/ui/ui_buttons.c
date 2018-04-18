@@ -110,7 +110,7 @@ uint8_t button_menu_disp_addr(uint8_t button_mask)
         return array_sz;
     }
     else if (button_mask == BUTTON_B) {
-        state_return(STATE_MENU_WELCOME, 0);
+        restore_state();
         return array_sz;
     }
 
@@ -122,7 +122,7 @@ uint8_t button_disp_addr_chk(uint8_t button_mask)
     if (button_mask == BUTTON_R)
         state_go(STATE_MENU_DISP_ADDR, 0);
     else if (button_mask == BUTTON_B)
-        state_go(STATE_MENU_WELCOME, 0);
+        restore_state();
 
     return 0;
 }
