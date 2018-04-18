@@ -18,14 +18,18 @@ void throw_exception(const char *expression, const char *file, int line);
 
 #define UNUSED(x) (void)(x)
 
-#define MIN(a,b) \
-        ({ __typeof__ (a)_a = (a); \
-           __typeof__ (b)_b = (b); \
-           _a < _b ? _a : _b; })
-#define MAX(a,b) \
-        ({ __typeof__ (a)_a = (a); \
-           __typeof__ (b)_b = (b); \
-           _a > _b ? _a : _b; })
+#define MIN(a, b)                                                              \
+    ({                                                                         \
+        __typeof__(a) _a = (a);                                                \
+        __typeof__(b) _b = (b);                                                \
+        _a < _b ? _a : _b;                                                     \
+    })
+#define MAX(a, b)                                                              \
+    ({                                                                         \
+        __typeof__(a) _a = (a);                                                \
+        __typeof__(b) _b = (b);                                                \
+        _a > _b ? _a : _b;                                                     \
+    })
 
 /* ----------------------------------------------------------------------- */
 /* -                         OS ALTERNATIVES                             - */
@@ -47,26 +51,30 @@ void throw_exception(const char *expression, const char *file, int line);
 typedef SHA3_CTX cx_sha3_t;
 typedef SHA3_CTX cx_hash_t;
 
-static inline void cx_keccak_init(SHA3_CTX* hash, int size) {
-        UNUSED(size);
+static inline void cx_keccak_init(SHA3_CTX *hash, int size)
+{
+    UNUSED(size);
 
-        keccak_384_Init(hash);
+    keccak_384_Init(hash);
 }
 
-static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
-                           unsigned int len, unsigned char *out) {
+static inline void cx_hash(SHA3_CTX *hash, int mode, const unsigned char *in,
+                           unsigned int len, unsigned char *out)
+{
 
-        if (mode != CX_LAST) {
-                // if CX_LAST is not set, add input data to add to current hash
-                keccak_Update(hash, in, len);
-        } else if (len == 0) {
-                // if no input data given, compute and copy the hash
-                keccak_Final(hash, out);
-        } else {
-                // if CX_LAST is set, compute hash for input
-                keccak_Update(hash, in, len);
-                keccak_Final(hash, out);
-        }
+    if (mode != CX_LAST) {
+        // if CX_LAST is not set, add input data to add to current hash
+        keccak_Update(hash, in, len);
+    }
+    else if (len == 0) {
+        // if no input data given, compute and copy the hash
+        keccak_Final(hash, out);
+    }
+    else {
+        // if CX_LAST is set, compute hash for input
+        keccak_Update(hash, in, len);
+        keccak_Final(hash, out);
+    }
 }
 
 /* ----------------------------------------------------------------------- */
@@ -92,20 +100,19 @@ static inline void cx_hash(SHA3_CTX* hash, int mode, const unsigned char *in,
 
 #define CX_KECCAK384_SIZE 48
 
-#define CEILING(x,y) (((x) + (y) - 1) / (y))
+#define CEILING(x, y) (((x) + (y)-1) / (y))
 
 #define ASSIGN(dest, src)                                                      \
-        ({                                                                     \
-                typeof(src)_x = (src);                                         \
-                typeof(dest)_y = _x;                                           \
-                (_x == _y && ((_x < 1) == (_y < 1)) ? (void)((dest) = _y),     \
-                 1 : 0);                                                       \
-        })
+    ({                                                                         \
+        typeof(src) _x = (src);                                                \
+        typeof(dest) _y = _x;                                                  \
+        (_x == _y && ((_x < 1) == (_y < 1)) ? (void)((dest) = _y), 1 : 0);     \
+    })
 
 #define IN_RANGE(x, min, max)                                                  \
-        ({                                                                     \
-                typeof(x)_x = (x);                                             \
-                (_x >= (min) && _x <= (max));                                  \
-        })
+    ({                                                                         \
+        typeof(x) _x = (x);                                                    \
+        (_x >= (min) && _x <= (max));                                          \
+    })
 
 #endif // COMMON_H

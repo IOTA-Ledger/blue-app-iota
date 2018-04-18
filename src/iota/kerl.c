@@ -26,7 +26,8 @@ void kerl_absorb_chunk(cx_sha3_t *sha3, const unsigned char *bytes)
 
 void kerl_squeeze_final_chunk(cx_sha3_t *sha3, unsigned char *bytes_out)
 {
-    cx_hash((cx_hash_t *)sha3, CX_LAST, bytes_out, 0, bytes_out, CX_KECCAK384_SIZE);
+    cx_hash((cx_hash_t *)sha3, CX_LAST, bytes_out, 0, bytes_out,
+            CX_KECCAK384_SIZE);
     bytes_set_last_trit_zero(bytes_out);
 }
 
@@ -56,7 +57,8 @@ static inline void flip_hash_bytes(unsigned char *bytes)
 void kerl_state_squeeze_chunk(cx_sha3_t *sha3, unsigned char *state_bytes,
                               unsigned char *bytes_out)
 {
-    cx_hash((cx_hash_t *)sha3, CX_LAST, state_bytes, 0, state_bytes, CX_KECCAK384_SIZE);
+    cx_hash((cx_hash_t *)sha3, CX_LAST, state_bytes, 0, state_bytes,
+            CX_KECCAK384_SIZE);
 
     os_memcpy(bytes_out, state_bytes, CX_KECCAK384_SIZE);
     bytes_set_last_trit_zero(bytes_out);

@@ -153,7 +153,7 @@ void ui_display_welcome()
 {
     state_go(STATE_MENU_WELCOME, 0);
     backup_state();
-    
+
     ui_build_display();
     ui_render();
 }
@@ -227,7 +227,7 @@ void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
 {
     ui_state.input = input;
     state_go(STATE_MENU_INIT_LEDGER, 0);
-    
+
     ui_build_display();
     ui_render();
 }
@@ -235,10 +235,10 @@ void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
 void ui_reset()
 {
     state_go(STATE_MENU_WELCOME, 0);
-    
+
     // reset bundle as well
     os_memset(ui_state.bundle_ctx, 0, sizeof(ui_state.bundle_ctx));
-    
+
     ui_build_display();
     ui_render();
     ui_force_draw();
@@ -285,56 +285,56 @@ uint8_t ui_translate_mask(unsigned int button_mask)
 void ui_handle_button(uint8_t button_mask)
 {
     uint8_t array_sz;
-    
+
     switch (ui_state.state) {
-            /* ------------ STATE INIT -------------- */
-        case STATE_MENU_INIT:
-            array_sz = button_menu_init(button_mask);
-            break;
-            /* ------------ STATE OPTIONS -------------- */
-        case STATE_MENU_WELCOME:
-            array_sz = button_menu_welcome(button_mask);
-            break;
-            /* ------------ STATE ADVANCED MODE -------------- */
-        case STATE_MENU_ADVANCED:
-            array_sz = button_menu_advanced(button_mask);
-            break;
-            /* ------------ STATE ADVANCED MODE WARNING -------------- */
-        case STATE_MENU_ADV_WARN:
-            array_sz = button_menu_adv_warn(button_mask);
-            break;
-            /* ------------ STATE DISPLAY_INDEXES -------------- */
-        case STATE_MENU_DISP_IDX:
-            array_sz = button_menu_disp_idx(button_mask);
-            break;
-            /* ------------ STATE DISPLAY_ADDRESS -------------- */
-        case STATE_MENU_DISP_ADDR:
-            array_sz = button_menu_disp_addr(button_mask);
-            break;
-            /* ------------ STATE DISPLAY CHECKSUM -------------- */
-        case STATE_DISP_ADDR_CHK:
-            array_sz = button_disp_addr_chk(button_mask);
-            break;
-            /* ------------ STATE MENU_TX_ADDRESS -------------- */
-        case STATE_MENU_TX_ADDR:
-            array_sz = button_menu_tx_addr(button_mask);
-            break;
-            /* ------------ STATE INIT LEDGER -------------- */
-        case STATE_MENU_INIT_LEDGER:
-            array_sz = button_menu_init_ledger(button_mask);
-            break;
-            /* ------------ PROMPT TX INFO *DYNAMIC-MENU* -------------- */
-        case STATE_PROMPT_TX:
-            button_prompt_tx(button_mask);
-            return;
-        case STATE_IGNORE:
-            return;
-            /* ------------ DEFAULT -------------- */
-        default: // fall through and return
-            ui_state.menu_idx = 0;
-            return;
+        /* ------------ STATE INIT -------------- */
+    case STATE_MENU_INIT:
+        array_sz = button_menu_init(button_mask);
+        break;
+        /* ------------ STATE OPTIONS -------------- */
+    case STATE_MENU_WELCOME:
+        array_sz = button_menu_welcome(button_mask);
+        break;
+        /* ------------ STATE ADVANCED MODE -------------- */
+    case STATE_MENU_ADVANCED:
+        array_sz = button_menu_advanced(button_mask);
+        break;
+        /* ------------ STATE ADVANCED MODE WARNING -------------- */
+    case STATE_MENU_ADV_WARN:
+        array_sz = button_menu_adv_warn(button_mask);
+        break;
+        /* ------------ STATE DISPLAY_INDEXES -------------- */
+    case STATE_MENU_DISP_IDX:
+        array_sz = button_menu_disp_idx(button_mask);
+        break;
+        /* ------------ STATE DISPLAY_ADDRESS -------------- */
+    case STATE_MENU_DISP_ADDR:
+        array_sz = button_menu_disp_addr(button_mask);
+        break;
+        /* ------------ STATE DISPLAY CHECKSUM -------------- */
+    case STATE_DISP_ADDR_CHK:
+        array_sz = button_disp_addr_chk(button_mask);
+        break;
+        /* ------------ STATE MENU_TX_ADDRESS -------------- */
+    case STATE_MENU_TX_ADDR:
+        array_sz = button_menu_tx_addr(button_mask);
+        break;
+        /* ------------ STATE INIT LEDGER -------------- */
+    case STATE_MENU_INIT_LEDGER:
+        array_sz = button_menu_init_ledger(button_mask);
+        break;
+        /* ------------ PROMPT TX INFO *DYNAMIC-MENU* -------------- */
+    case STATE_PROMPT_TX:
+        button_prompt_tx(button_mask);
+        return;
+    case STATE_IGNORE:
+        return;
+        /* ------------ DEFAULT -------------- */
+    default: // fall through and return
+        ui_state.menu_idx = 0;
+        return;
     }
-    
+
     button_handle_menu_idx(button_mask, array_sz);
 }
 
@@ -346,53 +346,53 @@ void ui_handle_button(uint8_t button_mask)
 void ui_build_display()
 {
     switch (ui_state.state) {
-            /* ------------ INIT MENU -------------- */
-        case STATE_MENU_INIT:
-            display_menu_init();
-            break;
-            /* ------------ WELCOME MENU -------------- */
-        case STATE_MENU_WELCOME:
-            display_menu_welcome();
-            break;
-            /* ------------ ADVANCED MODE MENU -------------- */
-        case STATE_MENU_ADVANCED:
-            display_menu_advanced();
-            break;
-            /* ------------ ADVANCED MODE WARNING MENU -------------- */
-        case STATE_MENU_ADV_WARN:
-            display_menu_adv_warn();
-            break;
-            /* ------------ DISPLAY INDEXES MENU -------------- */
-        case STATE_MENU_DISP_IDX:
-            display_menu_disp_idx();
-            break;
-            /* ------------ DISPLAY TX ADDRESS -------------- */
-        case STATE_MENU_TX_ADDR:
-            display_menu_tx_addr();
-            break;
-            /* ------------ DISPLAY ADDRESS MENU -------------- */
-        case STATE_MENU_DISP_ADDR:
-            display_menu_disp_addr();
-            break;
-            /* ------------ DISPLAY ADDRESS CHECKSUM -------------- */
-        case STATE_DISP_ADDR_CHK:
-            display_addr_chk();
-            break;
-            /* ------------ INIT LEDGER MENU -------------- */
-        case STATE_MENU_INIT_LEDGER:
-            display_init_ledger();
-            break;
-            /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
-        case STATE_PROMPT_TX:
-            display_prompt_tx();
-            break;
-            /* ------------ IGNORE STATE -------------- */
-        case STATE_IGNORE:
-            return;
-            /* ------------ UNKNOWN STATE -------------- */
-        default:
-            display_unknown_state();
-            break;
+        /* ------------ INIT MENU -------------- */
+    case STATE_MENU_INIT:
+        display_menu_init();
+        break;
+        /* ------------ WELCOME MENU -------------- */
+    case STATE_MENU_WELCOME:
+        display_menu_welcome();
+        break;
+        /* ------------ ADVANCED MODE MENU -------------- */
+    case STATE_MENU_ADVANCED:
+        display_menu_advanced();
+        break;
+        /* ------------ ADVANCED MODE WARNING MENU -------------- */
+    case STATE_MENU_ADV_WARN:
+        display_menu_adv_warn();
+        break;
+        /* ------------ DISPLAY INDEXES MENU -------------- */
+    case STATE_MENU_DISP_IDX:
+        display_menu_disp_idx();
+        break;
+        /* ------------ DISPLAY TX ADDRESS -------------- */
+    case STATE_MENU_TX_ADDR:
+        display_menu_tx_addr();
+        break;
+        /* ------------ DISPLAY ADDRESS MENU -------------- */
+    case STATE_MENU_DISP_ADDR:
+        display_menu_disp_addr();
+        break;
+        /* ------------ DISPLAY ADDRESS CHECKSUM -------------- */
+    case STATE_DISP_ADDR_CHK:
+        display_addr_chk();
+        break;
+        /* ------------ INIT LEDGER MENU -------------- */
+    case STATE_MENU_INIT_LEDGER:
+        display_init_ledger();
+        break;
+        /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
+    case STATE_PROMPT_TX:
+        display_prompt_tx();
+        break;
+        /* ------------ IGNORE STATE -------------- */
+    case STATE_IGNORE:
+        return;
+        /* ------------ UNKNOWN STATE -------------- */
+    default:
+        display_unknown_state();
+        break;
     }
 }
 

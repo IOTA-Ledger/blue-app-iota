@@ -10,16 +10,16 @@
 #define SIGNATURE_FRAGMENT_SIZE 3
 
 // the maximum number of chunks is SEC_LVL*27
-#define NUM_SIGNATURE_FRAGMENTS(s) (CEILING(s*27, SIGNATURE_FRAGMENT_SIZE))
+#define NUM_SIGNATURE_FRAGMENTS(s) (CEILING(s * 27, SIGNATURE_FRAGMENT_SIZE))
 
 typedef struct SIGNING_CTX {
-        unsigned char state[48]; // state of the last Kerl squeeze
+    unsigned char state[48]; // state of the last Kerl squeeze
 
-        uint8_t fragment_index; // index of the next fragment
-        uint8_t last_fragment; // final fragment
-        uint8_t tx_index; // index of the signed transaction
+    uint8_t fragment_index; // index of the next fragment
+    uint8_t last_fragment;  // final fragment
+    uint8_t tx_index;       // index of the signed transaction
 
-        tryte_t hash[81]; // bundle hash used for signing
+    tryte_t hash[81]; // bundle hash used for signing
 } SIGNING_CTX;
 
 /** @brief Initializes the signing context for one complete signature.
@@ -48,7 +48,7 @@ unsigned int signing_next_fragment(SIGNING_CTX *ctx,
  */
 static inline bool signing_has_next_fragment(const SIGNING_CTX *ctx)
 {
-        return ctx->fragment_index <= ctx->last_fragment;
+    return ctx->fragment_index <= ctx->last_fragment;
 }
 
 #endif // SIGNING_H

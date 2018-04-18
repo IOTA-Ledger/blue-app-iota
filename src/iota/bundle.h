@@ -7,28 +7,28 @@
 #define MAX_NUM_INPUT_TX 2
 
 // one output, input plus remainder txs
-#define MAX_BUNDLE_INDEX_SZ  (1 + MAX_NUM_INPUT_TX * MAX_SECURITY_LEVEL + 1)
+#define MAX_BUNDLE_INDEX_SZ (1 + MAX_NUM_INPUT_TX * MAX_SECURITY_LEVEL + 1)
 
 typedef struct BUNDLE_CTX {
-        // bundle_bytes holds all of the bundle information in byte encoding
-        unsigned char bytes[MAX_BUNDLE_INDEX_SZ * 2 * NUM_HASH_BYTES];
-    
-        int64_t values[MAX_BUNDLE_INDEX_SZ];
-        uint32_t indices[MAX_BUNDLE_INDEX_SZ];
+    // bundle_bytes holds all of the bundle information in byte encoding
+    unsigned char bytes[MAX_BUNDLE_INDEX_SZ * 2 * NUM_HASH_BYTES];
 
-        uint8_t current_tx_index;
-        uint8_t last_tx_index;
+    int64_t values[MAX_BUNDLE_INDEX_SZ];
+    uint32_t indices[MAX_BUNDLE_INDEX_SZ];
 
-        unsigned char hash[NUM_HASH_BYTES]; // bundle hash, when finalized
+    uint8_t current_tx_index;
+    uint8_t last_tx_index;
+
+    unsigned char hash[NUM_HASH_BYTES]; // bundle hash, when finalized
 } BUNDLE_CTX;
 
 enum BundleRetCode {
-        OK,
-        UNSECURE_HASH,
-        NONZERO_BALANCE,
-        INVALID_META_TX,
-        INVALID_ADDRESS_INDEX,
-        ADDRESS_REUSED
+    OK,
+    UNSECURE_HASH,
+    NONZERO_BALANCE,
+    INVALID_META_TX,
+    INVALID_ADDRESS_INDEX,
+    ADDRESS_REUSED
 };
 
 /** @brief Initializes the bundle context for a fixed number of transactions.
@@ -99,7 +99,7 @@ int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
 /** @brief Returns the (not normalized) hash of the finalized bundle.
  *  @param ctx the bundle context used
  */
-const unsigned char* bundle_get_hash(const BUNDLE_CTX *ctx);
+const unsigned char *bundle_get_hash(const BUNDLE_CTX *ctx);
 
 /** @brief Returns a pointer to the address of the given transaction in
  *         48-byte representation.
@@ -122,7 +122,7 @@ void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes);
  */
 static inline bool bundle_has_open_txs(const BUNDLE_CTX *ctx)
 {
-        return ctx->current_tx_index <= ctx->last_tx_index;
+    return ctx->current_tx_index <= ctx->last_tx_index;
 }
 
 #endif // BUNDLE_H

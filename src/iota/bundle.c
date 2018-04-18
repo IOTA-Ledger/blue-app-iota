@@ -153,11 +153,11 @@ static bool validate_address(const unsigned char *addr_bytes,
 static bool validate_balance(const BUNDLE_CTX *ctx)
 {
     int64_t value = 0;
-    
-    for(uint8_t i = 0; i <= ctx->last_tx_index; i++) {
+
+    for (uint8_t i = 0; i <= ctx->last_tx_index; i++) {
         value += ctx->values[i];
     }
-    
+
     return value == 0;
 }
 
@@ -165,14 +165,13 @@ static bool validate_balance(const BUNDLE_CTX *ctx)
 static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
 {
     for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
-        
+
         if (ctx->values[i] < 0) {
             const unsigned char *input_addr_bytes =
                 bundle_get_address_bytes(ctx, i);
 
             for (unsigned int j = 1; j < security; j++) {
-                if (i + j > ctx->last_tx_index ||
-                    ctx->values[i + j] != 0) {
+                if (i + j > ctx->last_tx_index || ctx->values[i + j] != 0) {
                     return false;
                 }
                 if (memcmp(input_addr_bytes,

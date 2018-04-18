@@ -30,8 +30,8 @@
 #define STATE_MENU_ADVANCED 4
 #define STATE_MENU_ADV_WARN 5
 #define STATE_MENU_DISP_ADDR 6 // Host displays pubkey on ledger
-#define STATE_MENU_TX_ADDR 7 // Display address in TX
-#define STATE_DISP_ADDR_CHK 8 // Abbreviated address with Checksum
+#define STATE_MENU_TX_ADDR 7   // Display address in TX
+#define STATE_DISP_ADDR_CHK 8  // Abbreviated address with Checksum
 #define STATE_MENU_INIT_LEDGER 9
 #define STATE_PROMPT_TX 10
 
@@ -69,10 +69,10 @@ typedef struct UI_GLYPH_CTX {
 } UI_GLYPH_CTX;
 
 typedef struct UI_STATE_CTX {
-    
+
     uint8_t state;
     uint8_t menu_idx;
-    
+
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
@@ -81,7 +81,7 @@ typedef struct UI_STATE_CTX {
     bool display_full_value;
 
     char addr[90];
-    
+
     BUNDLE_CTX *bundle_ctx;
     // init ledger indexes
     const INIT_LEDGER_INPUT *input;

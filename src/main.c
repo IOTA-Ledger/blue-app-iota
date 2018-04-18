@@ -46,7 +46,7 @@ static void IOTA_main()
                 // TODO: what happens if io_send throws an exception
                 io_send(NULL, 0, sw);
                 ui_reset();
-                
+
                 flags = 0;
             }
             FINALLY

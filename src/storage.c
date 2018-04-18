@@ -5,7 +5,7 @@ typedef struct internalStorage_t {
     uint8_t initialized;
     uint32_t account_seed[5];
     uint8_t advanced_mode;
-    
+
 } internalStorage_t;
 
 // N_storage_real will hold the actual address for NVRAM
@@ -24,7 +24,7 @@ void write_advanced_mode(uint8_t mode)
         os_sched_exit(0);
         return;
     }
-    
+
     // only write if mode is different
     if (mode != N_storage.advanced_mode)
         nvm_write(&N_storage.advanced_mode, (void *)&mode, sizeof(uint8_t));
@@ -38,11 +38,11 @@ bool flash_is_init()
 void init_flash()
 {
     internalStorage_t storage;
-    
+
     storage.initialized = 0x01;
     os_memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
     storage.advanced_mode = 0;
-    
+
     nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 }
 
@@ -53,6 +53,6 @@ uint32_t get_seed_idx(unsigned int account)
 
 void write_seed_index(unsigned int account, const unsigned int seed_idx)
 {
-    nvm_write(&N_storage.account_seed[account],
-              (void *)&seed_idx, sizeof(uint32_t));
+    nvm_write(&N_storage.account_seed[account], (void *)&seed_idx,
+              sizeof(uint32_t));
 }
