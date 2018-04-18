@@ -430,6 +430,25 @@ uint8_t get_tx_arr_sz()
     return (counter * 2) + 2;
 }
 
+int64_t get_tx_val(uint8_t menu_idx)
+{
+    // i counts number of non-meta tx's, j just iterates
+    uint8_t i = 0, j = 0;
+    int64_t val, ret_val;
+    
+    while(j < ui_state.bundle_ctx->last_tx_index && i < (menu_idx / 2) + 1) {
+        val = ui_state.bundle_ctx->values[j/2];
+        
+        if(val != 0) {
+            i++;
+            ret_val = val; // don't return 0 (return previous non-0 val)
+        }
+        j++;
+    }
+    
+    return ret_val;
+}
+
 
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
 void get_init_menu(char *msg)

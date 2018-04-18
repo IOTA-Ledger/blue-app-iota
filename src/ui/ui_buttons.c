@@ -174,7 +174,7 @@ void button_prompt_tx(uint8_t button_mask)
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx++;
-            val = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+            val = get_tx_val(ui_state.menu_idx);
         } while(val == 0 && ui_state.menu_idx < array_sz-1);
         
         // loop back to 0
@@ -192,7 +192,7 @@ void button_prompt_tx(uint8_t button_mask)
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx--;
-            val = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+            val = get_tx_val(ui_state.menu_idx);
         } while(val == 0 && ui_state.menu_idx > 0 &&
                 ui_state.menu_idx < array_sz-1);
     }

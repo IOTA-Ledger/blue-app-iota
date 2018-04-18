@@ -37,6 +37,7 @@ uint8_t get_num_digits(int64_t val);
 bool display_value(int64_t val, uint8_t str_defn);
 void value_convert_readability();
 uint8_t get_tx_arr_sz();
+int64_t get_tx_val(uint8_t menu_idx);
 void reenter_tx_info(uint8_t state);
 
 void display_advanced_tx_value();
