@@ -210,8 +210,7 @@ void button_prompt_tx(uint8_t button_mask)
         else { // all other options alternate between val/addr
             if(ui_state.menu_idx % 2 == 0) {
                 // on a value screen
-                if(get_num_digits(ui_state.bal) > 3)
-                    // ui_state.bal always holds the value for advanced display
+                if(get_num_digits(ui_state.val) > 3)
                     value_convert_readability();
             }
             else {

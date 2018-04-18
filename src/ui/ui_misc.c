@@ -49,28 +49,6 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
     dest[13] = '\0';
 }
 
-void ui_read_bundle(BUNDLE_CTX *bundle_ctx)
-{
-    const unsigned char *addr_bytes = bundle_get_address_bytes(bundle_ctx, 0);
-    get_address_with_checksum(addr_bytes, ui_state.addr);
-
-    int64_t payment = 0, balance = 0;
-
-    // don't include the very last tx (change address) otherwise
-    // payment will be meaningless
-    for (unsigned int i = 0; i <= bundle_ctx->last_tx_index-1; i++) {
-        if (bundle_ctx->values[i] > 0) {
-            payment += bundle_ctx->values[i];
-        }
-        else {
-            balance -= bundle_ctx->values[i];
-        }
-    }
-
-    ui_state.pay = payment;
-    ui_state.bal = balance;
-}
-
 // len specifies max size of buffer
 // if buffer doesn't fit whole int, returns null
 void int_to_str(int64_t num, char *str, uint8_t len)
@@ -402,18 +380,18 @@ void value_convert_readability()
 void display_advanced_tx_value()
 {
     // we will always use bal to store the value during advanced display
-    ui_state.bal = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
+    ui_state.val = ui_state.bundle_ctx->values[ui_state.menu_idx/2];
     
-    if(ui_state.bal > 0) // outgoing tx
+    if(ui_state.val > 0) // outgoing tx
         write_display("Output:", TYPE_STR, TOP);
     else {
         // input tx (not meta)
         write_display("Input:", TYPE_STR, TOP);
-        ui_state.bal = -ui_state.bal;
+        ui_state.val = -ui_state.val;
     }
     
     // display_value returns true if readable form is possible
-    if (display_value(ui_state.bal, BOT))
+    if (display_value(ui_state.val, BOT))
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
     else
         display_glyphs(ui_glyphs.glyph_up, ui_glyphs.glyph_down);

@@ -215,7 +215,6 @@ void ui_display_address(const unsigned char *addr_bytes)
 
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
-    //ui_read_bundle(bundle_ctx);
     ui_state.bundle_ctx = bundle_ctx;
 
     state_go(STATE_PROMPT_TX, 0);

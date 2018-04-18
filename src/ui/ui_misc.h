@@ -19,7 +19,6 @@ void backup_state();
 void set_backup(uint8_t state, uint8_t menu_idx);
 void restore_state();
 
-void ui_read_bundle(BUNDLE_CTX *bundle_ctx);
 void abbreviate_addr(char *dest, const char *src, uint8_t len);
 void write_display(void *o, uint8_t type, uint8_t pos);
 
