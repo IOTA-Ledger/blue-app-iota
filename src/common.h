@@ -58,22 +58,25 @@ static inline void cx_keccak_init(SHA3_CTX *hash, int size)
     keccak_384_Init(hash);
 }
 
-static inline void cx_hash(SHA3_CTX *hash, int mode, const unsigned char *in,
-                           unsigned int len, unsigned char *out)
+static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
+                    unsigned int len, unsigned char *out, unsigned int out_len)
 {
-
     if (mode != CX_LAST) {
         // if CX_LAST is not set, add input data to add to current hash
         keccak_Update(hash, in, len);
     }
     else if (len == 0) {
         // if no input data given, compute and copy the hash
-        keccak_Final(hash, out);
+        unsigned char hash_bytes[48];
+        keccak_Final(hash, hash_bytes);
+        memcpy(out, hash_bytes, MAX(out_len, 48u));
     }
     else {
         // if CX_LAST is set, compute hash for input
         keccak_Update(hash, in, len);
-        keccak_Final(hash, out);
+        unsigned char hash_bytes[48];
+        keccak_Final(hash, hash_bytes);
+        memcpy(out, hash_bytes, MAX(out_len, 48u));
     }
 }
 

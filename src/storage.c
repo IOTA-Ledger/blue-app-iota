@@ -1,4 +1,8 @@
 #include "storage.h"
+#include "common.h"
+#include "os_io_seproxyhal.h"
+#include "bagl.h"
+
 
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {

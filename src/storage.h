@@ -1,11 +1,8 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
-#include "bagl.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 bool flash_is_init();
 uint32_t get_seed_idx(unsigned int idx);

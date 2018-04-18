@@ -36,14 +36,14 @@ void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
 }
 
 // forward declaration
-void user_sign();
+void user_sign_tx();
 
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
     UNUSED(bundle_ctx);
 
     // the user signs everything
-    user_sign();
+    user_sign_tx();
 }
 
 void ui_restore()
@@ -57,14 +57,24 @@ bool flash_is_init()
 
 void incr_seed_idx(unsigned int idx)
 {
+    UNUSED(idx);
 }
 
 uint32_t get_seed_idx(unsigned int idx)
 {
+    UNUSED(idx);
+
+    char msg[100];
+    snprintf(msg, 100, "%s should not be called", __FUNCTION__);
+    mock_assert(false, msg, __FILE__, __LINE__);
+
+    return 0;
 }
 
 void write_seed_index(unsigned int account, const unsigned int seed_idx)
 {
+    UNUSED(account);
+    UNUSED(seed_idx);
 }
 
 __attribute__((weak)) void derive_seed_bip32(const unsigned int *path,
