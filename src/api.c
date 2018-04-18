@@ -121,10 +121,10 @@ static bool has_reference_transaction(uint32_t current_index)
 {
     for (unsigned int i = 1; i < api.security; i++) {
         if (current_index < i ||
-            api.bundle_ctx.value_signs[current_index - i] > 0) {
+            api.bundle_ctx.values[current_index - i] > 0) {
             return false;
         }
-        if (api.bundle_ctx.value_signs[current_index - i] < 0) {
+        if (api.bundle_ctx.values[current_index - i] < 0) {
             return true;
         }
     }
@@ -261,7 +261,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         // temporary screen during signing process
         ui_display_signing();
 
-        if (api.bundle_ctx.value_signs[tx_idx] >= 0) {
+        if (api.bundle_ctx.values[tx_idx] >= 0) {
             // no input transaction
             THROW(SW_COMMAND_INVALID_DATA);
         }
@@ -361,7 +361,7 @@ void user_deny_tx()
 static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 {
     // there only is a proper change transaction if the value is positive
-    if (ctx->value_signs[ctx->last_tx_index] > 0) {
+    if (ctx->values[ctx->last_tx_index] > 0) {
         return ctx->last_tx_index;
     }
     // return something out of bounds
