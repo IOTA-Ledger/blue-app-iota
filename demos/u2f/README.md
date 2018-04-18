@@ -1,4 +1,4 @@
-# NodeJS Demo
+# U2F Browser Demo
 
 ## WARNING
 
@@ -19,6 +19,10 @@ yarn run build
 
 ### Run demo on the real device
 
+Start server
+
 ```bash
 yarn start
 ```
+
+Use recent Google Chrome version to connect to the provided address.

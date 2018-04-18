@@ -32,9 +32,12 @@ unsigned int iota_dispatch();
 
 #define SW_OK                    0x9000
 
-#define SW_WRONG_LENGTH          0x6700
+#define SW_INCORRECT_LENGTH      0x6700
 
 #define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
+#define SW_CONDITIONS_OF_USE_NOT_SATISFIED  0x6985
+
+#define SW_INCORRECT_DATA        0x6a80
 
 #define SW_WRONG_P1P2            0x6b00
 #define SW_INCORRECT_LENGTH_P3   0x6c00
@@ -49,6 +52,8 @@ unsigned int iota_dispatch();
 #define SW_TX_INVALID_ORDER      0x6992
 #define SW_TX_INVALID_META       0x6993
 #define SW_TX_INVALID_OUTPUT     0x6994
+
+#define SW_BUNDLE_ERROR          0x69a0
 
 #define SW_UNKNOWN               0x6f00
 

@@ -25,7 +25,7 @@ bool flash_is_init();
         if (CHECK_STATE(api.state_flags, INS))                                 \
             THROW(SW_COMMAND_INVALID_STATE);                                   \
         if (len < sizeof(INS##_INPUT))                                         \
-            THROW(SW_WRONG_LENGTH);                                            \
+            THROW(SW_INCORRECT_LENGTH);                                        \
         (INS##_INPUT *)(input_data);                                           \
     })
 
@@ -345,10 +345,11 @@ void user_sign()
 {
     ui_display_calc();
 
-    if (!bundle_validating_finalize(&api.bundle_ctx,
-                                    get_change_tx_index(&api.bundle_ctx),
-                                    api.seed_bytes, api.security)) {
-        THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
+    int retcode = bundle_validating_finalize(
+        &api.bundle_ctx, get_change_tx_index(&api.bundle_ctx), api.seed_bytes,
+        api.security);
+    if (retcode != OK) {
+        THROW(SW_BUNDLE_ERROR + retcode);
     }
     api.state_flags |= BUNDLE_FINALIZED;
 
