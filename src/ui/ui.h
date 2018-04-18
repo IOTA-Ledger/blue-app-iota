@@ -6,9 +6,8 @@
 #include "api.h"
 
 /* To create a new UI screen -
- - #define new STATE_ , incr TOTAL_STATES/STATE_EXIT [ui_types.h]
+ - #define new STATE_ [ui_types.h]
  - Define what to display (ui_build_display) [ui_handling.c]
- - Define state transitions (init_state_transitions) [ui.c]
  - Define special button functions (ui_handle_button) [ui_handling.c]
 
  - If scrollable menu screen, also do:

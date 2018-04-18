@@ -21,31 +21,26 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-#define TOTAL_STATES 17
-#define STATE_EXIT TOTAL_STATES
 
 // TODO organize order
 #define STATE_MENU_INIT 0
 #define STATE_MENU_WELCOME 1
 #define STATE_IGNORE 2
-#define STATE_TX_BAL 3
-#define STATE_TX_PAY 4
-#define STATE_TX_ADDR 5
-#define STATE_TX_APPROVE 6
-#define STATE_TX_DENY 7
-#define STATE_MENU_DISP_IDX 8
-#define STATE_MENU_ADVANCED 9
-#define STATE_MENU_ADV_WARN 10
-#define STATE_MENU_DISP_ADDR 11
-#define STATE_MENU_TX_ADDR 12
-#define STATE_DISP_ADDR_CHK 13
-#define STATE_MENU_INIT_LEDGER 14
-#define STATE_TX_ADVANCED_INFO 15
+#define STATE_MENU_DISP_IDX 3
+#define STATE_MENU_ADVANCED 4
+#define STATE_MENU_ADV_WARN 5
+#define STATE_MENU_DISP_ADDR 6
+#define STATE_MENU_TX_ADDR 7
+#define STATE_DISP_ADDR_CHK 8
+#define STATE_MENU_INIT_LEDGER 9
+#define STATE_PROMPT_TX 10
+
+#define STATE_EXIT 255
 
 // Size of Menu
 #define MENU_INIT_LEN 5
 #define MENU_WELCOME_LEN 4
-#define MENU_ACCOUNTS_LEN 6
+#define MENU_DISP_IDX_LEN 6
 #define MENU_ADVANCED_LEN 2
 #define MENU_ADV_WARN_LEN 3
 #define MENU_ADDR_LEN 7
@@ -98,8 +93,5 @@ typedef struct UI_STATE_CTX {
 extern UI_TEXT_CTX ui_text;
 extern UI_GLYPH_CTX ui_glyphs;
 extern UI_STATE_CTX ui_state;
-
-// matrix holds layout of state transitions
-static uint8_t state_transitions[TOTAL_STATES][3];
 
 #endif // UI_TYPES_H

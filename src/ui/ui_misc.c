@@ -452,31 +452,6 @@ uint8_t get_tx_arr_sz()
     return (counter * 2) + 2;
 }
 
-void display_advanced_tx_info()
-{
-    clear_display();
-    
-    if(ui_state.menu_idx == get_tx_arr_sz()-1) {
-        write_display("Approve", TYPE_STR, MID);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
-        return;
-    }
-    else if(ui_state.menu_idx == get_tx_arr_sz()) {
-        write_display("Deny", TYPE_STR, MID);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
-        return;
-    }
-    
-    // TODO (final tx if change notify it's change address)
-    
-    // even indices (not include approve/deny)
-    // will be amounts, odd will be addr
-    if(ui_state.menu_idx % 2 == 0)
-        display_advanced_tx_value();
-    else
-        display_advanced_tx_address();
-}
-
 
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
 void get_init_menu(char *msg)
@@ -488,7 +463,7 @@ void get_init_menu(char *msg)
     strcpy(msg + (i++ * 21), "WARNING!");
     strcpy(msg + (i++ * 21), "IOTA is not like");
     strcpy(msg + (i++ * 21), "other cryptos!");
-    strcpy(msg + (i++ * 21), "Visit iota.org/sec");
+    strcpy(msg + (i++ * 21), "Visit goo.gl/srcoKm");
     strcpy(msg + (i++ * 21), "to learn more.");
 }
 
@@ -507,7 +482,7 @@ void get_welcome_menu(char *msg)
 
 void get_disp_idx_menu(char *msg)
 {
-    memset(msg, '\0', MENU_ACCOUNTS_LEN * 21);
+    memset(msg, '\0', MENU_DISP_IDX_LEN * 21);
 
     uint8_t i = 0;
 
