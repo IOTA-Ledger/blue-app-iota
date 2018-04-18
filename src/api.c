@@ -279,30 +279,6 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    // ----- TODO : no current way to test?
-    // if last tx is change, ensure it's ours, and not used
-    if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0) {
-        unsigned char addr_bytes[48];
-
-        uint32_t change_idx =
-            api.bundle_ctx.indices[api.bundle_ctx.last_tx_index];
-
-        // don't allow change address to go backwards
-        // TODO - warn about going backwards instead of ban
-        if (change_idx < get_seed_idx(api.active_seed))
-            THROW(SW_TX_INVALID_OUTPUT);
-
-        get_public_addr(api.seed_bytes, change_idx, api.security, addr_bytes);
-
-        const unsigned char *change_ptr = bundle_get_address_bytes(
-            &api.bundle_ctx, api.bundle_ctx.last_tx_index);
-
-        // the address provided != our address at that idx
-        if (memcmp(addr_bytes, change_ptr, 48))
-            THROW(SW_TX_INVALID_OUTPUT);
-    }
-    // -----
-
     SIGN_OUTPUT output;
     output.fragments_remaining =
         next_signature_fragment(&api.signing_ctx, output.signature_fragment);
@@ -318,9 +294,11 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
         // if we had change tx, write it to ledger
         if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0)
+
             write_seed_index(
                 api.active_seed,
                 api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
+
         ui_display_welcome();
     }
 

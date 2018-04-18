@@ -174,36 +174,36 @@ void button_prompt_tx(uint8_t button_mask)
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx++;
-            val = get_tx_val(ui_state.menu_idx);
-        } while (val == 0 && ui_state.menu_idx < array_sz - 1);
+            val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
+        } while (val == 0 && ui_state.menu_idx < array_sz - 2);
 
         // loop back to 0
-        if (ui_state.menu_idx > array_sz)
+        if (ui_state.menu_idx > array_sz - 1)
             ui_state.menu_idx = 0;
     }
     else if (button_mask == BUTTON_L) {
 
         // if this is very first tx, left goes to last option (deny)
         if (ui_state.menu_idx == 0) {
-            ui_state.menu_idx = array_sz;
+            ui_state.menu_idx = array_sz - 1;
             return;
         }
 
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx--;
-            val = get_tx_val(ui_state.menu_idx);
+            val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
         } while (val == 0 && ui_state.menu_idx > 0 &&
-                 ui_state.menu_idx < array_sz - 1);
+                 ui_state.menu_idx < array_sz - 2);
     }
     else if (button_mask == BUTTON_B) {
         // deny
-        if (ui_state.menu_idx == array_sz) {
+        if (ui_state.menu_idx == array_sz - 1) {
             user_deny_tx();
             ui_state.display_full_value = false;
             state_go(STATE_MENU_WELCOME, 0);
         }
-        else if (ui_state.menu_idx == array_sz - 1) {
+        else if (ui_state.menu_idx == array_sz - 2) {
             user_sign_tx();
             ui_state.display_full_value = false;
         }

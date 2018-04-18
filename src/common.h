@@ -59,7 +59,8 @@ static inline void cx_keccak_init(SHA3_CTX *hash, int size)
 }
 
 static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
-                    unsigned int len, unsigned char *out, unsigned int out_len)
+                           unsigned int len, unsigned char *out,
+                           unsigned int out_len)
 {
     if (mode != CX_LAST) {
         // if CX_LAST is not set, add input data to add to current hash

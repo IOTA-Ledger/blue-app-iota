@@ -379,13 +379,17 @@ void value_convert_readability()
 
 void display_advanced_tx_value()
 {
-    // we will always use bal to store the value during advanced display
-    ui_state.val = ui_state.bundle_ctx->values[ui_state.menu_idx / 2];
+    ui_state.val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
 
-    if (ui_state.val > 0) // outgoing tx
-        write_display("Output:", TYPE_STR, TOP);
+    if (ui_state.val > 0) { // outgoing tx
+        // -1 is deny, -2 approve, -3 addr, -4 val of change
+        if (ui_state.menu_idx == get_tx_arr_sz() - 4)
+            write_display("Change:", TYPE_STR, TOP);
+        else
+            write_display("Output:", TYPE_STR, TOP);
+    }
     else {
-        // input tx (not meta)
+        // input tx (skip meta)
         write_display("Input:", TYPE_STR, TOP);
         ui_state.val = -ui_state.val;
     }
@@ -400,7 +404,7 @@ void display_advanced_tx_value()
 void display_advanced_tx_address()
 {
     const unsigned char *addr_bytes =
-        bundle_get_address_bytes(ui_state.bundle_ctx, ui_state.menu_idx / 2);
+        bundle_get_address_bytes(ui_state.bundle_ctx, menu_to_tx_idx());
 
     get_address_with_checksum(addr_bytes, ui_state.addr);
 
@@ -430,23 +434,26 @@ uint8_t get_tx_arr_sz()
     return (counter * 2) + 2;
 }
 
-int64_t get_tx_val(uint8_t menu_idx)
+
+uint8_t menu_to_tx_idx()
 {
+    // each non-meta tx prompt will have 2 screens
     // i counts number of non-meta tx's, j just iterates
     uint8_t i = 0, j = 0;
-    int64_t val, ret_val;
 
-    while (j < ui_state.bundle_ctx->last_tx_index && i < (menu_idx / 2) + 1) {
-        val = ui_state.bundle_ctx->values[j / 2];
-
-        if (val != 0) {
+    while (j <= ui_state.bundle_ctx->last_tx_index &&
+           i <= ui_state.menu_idx / 2) {
+        if (ui_state.bundle_ctx->values[j] != 0) {
             i++;
-            ret_val = val; // don't return 0 (return previous non-0 val)
         }
         j++;
     }
 
-    return ret_val;
+    // j cannot be 0, because <=, so even if last_idx and menu_idx are 0,
+    // it will still execute once (incrementing j in the process).
+
+    // j will be incremented one beyond our desired index
+    return j - 1;
 }
 
 

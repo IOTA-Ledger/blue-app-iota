@@ -169,12 +169,12 @@ void display_prompt_tx()
 {
     clear_display();
 
-    if (ui_state.menu_idx == get_tx_arr_sz() - 1) {
+    if (ui_state.menu_idx == get_tx_arr_sz() - 2) {
         write_display("Approve", TYPE_STR, MID);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         return;
     }
-    else if (ui_state.menu_idx == get_tx_arr_sz()) {
+    else if (ui_state.menu_idx == get_tx_arr_sz() - 1) {
         write_display("Deny", TYPE_STR, MID);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         return;
