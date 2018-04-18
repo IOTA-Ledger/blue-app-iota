@@ -32,31 +32,37 @@ unsigned int iota_dispatch()
         THROW(SW_CLA_NOT_SUPPORTED);
         return 0;
     }
-
+    
     const unsigned int len = G_io_apdu_buffer[OFFSET_P3];
     unsigned char *input_data = G_io_apdu_buffer + OFFSET_CDATA;
-
+    
     // check second byte for instruction
     switch (G_io_apdu_buffer[OFFSET_INS]) {
-
-    case INS_SET_SEED:
-        return api_set_seed(input_data, len);
-
-    case INS_PUBKEY:
-        return api_pubkey(input_data, len);
-
-    case INS_TX:
-        return api_tx(input_data, len);
-
-    case INS_SIGN:
-        return api_sign(input_data, len);
             
-    case INS_DISP_ADDR:
-        return api_display_pubkey(input_data, len);
-
-    // unknown command ??
-    default:
-        THROW(SW_INS_NOT_SUPPORTED);
-        return 0;
+        case INS_SET_SEED:
+            return api_set_seed(input_data, len);
+            
+        case INS_PUBKEY:
+            return api_pubkey(input_data, len);
+            
+        case INS_TX:
+            return api_tx(input_data, len);
+            
+        case INS_SIGN:
+            return api_sign(input_data, len);
+            
+        case INS_DISP_ADDR:
+            return api_display_pubkey(input_data, len);
+            
+        case INS_SEED_IDX:
+            return api_seed_idx(input_data, len);
+            
+        case INS_INIT_LEDGER:
+            return api_init_ledger(input_data, len);
+            
+            // unknown command ??
+        default:
+            THROW(SW_INS_NOT_SUPPORTED);
+            return 0;
     }
 }

@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
-#include "main.h"
+#include "../storage.h"
 #include "../iota/bundle.h"
 
 #include "ui_types.h"
@@ -16,9 +16,9 @@
 void state_go(uint8_t state, uint8_t idx);
 void state_return(uint8_t state, uint8_t idx);
 void backup_state();
+void set_backup(uint8_t state, uint8_t menu_idx);
 void restore_state();
 
-void ui_read_bundle(BUNDLE_CTX *bundle_ctx);
 void abbreviate_addr(char *dest, const char *src, uint8_t len);
 void write_display(void *o, uint8_t type, uint8_t pos);
 
@@ -36,6 +36,12 @@ void write_text_array(char *array, uint8_t len);
 uint8_t get_num_digits(int64_t val);
 bool display_value(int64_t val, uint8_t str_defn);
 void value_convert_readability();
+uint8_t get_tx_arr_sz();
+int64_t get_tx_val(uint8_t menu_idx);
+void reenter_tx_info(uint8_t state);
+
+void display_advanced_tx_value();
+void display_advanced_tx_address();
 
 // Menu creation
 void get_init_menu(char *msg);
@@ -44,5 +50,6 @@ void get_disp_idx_menu(char *msg);
 void get_advanced_menu(char *msg);
 void get_adv_warn_menu(char *msg);
 void get_address_menu(char *msg);
+void get_init_ledger_menu(char *msg);
 
 #endif // UI_MISC_H

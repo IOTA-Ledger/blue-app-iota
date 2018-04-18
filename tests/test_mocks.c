@@ -1,5 +1,6 @@
 #include "test_common.h"
 #include <stdio.h>
+#include "api.h"
 #include "iota/bundle.h"
 #include "keccak/sha3.h"
 
@@ -29,6 +30,11 @@ void ui_display_address(const unsigned char *addr_bytes)
     UNUSED(addr_bytes);
 }
 
+void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
+{
+    UNUSED(input);
+}
+
 // forward declaration
 void user_sign();
 
@@ -47,6 +53,18 @@ void ui_restore()
 bool flash_is_init()
 {
     return true;
+}
+
+void incr_seed_idx(unsigned int idx)
+{
+}
+
+uint32_t get_seed_idx(unsigned int idx)
+{
+}
+
+void write_seed_index(unsigned int account, const unsigned int seed_idx)
+{
 }
 
 __attribute__((weak)) void derive_seed_bip32(const unsigned int *path,

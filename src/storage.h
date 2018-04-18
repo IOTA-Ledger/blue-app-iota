@@ -8,7 +8,6 @@
 #include <stdbool.h>
 
 bool flash_is_init();
-void incr_seed_idx(unsigned int idx);
 uint32_t get_seed_idx(unsigned int idx);
 void write_seed_index(unsigned int account, const unsigned int seed_idx);
 uint8_t get_advanced_mode();

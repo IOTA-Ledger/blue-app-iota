@@ -2,7 +2,9 @@
 #include "common.h"
 #include "aux.h"
 #include "iota_io.h"
+#include "storage.h"
 #include "ui/ui.h"
+#include <string.h>
 
 // iota-related stuff
 #include "iota/conversion.h"
@@ -11,7 +13,6 @@
 #include "iota/seed.h"
 #include "iota/signing.h"
 
-// TODO: we don't want to include main.h
 bool flash_is_init();
 
 #define CHECK_STATE(state, INS)                                                \
@@ -33,6 +34,8 @@ typedef struct API_CTX {
 
     unsigned char seed_bytes[48];
     uint8_t security; // use hard-coded security for now
+    
+    unsigned int active_seed;
 
     BUNDLE_CTX bundle_ctx;
     SIGNING_CTX signing_ctx;
@@ -62,6 +65,9 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
             THROW(SW_COMMAND_INVALID_DATA);
         }
     }
+    
+    // set our currently active seed
+    api.active_seed = path[BIP44_PATH_LEN-1];
 
     if (!ASSIGN(api.security, input->security) ||
         !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
@@ -115,10 +121,10 @@ static bool has_reference_transaction(uint32_t current_index)
 {
     for (unsigned int i = 1; i < api.security; i++) {
         if (current_index < i ||
-            api.bundle_ctx.value_signs[current_index - i] > 0) {
+            api.bundle_ctx.values[current_index - i] > 0) {
             return false;
         }
-        if (api.bundle_ctx.value_signs[current_index - i] < 0) {
+        if (api.bundle_ctx.values[current_index - i] < 0) {
             return true;
         }
     }
@@ -199,6 +205,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
+    // if input, or change address then set internal
     if (input->value < 0 ||
         api.bundle_ctx.current_tx_index == api.bundle_ctx.last_tx_index) {
         uint32_t address_idx;
@@ -220,7 +227,10 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         return IO_ASYNCH_REPLY;
     }
 
-    TX_OUTPUT output = {false, {0}};
+    TX_OUTPUT output;
+    os_memset(&output, 0, sizeof(TX_OUTPUT));
+    output.finalized = false;
+    
     io_send(&output, sizeof(output), SW_OK);
     return 0;
 }
@@ -251,7 +261,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         // temporary screen during signing process
         ui_display_signing();
 
-        if (api.bundle_ctx.value_signs[tx_idx] >= 0) {
+        if (api.bundle_ctx.values[tx_idx] >= 0) {
             // no input transaction
             THROW(SW_COMMAND_INVALID_DATA);
         }
@@ -270,6 +280,30 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
+    // ----- TODO : no current way to test?
+    // if last tx is change, ensure it's ours, and not used
+    if(api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0) {
+        unsigned char addr_bytes[48];
+        
+        uint32_t change_idx = api.bundle_ctx.indices[api.bundle_ctx.last_tx_index];
+        
+        // don't allow change address to go backwards
+        // TODO - warn about going backwards instead of ban
+        if(change_idx < get_seed_idx(api.active_seed))
+            THROW(SW_TX_INVALID_OUTPUT);
+        
+        get_public_addr(api.seed_bytes, change_idx,
+                        api.security, addr_bytes);
+        
+        const unsigned char *change_ptr = bundle_get_address_bytes(&api.bundle_ctx,
+                                 api.bundle_ctx.last_tx_index);
+        
+        // the address provided != our address at that idx
+        if(memcmp(addr_bytes, change_ptr, 48))
+            THROW(SW_TX_INVALID_OUTPUT);
+    }
+    // -----
+
     SIGN_OUTPUT output;
     output.fragments_remaining =
         next_signature_fragment(&api.signing_ctx, output.signature_fragment);
@@ -282,6 +316,10 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
+        
+        // if we had change tx, write it to ledger
+        if(api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0)
+            write_seed_index(api.active_seed, api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
         ui_display_welcome();
     }
 
@@ -311,7 +349,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
 }
 
 /** @brief This functions gets called, when bundle is denied. */
-void user_deny()
+void user_deny_tx()
 {
     // reset the bundle
     os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
@@ -323,7 +361,7 @@ void user_deny()
 static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 {
     // there only is a proper change transaction if the value is positive
-    if (ctx->value_signs[ctx->last_tx_index] > 0) {
+    if (ctx->values[ctx->last_tx_index] > 0) {
         return ctx->last_tx_index;
     }
     // return something out of bounds
@@ -341,7 +379,7 @@ static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
 }
 
 /** @brief This functions gets called, when bundle is accepted. */
-void user_sign()
+void user_sign_tx()
 {
     ui_display_calc();
 
@@ -354,4 +392,53 @@ void user_sign()
     api.state_flags |= BUNDLE_FINALIZED;
 
     io_send_bundle_hash(&api.bundle_ctx);
+}
+
+void init_ledger_approve(const INIT_LEDGER_INPUT *input)
+{
+    // TODO test large values are properly casted
+    
+    // write all 5 seed indexes
+    for(uint8_t i = 0; i < 5; i++) {
+        write_seed_index(i, (unsigned int)input->seed_indexes[i]);
+    }
+    
+    io_send(NULL, 0, SW_OK);
+}
+
+void init_ledger_deny()
+{
+    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
+}
+
+// get index of a given account
+unsigned int api_seed_idx(unsigned char *input_data, unsigned int len)
+{
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    
+    const SEED_IDX_INPUT *input = (SEED_IDX_INPUT *)(input_data);
+    
+    if(input->account > 4 || input->account < 0)
+        THROW(INVALID_PARAMETER);
+    
+    SEED_IDX_OUTPUT output;
+    output.seed_idx = get_seed_idx(input->account);
+    
+    io_send(&output, sizeof(output), SW_OK);
+    return 0;
+}
+
+// receive list of account indexes to write to ledger
+unsigned int api_init_ledger(unsigned char *input_data, unsigned int len)
+{
+    if(!flash_is_init()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    
+    const INIT_LEDGER_INPUT *input = (INIT_LEDGER_INPUT *)(input_data);
+    
+    ui_display_init_ledger(input);
+    return IO_ASYNCH_REPLY;
 }

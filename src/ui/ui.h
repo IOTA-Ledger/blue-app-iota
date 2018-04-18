@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 #include "iota/bundle.h"
+#include "api.h"
 
 /* To create a new UI screen -
- - #define new STATE_ , incr TOTAL_STATES/STATE_EXIT [ui_types.h]
+ - #define new STATE_ [ui_types.h]
  - Define what to display (ui_build_display) [ui_handling.c]
- - Define state transitions (init_state_transitions) [ui.c]
  - Define special button functions (ui_handle_button) [ui_handling.c]
 
  - If scrollable menu screen, also do:
@@ -23,6 +23,11 @@ void ui_display_recv();
 void ui_display_signing();
 void ui_display_address(const unsigned char *addr_bytes);
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
+void ui_display_init_ledger(const INIT_LEDGER_INPUT *input);
+void ui_reset();
 void ui_restore();
+
+void ui_render();
+void ui_force_draw();
 
 #endif // UI_H

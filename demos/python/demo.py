@@ -20,7 +20,7 @@ INS_DISP_ADDR = 0x05
 
 def apdu_command(ins, data, p1=0, p2=0):
     b = bytes(data)
-
+    
     command = bytearray()
     command.append(0x80)  # Instruction class (1)
     command.append(ins)  # Instruction code (1)
@@ -28,7 +28,7 @@ def apdu_command(ins, data, p1=0, p2=0):
     command.append(len(b))  # length of data (1)
     command.extend(b)  # Command data
     command.append(0)
-
+    
     return command
 
 
@@ -56,7 +56,7 @@ dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
 print("\nGenerating address for index=%d..." % SRC_INDEX)
 response = dongle.exchange(apdu_command(
-    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
+                                        INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
 struct = unpack_pubkey_output(response)
 print("  Address: %s" % struct[0].decode("utf-8"))
 

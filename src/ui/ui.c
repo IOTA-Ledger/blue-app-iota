@@ -6,7 +6,8 @@
 
 #include "ui_types.h"
 #include "ui_misc.h"
-#include "ui_handling.h"
+#include "ui_buttons.h"
+#include "ui_display.h"
 
 #include "iota/addresses.h"
 
@@ -15,8 +16,8 @@ UI_GLYPH_CTX ui_glyphs;
 UI_STATE_CTX ui_state;
 
 // ----------- local function prototypes
-void init_state_transitions(void);
 void ui_transition_state(unsigned int button_mask);
+void ui_build_display();
 
 unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
 
@@ -133,7 +134,6 @@ void ctx_initialize()
 void ui_init(bool flash_is_init)
 {
     ctx_initialize();
-    init_state_transitions();
 
     if (flash_is_init) {
         ui_state.state = STATE_MENU_WELCOME;
@@ -151,7 +151,9 @@ void ui_init(bool flash_is_init)
 // Entry points for main to modify display
 void ui_display_welcome()
 {
-    ui_state.state = STATE_MENU_WELCOME;
+    state_go(STATE_MENU_WELCOME, 0);
+    backup_state();
+    
     ui_build_display();
     ui_render();
 }
@@ -213,21 +215,40 @@ void ui_display_address(const unsigned char *addr_bytes)
 
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
-    ui_read_bundle(bundle_ctx);
+    ui_state.bundle_ctx = bundle_ctx;
 
-    ui_state.state = STATE_TX_BAL;
+    state_go(STATE_PROMPT_TX, 0);
 
     ui_build_display();
     ui_render();
 }
 
-void ui_restore()
+void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
 {
-    restore_state();
+    ui_state.input = input;
+    state_go(STATE_MENU_INIT_LEDGER, 0);
+    
+    ui_build_display();
+    ui_render();
+}
 
+void ui_reset()
+{
+    state_go(STATE_MENU_WELCOME, 0);
+    
+    // reset bundle as well
+    os_memset(ui_state.bundle_ctx, 0, sizeof(ui_state.bundle_ctx));
+    
     ui_build_display();
     ui_render();
     ui_force_draw();
+}
+
+// external function for main to restore previous state
+// ui_reset generally used instead though
+void ui_restore()
+{
+    restore_state();
 }
 
 
@@ -258,6 +279,125 @@ uint8_t ui_translate_mask(unsigned int button_mask)
 
 /* ----------------------------------------------------
  ------------------------------------------------------
+            Special button actions
+ ------------------------------------------------------
+ --------------------------------------------------- */
+void ui_handle_button(uint8_t button_mask)
+{
+    uint8_t array_sz;
+    
+    switch (ui_state.state) {
+            /* ------------ STATE INIT -------------- */
+        case STATE_MENU_INIT:
+            array_sz = button_menu_init(button_mask);
+            break;
+            /* ------------ STATE OPTIONS -------------- */
+        case STATE_MENU_WELCOME:
+            array_sz = button_menu_welcome(button_mask);
+            break;
+            /* ------------ STATE ADVANCED MODE -------------- */
+        case STATE_MENU_ADVANCED:
+            array_sz = button_menu_advanced(button_mask);
+            break;
+            /* ------------ STATE ADVANCED MODE WARNING -------------- */
+        case STATE_MENU_ADV_WARN:
+            array_sz = button_menu_adv_warn(button_mask);
+            break;
+            /* ------------ STATE DISPLAY_INDEXES -------------- */
+        case STATE_MENU_DISP_IDX:
+            array_sz = button_menu_disp_idx(button_mask);
+            break;
+            /* ------------ STATE DISPLAY_ADDRESS -------------- */
+        case STATE_MENU_DISP_ADDR:
+            array_sz = button_menu_disp_addr(button_mask);
+            break;
+            /* ------------ STATE DISPLAY CHECKSUM -------------- */
+        case STATE_DISP_ADDR_CHK:
+            array_sz = button_disp_addr_chk(button_mask);
+            break;
+            /* ------------ STATE MENU_TX_ADDRESS -------------- */
+        case STATE_MENU_TX_ADDR:
+            array_sz = button_menu_tx_addr(button_mask);
+            break;
+            /* ------------ STATE INIT LEDGER -------------- */
+        case STATE_MENU_INIT_LEDGER:
+            array_sz = button_menu_init_ledger(button_mask);
+            break;
+            /* ------------ PROMPT TX INFO *DYNAMIC-MENU* -------------- */
+        case STATE_PROMPT_TX:
+            button_prompt_tx(button_mask);
+            return;
+        case STATE_IGNORE:
+            return;
+            /* ------------ DEFAULT -------------- */
+        default: // fall through and return
+            ui_state.menu_idx = 0;
+            return;
+    }
+    
+    button_handle_menu_idx(button_mask, array_sz);
+}
+
+/* ----------------------------------------------------
+ ------------------------------------------------------
+         Default display options per state
+ ------------------------------------------------------
+ --------------------------------------------------- */
+void ui_build_display()
+{
+    switch (ui_state.state) {
+            /* ------------ INIT MENU -------------- */
+        case STATE_MENU_INIT:
+            display_menu_init();
+            break;
+            /* ------------ WELCOME MENU -------------- */
+        case STATE_MENU_WELCOME:
+            display_menu_welcome();
+            break;
+            /* ------------ ADVANCED MODE MENU -------------- */
+        case STATE_MENU_ADVANCED:
+            display_menu_advanced();
+            break;
+            /* ------------ ADVANCED MODE WARNING MENU -------------- */
+        case STATE_MENU_ADV_WARN:
+            display_menu_adv_warn();
+            break;
+            /* ------------ DISPLAY INDEXES MENU -------------- */
+        case STATE_MENU_DISP_IDX:
+            display_menu_disp_idx();
+            break;
+            /* ------------ DISPLAY TX ADDRESS -------------- */
+        case STATE_MENU_TX_ADDR:
+            display_menu_tx_addr();
+            break;
+            /* ------------ DISPLAY ADDRESS MENU -------------- */
+        case STATE_MENU_DISP_ADDR:
+            display_menu_disp_addr();
+            break;
+            /* ------------ DISPLAY ADDRESS CHECKSUM -------------- */
+        case STATE_DISP_ADDR_CHK:
+            display_addr_chk();
+            break;
+            /* ------------ INIT LEDGER MENU -------------- */
+        case STATE_MENU_INIT_LEDGER:
+            display_init_ledger();
+            break;
+            /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
+        case STATE_PROMPT_TX:
+            display_prompt_tx();
+            break;
+            /* ------------ IGNORE STATE -------------- */
+        case STATE_IGNORE:
+            return;
+            /* ------------ UNKNOWN STATE -------------- */
+        default:
+            display_unknown_state();
+            break;
+    }
+}
+
+/* ----------------------------------------------------
+ ------------------------------------------------------
             ------- MAIN BUTTON LOGIC -------
         Every button press calls transition_state
  ------------------------------------------------------
@@ -270,18 +410,8 @@ void ui_transition_state(unsigned int button_mask)
     if (translated_mask == BUTTON_BAD)
         return;
 
-    // store current state for menu/button handling
-    uint8_t old_state = ui_state.state;
-    ui_state.state = state_transitions[ui_state.state][translated_mask];
+    ui_handle_button(translated_mask);
 
-    // special handling of menus (including new state transition)
-    ui_handle_menus(old_state, translated_mask);
-
-    // See if a special function needs to be called
-    // for instance user_sign or user_deny()
-    ui_handle_button(old_state, translated_mask);
-
-    // after transitioning, build new display
     ui_build_display();
 
     if (ui_state.state == STATE_EXIT)
@@ -290,70 +420,4 @@ void ui_transition_state(unsigned int button_mask)
 
     // render new display
     ui_render();
-}
-
-
-/* ----------------------------------------------------
- ------------------------------------------------------
-        Initializes Default State Transitions
- ------------------------------------------------------
- --------------------------------------------------- */
-void init_state_transitions()
-{
-    /* ------------- MENU INIT --------------- */
-    state_transitions[STATE_MENU_INIT][BUTTON_L] = STATE_MENU_INIT;
-    state_transitions[STATE_MENU_INIT][BUTTON_R] = STATE_MENU_INIT;
-    state_transitions[STATE_MENU_INIT][BUTTON_B] = STATE_MENU_INIT;
-    /* ------------- MENU WELCOME --------------- */
-    state_transitions[STATE_MENU_WELCOME][BUTTON_L] = STATE_MENU_WELCOME;
-    state_transitions[STATE_MENU_WELCOME][BUTTON_R] = STATE_MENU_WELCOME;
-    state_transitions[STATE_MENU_WELCOME][BUTTON_B] = STATE_MENU_WELCOME;
-    /* ------------- IGNORE STATE --------------- */
-    state_transitions[STATE_IGNORE][BUTTON_L] = STATE_IGNORE;
-    state_transitions[STATE_IGNORE][BUTTON_R] = STATE_IGNORE;
-    state_transitions[STATE_IGNORE][BUTTON_B] = STATE_IGNORE;
-    /* ------------- MENU VIEW IDX --------------- */
-    state_transitions[STATE_MENU_DISP_IDX][BUTTON_L] = STATE_MENU_DISP_IDX;
-    state_transitions[STATE_MENU_DISP_IDX][BUTTON_R] = STATE_MENU_DISP_IDX;
-    state_transitions[STATE_MENU_DISP_IDX][BUTTON_B] = STATE_MENU_DISP_IDX;
-    /* ------------- MENU ADVANCED MODE --------------- */
-    state_transitions[STATE_MENU_ADVANCED][BUTTON_L] = STATE_MENU_ADVANCED;
-    state_transitions[STATE_MENU_ADVANCED][BUTTON_R] = STATE_MENU_ADVANCED;
-    state_transitions[STATE_MENU_ADVANCED][BUTTON_B] = STATE_MENU_ADVANCED;
-    /* ------------- MENU ADVANCED MODE WARNING --------------- */
-    state_transitions[STATE_MENU_ADV_WARN][BUTTON_L] = STATE_MENU_ADV_WARN;
-    state_transitions[STATE_MENU_ADV_WARN][BUTTON_R] = STATE_MENU_ADV_WARN;
-    state_transitions[STATE_MENU_ADV_WARN][BUTTON_B] = STATE_MENU_ADV_WARN;
-    /* ------------- TX BALANCE --------------- */
-    state_transitions[STATE_TX_BAL][BUTTON_L] = STATE_TX_DENY;
-    state_transitions[STATE_TX_BAL][BUTTON_R] = STATE_TX_PAY;
-    state_transitions[STATE_TX_BAL][BUTTON_B] = STATE_TX_BAL;
-    /* ------------- TX SPEND --------------- */
-    state_transitions[STATE_TX_PAY][BUTTON_L] = STATE_TX_BAL;
-    state_transitions[STATE_TX_PAY][BUTTON_R] = STATE_TX_ADDR;
-    state_transitions[STATE_TX_PAY][BUTTON_B] = STATE_TX_PAY;
-    /* ------------- TX ADDR --------------- */
-    state_transitions[STATE_TX_ADDR][BUTTON_L] = STATE_TX_PAY;
-    state_transitions[STATE_TX_ADDR][BUTTON_R] = STATE_TX_APPROVE;
-    state_transitions[STATE_TX_ADDR][BUTTON_B] = STATE_MENU_TX_ADDR;
-    /* ------------- MENU TX ADDR --------------- */
-    state_transitions[STATE_MENU_TX_ADDR][BUTTON_L] = STATE_MENU_TX_ADDR;
-    state_transitions[STATE_MENU_TX_ADDR][BUTTON_R] = STATE_MENU_TX_ADDR;
-    state_transitions[STATE_MENU_TX_ADDR][BUTTON_B] = STATE_MENU_TX_ADDR;
-    /* ------------- TX APPROVE --------------- */
-    state_transitions[STATE_TX_APPROVE][BUTTON_L] = STATE_TX_ADDR;
-    state_transitions[STATE_TX_APPROVE][BUTTON_R] = STATE_TX_DENY;
-    state_transitions[STATE_TX_APPROVE][BUTTON_B] = STATE_TX_APPROVE;
-    /* ------------- TX DENY --------------- */
-    state_transitions[STATE_TX_DENY][BUTTON_L] = STATE_TX_APPROVE;
-    state_transitions[STATE_TX_DENY][BUTTON_R] = STATE_TX_BAL;
-    state_transitions[STATE_TX_DENY][BUTTON_B] = STATE_MENU_WELCOME;
-    /* ------------- MENU DISP ADDR --------------- */
-    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_L] = STATE_MENU_DISP_ADDR;
-    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_R] = STATE_MENU_DISP_ADDR;
-    state_transitions[STATE_MENU_DISP_ADDR][BUTTON_B] = STATE_MENU_DISP_ADDR;
-    /* ------------- DISP ADDR --------------- */
-    state_transitions[STATE_DISP_ADDR_CHK][BUTTON_L] = STATE_DISP_ADDR_CHK;
-    state_transitions[STATE_DISP_ADDR_CHK][BUTTON_R] = STATE_MENU_DISP_ADDR;
-    state_transitions[STATE_DISP_ADDR_CHK][BUTTON_B] = STATE_MENU_WELCOME;
 }

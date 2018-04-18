@@ -1,6 +1,7 @@
 #include "main.h"
 #include "ui.h"
 #include "iota_io.h"
+#include "storage.h"
 
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 ux_state_t ux;
@@ -42,11 +43,10 @@ static void IOTA_main()
                 }
 
                 // send  response code and reset ui
-                
                 // TODO: what happens if io_send throws an exception
                 io_send(NULL, 0, sw);
-                // TODO: does this reset the display completely?
-                ui_display_welcome();
+                ui_reset();
+                
                 flags = 0;
             }
             FINALLY
@@ -117,8 +117,7 @@ unsigned char io_event(unsigned char channel)
 
     case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
         if (UX_DISPLAYED()) {
-            // TODO perform actions after all screen elements have been
-            // displayed
+            // do nothing
         }
         else {
             UX_DISPLAYED_EVENT();

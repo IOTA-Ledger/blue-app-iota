@@ -12,11 +12,8 @@
 typedef struct BUNDLE_CTX {
         // bundle_bytes holds all of the bundle information in byte encoding
         unsigned char bytes[MAX_BUNDLE_INDEX_SZ * 2 * NUM_HASH_BYTES];
-
-        int64_t balance;
-        int64_t payment;
-        int8_t value_signs[MAX_BUNDLE_INDEX_SZ];
-
+    
+        int64_t values[MAX_BUNDLE_INDEX_SZ];
         uint32_t indices[MAX_BUNDLE_INDEX_SZ];
 
         uint8_t current_tx_index;
