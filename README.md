@@ -10,7 +10,7 @@ See [Ledger's documentation](http://ledger.readthedocs.io) to get more info abou
 
 ### Requirements
 
-- Make sure that your Ledger Nano S is running firmware 1.4 (available as version 1.4.1).
+- Make sure that your Ledger Nano S is running firmware 1.4.2.
 For update instructions see: [How to update my Ledger Nano S with the firmware 1.4](https://support.ledgerwallet.com/hc/en-us/articles/360001340473-How-to-update-my-Ledger-Nano-S-with-the-firmware-1-4)
 
 ### Preparing development environment under Ubuntu 17.10
