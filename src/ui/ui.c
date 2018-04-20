@@ -310,13 +310,17 @@ void ui_handle_button(uint8_t button_mask)
     case STATE_WELCOME:
         array_sz = button_welcome(button_mask);
         break;
-        /* ------------ STATE ADVANCED MODE -------------- */
-    case STATE_ADVANCED:
-        array_sz = button_advanced(button_mask);
+        /* ------------ STATE ABOUT -------------- */
+    case STATE_ABOUT:
+        array_sz = button_about(button_mask);
         break;
-        /* ------------ STATE ADVANCED MODE WARNING -------------- */
-    case STATE_ADV_WARN:
-        array_sz = button_adv_warn(button_mask);
+        /* ------------ STATE VERSION -------------- */
+    case STATE_VERSION:
+        button_version(button_mask);
+        return;
+        /* ------------ STATE MORE INFO -------------- */
+    case STATE_MORE_INFO:
+        array_sz = button_more_info(button_mask);
         break;
         /* ------------ STATE DISPLAY_INDEXES -------------- */
     case STATE_DISP_IDX:
@@ -372,13 +376,17 @@ void ui_build_display()
     case STATE_WELCOME:
         display_welcome();
         break;
-        /* ------------ ADVANCED MODE MENU -------------- */
-    case STATE_ADVANCED:
-        display_advanced();
+        /* ------------ ABOUT -------------- */
+    case STATE_ABOUT:
+        display_about();
         break;
-        /* ------------ ADVANCED MODE WARNING MENU -------------- */
-    case STATE_ADV_WARN:
-        display_adv_warn();
+        /* ------------ VERSION -------------- */
+    case STATE_VERSION:
+        display_version();
+        break;
+        /* ------------ MORE INFO -------------- */
+    case STATE_MORE_INFO:
+        display_more_info();
         break;
         /* ------------ DISPLAY INDEXES MENU -------------- */
     case STATE_DISP_IDX:

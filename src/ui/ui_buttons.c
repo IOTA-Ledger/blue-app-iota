@@ -26,14 +26,13 @@ uint8_t button_welcome(uint8_t button_mask)
         case 0:
             state_go(STATE_EXIT, 0);
             return array_sz;
-            // Advanced Mode
-        case 1:
-            // get_adv_mode lines up with menu idx
-            state_go(STATE_ADVANCED, get_advanced_mode());
-            return array_sz;
             // View Indexes
-        case 2:
+        case 1:
             state_go(STATE_DISP_IDX, 0);
+            return array_sz;
+            // About
+        case 2:
+            state_go(STATE_ABOUT, 0);
             return array_sz;
             // Exit App
         case MENU_WELCOME_LEN - 1:
@@ -45,46 +44,50 @@ uint8_t button_welcome(uint8_t button_mask)
     return array_sz;
 }
 
-uint8_t button_advanced(uint8_t button_mask)
+uint8_t button_about(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_ADVANCED_LEN - 1;
+    uint8_t array_sz = MENU_ABOUT_LEN - 1;
 
     if (button_mask == BUTTON_B) {
 
         // warn if entering advanced mode
-        if (ui_state.menu_idx == 1 && get_advanced_mode() == 0) {
-            state_go(STATE_ADV_WARN, 0);
+        if (ui_state.menu_idx == 0) { // version
+            state_go(STATE_VERSION, 0);
 
             return array_sz;
         }
-
-        // menu idx entries line up with modes
-        write_advanced_mode(ui_state.menu_idx);
-
-        state_return(STATE_WELCOME, 1);
+        else if(ui_state.menu_idx == 1) { // more info
+            state_go(STATE_MORE_INFO, 0);
+            
+            return array_sz;
+        }
+        else {
+            state_go(STATE_WELCOME, 2); // Back
+            
+            return array_sz;
+        }
     }
 
     return array_sz;
 }
 
-
-uint8_t button_adv_warn(uint8_t button_mask)
+void button_version(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_ADV_WARN_LEN - 1;
-
     if (button_mask == BUTTON_B) {
-
-        switch (ui_state.menu_idx) {
-        case 1: // Yes
-            write_advanced_mode(1);
-        case 2: // No
-            state_return(STATE_WELCOME, 1);
-            return array_sz;
-        default: // "Are you sure?"
-            break;
-        }
+        // return to About -> Version
+        state_go(STATE_ABOUT, 0);
     }
+}
 
+uint8_t button_more_info(uint8_t button_mask)
+{
+    uint8_t array_sz = MENU_MORE_INFO_LEN - 1;
+    
+    if (button_mask == BUTTON_B) {
+        // return to About -> More Info
+        state_go(STATE_ABOUT, 1);
+    }
+    
     return array_sz;
 }
 
@@ -94,7 +97,7 @@ uint8_t button_disp_idx(uint8_t button_mask)
 
     // no special interaction on any index, so always transition back
     if (button_mask == BUTTON_B) {
-        state_return(STATE_WELCOME, 2);
+        state_return(STATE_WELCOME, 1);
         return array_sz;
     }
 

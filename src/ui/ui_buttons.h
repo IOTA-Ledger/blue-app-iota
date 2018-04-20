@@ -16,8 +16,9 @@
 
 uint8_t button_init(uint8_t button_mask);
 uint8_t button_welcome(uint8_t button_mask);
-uint8_t button_advanced(uint8_t button_mask);
-uint8_t button_adv_warn(uint8_t button_mask);
+uint8_t button_about(uint8_t button_mask);
+void button_version(uint8_t button_mask);
+uint8_t button_more_info(uint8_t button_mask);
 uint8_t button_disp_idx(uint8_t button_mask);
 uint8_t button_disp_addr(uint8_t button_mask);
 uint8_t button_disp_addr_chk(uint8_t button_mask);

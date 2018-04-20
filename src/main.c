@@ -3,6 +3,12 @@
 #include "iota_io.h"
 #include "storage.h"
 
+/* -------------------------------------------------
+ ---------------------------------------------------
+        Version # is defined in ui_types.h
+ ---------------------------------------------------
+ ------------------------------------------------- */
+
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 ux_state_t ux;
 

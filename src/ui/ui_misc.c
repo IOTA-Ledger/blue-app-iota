@@ -473,8 +473,9 @@ void get_init_menu(char *msg)
     strcpy(msg + (i++ * 21), "WARNING!");
     strcpy(msg + (i++ * 21), "IOTA is not like");
     strcpy(msg + (i++ * 21), "other cryptos!");
-    strcpy(msg + (i++ * 21), "Visit goo.gl/srcoKm");
-    strcpy(msg + (i++ * 21), "to learn more.");
+    strcpy(msg + (i++ * 21), "Please visit");
+    strcpy(msg + (i++ * 21), "iota.org/nanos");
+    strcpy(msg + (i++ * 21), "for more info.");
 }
 
 void get_welcome_menu(char *msg)
@@ -484,9 +485,8 @@ void get_welcome_menu(char *msg)
     uint8_t i = 0;
 
     strcpy(msg + (i++ * 21), " Welcome to IOTA");
-    // TODO turn advanced mode into warnings on/off?
-    strcpy(msg + (i++ * 21), "Advanced Mode");
-    strcpy(msg + (i++ * 21), "Account Indexes");
+    strcpy(msg + (i++ * 21), "Indexes");
+    strcpy(msg + (i++ * 21), "About");
     strcpy(msg + (i++ * 21), "Exit App");
 }
 
@@ -509,25 +509,26 @@ void get_disp_idx_menu(char *msg)
     strcpy(msg + (i * 21), "Back");
 }
 
-void get_advanced_menu(char *msg)
+void get_about_menu(char *msg)
 {
-    memset(msg, '\0', MENU_ADVANCED_LEN * 21);
+    memset(msg, '\0', MENU_ABOUT_LEN * 21);
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * 21), "Default");
-    strcpy(msg + (i++ * 21), "Advanced");
+    strcpy(msg + (i++ * 21), "Version");
+    strcpy(msg + (i++ * 21), "More Info");
+    strcpy(msg + (i++ * 21), "Back");
 }
 
-void get_adv_warn_menu(char *msg)
+void get_more_info_menu(char *msg)
 {
-    memset(msg, '\0', MENU_ADV_WARN_LEN * 21);
-
+    memset(msg, '\0', MENU_MORE_INFO_LEN * 21);
+    
     uint8_t i = 0;
-
-    strcpy(msg + (i++ * 21), "Are you sure?");
-    strcpy(msg + (i++ * 21), "Yes");
-    strcpy(msg + (i++ * 21), "No");
+    
+    strcpy(msg + (i++ * 21), "Please visit");
+    strcpy(msg + (i++ * 21), "iota.org/nanos");
+    strcpy(msg + (i++ * 21), "for more info.");
 }
 
 void get_address_menu(char *msg)

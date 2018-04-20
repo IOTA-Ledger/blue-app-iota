@@ -5,6 +5,12 @@
 #include "../api.h"
 #include "../iota/bundle.h"
 
+/* -------------------------------------------------
+ ------------------------------------------------- */
+static char app_version[10] = "1.0.0\0";
+/* -------------------------------------------------
+ ------------------------------------------------- */
+
 #define TYPE_INT 0
 #define TYPE_STR 1
 
@@ -27,26 +33,27 @@
 #define STATE_WELCOME 1
 #define STATE_IGNORE 2
 #define STATE_DISP_IDX 3
-#define STATE_ADVANCED 4
-#define STATE_ADV_WARN 5
-#define STATE_DISP_ADDR 6 // Host displays pubkey on ledger
-#define STATE_TX_ADDR 7   // Display full address in TX
-#define STATE_DISP_ADDR_CHK 8  // Abbreviated address with Checksum
-#define STATE_INIT_LEDGER 9
-#define STATE_PROMPT_TX 10
-#define STATE_WARN_CHANGE 11
+#define STATE_ABOUT 4
+#define STATE_VERSION 5
+#define STATE_MORE_INFO 6
+#define STATE_DISP_ADDR 7 // Host displays pubkey on ledger
+#define STATE_TX_ADDR 8 // Display full address in TX
+#define STATE_DISP_ADDR_CHK 9 // Abbreviated address with Checksum
+#define STATE_INIT_LEDGER 10
+#define STATE_PROMPT_TX 11
+#define STATE_WARN_CHANGE 12
 
 #define STATE_EXIT 255
 
 // Size of Menu
-#define MENU_INIT_LEN 5
+#define MENU_INIT_LEN 6
 #define MENU_WELCOME_LEN 4
 #define MENU_DISP_IDX_LEN 6
-#define MENU_ADVANCED_LEN 2
-#define MENU_ADV_WARN_LEN 3
+#define MENU_ABOUT_LEN 3
 #define MENU_ADDR_LEN 7
 #define MENU_INIT_LEDGER_LEN 10
 #define MENU_WARN_CHANGE_LEN 7
+#define MENU_MORE_INFO_LEN 3
 
 typedef struct UI_TEXT_CTX {
 

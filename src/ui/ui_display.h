@@ -16,8 +16,9 @@
 
 void display_init();
 void display_welcome();
-void display_advanced();
-void display_adv_warn();
+void display_about();
+void display_version();
+void display_more_info();
 void display_idxs();
 void display_addr(); // display pubkey on ledger
 void display_addr_chk(); // display abbrv with chk

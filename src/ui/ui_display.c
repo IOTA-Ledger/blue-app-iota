@@ -44,41 +44,47 @@ void display_welcome()
     }
 }
 
-void display_advanced()
+void display_about()
 {
     // write the actual menu
-    char msg[MENU_ADVANCED_LEN * 21];
-    get_advanced_menu(msg);
-    write_text_array(msg, MENU_ADVANCED_LEN);
-
-    // no special overrides
-}
-
-void display_adv_warn()
-{
-    // write the actual menu
-    char msg[MENU_ADV_WARN_LEN * 21];
-    get_adv_warn_menu(msg);
-    write_text_array(msg, MENU_ADV_WARN_LEN);
+    char msg[MENU_ABOUT_LEN * 21];
+    get_about_menu(msg);
+    write_text_array(msg, MENU_ABOUT_LEN);
 
     // special override display states
     switch (ui_state.menu_idx) {
-    case MENU_ADV_WARN_LEN - 2: // Yes
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
-        // turn off the half menus
-        write_display(NULL, TYPE_STR, BOT_H);
-        write_display(NULL, TYPE_STR, TOP_H);
-        break;
-
-    case MENU_ADV_WARN_LEN - 1: // No
-        display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
-        // turn off the half text
-        write_display(NULL, TYPE_STR, TOP_H);
-        break;
-
-    default:
-        break;
+        case MENU_ABOUT_LEN - 2:
+            write_display(NULL, TYPE_STR, BOT_H);
+            break;
+            // turn off TOP_H
+        case MENU_ABOUT_LEN - 1:
+            write_display(NULL, TYPE_STR, TOP_H);
+            display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
     }
+}
+
+void display_version()
+{
+    clear_display();
+    char msg[10];
+    
+    for(uint8_t i = 0; i < 8; i++) {
+        msg[i] = app_version[i];
+    }
+    
+    write_display(msg, TYPE_STR, MID);
+    
+    display_glyphs_confirm(ui_glyphs.glyph_dash, NULL);
+}
+
+void display_more_info()
+{
+    // write the actual menu
+    char msg[MENU_MORE_INFO_LEN * 21];
+    get_more_info_menu(msg);
+    write_text_array(msg, MENU_MORE_INFO_LEN);
+    
+    // no special overrides
 }
 
 void display_idxs()
