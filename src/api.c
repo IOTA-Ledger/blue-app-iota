@@ -180,32 +180,25 @@ static void add_tx(const TX_INPUT *input)
     bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
 }
 
-// TODO refactor this
-static int bundle_check_change()
+static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 {
-    // if last tx is change, ensure it's ours, and not used
-    if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0) {
-        unsigned char addr_bytes[48];
-        
-        uint32_t change_idx =
-            api.bundle_ctx.indices[api.bundle_ctx.last_tx_index];
-        
-        // don't allow change address to go backwards
-        if (change_idx < get_seed_idx(api.active_seed)) {
-            return CHANGE_IDX_LOW;
-        }
-        
-        get_public_addr(api.seed_bytes, change_idx, api.security, addr_bytes);
-        
-        const unsigned char *change_ptr = bundle_get_address_bytes(
-            &api.bundle_ctx, api.bundle_ctx.last_tx_index);
-        
-        // the address provided != our address at that idx
-        if (memcmp(addr_bytes, change_ptr, 48))
-            return CHANGE_ADDR_NOT_OURS;
+    // there only is a proper change transaction if the value is positive
+    if (ctx->values[ctx->last_tx_index] > 0) {
+        return ctx->last_tx_index;
     }
-    
-    return OK;
+    // return something out of bounds
+    return ctx->last_tx_index + 1;
+}
+
+static bool has_unused_change_index(const BUNDLE_CTX *bundle)
+{
+    const unsigned int change_tx_index = get_change_tx_index(bundle);
+    if (change_tx_index > bundle->last_tx_index) {
+        return true;
+    }
+
+    // assume that an index is new, if it is >= the last used change index
+    return bundle->indices[change_tx_index] >= get_seed_idx(api.active_seed);
 }
 
 unsigned int api_tx(const unsigned char *input_data, unsigned int len)
@@ -250,23 +243,13 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
-        /* TODO ----------- *********
-        int retcode = bundle_check_change();
-        
-        // this means change address index is lower than the last idx
-        // stored on this seed. technically okay, but warn user
-        // NOTE - we will not write this change idx, but we can
-        // publish tx with it
-        if(retcode == CHANGE_IDX_LOW) {
+
+        // warn if the change index seems strange
+        if (!has_unused_change_index(&api.bundle_ctx)) {
             ui_warn_change(&api.bundle_ctx);
             return IO_ASYNCH_REPLY;
         }
-        // don't accept bundle if change addr doesn't belong to us
-        else if (retcode == CHANGE_ADDR_NOT_OURS) {
-            THROW(SW_BUNDLE_ERROR + retcode);
-        }
-         */
-        
+
         // perfectly valid bundle
         ui_sign_tx(&api.bundle_ctx);
         return IO_ASYNCH_REPLY;
@@ -289,6 +272,19 @@ static bool next_signature_fragment(SIGNING_CTX *ctx, char *signature_fragment)
                    SIGNATURE_FRAGMENT_SIZE * 48);
 
     return signing_has_next_fragment(ctx);
+}
+
+static void update_seed_index(const BUNDLE_CTX *bundle)
+{
+    const unsigned int change_tx_index = get_change_tx_index(bundle);
+    if (change_tx_index <= bundle->last_tx_index) {
+
+        // only store the thee index, if it is larger
+        const uint32_t change_key_index = bundle->indices[change_tx_index];
+        if (change_key_index > get_seed_idx(api.active_seed)) {
+            write_seed_index(api.active_seed, change_key_index);
+        }
+    }
 }
 
 unsigned int api_sign(const unsigned char *input_data, unsigned int len)
@@ -336,19 +332,7 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
 
-        // if we had change tx, and if idx > stored idx, write to ledger
-        if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0) {
-            /* TODO ----------- *********
-             } &&
-            api.bundle_ctx.indices[api.bundle_ctx.last_tx_index] >
-            get_seed_idx(api.active_seed)) {
-             */
-
-            write_seed_index(
-                api.active_seed,
-                api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
-        }
-
+        update_seed_index(&api.bundle_ctx);
         ui_display_welcome();
     }
 
@@ -387,15 +371,6 @@ void user_deny_tx()
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
-static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
-{
-    // there only is a proper change transaction if the value is positive
-    if (ctx->values[ctx->last_tx_index] > 0) {
-        return ctx->last_tx_index;
-    }
-    // return something out of bounds
-    return ctx->last_tx_index + 1;
-}
 
 NO_INLINE
 static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
