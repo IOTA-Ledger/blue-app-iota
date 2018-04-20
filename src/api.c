@@ -250,6 +250,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
+        /* TODO ----------- *********
         int retcode = bundle_check_change();
         
         // this means change address index is lower than the last idx
@@ -264,6 +265,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         else if (retcode == CHANGE_ADDR_NOT_OURS) {
             THROW(SW_BUNDLE_ERROR + retcode);
         }
+         */
         
         // perfectly valid bundle
         ui_sign_tx(&api.bundle_ctx);
@@ -335,9 +337,12 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         api.state_flags &= ~SIGNING_STARTED;
 
         // if we had change tx, and if idx > stored idx, write to ledger
-        if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0 &&
+        if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0) {
+            /* TODO ----------- *********
+             } &&
             api.bundle_ctx.indices[api.bundle_ctx.last_tx_index] >
             get_seed_idx(api.active_seed)) {
+             */
 
             write_seed_index(
                 api.active_seed,
