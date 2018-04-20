@@ -180,6 +180,34 @@ static void add_tx(const TX_INPUT *input)
     bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
 }
 
+// TODO refactor this
+static int bundle_check_change()
+{
+    // if last tx is change, ensure it's ours, and not used
+    if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0) {
+        unsigned char addr_bytes[48];
+        
+        uint32_t change_idx =
+            api.bundle_ctx.indices[api.bundle_ctx.last_tx_index];
+        
+        // don't allow change address to go backwards
+        if (change_idx < get_seed_idx(api.active_seed)) {
+            return CHANGE_IDX_LOW;
+        }
+        
+        get_public_addr(api.seed_bytes, change_idx, api.security, addr_bytes);
+        
+        const unsigned char *change_ptr = bundle_get_address_bytes(
+            &api.bundle_ctx, api.bundle_ctx.last_tx_index);
+        
+        // the address provided != our address at that idx
+        if (memcmp(addr_bytes, change_ptr, 48))
+            return CHANGE_ADDR_NOT_OURS;
+    }
+    
+    return OK;
+}
+
 unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 {
     const TX_INPUT *input = GET_INPUT(input_data, len, TX);
@@ -222,6 +250,22 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 
     add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
+        int retcode = bundle_check_change();
+        
+        // this means change address index is lower than the last idx
+        // stored on this seed. technically okay, but warn user
+        // NOTE - we will not write this change idx, but we can
+        // publish tx with it
+        if(retcode == CHANGE_IDX_LOW) {
+            ui_warn_change(&api.bundle_ctx);
+            return IO_ASYNCH_REPLY;
+        }
+        // don't accept bundle if change addr doesn't belong to us
+        else if (retcode == CHANGE_ADDR_NOT_OURS) {
+            THROW(SW_BUNDLE_ERROR + retcode);
+        }
+        
+        // perfectly valid bundle
         ui_sign_tx(&api.bundle_ctx);
         return IO_ASYNCH_REPLY;
     }
@@ -290,12 +334,15 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
 
-        // if we had change tx, write it to ledger
-        if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0)
+        // if we had change tx, and if idx > stored idx, write to ledger
+        if (api.bundle_ctx.values[api.bundle_ctx.last_tx_index] > 0 &&
+            api.bundle_ctx.indices[api.bundle_ctx.last_tx_index] >
+            get_seed_idx(api.active_seed)) {
 
             write_seed_index(
                 api.active_seed,
                 api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
+        }
 
         ui_display_welcome();
     }
@@ -371,37 +418,17 @@ void user_sign_tx()
     io_send_bundle_hash(&api.bundle_ctx);
 }
 
-void init_ledger_approve(const INIT_LEDGER_INPUT *input)
-{
-    // TODO test large values are properly casted
-
-    // write all 5 seed indexes
-    for (uint8_t i = 0; i < 5; i++) {
-        write_seed_index(i, (unsigned int)input->seed_indexes[i]);
-    }
-
-    io_send(NULL, 0, SW_OK);
-}
-
-void init_ledger_deny()
-{
-    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
-}
-
 // get index of a given account
-unsigned int api_seed_idx(unsigned char *input_data, unsigned int len)
+unsigned int api_get_indexes()
 {
     if (!flash_is_init()) {
         THROW(SW_APP_NOT_INITIALIZED);
     }
 
-    const SEED_IDX_INPUT *input = (SEED_IDX_INPUT *)(input_data);
-
-    if (input->account > 4 || input->account < 0)
-        THROW(INVALID_PARAMETER);
-
     SEED_IDX_OUTPUT output;
-    output.seed_idx = get_seed_idx(input->account);
+    for (uint8_t i = 0; i < 5; i++) {
+        output.seed_idx[i] = get_seed_idx(i);
+    }
 
     io_send(&output, sizeof(output), SW_OK);
     return 0;
@@ -418,4 +445,23 @@ unsigned int api_init_ledger(unsigned char *input_data, unsigned int len)
 
     ui_display_init_ledger(input);
     return IO_ASYNCH_REPLY;
+}
+
+void init_ledger_approve(const INIT_LEDGER_INPUT *input)
+{
+    // write all 5 seed indexes
+    for (uint8_t i = 0; i < 5; i++) {
+        write_seed_index(i, (unsigned int)input->seed_indexes[i]);
+    }
+
+    ui_restore();
+
+    io_send(NULL, 0, SW_OK);
+}
+
+void init_ledger_deny()
+{
+    ui_restore();
+
+    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }

@@ -45,7 +45,9 @@ static void IOTA_main()
                 // send  response code and reset ui
                 // TODO: what happens if io_send throws an exception
                 io_send(NULL, 0, sw);
-                ui_reset();
+
+                if (flash_is_init())
+                    ui_reset();
 
                 flags = 0;
             }

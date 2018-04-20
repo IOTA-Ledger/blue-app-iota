@@ -28,7 +28,9 @@ enum BundleRetCode {
     NONZERO_BALANCE,
     INVALID_META_TX,
     INVALID_ADDRESS_INDEX,
-    ADDRESS_REUSED
+    ADDRESS_REUSED,
+    CHANGE_IDX_LOW,
+    CHANGE_ADDR_NOT_OURS
 };
 
 /** @brief Initializes the bundle context for a fixed number of transactions.

@@ -14,16 +14,17 @@
 #include "ui_types.h"
 #include "ui_misc.h"
 
-void display_menu_init();
-void display_menu_welcome();
-void display_menu_advanced();
-void display_menu_adv_warn();
-void display_menu_disp_idx();
-void display_menu_disp_addr();
-void display_addr_chk();
-void display_menu_tx_addr();
+void display_init();
+void display_welcome();
+void display_advanced();
+void display_adv_warn();
+void display_idxs();
+void display_addr(); // display pubkey on ledger
+void display_addr_chk(); // display abbrv with chk
+void display_tx_addr(); // display address in tx
 void display_init_ledger();
 void display_prompt_tx();
+void display_warn_change();
 void display_unknown_state();
 
 #endif // UI_DISPLAY_H

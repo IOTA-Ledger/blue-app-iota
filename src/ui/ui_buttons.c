@@ -4,19 +4,19 @@
 #include "iota/addresses.h"
 #include "ui.h"
 
-uint8_t button_menu_init(uint8_t button_mask)
+uint8_t button_init(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_INIT_LEN - 1;
 
     if (button_mask == BUTTON_B && ui_state.menu_idx == array_sz) {
         init_flash();
-        state_go(STATE_MENU_WELCOME, 0);
+        state_go(STATE_WELCOME, 0);
     }
 
     return array_sz;
 }
 
-uint8_t button_menu_welcome(uint8_t button_mask)
+uint8_t button_welcome(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_WELCOME_LEN - 1;
 
@@ -29,11 +29,11 @@ uint8_t button_menu_welcome(uint8_t button_mask)
             // Advanced Mode
         case 1:
             // get_adv_mode lines up with menu idx
-            state_go(STATE_MENU_ADVANCED, get_advanced_mode());
+            state_go(STATE_ADVANCED, get_advanced_mode());
             return array_sz;
             // View Indexes
         case 2:
-            state_go(STATE_MENU_DISP_IDX, 0);
+            state_go(STATE_DISP_IDX, 0);
             return array_sz;
             // Exit App
         case MENU_WELCOME_LEN - 1:
@@ -45,7 +45,7 @@ uint8_t button_menu_welcome(uint8_t button_mask)
     return array_sz;
 }
 
-uint8_t button_menu_advanced(uint8_t button_mask)
+uint8_t button_advanced(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADVANCED_LEN - 1;
 
@@ -53,7 +53,7 @@ uint8_t button_menu_advanced(uint8_t button_mask)
 
         // warn if entering advanced mode
         if (ui_state.menu_idx == 1 && get_advanced_mode() == 0) {
-            state_go(STATE_MENU_ADV_WARN, 0);
+            state_go(STATE_ADV_WARN, 0);
 
             return array_sz;
         }
@@ -61,14 +61,14 @@ uint8_t button_menu_advanced(uint8_t button_mask)
         // menu idx entries line up with modes
         write_advanced_mode(ui_state.menu_idx);
 
-        state_return(STATE_MENU_WELCOME, 1);
+        state_return(STATE_WELCOME, 1);
     }
 
     return array_sz;
 }
 
 
-uint8_t button_menu_adv_warn(uint8_t button_mask)
+uint8_t button_adv_warn(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADV_WARN_LEN - 1;
 
@@ -78,7 +78,7 @@ uint8_t button_menu_adv_warn(uint8_t button_mask)
         case 1: // Yes
             write_advanced_mode(1);
         case 2: // No
-            state_return(STATE_MENU_WELCOME, 1);
+            state_return(STATE_WELCOME, 1);
             return array_sz;
         default: // "Are you sure?"
             break;
@@ -88,20 +88,20 @@ uint8_t button_menu_adv_warn(uint8_t button_mask)
     return array_sz;
 }
 
-uint8_t button_menu_disp_idx(uint8_t button_mask)
+uint8_t button_disp_idx(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_DISP_IDX_LEN - 1;
 
     // no special interaction on any index, so always transition back
     if (button_mask == BUTTON_B) {
-        state_return(STATE_MENU_WELCOME, 2);
+        state_return(STATE_WELCOME, 2);
         return array_sz;
     }
 
     return array_sz;
 }
 
-uint8_t button_menu_disp_addr(uint8_t button_mask)
+uint8_t button_disp_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
 
@@ -120,14 +120,14 @@ uint8_t button_menu_disp_addr(uint8_t button_mask)
 uint8_t button_disp_addr_chk(uint8_t button_mask)
 {
     if (button_mask == BUTTON_R)
-        state_go(STATE_MENU_DISP_ADDR, 0);
+        state_go(STATE_DISP_ADDR, 0);
     else if (button_mask == BUTTON_B)
         restore_state();
 
     return 0;
 }
 
-uint8_t button_menu_tx_addr(uint8_t button_mask)
+uint8_t button_tx_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
 
@@ -139,7 +139,7 @@ uint8_t button_menu_tx_addr(uint8_t button_mask)
     return array_sz;
 }
 
-uint8_t button_menu_init_ledger(uint8_t button_mask)
+uint8_t button_init_ledger(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_INIT_LEDGER_LEN - 1;
 
@@ -147,14 +147,12 @@ uint8_t button_menu_init_ledger(uint8_t button_mask)
         // Deny
         if (ui_state.menu_idx == array_sz) {
             init_ledger_deny();
-            state_return(STATE_MENU_WELCOME, 0);
             ui_state.input = NULL;
             return array_sz;
         }
         else if (ui_state.menu_idx == array_sz - 1) {
             // Approve
             init_ledger_approve(ui_state.input);
-            state_return(STATE_MENU_WELCOME, 0);
             ui_state.input = NULL;
             return array_sz;
         }
@@ -201,7 +199,7 @@ void button_prompt_tx(uint8_t button_mask)
         if (ui_state.menu_idx == array_sz - 1) {
             user_deny_tx();
             ui_state.display_full_value = false;
-            state_go(STATE_MENU_WELCOME, 0);
+            state_go(STATE_WELCOME, 0);
         }
         else if (ui_state.menu_idx == array_sz - 2) {
             user_sign_tx();
@@ -216,10 +214,32 @@ void button_prompt_tx(uint8_t button_mask)
             else {
                 // on an address screen
                 backup_state();
-                state_go(STATE_MENU_TX_ADDR, 0);
+                state_go(STATE_TX_ADDR, 0);
             }
         }
     }
+}
+
+uint8_t button_warn_change(uint8_t button_mask)
+{
+    uint8_t array_sz = MENU_WARN_CHANGE_LEN - 1;
+    
+    if (button_mask == BUTTON_B) {
+        // Deny
+        if (ui_state.menu_idx == array_sz) {
+            user_deny_tx();
+            //restore_state();
+            state_go(STATE_WELCOME, 0);
+            return array_sz;
+        }
+        else if (ui_state.menu_idx == array_sz - 1) {
+            // Approve
+            state_go(STATE_PROMPT_TX, 0);
+            return array_sz;
+        }
+    }
+    
+    return array_sz;
 }
 
 void button_handle_menu_idx(uint8_t button_mask, uint8_t array_sz)

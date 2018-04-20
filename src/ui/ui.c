@@ -136,12 +136,12 @@ void ui_init(bool flash_is_init)
     ctx_initialize();
 
     if (flash_is_init) {
-        ui_state.state = STATE_MENU_WELCOME;
-        ui_state.backup_state = STATE_MENU_WELCOME;
+        ui_state.state = STATE_WELCOME;
+        ui_state.backup_state = STATE_WELCOME;
     }
     else {
-        ui_state.state = STATE_MENU_INIT;
-        ui_state.backup_state = STATE_MENU_INIT;
+        ui_state.state = STATE_INIT;
+        ui_state.backup_state = STATE_INIT;
     }
 
     ui_build_display();
@@ -151,7 +151,7 @@ void ui_init(bool flash_is_init)
 // Entry points for main to modify display
 void ui_display_welcome()
 {
-    state_go(STATE_MENU_WELCOME, 0);
+    state_go(STATE_WELCOME, 0);
     backup_state();
 
     ui_build_display();
@@ -213,6 +213,18 @@ void ui_display_address(const unsigned char *addr_bytes)
     ui_force_draw();
 }
 
+void ui_warn_change(BUNDLE_CTX *bundle_ctx)
+{
+    ui_state.bundle_ctx = bundle_ctx;
+    
+    backup_state();
+    
+    state_go(STATE_WARN_CHANGE, 0);
+    
+    ui_build_display();
+    ui_render();
+}
+
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
     ui_state.bundle_ctx = bundle_ctx;
@@ -225,8 +237,10 @@ void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 
 void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
 {
+    backup_state();
+
     ui_state.input = input;
-    state_go(STATE_MENU_INIT_LEDGER, 0);
+    state_go(STATE_INIT_LEDGER, 0);
 
     ui_build_display();
     ui_render();
@@ -234,7 +248,7 @@ void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
 
 void ui_reset()
 {
-    state_go(STATE_MENU_WELCOME, 0);
+    state_go(STATE_WELCOME, 0);
 
     ui_build_display();
     ui_render();
@@ -246,7 +260,7 @@ void ui_reset()
 void ui_restore()
 {
     restore_state();
-    
+
     ui_build_display();
     ui_render();
     ui_force_draw();
@@ -289,45 +303,48 @@ void ui_handle_button(uint8_t button_mask)
 
     switch (ui_state.state) {
         /* ------------ STATE INIT -------------- */
-    case STATE_MENU_INIT:
-        array_sz = button_menu_init(button_mask);
+    case STATE_INIT:
+        array_sz = button_init(button_mask);
         break;
         /* ------------ STATE OPTIONS -------------- */
-    case STATE_MENU_WELCOME:
-        array_sz = button_menu_welcome(button_mask);
+    case STATE_WELCOME:
+        array_sz = button_welcome(button_mask);
         break;
         /* ------------ STATE ADVANCED MODE -------------- */
-    case STATE_MENU_ADVANCED:
-        array_sz = button_menu_advanced(button_mask);
+    case STATE_ADVANCED:
+        array_sz = button_advanced(button_mask);
         break;
         /* ------------ STATE ADVANCED MODE WARNING -------------- */
-    case STATE_MENU_ADV_WARN:
-        array_sz = button_menu_adv_warn(button_mask);
+    case STATE_ADV_WARN:
+        array_sz = button_adv_warn(button_mask);
         break;
         /* ------------ STATE DISPLAY_INDEXES -------------- */
-    case STATE_MENU_DISP_IDX:
-        array_sz = button_menu_disp_idx(button_mask);
+    case STATE_DISP_IDX:
+        array_sz = button_disp_idx(button_mask);
         break;
         /* ------------ STATE DISPLAY_ADDRESS -------------- */
-    case STATE_MENU_DISP_ADDR:
-        array_sz = button_menu_disp_addr(button_mask);
+    case STATE_DISP_ADDR:
+        array_sz = button_disp_addr(button_mask);
         break;
         /* ------------ STATE DISPLAY CHECKSUM -------------- */
     case STATE_DISP_ADDR_CHK:
         array_sz = button_disp_addr_chk(button_mask);
         break;
         /* ------------ STATE MENU_TX_ADDRESS -------------- */
-    case STATE_MENU_TX_ADDR:
-        array_sz = button_menu_tx_addr(button_mask);
+    case STATE_TX_ADDR:
+        array_sz = button_tx_addr(button_mask);
         break;
         /* ------------ STATE INIT LEDGER -------------- */
-    case STATE_MENU_INIT_LEDGER:
-        array_sz = button_menu_init_ledger(button_mask);
+    case STATE_INIT_LEDGER:
+        array_sz = button_init_ledger(button_mask);
         break;
         /* ------------ PROMPT TX INFO *DYNAMIC-MENU* -------------- */
     case STATE_PROMPT_TX:
         button_prompt_tx(button_mask);
         return;
+    case STATE_WARN_CHANGE:
+        array_sz = button_warn_change(button_mask);
+        break;
     case STATE_IGNORE:
         return;
         /* ------------ DEFAULT -------------- */
@@ -348,44 +365,48 @@ void ui_build_display()
 {
     switch (ui_state.state) {
         /* ------------ INIT MENU -------------- */
-    case STATE_MENU_INIT:
-        display_menu_init();
+    case STATE_INIT:
+        display_init();
         break;
         /* ------------ WELCOME MENU -------------- */
-    case STATE_MENU_WELCOME:
-        display_menu_welcome();
+    case STATE_WELCOME:
+        display_welcome();
         break;
         /* ------------ ADVANCED MODE MENU -------------- */
-    case STATE_MENU_ADVANCED:
-        display_menu_advanced();
+    case STATE_ADVANCED:
+        display_advanced();
         break;
         /* ------------ ADVANCED MODE WARNING MENU -------------- */
-    case STATE_MENU_ADV_WARN:
-        display_menu_adv_warn();
+    case STATE_ADV_WARN:
+        display_adv_warn();
         break;
         /* ------------ DISPLAY INDEXES MENU -------------- */
-    case STATE_MENU_DISP_IDX:
-        display_menu_disp_idx();
+    case STATE_DISP_IDX:
+        display_idxs();
         break;
         /* ------------ DISPLAY TX ADDRESS -------------- */
-    case STATE_MENU_TX_ADDR:
-        display_menu_tx_addr();
+    case STATE_TX_ADDR:
+        display_tx_addr();
         break;
         /* ------------ DISPLAY ADDRESS MENU -------------- */
-    case STATE_MENU_DISP_ADDR:
-        display_menu_disp_addr();
+    case STATE_DISP_ADDR:
+        display_addr();
         break;
         /* ------------ DISPLAY ADDRESS CHECKSUM -------------- */
     case STATE_DISP_ADDR_CHK:
         display_addr_chk();
         break;
         /* ------------ INIT LEDGER MENU -------------- */
-    case STATE_MENU_INIT_LEDGER:
+    case STATE_INIT_LEDGER:
         display_init_ledger();
         break;
         /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
     case STATE_PROMPT_TX:
         display_prompt_tx();
+        break;
+        /* ------------ WARN CHANGE -------------- */
+    case STATE_WARN_CHANGE:
+        display_warn_change();
         break;
         /* ------------ IGNORE STATE -------------- */
     case STATE_IGNORE:

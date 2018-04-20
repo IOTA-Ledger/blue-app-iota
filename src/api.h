@@ -77,15 +77,9 @@ typedef IO_STRUCT SIGN_OUTPUT
 }
 SIGN_OUTPUT;
 
-typedef IO_STRUCT SEED_IDX_INPUT
-{
-    int64_t account;
-}
-SEED_IDX_INPUT;
-
 typedef IO_STRUCT SEED_IDX_OUTPUT
 {
-    int64_t seed_idx;
+    int64_t seed_idx[5];
 }
 SEED_IDX_OUTPUT;
 
@@ -104,7 +98,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len);
 unsigned int api_sign(const unsigned char *input_data, unsigned int len);
 unsigned int api_display_pubkey(const unsigned char *input_data,
                                 unsigned int len);
-unsigned int api_seed_idx(unsigned char *input_data, unsigned int len);
+unsigned int api_get_indexes();
 unsigned int api_init_ledger(unsigned char *input_data, unsigned int len);
 
 void init_ledger_approve(const INIT_LEDGER_INPUT *input);

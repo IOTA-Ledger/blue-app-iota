@@ -5,7 +5,7 @@
 #include "ui.h"
 
 
-void display_menu_init()
+void display_init()
 {
     // write the actual menu
     char msg[MENU_INIT_LEN * 21];
@@ -20,7 +20,7 @@ void display_menu_init()
     }
 }
 
-void display_menu_welcome()
+void display_welcome()
 {
     // write the actual menu
     char msg[MENU_WELCOME_LEN * 21];
@@ -44,7 +44,7 @@ void display_menu_welcome()
     }
 }
 
-void display_menu_advanced()
+void display_advanced()
 {
     // write the actual menu
     char msg[MENU_ADVANCED_LEN * 21];
@@ -54,7 +54,7 @@ void display_menu_advanced()
     // no special overrides
 }
 
-void display_menu_adv_warn()
+void display_adv_warn()
 {
     // write the actual menu
     char msg[MENU_ADV_WARN_LEN * 21];
@@ -81,7 +81,7 @@ void display_menu_adv_warn()
     }
 }
 
-void display_menu_disp_idx()
+void display_idxs()
 {
     // write the actual menu
     char msg[MENU_DISP_IDX_LEN * 21];
@@ -102,7 +102,7 @@ void display_menu_disp_idx()
     }
 }
 
-void display_menu_disp_addr()
+void display_addr()
 {
     // write the actual menu
     char msg[MENU_ADDR_LEN * 21];
@@ -113,7 +113,7 @@ void display_menu_disp_addr()
     glyph_on(ui_glyphs.glyph_bar_r);
 
     // special overrides
-    if (ui_state.menu_idx == 0 && ui_state.state == STATE_MENU_DISP_ADDR)
+    if (ui_state.menu_idx == 0 && ui_state.state == STATE_DISP_ADDR)
         glyph_on(ui_glyphs.glyph_up);
 }
 
@@ -133,10 +133,10 @@ void display_addr_chk()
     display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
 }
 
-void display_menu_tx_addr()
+void display_tx_addr()
 {
     // piggyback off identical display
-    display_menu_disp_addr();
+    display_addr();
 }
 
 void display_init_ledger()
@@ -144,21 +144,23 @@ void display_init_ledger()
     // write the actual menu
     char msg[MENU_INIT_LEDGER_LEN * 21];
     get_init_ledger_menu(msg);
-    write_text_array(msg, MENU_ADDR_LEN);
+    write_text_array(msg, MENU_INIT_LEDGER_LEN);
 
     // special override display states
     switch (ui_state.menu_idx) {
     case 0:
         glyph_on(ui_glyphs.glyph_warn);
         break;
-        // turn off BOT_H and TOP_H
-    case MENU_INIT_LEDGER_LEN - 2:
+    case MENU_INIT_LEDGER_LEN - 3: // [5]
+        write_display(NULL, TYPE_STR, BOT_H);
+        break;
+    case MENU_INIT_LEDGER_LEN - 2: // Approve
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         write_display(NULL, TYPE_STR, BOT_H);
         write_display(NULL, TYPE_STR, TOP_H);
         break;
         // turn off TOP_H
-    case MENU_INIT_LEDGER_LEN - 1:
+    case MENU_INIT_LEDGER_LEN - 1: // Deny
         display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
         write_display(NULL, TYPE_STR, TOP_H);
         break;
@@ -180,14 +182,40 @@ void display_prompt_tx()
         return;
     }
 
-    // TODO (final tx if change notify it's change address)
-
     // even indices (not include approve/deny)
     // will be amounts, odd will be addr
     if (ui_state.menu_idx % 2 == 0)
         display_advanced_tx_value();
     else
         display_advanced_tx_address();
+}
+
+void display_warn_change()
+{
+    // write the actual menu
+    char msg[MENU_WARN_CHANGE_LEN * 21];
+    get_warn_change_menu(msg);
+    write_text_array(msg, MENU_WARN_CHANGE_LEN);
+    
+    // special override display states
+    switch (ui_state.menu_idx) {
+        case 0:
+            glyph_on(ui_glyphs.glyph_warn);
+            break;
+        case MENU_WARN_CHANGE_LEN - 3: // Are you sure?
+            write_display(NULL, TYPE_STR, BOT_H);
+            break;
+        case MENU_WARN_CHANGE_LEN - 2: // Yes
+            display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+            write_display(NULL, TYPE_STR, BOT_H);
+            write_display(NULL, TYPE_STR, TOP_H);
+            break;
+            // turn off TOP_H
+        case MENU_WARN_CHANGE_LEN - 1: // No
+            display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+            write_display(NULL, TYPE_STR, TOP_H);
+            break;
+    }
 }
 
 void display_unknown_state()
