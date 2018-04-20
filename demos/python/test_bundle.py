@@ -73,6 +73,7 @@ def unpack_sign_output(data):
     return struct.unpack(data)
 
 
+    return struct.unpack(data)
 warnings.warn("Only correct for the hard-coded seed: " + DEBUG_SEED)
 
 dongle = getDongle(True)
