@@ -474,7 +474,7 @@ void get_init_menu(char *msg)
     strcpy(msg + (i++ * 21), "IOTA is not like");
     strcpy(msg + (i++ * 21), "other cryptos!");
     strcpy(msg + (i++ * 21), "Please visit");
-    strcpy(msg + (i++ * 21), "iota.org/nanos");
+    strcpy(msg + (i++ * 21), "iotasec.info");
     strcpy(msg + (i++ * 21), "for more info.");
 }
 
@@ -527,7 +527,7 @@ void get_more_info_menu(char *msg)
     uint8_t i = 0;
     
     strcpy(msg + (i++ * 21), "Please visit");
-    strcpy(msg + (i++ * 21), "iota.org/nanos");
+    strcpy(msg + (i++ * 21), "iotasec.info");
     strcpy(msg + (i++ * 21), "for more info.");
 }
 
