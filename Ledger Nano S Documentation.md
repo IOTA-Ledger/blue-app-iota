@@ -37,7 +37,9 @@ This is handled in IOTA by utilizing what is called a seed index. Each index in 
 A bundle is just a group of transactions and IOTA uses both input and output transactions. So if Bob has 10 iota, and wants to send Alice 3 iota, the bundle could look like this:
 
 **tx1:** Bob -10 iota
+
 **tx2:** Alice +3 iota
+
 **tx3:** Bob +7 iota (change tx)
 
 This example highlights how IOTA handles one time signatures. First it takes an input of 10 iota from Bob's address. It sends 3 of it to Alice, and it puts the remaining 7 iota on a new address belonging to Bob's seed.
