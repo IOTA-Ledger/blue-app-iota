@@ -76,11 +76,11 @@ The host can then use these signatures (which are only valid for that specific t
 
 - *Display Address:* The wallet can ask the Ledger to display the address for a specific index on the seed. It **only** accepts the index, and subsequently generates the address itself and thus verifies that the address belongs to the Ledger.
 
-*Note: this does not pertain to displaying addresses in transactions. Transactions will be denoted as "output", "input", or "change" transactions. Input and Change are verified to belong to the Ledger. Output are not.*
+    *Note: this does not pertain to displaying addresses in transactions. Transactions will be denoted as "output", "input", or "change" transactions. Input and Change are verified to belong to the Ledger. Output are not.*
 
 - *Initialize Ledger Indexes:* The wallet will provide new indexes to write to the Ledger Nano S. **THIS IS A CRITICAL OPERATION.** If you approve inaccurate/bad indexes from the wallet you could generate bad transactions and lose funds.
 
-If this happens you should use the wallet to reinitialize the seed from scratch. This could potentially take a long time as the Ledger hardware is slow at generating addresses (compared to a computer).
+    If this happens you should use the wallet to reinitialize the seed from scratch. This could potentially take a long time as the Ledger hardware is slow at generating addresses (compared to a computer).
 
 - *Sign Transaction:* The wallet will generate a transaction for the user to approve before the Ledger signs it. Ensure all amounts and addresses are correct before signing. These signatures are then sent back to the host machine.
 
@@ -97,42 +97,42 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
 
 - **Do not use multiple Ledgers with the IOTA app.**
 
-Because the IOTA app is stateful (stores the seed-indexes), using multiple Ledgers with the IOTA app will make it impossible for the Ledger to properly keep track of indexes.
+    Because the IOTA app is stateful (stores the seed-indexes), using multiple Ledgers with the IOTA app will make it impossible for the Ledger to properly keep track of indexes.
 
-In the future it may be possible to use multiple Ledgers if the wallet is made solely responsible for the statefulness, however for now it is strongly recommended to use just one Ledger for IOTA.
+    In the future it may be possible to use multiple Ledgers if the wallet is made solely responsible for the statefulness, however for now it is strongly recommended to use just one Ledger for IOTA.
 
-**This also means that if you must remove an existing app to make room for a new one, you should NOT remove IOTA without first backing up it's indexes to the wallet.**
+    **This also means that if you must remove an existing app to make room for a new one, you should NOT remove IOTA without first backing up it's indexes to the wallet.**
 
 - **Ensure the change index is always increasing.**
 
-The Ledger generates 5 unique IOTA seeds based on the 24 word mnemonic, and tracks the index for each seed. Because the index is stored on the device, you can quickly transfer to a new wallet and initialize your seed faster than scanning every index to find the one that holds your funds.
+    The Ledger generates 5 unique IOTA seeds based on the 24 word mnemonic, and tracks the index for each seed. Because the index is stored on the device, you can quickly transfer to a new wallet and initialize your seed faster than scanning every index to find the one that holds your funds.
 
-Whenever you sign a transaction with the Ledger it will write whatever the seed-index of the change transaction is into memory on the Ledger.
+    Whenever you sign a transaction with the Ledger it will write whatever the seed-index of the change transaction is into memory on the Ledger.
 
-As such it is *strongly recommended* to never use a change index that is lower than an address that has already been used, as this can inadvertently cause address reuse.
+    As such it is *strongly recommended* to never use a change index that is lower than an address that has already been used, as this can inadvertently cause address reuse.
 
-If a Ledger has a seed-index of 10 in memory, and a new transaction uses the change index of any value lower than 10, it will warn the user and ask "Are you sure?".
+    If a Ledger has a seed-index of 10 in memory, and a new transaction uses the change index of any value lower than 10, it will warn the user and ask "Are you sure?".
 
 - **Don't rush through signing a transaction.**
 
-When generating a transaction for the Ledger to sign, you will scroll through each transaction before signing off on the bundle. The transaction information will come up in order (while scrolling from left to right). The first screen will display the tx type (output, input, or change), as well as the amount. The next screen will display the corresponding address for said transaction. This will repeat until all transactions have been displayed, then you can select "Approve" or "Deny".
+    When generating a transaction for the Ledger to sign, you will scroll through each transaction before signing off on the bundle. The transaction information will come up in order (while scrolling from left to right). The first screen will display the tx type (output, input, or change), as well as the amount. The next screen will display the corresponding address for said transaction. This will repeat until all transactions have been displayed, then you can select "Approve" or "Deny".
 
-- All output transactions to 3rd party addresses will say "Output:" and below that "1.56 Mi" (for example). "Output" being the key word here.
+    - All output transactions to 3rd party addresses will say "Output:" and below that "1.56 Mi" (for example). "Output" being the key word here.
 
-All input transactions will say "Input:", and the final output transaction (the change transaction) will say "Change: [4]" ([4] being the seed-index of the change tx). This means the Ledger has verified the address used for the change tx belongs to the Ledger.
+        All input transactions will say "Input:", and the final output transaction (the change transaction) will say "Change: [4]" ([4] being the seed-index of the change tx). This means the Ledger has verified the address used for the change tx belongs to the Ledger.
 
-**If you are not sending all of your funds off of the seed, MAKE SURE one of the tx says "Change".**
+    **If you are not sending all of your funds off of the seed, MAKE SURE one of the tx says "Change".**
 
-*Note: When transferring between IOTA Ledger accounts (from one account seed to another) the ledger will not display it as a "Change tx". The wallet should first display the address that it intends to send it to on the Ledger (thus verifying it still belongs to the Ledger), and then create the transaction. The user would then verify in the transaction that the "Output:" tx is in fact going to the address previously displayed on the Ledger.*
+    *Note: When transferring between IOTA Ledger accounts (from one account seed to another) the ledger will not display it as a "Change tx". The wallet should first display the address that it intends to send it to on the Ledger (thus verifying it still belongs to the Ledger), and then create the transaction. The user would then verify in the transaction that the "Output:" tx is in fact going to the address previously displayed on the Ledger.*
 
 - **Verify ALL information in a transaction and NEVER re-sign a transaction.**
 
-For other coins you only need to verify the destination address and amount, but for IOTA you must also verify all input transactions. If you sign a transaction on the Ledger but the transaction is not using all of the funds on a specific address, leftover funds on the address are then vulnerable.
+    For other coins you only need to verify the destination address and amount, but for IOTA you must also verify all input transactions. If you sign a transaction on the Ledger but the transaction is not using all of the funds on a specific address, leftover funds on the address are then vulnerable.
 
-As such make sure the input amount(s) are what you expect them to be, make sure the output destination and amount is what you intend to send, and make sure there is a change tx if applicable with all of your remaining funds.
+    As such make sure the input amount(s) are what you expect them to be, make sure the output destination and amount is what you intend to send, and make sure there is a change tx if applicable with all of your remaining funds.
 
-*Note: After signing a transaction, you should verify the transaction was successfully broadcast to the network. You should **NEVER** re-sign the same transaction on the Ledger. If the transaction does not get confirmed, you should promote the transaction **on the host machine**. This avoids generating a new signature and weakening the security of the addresses.*
+    *Note: After signing a transaction, you should verify the transaction was successfully broadcast to the network. You should **NEVER** re-sign the same transaction on the Ledger. If the transaction does not get confirmed, you should promote the transaction **on the host machine**. This avoids generating a new signature and weakening the security of the addresses.*
 
-- If the transaction was not broadcast to the network, and you can't find it in the wallet you should be **EXTREMELY CAUTIOUS** before proceeding to sign a new transaction. If an infected machine is silently storing the signatures without broadcasting them, it could steal your funds after re-signing.
+    - If the transaction was not broadcast to the network, and you can't find it in the wallet you should be **EXTREMELY CAUTIOUS** before proceeding to sign a new transaction. If an infected machine is silently storing the signatures without broadcasting them, it could steal your funds after re-signing.
 
-If this situation should arise you should consider going to a more trusted machine before re-signing a transaction.
+        If this situation should arise you should consider going to a more trusted machine before re-signing a transaction.
