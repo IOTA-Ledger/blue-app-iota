@@ -12,8 +12,9 @@
   "license": "MIT",
   "dependencies": {
     "@ledgerhq/hw-transport-node-hid": "^4.7.6",
+    "babel-polyfill": "^6.26.0",
     "hw-app-iota": "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git",
-    "iota.lib.js": "git+https://github.com/IOTA-Ledger/iota.lib.js.git#exposed-lowlevel-functions"
+    "iota.lib.js": "^0.4.7"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

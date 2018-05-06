@@ -1,14 +1,11 @@
 import 'babel-polyfill';
 
-import Transport from "@ledgerhq/hw-transport-node-hid";
-import IOTALedger from "hw-app-iota";
-import IOTA from "iota.lib.js";
-const assert = require('assert').strict;
-
-// use testnet
-const iota = new IOTA({
-    provider: 'https://nodes.testnet.iota.org:443/'
-});
+import Transport from '@ledgerhq/hw-transport-node-hid';
+import IOTALedger from 'hw-app-iota';
+import {
+    isBundle,
+    transactionObject
+} from 'iota.lib.js/lib/utils/utils';
 
 // use testnet path
 const BIP44_PATH = [
@@ -20,26 +17,21 @@ const BIP44_PATH = [
 ];
 const SECURITY_LEVEL = 2;
 
-const DEST_ADDRESS = "J9KPGBTWIKTRBIWXNDCZUWWWVVESYVISFJIY9GCMGVLQXFJBDAKLLN9PNAZOOUZFZDGDSFPWCTJYILDF9";
+const DEST_ADDRESS = 'J9KPGBTWIKTRBIWXNDCZUWWWVVESYVISFJIY9GCMGVLQXFJBDAKLLN9PNAZOOUZFZDGDSFPWCTJYILDF9';
 const SRC_INDEX = 1;
 const VALUE = 10;
-const TAG = "999999999999999999999999999";
-const TIMESTAMP = Math.floor(Date.now() / 1000);
+const TAG = '';
 
-function validateBundle(bundle) {
+function validateBundleTrytes(bundleTrytes) {
 
-    // convert to trytes and back, to add transactions hashes to bundle
-    var bundleTrytes = [];
-    bundle.bundle.forEach(tx => {
-        bundleTrytes.push(iota.utils.transactionTrytes(tx));
-    });
+    // convert to transaction objects to add transactions hashes to bundle
     var transactionObjects = [];
     bundleTrytes.forEach(tx => {
-        transactionObjects.push(iota.utils.transactionObject(tx));
+        transactionObjects.unshift(transactionObject(tx));
     });
 
     // validates signatures and overall structure.
-    assert(iota.utils.isBundle(transactionObjects));
+    console.assert(isBundle(transactionObjects), 'Invalid bundle', transactionObjects);
 }
 
 (async () => {
@@ -49,33 +41,25 @@ function validateBundle(bundle) {
     // initialize
     await ledger.setSeedInput(BIP44_PATH, SECURITY_LEVEL);
     // get input address
-    const address = await ledger.getPubKey(SRC_INDEX);
-    const address2 = await ledger.getPubKey(SRC_INDEX + 1);
-
-    console.log("create bundle; dest=%s, value=%i, src=%s", DEST_ADDRESS, VALUE, address);
-
-    var bundle = new iota.utils.Bundle();
-
-    bundle.addEntry(1, DEST_ADDRESS, VALUE, TAG, TIMESTAMP, 0);
-    bundle.addEntry(SECURITY_LEVEL, address, -VALUE, TAG, TIMESTAMP, SRC_INDEX);
-    bundle.addTrytes([]);
-    bundle.finalize();
-
-    // map input addresses to their index
-    var inputMapping = {};
-    inputMapping[address] = SRC_INDEX;
-    // inputMapping[address2] = SRC_INDEX2;
-
-    // sign the bundle on the ledger
-    bundle = await ledger.signBundle({
-        inputMapping,
-        bundle,
-        security: SECURITY_LEVEL
+    const address = await ledger.getAddress(SRC_INDEX, {
+        checksum: true
     });
 
-    // dump signed bundle
-    console.log(bundle);
-    validateBundle(bundle);
+    console.log('create bundle; dest=%s, value=%i, src=%s', DEST_ADDRESS, VALUE, address);
+
+    const transfers = [{
+        address: DEST_ADDRESS,
+        value: VALUE,
+        tag: TAG
+    }];
+    const inputs = [{
+        address: address,
+        balance: VALUE,
+        keyIndex: SRC_INDEX
+    }];
+    var trytes = await ledger.getSignedTransactions(transfers, inputs);
+
+    validateBundleTrytes(trytes);
 })().catch(e => {
     console.error(e);
 });

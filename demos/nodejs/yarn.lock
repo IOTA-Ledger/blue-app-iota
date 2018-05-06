@@ -1011,8 +1011,9 @@ http-signature@~1.1.0:
 
 "hw-app-iota@git+https://github.com/IOTA-Ledger/hw-app-iota.js.git":
   version "0.1.1"
-  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#214c9bca33f5c643cf4f47b9126f0dc027d25f7d"
+  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#cf07f426591159175bae01d50b351da03aef25a1"
   dependencies:
+    iota.lib.js "^0.4.7"
     struct "0.0.12"
 
 inflight@^1.0.4:
@@ -1036,9 +1037,9 @@ invariant@^2.2.2:
   dependencies:
     loose-envify "^1.0.0"
 
-"iota.lib.js@git+https://github.com/IOTA-Ledger/iota.lib.js.git#exposed-lowlevel-functions":
+iota.lib.js@^0.4.7:
   version "0.4.7"
-  resolved "git+https://github.com/IOTA-Ledger/iota.lib.js.git#5796ba30fefb83559a04b26747209f12bd449388"
+  resolved "https://registry.yarnpkg.com/iota.lib.js/-/iota.lib.js-0.4.7.tgz#c2af1a7886b8b0e239a4b54b5caa9dd239c2d7eb"
   dependencies:
     async "^2.5.0"
     bignumber.js "^4.1.0"
