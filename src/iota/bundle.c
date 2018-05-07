@@ -259,6 +259,7 @@ static void compute_hash(BUNDLE_CTX *ctx)
     kerl_squeeze_final_chunk(&sha, ctx->hash);
 }
 
+NO_INLINE
 static int bundle_validate_hash(BUNDLE_CTX *ctx)
 {
     tryte_t hash_trytes[81];

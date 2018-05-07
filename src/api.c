@@ -201,6 +201,16 @@ static bool has_unused_change_index(const BUNDLE_CTX *bundle)
     return bundle->indices[change_tx_index] >= get_seed_idx(api.active_seed);
 }
 
+NO_INLINE
+static void io_send_unfinished_bundle()
+{
+    TX_OUTPUT output;
+    os_memset(&output, 0, sizeof(TX_OUTPUT));
+    output.finalized = false;
+
+    io_send(&output, sizeof(output), SW_OK);
+}
+
 unsigned int api_tx(const unsigned char *input_data, unsigned int len)
 {
     const TX_INPUT *input = GET_INPUT(input_data, len, TX);
@@ -255,11 +265,8 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
         return IO_ASYNCH_REPLY;
     }
 
-    TX_OUTPUT output;
-    os_memset(&output, 0, sizeof(TX_OUTPUT));
-    output.finalized = false;
-
-    io_send(&output, sizeof(output), SW_OK);
+    // as the bundle is not yet complete, we cannot compute the hash yet
+    io_send_unfinished_bundle();
     return 0;
 }
 
