@@ -15,12 +15,12 @@ const BIP44_PATH = [
     0x00000000,
     0x00000000
 ];
-const SECURITY_LEVEL = 2;
+const SECURITY_LEVEL = 3;
 
-const DEST_ADDRESS = 'J9KPGBTWIKTRBIWXNDCZUWWWVVESYVISFJIY9GCMGVLQXFJBDAKLLN9PNAZOOUZFZDGDSFPWCTJYILDF9';
-const SRC_INDEX = 1;
+const DEST_ADDRESS = 'J9KPGBTWIKTRBIWXNDCZUWWWVVESYVISFJIY9GCMGVLQXFJBDAKLLN9PNAZOOUZFZDGDSFPWCTJYILDF9WOEVDQVMY';
+const KEY_INDEX = 1;
 const VALUE = 10;
-const TAG = '';
+const BALANCE = 12;
 
 function validateBundleTrytes(bundleTrytes) {
 
@@ -40,24 +40,32 @@ function validateBundleTrytes(bundleTrytes) {
 
     // initialize
     await ledger.setSeedInput(BIP44_PATH, SECURITY_LEVEL);
-    // get input address
-    const address = await ledger.getAddress(SRC_INDEX, {
-        checksum: true
-    });
-
-    console.log('create bundle; dest=%s, value=%i, src=%s', DEST_ADDRESS, VALUE, address);
 
     const transfers = [{
         address: DEST_ADDRESS,
         value: VALUE,
-        tag: TAG
+        tag: ''
     }];
     const inputs = [{
-        address: address,
-        balance: VALUE,
-        keyIndex: SRC_INDEX
+        address: await ledger.getAddress(KEY_INDEX),
+        balance: BALANCE / 2,
+        keyIndex: KEY_INDEX
+    }, {
+        address: await ledger.getAddress(KEY_INDEX + 1),
+        balance: BALANCE / 2,
+        keyIndex: KEY_INDEX + 1
     }];
-    var trytes = await ledger.getSignedTransactions(transfers, inputs);
+    const remainder = {
+        address: await ledger.getAddress(KEY_INDEX + 2),
+        keyIndex: KEY_INDEX + 2
+    };
+    console.log({
+        transfers: transfers,
+        inputs: inputs,
+        change: remainder
+    });
+
+    var trytes = await ledger.getSignedTransactions(transfers, inputs, remainder);
 
     validateBundleTrytes(trytes);
 })().catch(e => {
