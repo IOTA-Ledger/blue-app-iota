@@ -21,20 +21,20 @@ static void digest_single_chunk(unsigned char *key_fragment,
 
 // initialize the sha3 instance for generating private key
 static void init_shas(const unsigned char *seed_bytes, uint32_t idx,
-                      cx_sha3_t *key_sha, cx_sha3_t *digest_sha)
+                      cx_sha3_t *key_sha, cx_sha3_t *digest_sha,
+                      unsigned char *buffer)
 {
     // use temp bigint so seed not destroyed
-    unsigned char bytes[NUM_HASH_BYTES];
-    os_memcpy(bytes, seed_bytes, sizeof(bytes));
+    os_memcpy(buffer, seed_bytes, NUM_HASH_BYTES);
 
-    bytes_add_u32_mem(bytes, idx);
-
-    kerl_initialize(key_sha);
-    kerl_absorb_chunk(key_sha, bytes);
-    kerl_squeeze_final_chunk(key_sha, bytes);
+    bytes_add_u32_mem(buffer, idx);
 
     kerl_initialize(key_sha);
-    kerl_absorb_chunk(key_sha, bytes);
+    kerl_absorb_chunk(key_sha, buffer);
+    kerl_squeeze_final_chunk(key_sha, buffer);
+
+    kerl_initialize(key_sha);
+    kerl_absorb_chunk(key_sha, buffer);
 
     kerl_initialize(digest_sha);
 }
@@ -50,15 +50,14 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
     // sha size is 424 bytes
     cx_sha3_t key_sha, digest_sha;
 
-    // init private key sha, digest sha
-    init_shas(seed_bytes, idx, &key_sha, &digest_sha);
-
     // buffer for the digests of each security level
     unsigned char digest[NUM_HASH_BYTES * security];
 
-    // only store a single fragment of the private key at a time
-    // use last chunk of buffer, as this is only used after the key is generated
-    unsigned char *key_f = digest + NUM_HASH_BYTES * (security - 1);
+    // use last chunk of digest, as this is only used after the key is generated
+    unsigned char *buffer = digest + NUM_HASH_BYTES * (security - 1);
+
+    // init private key sha, digest sha
+    init_shas(seed_bytes, idx, &key_sha, &digest_sha, buffer);
 
     for (uint8_t i = 0; i < security; i++) {
         for (uint8_t j = 0; j < 27; j++) {
@@ -66,9 +65,9 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
             unsigned char *state = address_bytes;
 
             // the state takes only 48bytes and allows us to reuse key_sha
-            kerl_state_squeeze_chunk(&key_sha, state, key_f);
+            kerl_state_squeeze_chunk(&key_sha, state, buffer);
             // re-use key_sha as round_sha
-            digest_single_chunk(key_f, &digest_sha, &key_sha);
+            digest_single_chunk(buffer, &digest_sha, &key_sha);
 
             // as key_sha has been tainted, reinitialize with the saved state
             kerl_reinitialize(&key_sha, state);
