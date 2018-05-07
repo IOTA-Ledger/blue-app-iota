@@ -79,17 +79,17 @@ typedef struct UI_GLYPH_CTX {
 
 typedef struct UI_STATE_CTX {
 
-    uint8_t state;
-    uint8_t menu_idx;
-
-    uint8_t backup_state;
-    uint8_t backup_menu_idx;
-
     // tx information
     int64_t val;
     bool display_full_value;
 
     char addr[90];
+
+    uint8_t state;
+    uint8_t menu_idx;
+
+    uint8_t backup_state;
+    uint8_t backup_menu_idx;
 
     BUNDLE_CTX *bundle_ctx;
     // init ledger indexes
