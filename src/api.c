@@ -411,6 +411,9 @@ unsigned int api_read_indexes()
     if (!flash_is_init()) {
         THROW(SW_APP_NOT_INITIALIZED);
     }
+    if (CHECK_STATE(api.state_flags, READ_INDEXES)) {
+        THROW(SW_COMMAND_INVALID_STATE);
+    }
 
     READ_INDEXES_OUTPUT output;
     for (uint8_t i = 0; i < 5; i++) {
@@ -424,11 +427,8 @@ unsigned int api_read_indexes()
 // receive list of account indexes to write to ledger
 unsigned int api_write_indexes(unsigned char *input_data, unsigned int len)
 {
-    if (!flash_is_init()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
-
-    const WRITE_INDEXES_INPUT *input = (WRITE_INDEXES_INPUT *)(input_data);
+    const WRITE_INDEXES_INPUT *input =
+        GET_INPUT(input_data, len, WRITE_INDEXES);
 
     ui_display_write_indexes(input);
     return IO_ASYNCH_REPLY;
