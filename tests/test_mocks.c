@@ -30,7 +30,7 @@ void ui_display_address(const unsigned char *addr_bytes)
     UNUSED(addr_bytes);
 }
 
-void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
+void ui_display_write_indexes(const WRITE_INDEXES_INPUT *input)
 {
     UNUSED(input);
 }
