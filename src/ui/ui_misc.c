@@ -387,8 +387,9 @@ void display_advanced_tx_value()
             char msg[21];
             // write the index along with Change
             snprintf(msg, 21, "Change: [%u]",
-                     (unsigned int)ui_state.bundle_ctx->indices[ui_state.bundle_ctx->last_tx_index]);
-            
+                     (unsigned int)ui_state.bundle_ctx
+                         ->indices[ui_state.bundle_ctx->last_tx_index]);
+
             write_display(msg, TYPE_STR, TOP);
         }
         else
@@ -523,9 +524,9 @@ void get_about_menu(char *msg)
 void get_more_info_menu(char *msg)
 {
     memset(msg, '\0', MENU_MORE_INFO_LEN * 21);
-    
+
     uint8_t i = 0;
-    
+
     strcpy(msg + (i++ * 21), "Please visit");
     strcpy(msg + (i++ * 21), "iotasec.info");
     strcpy(msg + (i++ * 21), "for more info.");
@@ -584,9 +585,9 @@ void get_write_indexes_menu(char *msg)
 void get_warn_change_menu(char *msg)
 {
     memset(msg, '\0', MENU_WARN_CHANGE_LEN * 21);
-    
+
     uint8_t i = 0;
-    
+
     strcpy(msg + (i++ * 21), "WARNING");
     strcpy(msg + (i++ * 21), "Change tx has");
     strcpy(msg + (i++ * 21), "lower idx than");

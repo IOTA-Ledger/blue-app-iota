@@ -56,14 +56,14 @@ uint8_t button_about(uint8_t button_mask)
 
             return array_sz;
         }
-        else if(ui_state.menu_idx == 1) { // more info
+        else if (ui_state.menu_idx == 1) { // more info
             state_go(STATE_MORE_INFO, 0);
-            
+
             return array_sz;
         }
         else {
             state_go(STATE_WELCOME, 2); // Back
-            
+
             return array_sz;
         }
     }
@@ -82,12 +82,12 @@ void button_version(uint8_t button_mask)
 uint8_t button_more_info(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_MORE_INFO_LEN - 1;
-    
+
     if (button_mask == BUTTON_B) {
         // return to About -> More Info
         state_go(STATE_ABOUT, 1);
     }
-    
+
     return array_sz;
 }
 
@@ -226,12 +226,12 @@ void button_prompt_tx(uint8_t button_mask)
 uint8_t button_warn_change(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_WARN_CHANGE_LEN - 1;
-    
+
     if (button_mask == BUTTON_B) {
         // Deny
         if (ui_state.menu_idx == array_sz) {
             user_deny_tx();
-            //restore_state();
+            // restore_state();
             state_go(STATE_WELCOME, 0);
             return array_sz;
         }
@@ -241,7 +241,7 @@ uint8_t button_warn_change(uint8_t button_mask)
             return array_sz;
         }
     }
-    
+
     return array_sz;
 }
 

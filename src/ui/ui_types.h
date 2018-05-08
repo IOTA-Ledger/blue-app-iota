@@ -35,8 +35,8 @@ static char app_version[10] = "1.0.0\0";
 #define STATE_ABOUT 4
 #define STATE_VERSION 5
 #define STATE_MORE_INFO 6
-#define STATE_DISP_ADDR 7 // Host displays pubkey on ledger
-#define STATE_TX_ADDR 8 // Display full address in TX
+#define STATE_DISP_ADDR 7     // Host displays pubkey on ledger
+#define STATE_TX_ADDR 8       // Display full address in TX
 #define STATE_DISP_ADDR_CHK 9 // Abbreviated address with Checksum
 #define STATE_WRITE_INDEXES 10
 #define STATE_PROMPT_TX 11

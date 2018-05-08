@@ -216,11 +216,11 @@ void ui_display_address(const unsigned char *addr_bytes)
 void ui_warn_change(BUNDLE_CTX *bundle_ctx)
 {
     ui_state.bundle_ctx = bundle_ctx;
-    
+
     backup_state();
-    
+
     state_go(STATE_WARN_CHANGE, 0);
-    
+
     ui_build_display();
     ui_render();
 }

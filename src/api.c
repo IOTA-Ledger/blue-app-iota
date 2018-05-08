@@ -401,7 +401,7 @@ void user_deny_tx()
     // reset the bundle
     os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
     api.state_flags &= ~BUNDLE_INITIALIZED;
-    
+
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 

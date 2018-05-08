@@ -8,7 +8,7 @@
 typedef struct internalStorage_t {
     uint8_t initialized;
     uint32_t account_seed[5];
-    
+
 } internalStorage_t;
 
 // N_storage_real will hold the actual address for NVRAM
