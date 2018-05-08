@@ -190,15 +190,25 @@ static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
     return ctx->last_tx_index + 1;
 }
 
-static bool has_unused_change_index(const BUNDLE_CTX *bundle)
+static bool change_index_ok(const BUNDLE_CTX *bundle)
 {
-    const unsigned int change_tx_index = get_change_tx_index(bundle);
+    unsigned int change_tx_index = get_change_tx_index(bundle);
+    
     if (change_tx_index > bundle->last_tx_index) {
         return true;
     }
-
-    // assume that an index is new, if it is >= the last used change index
-    return bundle->indices[change_tx_index] >= get_seed_idx(api.active_seed);
+    
+    unsigned int largest_index = bundle->indices[change_tx_index];
+    
+    // get the largest input or change index
+    for(uint8_t i = 0; i <= bundle->last_tx_index; i++) {
+        largest_index = MAX(largest_index, bundle->indices[i]);
+    }
+    
+    largest_index = MAX(largest_index, get_seed_idx(api.active_seed));
+    
+    // if change index is the largest index found, report it as ok
+    return bundle->indices[change_tx_index] == largest_index;
 }
 
 NO_INLINE
@@ -255,7 +265,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len)
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
 
         // warn if the change index seems strange
-        if (!has_unused_change_index(&api.bundle_ctx)) {
+        if (!change_index_ok(&api.bundle_ctx)) {
             ui_warn_change(&api.bundle_ctx);
             return IO_ASYNCH_REPLY;
         }
