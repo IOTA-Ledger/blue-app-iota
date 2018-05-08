@@ -8,13 +8,7 @@ import {
 } from 'iota.lib.js/lib/utils/utils';
 
 // use testnet path
-const BIP44_PATH = [
-    0x8000002C,
-    0x80000001,
-    0x80000000,
-    0x00000000,
-    0x00000000
-];
+const BIP44_PATH = "44'/1'/0'/0/0";
 const SECURITY_LEVEL = 3;
 
 const DEST_ADDRESS = 'J9KPGBTWIKTRBIWXNDCZUWWWVVESYVISFJIY9GCMGVLQXFJBDAKLLN9PNAZOOUZFZDGDSFPWCTJYILDF9WOEVDQVMY';
@@ -39,8 +33,8 @@ function validateBundleTrytes(bundleTrytes) {
     const ledger = new IOTALedger(transport);
 
     // initialize
-    await ledger.setSeedInput(BIP44_PATH, SECURITY_LEVEL);
- 
+    await ledger.setActiveSeed(BIP44_PATH, SECURITY_LEVEL);
+
     const transfers = [{
         address: DEST_ADDRESS,
         value: VALUE,
@@ -65,22 +59,22 @@ function validateBundleTrytes(bundleTrytes) {
         change: remainder
     });
 
-    var trytes = await ledger.getSignedTransactions(transfers, inputs, remainder);
+    var trytes = await ledger.signTransaction(transfers, inputs, remainder);
 
     validateBundleTrytes(trytes);
- 
+
     var wIndexes = [5, 9, 12, 16, 8];
- 
+
     await ledger.writeIndexes(wIndexes);
- 
+
     var rIndexes = await ledger.readIndexes();
     console.log("[0]: " + rIndexes[0] + "\n");
     console.log("[1]: " + rIndexes[1] + "\n");
     console.log("[2]: " + rIndexes[2] + "\n");
     console.log("[3]: " + rIndexes[3] + "\n");
     console.log("[4]: " + rIndexes[4] + "\n");
- 
- 
+
+
     await ledger.displayAddress(4);
 })().catch(e => {
     console.error(e);
