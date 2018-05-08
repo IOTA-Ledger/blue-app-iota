@@ -28,7 +28,6 @@ static char app_version[10] = "1.0.0\0";
 
 // UI STATES
 
-// TODO organize order
 #define STATE_INIT 0
 #define STATE_WELCOME 1
 #define STATE_IGNORE 2
@@ -39,7 +38,7 @@ static char app_version[10] = "1.0.0\0";
 #define STATE_DISP_ADDR 7 // Host displays pubkey on ledger
 #define STATE_TX_ADDR 8 // Display full address in TX
 #define STATE_DISP_ADDR_CHK 9 // Abbreviated address with Checksum
-#define STATE_INIT_LEDGER 10
+#define STATE_WRITE_INDEXES 10
 #define STATE_PROMPT_TX 11
 #define STATE_WARN_CHANGE 12
 
@@ -51,7 +50,7 @@ static char app_version[10] = "1.0.0\0";
 #define MENU_DISP_IDX_LEN 6
 #define MENU_ABOUT_LEN 3
 #define MENU_ADDR_LEN 7
-#define MENU_INIT_LEDGER_LEN 10
+#define MENU_WRITE_INDEXES_LEN 10
 #define MENU_WARN_CHANGE_LEN 7
 #define MENU_MORE_INFO_LEN 3
 
@@ -93,7 +92,7 @@ typedef struct UI_STATE_CTX {
 
     BUNDLE_CTX *bundle_ctx;
     // init ledger indexes
-    const INIT_LEDGER_INPUT *input;
+    const WRITE_INDEXES_INPUT *input;
 
 } UI_STATE_CTX;
 

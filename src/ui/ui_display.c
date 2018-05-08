@@ -145,28 +145,28 @@ void display_tx_addr()
     display_addr();
 }
 
-void display_init_ledger()
+void display_write_indexes()
 {
     // write the actual menu
-    char msg[MENU_INIT_LEDGER_LEN * 21];
-    get_init_ledger_menu(msg);
-    write_text_array(msg, MENU_INIT_LEDGER_LEN);
+    char msg[MENU_WRITE_INDEXES_LEN * 21];
+    get_write_indexes_menu(msg);
+    write_text_array(msg, MENU_WRITE_INDEXES_LEN);
 
     // special override display states
     switch (ui_state.menu_idx) {
     case 0:
         glyph_on(ui_glyphs.glyph_warn);
         break;
-    case MENU_INIT_LEDGER_LEN - 3: // [5]
+    case MENU_WRITE_INDEXES_LEN - 3: // [5]
         write_display(NULL, TYPE_STR, BOT_H);
         break;
-    case MENU_INIT_LEDGER_LEN - 2: // Approve
+    case MENU_WRITE_INDEXES_LEN - 2: // Approve
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         write_display(NULL, TYPE_STR, BOT_H);
         write_display(NULL, TYPE_STR, TOP_H);
         break;
         // turn off TOP_H
-    case MENU_INIT_LEDGER_LEN - 1: // Deny
+    case MENU_WRITE_INDEXES_LEN - 1: // Deny
         display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
         write_display(NULL, TYPE_STR, TOP_H);
         break;

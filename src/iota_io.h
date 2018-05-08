@@ -20,8 +20,8 @@ unsigned int iota_dispatch();
 #define INS_TX 0x03
 #define INS_SIGN 0x04
 #define INS_DISP_ADDR 0x05
-#define INS_GET_INDEXES 0x06
-#define INS_INIT_LEDGER 0x07
+#define INS_READ_INDEXES 0x06
+#define INS_WRITE_INDEXES 0x07
 
 /* ---  IO constants  --- */
 

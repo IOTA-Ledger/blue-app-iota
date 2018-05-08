@@ -368,16 +368,6 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
     return 0;
 }
 
-/** @brief This functions gets called, when bundle is denied. */
-void user_deny_tx()
-{
-    // reset the bundle
-    os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
-    api.state_flags &= ~BUNDLE_INITIALIZED;
-
-    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
-}
-
 
 NO_INLINE
 static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
@@ -405,14 +395,24 @@ void user_sign_tx()
     io_send_bundle_hash(&api.bundle_ctx);
 }
 
+/** @brief This functions gets called, when bundle is denied. */
+void user_deny_tx()
+{
+    // reset the bundle
+    os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
+    api.state_flags &= ~BUNDLE_INITIALIZED;
+    
+    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
+}
+
 // get index of a given account
-unsigned int api_get_indexes()
+unsigned int api_read_indexes()
 {
     if (!flash_is_init()) {
         THROW(SW_APP_NOT_INITIALIZED);
     }
 
-    SEED_IDX_OUTPUT output;
+    READ_INDEXES_OUTPUT output;
     for (uint8_t i = 0; i < 5; i++) {
         output.seed_idx[i] = get_seed_idx(i);
     }
@@ -422,19 +422,19 @@ unsigned int api_get_indexes()
 }
 
 // receive list of account indexes to write to ledger
-unsigned int api_init_ledger(unsigned char *input_data, unsigned int len)
+unsigned int api_write_indexes(unsigned char *input_data, unsigned int len)
 {
     if (!flash_is_init()) {
         THROW(SW_APP_NOT_INITIALIZED);
     }
 
-    const INIT_LEDGER_INPUT *input = (INIT_LEDGER_INPUT *)(input_data);
+    const WRITE_INDEXES_INPUT *input = (WRITE_INDEXES_INPUT *)(input_data);
 
-    ui_display_init_ledger(input);
+    ui_display_write_indexes(input);
     return IO_ASYNCH_REPLY;
 }
 
-void init_ledger_approve(const INIT_LEDGER_INPUT *input)
+void write_indexes_approve(const WRITE_INDEXES_INPUT *input)
 {
     // write all 5 seed indexes
     for (uint8_t i = 0; i < 5; i++) {
@@ -446,7 +446,7 @@ void init_ledger_approve(const INIT_LEDGER_INPUT *input)
     io_send(NULL, 0, SW_OK);
 }
 
-void init_ledger_deny()
+void write_indexes_deny()
 {
     ui_restore();
 

@@ -54,11 +54,11 @@ unsigned int iota_dispatch()
     case INS_DISP_ADDR:
         return api_display_pubkey(input_data, len);
 
-    case INS_GET_INDEXES:
-        return api_get_indexes();
+    case INS_READ_INDEXES:
+        return api_read_indexes();
 
-    case INS_INIT_LEDGER:
-        return api_init_ledger(input_data, len);
+    case INS_WRITE_INDEXES:
+        return api_write_indexes(input_data, len);
 
         // unknown command ??
     default:

@@ -142,20 +142,20 @@ uint8_t button_tx_addr(uint8_t button_mask)
     return array_sz;
 }
 
-uint8_t button_init_ledger(uint8_t button_mask)
+uint8_t button_write_indexes(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_INIT_LEDGER_LEN - 1;
+    uint8_t array_sz = MENU_WRITE_INDEXES_LEN - 1;
 
     if (button_mask == BUTTON_B) {
         // Deny
         if (ui_state.menu_idx == array_sz) {
-            init_ledger_deny();
+            write_indexes_deny();
             ui_state.input = NULL;
             return array_sz;
         }
         else if (ui_state.menu_idx == array_sz - 1) {
             // Approve
-            init_ledger_approve(ui_state.input);
+            write_indexes_approve(ui_state.input);
             ui_state.input = NULL;
             return array_sz;
         }

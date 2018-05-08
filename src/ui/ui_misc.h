@@ -50,7 +50,7 @@ void get_disp_idx_menu(char *msg);
 void get_about_menu(char *msg);
 void get_more_info_menu(char *msg);
 void get_address_menu(char *msg);
-void get_init_ledger_menu(char *msg);
+void get_write_indexes_menu(char *msg);
 void get_warn_change_menu(char *msg);
 
 #endif // UI_MISC_H

@@ -235,12 +235,12 @@ void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
     ui_render();
 }
 
-void ui_display_init_ledger(const INIT_LEDGER_INPUT *input)
+void ui_display_write_indexes(const WRITE_INDEXES_INPUT *input)
 {
     backup_state();
 
     ui_state.input = input;
-    state_go(STATE_INIT_LEDGER, 0);
+    state_go(STATE_WRITE_INDEXES, 0);
 
     ui_build_display();
     ui_render();
@@ -339,8 +339,8 @@ void ui_handle_button(uint8_t button_mask)
         array_sz = button_tx_addr(button_mask);
         break;
         /* ------------ STATE INIT LEDGER -------------- */
-    case STATE_INIT_LEDGER:
-        array_sz = button_init_ledger(button_mask);
+    case STATE_WRITE_INDEXES:
+        array_sz = button_write_indexes(button_mask);
         break;
         /* ------------ PROMPT TX INFO *DYNAMIC-MENU* -------------- */
     case STATE_PROMPT_TX:
@@ -405,8 +405,8 @@ void ui_build_display()
         display_addr_chk();
         break;
         /* ------------ INIT LEDGER MENU -------------- */
-    case STATE_INIT_LEDGER:
-        display_init_ledger();
+    case STATE_WRITE_INDEXES:
+        display_write_indexes();
         break;
         /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
     case STATE_PROMPT_TX:

@@ -550,9 +550,9 @@ void get_address_menu(char *msg)
     }
 }
 
-void get_init_ledger_menu(char *msg)
+void get_write_indexes_menu(char *msg)
 {
-    memset(msg, '\0', MENU_INIT_LEDGER_LEN * 21);
+    memset(msg, '\0', MENU_WRITE_INDEXES_LEN * 21);
 
     if (ui_state.input == NULL)
         return;
@@ -560,7 +560,7 @@ void get_init_ledger_menu(char *msg)
     uint8_t i = 0;
 
     strcpy(msg + (i++ * 21), "WARNING!");
-    strcpy(msg + (i++ * 21), "Initializing Ledger");
+    strcpy(msg + (i++ * 21), "Writing Ledger");
     strcpy(msg + (i++ * 21), "Seed Indexes");
     strcpy(msg + (i * 21), "[1]:  ");
     snprintf(msg + (i++ * 21) + 6, 16, "%u",

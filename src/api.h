@@ -77,17 +77,17 @@ typedef IO_STRUCT SIGN_OUTPUT
 }
 SIGN_OUTPUT;
 
-typedef IO_STRUCT SEED_IDX_OUTPUT
+typedef IO_STRUCT READ_INDEXES_OUTPUT
 {
     int64_t seed_idx[5];
 }
-SEED_IDX_OUTPUT;
+READ_INDEXES_OUTPUT;
 
-typedef IO_STRUCT INIT_LEDGER_INPUT
+typedef IO_STRUCT WRITE_INDEXES_INPUT
 {
     int64_t seed_indexes[5];
 }
-INIT_LEDGER_INPUT;
+WRITE_INDEXES_INPUT;
 
 
 void api_initialize();
@@ -98,16 +98,13 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len);
 unsigned int api_sign(const unsigned char *input_data, unsigned int len);
 unsigned int api_display_pubkey(const unsigned char *input_data,
                                 unsigned int len);
-unsigned int api_get_indexes();
-unsigned int api_init_ledger(unsigned char *input_data, unsigned int len);
+unsigned int api_read_indexes();
+unsigned int api_write_indexes(unsigned char *input_data, unsigned int len);
 
-void init_ledger_approve(const INIT_LEDGER_INPUT *input);
-void init_ledger_deny();
+void write_indexes_approve(const WRITE_INDEXES_INPUT *input);
+void write_indexes_deny();
 
 void user_sign_tx();
 void user_deny_tx();
-
-void user_sign();
-void user_deny();
 
 #endif // API_H
