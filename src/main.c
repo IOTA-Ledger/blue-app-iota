@@ -16,7 +16,7 @@ static void IOTA_main()
 {
     volatile unsigned int flags = 0;
 
-    ui_init(flash_is_init());
+    ui_init(storage_is_initialized());
     // init the API
     io_initialize();
 
@@ -52,8 +52,9 @@ static void IOTA_main()
                 // TODO: what happens if io_send throws an exception
                 io_send(NULL, 0, sw);
 
-                if (flash_is_init())
+                if (storage_is_initialized()) {
                     ui_reset();
+                }
 
                 flags = 0;
             }

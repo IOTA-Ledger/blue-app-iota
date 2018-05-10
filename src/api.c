@@ -19,7 +19,7 @@
 
 #define GET_INPUT(input_data, len, INS)                                        \
     ({                                                                         \
-        if (!flash_is_init())                                                  \
+        if (!storage_is_initialized())                                         \
             THROW(SW_APP_NOT_INITIALIZED);                                     \
         if (CHECK_STATE(api.state_flags, INS))                                 \
             THROW(SW_COMMAND_INVALID_STATE);                                   \
@@ -225,7 +225,8 @@ static bool change_index_ok(const BUNDLE_CTX *bundle)
     // if we are on a valid account, take that seed index into account
     if (api.active_account < ACCOUNT_NUM) {
         // TODO: should there be a warning, if we are on an untracked account
-        largest_index = MAX(largest_index, get_seed_idx(api.active_account));
+        largest_index =
+            MAX(largest_index, storage_get_seed_index(api.active_account));
     }
 
     // if change index is the largest index found, report it as ok
@@ -324,8 +325,8 @@ static void update_seed_index(const BUNDLE_CTX *bundle)
 
         // only store the thee index, if it is larger
         const uint32_t change_key_index = bundle->indices[change_tx_index];
-        if (change_key_index > get_seed_idx(api.active_account)) {
-            write_seed_index(api.active_account, change_key_index);
+        if (change_key_index > storage_get_seed_index(api.active_account)) {
+            storage_write_seed_index(api.active_account, change_key_index);
         }
     }
 }
@@ -444,7 +445,7 @@ void user_deny_tx()
 // get index of a given account
 unsigned int api_read_indexes()
 {
-    if (!flash_is_init()) {
+    if (!storage_is_initialized()) {
         THROW(SW_APP_NOT_INITIALIZED);
     }
     if (CHECK_STATE(api.state_flags, READ_INDEXES)) {
@@ -453,7 +454,7 @@ unsigned int api_read_indexes()
 
     READ_INDEXES_OUTPUT output;
     for (unsigned int i = 0; i < ACCOUNT_NUM; i++) {
-        output.seed_idx[i] = get_seed_idx(i);
+        output.seed_idx[i] = storage_get_seed_index(i);
     }
 
     io_send(&output, sizeof(output), SW_OK);
@@ -490,7 +491,7 @@ void write_indexes_approve(const uint32_t *seed_indexes)
 {
     // write all seed indexes
     for (unsigned int i = 0; i < ACCOUNT_NUM; i++) {
-        write_seed_index(i, seed_indexes[i]);
+        storage_write_seed_index(i, seed_indexes[i]);
     }
 
     ui_restore();

@@ -58,28 +58,23 @@ void ui_restore()
 {
 }
 
-bool flash_is_init()
+bool storage_is_initialized()
 {
     return true;
 }
 
-void incr_seed_idx(unsigned int idx)
+__attribute__((weak)) uint32_t storage_get_seed_index(unsigned int account)
 {
-    UNUSED(idx);
-}
-
-__attribute__((weak)) uint32_t get_seed_idx(unsigned int idx)
-{
-    UNUSED(idx);
+    UNUSED(account);
 
     return 0;
 }
 
-__attribute__((weak)) void write_seed_index(unsigned int account,
-                                            const unsigned int seed_idx)
+__attribute__((weak)) void storage_write_seed_index(unsigned int account,
+                                                    uint32_t seed_index)
 {
     UNUSED(account);
-    UNUSED(seed_idx);
+    UNUSED(seed_index);
 }
 
 __attribute__((weak)) void derive_seed_bip32(const unsigned int *path,

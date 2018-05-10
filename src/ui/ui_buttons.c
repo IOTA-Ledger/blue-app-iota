@@ -9,7 +9,7 @@ uint8_t button_init(uint8_t button_mask)
     uint8_t array_sz = MENU_INIT_LEN - 1;
 
     if (button_mask == BUTTON_B && ui_state.menu_idx == array_sz) {
-        init_flash();
+        storage_initialize();
         state_go(STATE_WELCOME, 0);
     }
 

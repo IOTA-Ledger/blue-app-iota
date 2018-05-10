@@ -498,15 +498,15 @@ void get_disp_idx_menu(char *msg)
     uint8_t i = 0;
 
     strcpy(msg + (i * 21), "[1]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", get_seed_idx(0));
+    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(0));
     strcpy(msg + (i * 21), "[2]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", get_seed_idx(1));
+    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(1));
     strcpy(msg + (i * 21), "[3]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", get_seed_idx(2));
+    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(2));
     strcpy(msg + (i * 21), "[4]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", get_seed_idx(3));
+    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(3));
     strcpy(msg + (i * 21), "[5]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", get_seed_idx(4));
+    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(4));
     strcpy(msg + (i * 21), "Back");
 }
 
