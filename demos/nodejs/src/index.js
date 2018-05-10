@@ -35,6 +35,9 @@ function validateBundleTrytes(bundleTrytes) {
     // initialize
     await ledger.setActiveSeed(BIP44_PATH, SECURITY_LEVEL);
 
+    // write some account seed indexes to the ledger
+    await ledger.writeIndexes([5, 9, 12, 16, 8]);
+
     const transfers = [{
         address: DEST_ADDRESS,
         value: VALUE,
@@ -60,12 +63,7 @@ function validateBundleTrytes(bundleTrytes) {
     });
 
     var trytes = await ledger.signTransaction(transfers, inputs, remainder);
-
     validateBundleTrytes(trytes);
-
-    var wIndexes = [5, 9, 12, 16, 8];
-
-    await ledger.writeIndexes(wIndexes);
 
     var rIndexes = await ledger.readIndexes();
     console.log("[0]: " + rIndexes[0] + "\n");
@@ -73,7 +71,6 @@ function validateBundleTrytes(bundleTrytes) {
     console.log("[2]: " + rIndexes[2] + "\n");
     console.log("[3]: " + rIndexes[3] + "\n");
     console.log("[4]: " + rIndexes[4] + "\n");
-
 
     await ledger.displayAddress(4);
 })().catch(e => {
