@@ -118,6 +118,13 @@ const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
  */
 void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes);
 
+/** @brief Returns whether the given transaction is an input transaction
+ *  @param ctx the bundle context used
+ *  @param tx_index transaction index
+ *  @return true, if transaction is an input, false otherwise
+ */
+bool bundle_is_input_tx(const BUNDLE_CTX *ctx, uint8_t tx_index);
+
 /** @brief Returns whether there are still transactions missing in the bundle.
  *  @param ctx the bundle context used
  *  @return true, if transactions are missing, false if the bundle is complete

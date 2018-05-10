@@ -164,13 +164,13 @@ static bool validate_balance(const BUNDLE_CTX *ctx)
 /** @brief Checks that every input transaction has meta transactions. */
 static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
 {
-    for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
-
-        if (ctx->values[i] < 0) {
+    for (uint8_t i = 0; i <= ctx->last_tx_index; i++) {
+        // only input transactions have meta transactions
+        if (bundle_is_input_tx(ctx, i)) {
             const unsigned char *input_addr_bytes =
                 bundle_get_address_bytes(ctx, i);
 
-            for (unsigned int j = 1; j < security; j++) {
+            for (uint8_t j = 1; j < security; j++) {
                 if (i + j > ctx->last_tx_index || ctx->values[i + j] != 0) {
                     return false;
                 }
@@ -191,9 +191,9 @@ static bool validate_address_indices(const BUNDLE_CTX *ctx,
                                      const unsigned char *seed_bytes,
                                      uint8_t security)
 {
-    for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
+    for (uint8_t i = 0; i <= ctx->last_tx_index; i++) {
         // only check the change and input addresses
-        if (i == change_tx_index || ctx->values[i] < 0) {
+        if (i == change_tx_index || bundle_is_input_tx(ctx, i)) {
             const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
 
             if (!validate_address(addr_bytes, seed_bytes, ctx->indices[i],
@@ -208,14 +208,14 @@ static bool validate_address_indices(const BUNDLE_CTX *ctx,
 
 static bool validate_address_reuse(const BUNDLE_CTX *ctx)
 {
-    for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
+    for (uint8_t i = 0; i <= ctx->last_tx_index; i++) {
 
         if (ctx->values[i] == 0) {
             continue;
         }
         const unsigned char *addr_bytes = bundle_get_address_bytes(ctx, i);
 
-        for (unsigned int j = i + 1; j <= ctx->last_tx_index; j++) {
+        for (uint8_t j = i + 1; j <= ctx->last_tx_index; j++) {
             if (ctx->values[j] != 0 &&
                 memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
                        NUM_HASH_BYTES) == 0) {
@@ -335,4 +335,13 @@ void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes)
 {
     bytes_to_trytes(bundle_get_hash(ctx), hash_trytes);
     normalize_hash(hash_trytes);
+}
+
+bool bundle_is_input_tx(const BUNDLE_CTX *ctx, uint8_t tx_index)
+{
+    if (tx_index > ctx->last_tx_index) {
+        THROW(INVALID_PARAMETER);
+    }
+
+    return ctx->values[tx_index] < 0;
 }
