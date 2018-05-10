@@ -135,13 +135,13 @@ static void validate_tx_indices(const TX_INPUT *input)
     }
 }
 
-static bool has_reference_transaction(uint32_t current_index)
+static bool has_reference_transaction(uint8_t current_index)
 {
-    for (unsigned int i = 1; i < api.security; i++) {
+    for (uint8_t i = 1; i < api.security; i++) {
         if (current_index < i || api.bundle_ctx.values[current_index - i] > 0) {
             return false;
         }
-        if (api.bundle_ctx.values[current_index - i] < 0) {
+        if (bundle_is_input_tx(&api.bundle_ctx, current_index - i)) {
             return true;
         }
     }
@@ -151,7 +151,7 @@ static bool has_reference_transaction(uint32_t current_index)
 
 static void validate_tx_order(const TX_INPUT *input)
 {
-    const uint32_t current_index = api.bundle_ctx.current_tx_index;
+    const uint8_t current_index = api.bundle_ctx.current_tx_index;
 
     // the receiving addresses are only allowed first or last
     if (input->value > 0 && current_index > 0 &&
@@ -217,9 +217,11 @@ static bool change_index_ok(const BUNDLE_CTX *bundle)
 
     unsigned int largest_index = bundle->indices[change_tx_index];
 
-    // get the largest input or change index
-    for (unsigned int i = 0; i <= bundle->last_tx_index; i++) {
-        largest_index = MAX(largest_index, bundle->indices[i]);
+    // get the largest input index
+    for (uint8_t i = 0; i <= bundle->last_tx_index; i++) {
+        if (bundle_is_input_tx(bundle, i)) {
+            largest_index = MAX(largest_index, bundle->indices[i]);
+        }
     }
 
     // if we are on a valid account, take that seed index into account
