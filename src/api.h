@@ -84,16 +84,16 @@ SIGN_OUTPUT;
 
 typedef IO_STRUCT READ_INDEXES_OUTPUT
 {
-    int64_t seed_idx[5];
+    int64_t seed_idx[ACCOUNT_NUM];
 }
 READ_INDEXES_OUTPUT;
 
 #define WRITE_INDEXES_REQUIRED_STATE 0
-#define WRITE_INDEXES_FORBIDDEN_STATE 0
+#define WRITE_INDEXES_FORBIDDEN_STATE (BUNDLE_INITIALIZED)
 
 typedef IO_STRUCT WRITE_INDEXES_INPUT
 {
-    int64_t seed_indexes[5];
+    int64_t seed_indexes[ACCOUNT_NUM];
 }
 WRITE_INDEXES_INPUT;
 
@@ -110,7 +110,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
 unsigned int api_read_indexes();
 unsigned int api_write_indexes(unsigned char *input_data, unsigned int len);
 
-void write_indexes_approve(const WRITE_INDEXES_INPUT *input);
+void write_indexes_approve(const uint32_t *seed_indexes);
 void write_indexes_deny();
 
 void user_sign_tx();

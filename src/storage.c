@@ -1,14 +1,11 @@
 #include "storage.h"
 #include "common.h"
-#include "os_io_seproxyhal.h"
-#include "bagl.h"
-
+#include "iota_io.h"
 
 // use internalStorage_t to temp hold the storage
 typedef struct internalStorage_t {
     uint8_t initialized;
-    uint32_t account_seed[5];
-
+    uint32_t account_seed_indexes[ACCOUNT_NUM];
 } internalStorage_t;
 
 // N_storage_real will hold the actual address for NVRAM
@@ -23,20 +20,28 @@ bool flash_is_init()
 void init_flash()
 {
     internalStorage_t storage;
+    os_memset(&storage, 0, sizeof(internalStorage_t));
 
-    storage.initialized = 0x01;
-    os_memset(storage.account_seed, 0, sizeof(uint32_t) * 5);
+    storage.initialized = true;
 
     nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 }
 
 uint32_t get_seed_idx(unsigned int account)
 {
-    return N_storage.account_seed[account];
+    if (account >= ACCOUNT_NUM) {
+        THROW(INVALID_PARAMETER);
+    }
+
+    return N_storage.account_seed_indexes[account];
 }
 
-void write_seed_index(unsigned int account, const unsigned int seed_idx)
+void write_seed_index(unsigned int account, uint32_t seed_idx)
 {
-    nvm_write(&N_storage.account_seed[account], (void *)&seed_idx,
+    if (account >= ACCOUNT_NUM) {
+        THROW(INVALID_PARAMETER);
+    }
+
+    nvm_write(&N_storage.account_seed_indexes[account], (void *)&seed_idx,
               sizeof(uint32_t));
 }

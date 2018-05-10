@@ -90,9 +90,8 @@ typedef struct UI_STATE_CTX {
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
-    BUNDLE_CTX *bundle_ctx;
-    // init ledger indexes
-    const WRITE_INDEXES_INPUT *input;
+    const BUNDLE_CTX *bundle_ctx;
+    const uint32_t *seed_indexes;
 
 } UI_STATE_CTX;
 

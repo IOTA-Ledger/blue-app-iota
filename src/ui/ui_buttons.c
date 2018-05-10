@@ -150,13 +150,13 @@ uint8_t button_write_indexes(uint8_t button_mask)
         // Deny
         if (ui_state.menu_idx == array_sz) {
             write_indexes_deny();
-            ui_state.input = NULL;
+            ui_state.seed_indexes = NULL;
             return array_sz;
         }
         else if (ui_state.menu_idx == array_sz - 1) {
             // Approve
-            write_indexes_approve(ui_state.input);
-            ui_state.input = NULL;
+            write_indexes_approve(ui_state.seed_indexes);
+            ui_state.seed_indexes = NULL;
             return array_sz;
         }
     }

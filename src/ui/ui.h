@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include "iota/bundle.h"
-#include "api.h"
 
 /* To create a new UI screen -
  - #define new STATE_ [ui_types.h]
@@ -24,7 +23,7 @@ void ui_display_signing();
 void ui_display_address(const unsigned char *addr_bytes);
 void ui_warn_change(BUNDLE_CTX *bundle_ctx);
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
-void ui_display_write_indexes(const WRITE_INDEXES_INPUT *input);
+void ui_display_write_indexes(const uint32_t *seed_indexes);
 void ui_reset();
 void ui_restore();
 

@@ -235,11 +235,11 @@ void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
     ui_render();
 }
 
-void ui_display_write_indexes(const WRITE_INDEXES_INPUT *input)
+void ui_display_write_indexes(const uint32_t *seed_indexes)
 {
     backup_state();
 
-    ui_state.input = input;
+    ui_state.seed_indexes = seed_indexes;
     state_go(STATE_WRITE_INDEXES, 0);
 
     ui_build_display();

@@ -13,8 +13,6 @@
 #include "iota/seed.h"
 #include "iota/signing.h"
 
-bool flash_is_init();
-
 #define CHECK_STATE(state, INS)                                                \
     ((((state)&INS##_REQUIRED_STATE) != INS##_REQUIRED_STATE) ||               \
      ((state)&INS##_FORBIDDEN_STATE))
@@ -32,10 +30,10 @@ bool flash_is_init();
 
 typedef struct API_CTX {
 
-    unsigned char seed_bytes[48];
-    uint8_t security; // use hard-coded security for now
+    unsigned char seed_bytes[NUM_HASH_BYTES];
+    uint8_t security;
 
-    unsigned int active_seed;
+    unsigned int active_account; // currently active account number
 
     BUNDLE_CTX bundle_ctx;
     SIGNING_CTX signing_ctx;
@@ -49,6 +47,26 @@ API_CTX api;
 void api_initialize()
 {
     os_memset(&api, 0, sizeof(api));
+}
+
+/**
+ *  Returns the account number corresponding to the path, or ACCOUNT_NUM
+ *  if there is no corresponding account.
+ */
+static unsigned int get_path_account(unsigned int *path,
+                                     unsigned int path_length)
+{
+    const unsigned int size = sizeof(ACCOUNT_BIP44_PATH) / sizeof(path[0]);
+    if (path_length < size) {
+        return ACCOUNT_NUM;
+    }
+
+    if (memcmp(path, ACCOUNT_BIP44_PATH, size * sizeof(path[0])) != 0) {
+        return ACCOUNT_NUM;
+    }
+
+    // the last level of the path corresponds to the account
+    return MIN(path[path_length - 1], ACCOUNT_NUM);
 }
 
 unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
@@ -66,8 +84,8 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
         }
     }
 
-    // set our currently active seed
-    api.active_seed = path[BIP44_PATH_LEN - 1];
+    // save our currently active account
+    api.active_account = get_path_account(path, BIP44_PATH_LEN);
 
     if (!ASSIGN(api.security, input->security) ||
         !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
@@ -192,21 +210,24 @@ static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 
 static bool change_index_ok(const BUNDLE_CTX *bundle)
 {
-    unsigned int change_tx_index = get_change_tx_index(bundle);
-    
+    const unsigned int change_tx_index = get_change_tx_index(bundle);
     if (change_tx_index > bundle->last_tx_index) {
         return true;
     }
-    
+
     unsigned int largest_index = bundle->indices[change_tx_index];
-    
+
     // get the largest input or change index
-    for(uint8_t i = 0; i <= bundle->last_tx_index; i++) {
+    for (unsigned int i = 0; i <= bundle->last_tx_index; i++) {
         largest_index = MAX(largest_index, bundle->indices[i]);
     }
-    
-    largest_index = MAX(largest_index, get_seed_idx(api.active_seed));
-    
+
+    // if we are on a valid account, take that seed index into account
+    if (api.active_account < ACCOUNT_NUM) {
+        // TODO: should there be a warning, if we are on an untracked account
+        largest_index = MAX(largest_index, get_seed_idx(api.active_account));
+    }
+
     // if change index is the largest index found, report it as ok
     return bundle->indices[change_tx_index] == largest_index;
 }
@@ -293,13 +314,18 @@ static bool next_signature_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 
 static void update_seed_index(const BUNDLE_CTX *bundle)
 {
+    // this is only relevant if we are on a valid account
+    if (api.active_account >= ACCOUNT_NUM) {
+        return;
+    }
+
     const unsigned int change_tx_index = get_change_tx_index(bundle);
     if (change_tx_index <= bundle->last_tx_index) {
 
         // only store the thee index, if it is larger
         const uint32_t change_key_index = bundle->indices[change_tx_index];
-        if (change_key_index > get_seed_idx(api.active_seed)) {
-            write_seed_index(api.active_seed, change_key_index);
+        if (change_key_index > get_seed_idx(api.active_account)) {
+            write_seed_index(api.active_account, change_key_index);
         }
     }
 }
@@ -426,7 +452,7 @@ unsigned int api_read_indexes()
     }
 
     READ_INDEXES_OUTPUT output;
-    for (uint8_t i = 0; i < 5; i++) {
+    for (unsigned int i = 0; i < ACCOUNT_NUM; i++) {
         output.seed_idx[i] = get_seed_idx(i);
     }
 
@@ -434,31 +460,45 @@ unsigned int api_read_indexes()
     return 0;
 }
 
+// the bundle indices are repurposed to temporarly store acount indices
+// as UI is handled via callbacks, this info cannot be a stack variable
+#if (MAX_BUNDLE_INDEX_SZ < ACCOUNT_NUM)
+#error "Account seed indices must fit in the bundle indices"
+#endif
+
 // receive list of account indexes to write to ledger
 unsigned int api_write_indexes(unsigned char *input_data, unsigned int len)
 {
     const WRITE_INDEXES_INPUT *input =
         GET_INPUT(input_data, len, WRITE_INDEXES);
 
-    ui_display_write_indexes(input);
+    // use a global variable to store the indices until they have been approved
+    uint32_t *seed_indexes = api.bundle_ctx.indices;
+
+    for (unsigned int i = 0; i < ACCOUNT_NUM; i++) {
+        if (!ASSIGN(seed_indexes[i], input->seed_indexes[i])) {
+            // seed index overflow
+            THROW(SW_COMMAND_INVALID_DATA);
+        }
+    }
+
+    ui_display_write_indexes(seed_indexes);
     return IO_ASYNCH_REPLY;
 }
 
-void write_indexes_approve(const WRITE_INDEXES_INPUT *input)
+void write_indexes_approve(const uint32_t *seed_indexes)
 {
-    // write all 5 seed indexes
-    for (uint8_t i = 0; i < 5; i++) {
-        write_seed_index(i, (unsigned int)input->seed_indexes[i]);
+    // write all seed indexes
+    for (unsigned int i = 0; i < ACCOUNT_NUM; i++) {
+        write_seed_index(i, seed_indexes[i]);
     }
 
     ui_restore();
-
     io_send(NULL, 0, SW_OK);
 }
 
 void write_indexes_deny()
 {
     ui_restore();
-
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }

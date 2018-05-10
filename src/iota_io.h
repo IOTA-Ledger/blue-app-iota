@@ -1,9 +1,13 @@
 #ifndef IOTA_IO_H
 #define IOTA_IO_H
 
-#define BIP44_PATH_LEN 5
+#define BIP44_PATH_LEN 5u
 #define BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
-#define BIP44_ACCOUNT 4
+
+// number of accounts for wich index is stored and compared
+#define ACCOUNT_NUM 5u
+static const unsigned int ACCOUNT_BIP44_PATH[] = {0x8000002C, 0x8000107A,
+                                                  0x80000000, 0x00000000};
 
 void io_initialize();
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
