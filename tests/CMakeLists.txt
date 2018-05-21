@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 project(iota-ledger-test C)
 set(CMAKE_C_STANDARD 99)
@@ -6,7 +7,13 @@ set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 enable_testing()
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+# Support code coverage
+option(SUPPORT_COVERAGE "Code Coverage" OFF)
+
+if(SUPPORT_COVERAGE)
+    include(CodeCoverage)
+    append_coverage_compiler_flags()
+endif()
 
 find_package(CMocka REQUIRED)
 include_directories(${CMOCKA_INCLUDE_DIR})
@@ -73,3 +80,12 @@ add_test(tx_test ${CMAKE_CURRENT_BINARY_DIR}/tx_test)
 add_executable(sign_test sign_test.c transaction_file.c)
 target_link_libraries(sign_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(sign_test ${CMAKE_CURRENT_BINARY_DIR}/sign_test)
+
+if(SUPPORT_COVERAGE)
+    set(COVERAGE_EXCLUDES '/usr/*')
+
+    SETUP_TARGET_FOR_COVERAGE(
+        NAME test_coverage
+        EXECUTABLE ctest
+    )
+endif()
