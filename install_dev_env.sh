@@ -30,9 +30,9 @@ then
     exit 1
 fi
 
-if [ ${linux_codename} != 'artful' ];
+if ! [[ "$linux_codename" =~ ^(artful|bionic)$ ]];
 then
-    print_err "ERROR: This script was tested under Ubuntu Artful Aardvark only! Exiting..."
+    print_err "ERROR: This script was tested under Ubuntu Artful Aardvark or Bionic Beaver only! Exiting..."
     exit 1
 fi
 
@@ -47,7 +47,7 @@ print_ok "Updating Packages..."
 sudo apt update && sudo apt dist-upgrade -y
 
 print_ok "Installing build-essential, libc6, libudev, libusb and Python3 virtual environment..."
-sudo apt install -y build-essential libc6-i386 libc6-dev-i386 libudev-dev libusb-1.0-0-dev virtualenv python3-dev python3-pip python3-virtualenv python3-venv
+sudo apt install -y git build-essential libc6-i386 libc6-dev-i386 libudev-dev libusb-1.0-0-dev virtualenv python3-dev python3-pip python3-virtualenv python3-venv
 
 if [ ! -d ${BOLOS_ENV} ]; then
     mkdir -p ${BOLOS_ENV}
@@ -80,7 +80,9 @@ else
    print_ok "Downloading nanos-secure-sdk..."
    cd ..
    git clone https://github.com/LedgerHQ/nanos-secure-sdk.git
+   cd nanos-secure-sdk
    git checkout tags/nanos-${LEDGER_NANO_SDK_VERSION}
+   cd ..
 fi
 
 ## Adding environment variables t0 .bashrc
