@@ -14,6 +14,7 @@ script:
 - echo "Running tests"
 - cd tests && mkdir build && cd build && cmake .. && make && make test
 - cd ../..
+before_deploy:
 - echo "Building binary..."
 - docker run -v $(pwd):/ledger ubuntu:18.04 /bin/bash -c "cd /ledger; ./contrib/docker_travis_build.sh"
 - echo "Hashing binary and uploading..."
