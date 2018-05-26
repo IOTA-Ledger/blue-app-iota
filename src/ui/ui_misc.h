@@ -1,17 +1,8 @@
 #ifndef UI_MISC_H
 #define UI_MISC_H
 
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
-#include "bagl.h"
 #include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
-#include "../storage.h"
-#include "../iota/bundle.h"
-
-#include "ui_types.h"
+#include <stdint.h>
 
 void state_go(uint8_t state, uint8_t idx);
 void state_return(uint8_t state, uint8_t idx);

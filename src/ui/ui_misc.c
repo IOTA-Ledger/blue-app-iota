@@ -1,7 +1,9 @@
 #include "ui_misc.h"
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
-#include "common.h"
-#include "../iota/conversion.h"
+#include "ui_types.h"
+#include "storage.h"
 #include "iota/addresses.h"
 
 // go to state with menu index

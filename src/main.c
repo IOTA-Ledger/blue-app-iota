@@ -1,7 +1,7 @@
-#include "main.h"
-#include "ui.h"
+#include "os_io_seproxyhal.h"
 #include "iota_io.h"
 #include "storage.h"
+#include "ui/ui.h"
 
 /* -------------------------------------------------
  ---------------------------------------------------
@@ -9,6 +9,7 @@
  ---------------------------------------------------
  ------------------------------------------------- */
 
+// define global SDK variables
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 ux_state_t ux;
 
@@ -81,8 +82,7 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len)
     case CHANNEL_KEYBOARD:
         break;
 
-        // multiplexed io exchange over a SPI channel and TLV encapsulated
-        // protocol
+    // multiplexed io exchange over a SPI channel and TLV encapsulated protocol
     case CHANNEL_SPI:
         if (tx_len) {
             io_seproxyhal_spi_send(G_io_apdu_buffer, tx_len);
@@ -90,8 +90,8 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len)
             if (channel & IO_RESET_AFTER_REPLIED) {
                 reset();
             }
-            return 0; // nothing received from the master so far (it's a tx
-            // transaction)
+            // nothing received from the master so far (it's a tx transaction)
+            return 0;
         }
         else {
             return io_seproxyhal_spi_recv(G_io_apdu_buffer,

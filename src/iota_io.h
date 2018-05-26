@@ -13,6 +13,8 @@ void io_initialize();
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
 unsigned int iota_dispatch();
 
+/* ---  CLA  --- */
+
 #define CLA 0x80
 
 /* ---  INS  --- */

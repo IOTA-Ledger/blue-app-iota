@@ -1,9 +1,8 @@
 #include "ui_display.h"
-#include <string.h>
 #include "common.h"
-#include "iota/addresses.h"
 #include "ui.h"
-
+#include "ui_types.h"
+#include "ui_misc.h"
 
 void display_init()
 {
@@ -134,7 +133,7 @@ void display_addr_chk()
     write_display("Chk: ", TYPE_STR, BOT);
 
     // copy the remaining 9 chars in the buffer
-    memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
+    os_memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
 
     display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
 }
