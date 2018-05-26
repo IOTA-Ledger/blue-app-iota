@@ -87,7 +87,9 @@ else
    print_ok "Downloading nanos-secure-sdk..."
    cd ..
    git clone https://github.com/LedgerHQ/nanos-secure-sdk.git
+   cd nanos-secure-sdk
    git checkout tags/nanos-${LEDGER_NANO_SDK_VERSION}
+   cd ..
 fi
 
 ## Adding environment variables t0 .bashrc

@@ -1,14 +1,32 @@
 language: c
 sudo: required
+dist: trusty
 install:
-  # the cmocka package coming with trusty is not up to date
-  - wget https://cmocka.org/files/1.1/cmocka-1.1.0.tar.xz
-  - tar -xf cmocka-1.1.0.tar.xz
-  - cd cmocka-1.1.0
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug .. && make && sudo make install
-  - cd ../..
-  - rm -rf cmocka-1.1.0
+- wget https://cmocka.org/files/1.1/cmocka-1.1.0.tar.xz
+- tar -xf cmocka-1.1.0.tar.xz
+- cd cmocka-1.1.0
+- mkdir build
+- cd build
+- cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug .. && make && sudo make install
+- cd ../..
+- rm -rf cmocka-1.1.0
 script:
-  - cd tests && mkdir build && cd build && cmake .. && make && make test
+- echo "Running tests"
+- cd tests && mkdir build && cd build && cmake .. && make && make test
+- cd ../..
+- echo "Building binary..."
+- docker run -v $(pwd):/ledger ubuntu:18.04 /bin/bash -c "cd /ledger; ./contrib/docker_travis_build.sh"
+- echo "Hashing binary and uploading..."
+- sudo bash -c "openssl sha256 bin/app.hex > bin/app.hex.sha256"
+deploy:
+  provider: releases
+  api_key:
+    secure: ByI0wx09OxD4vDxNqQxrShNjm996QweatkhSRpdwRXNy8BX3wz+SJ3rKqmLYLyPOytD3+7UpUZSE55xQIbqJRbfpX0Ri81veS2oWzD6uwm4ic6K1ig3IsG9AGHC7Mj05oxZNY11HFsNKOQzJQ7sdaiUZnppv9vB3UNbKZ0Ng8V/iPShtLj8UFWmlogqZahfqoAJBqc5t5XfaHGm+lZVEg2C1nQKyV1vev5gpdPg6vqDQtWScPL1Ky+nuu6jXElfop+0QbefB4HRrvryM6DQClhqSzMCYvhMVwYTjsRYNPpNIyR6ygCs+DFdj9prLFkLJ6PQbJ4M3oRtMrfVuxo4l82a2h2yyO3RZ9fgX+uslTzCDR3q78JYi3yxFxj8V5UTB7CslNkEvtwrit8zqabupf517Rogl6MjQPgEUNxa9idrd1NDMroCG8C6HAhrfnO+4YR0asi3R4bj2jXRud0mrWStGkubhgjNm2aFNWJ0B9GLPDXHjf3KVrvgJoB98DbT9A2u390djo26wr8rLdkKCB24cvXF/4k9sRCqPVYdBqlZDbStM+4NkGIjvdkKw5VOklVlpa+B4bID4n85D9t7KqaoxS8B7BD2jy9mx4o+/hWGXSiSTaQ6tO3NgTdFf/1NIHP1RknMnsNsbHZK84p5/rIvGMsuHaNkAuFVRUXoXhbA=
+  file:
+    - bin/app.hex
+    - bin/app.hex.sha256
+  skip_cleanup: true
+  on:
+    repo: IOTA-Ledger/blue-app-iota
+    branch: beta
+    tags: true
