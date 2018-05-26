@@ -17,7 +17,7 @@ script:
 - echo "Building binary..."
 - docker run -v $(pwd):/ledger ubuntu:18.04 /bin/bash -c "cd /ledger; ./contrib/docker_travis_build.sh"
 - echo "Hashing binary and uploading..."
-- sudo bash -c "openssl sha256 bin/app.hex > bin/app.hex.sha256"
+- cd bin && sudo bach -c "sha256sum app.hex > app.hex.sha256" && cd ..
 deploy:
   provider: releases
   api_key:
