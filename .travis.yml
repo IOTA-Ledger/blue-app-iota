@@ -1,8 +1,6 @@
 language: c
 sudo: required
 dist: trusty
-before_install:
-- openssl aes-256-cbc -K $encrypted_0982fdaf61f1_key -iv $encrypted_0982fdaf61f1_iv -in contrib/private.key.enc -out contrib/private.key -d
 install:
 - wget https://cmocka.org/files/1.1/cmocka-1.1.0.tar.xz
 - tar -xf cmocka-1.1.0.tar.xz
@@ -21,6 +19,7 @@ before_deploy:
 - mkdir bin
 - docker run -v $(pwd):/ledger ubuntu:18.04 /bin/bash -c "cd /ledger; ./contrib/docker_travis_build.sh"
 - echo "Signing binary..."
+- openssl aes-256-cbc -K $encrypted_0982fdaf61f1_key -iv $encrypted_0982fdaf61f1_iv -in contrib/private.key.enc -out contrib/private.key -d
 - gpg --import ./contrib/private.key && gpg --detach-sign -au IOTA-Ledger bin/app.hex
 deploy:
   provider: releases
