@@ -1,6 +1,8 @@
 language: c
 sudo: required
 dist: trusty
+before_install:
+- openssl aes-256-cbc -K $encrypted_0982fdaf61f1_key -iv $encrypted_0982fdaf61f1_iv -in contrib/private.key.enc -out contrib/private.key -d
 install:
 - wget https://cmocka.org/files/1.1/cmocka-1.1.0.tar.xz
 - tar -xf cmocka-1.1.0.tar.xz
@@ -16,16 +18,17 @@ script:
 - cd ../..
 before_deploy:
 - echo "Building binary..."
+- mkdir bin
 - docker run -v $(pwd):/ledger ubuntu:18.04 /bin/bash -c "cd /ledger; ./contrib/docker_travis_build.sh"
-- echo "Hashing binary and uploading..."
-- cd bin && sudo bach -c "sha256sum app.hex > app.hex.sha256" && cd ..
+- echo "Signing binary..."
+- gpg --import ./contrib/private.key && gpg --detach-sign -au IOTA-Ledger bin/app.hex
 deploy:
   provider: releases
   api_key:
     secure: ByI0wx09OxD4vDxNqQxrShNjm996QweatkhSRpdwRXNy8BX3wz+SJ3rKqmLYLyPOytD3+7UpUZSE55xQIbqJRbfpX0Ri81veS2oWzD6uwm4ic6K1ig3IsG9AGHC7Mj05oxZNY11HFsNKOQzJQ7sdaiUZnppv9vB3UNbKZ0Ng8V/iPShtLj8UFWmlogqZahfqoAJBqc5t5XfaHGm+lZVEg2C1nQKyV1vev5gpdPg6vqDQtWScPL1Ky+nuu6jXElfop+0QbefB4HRrvryM6DQClhqSzMCYvhMVwYTjsRYNPpNIyR6ygCs+DFdj9prLFkLJ6PQbJ4M3oRtMrfVuxo4l82a2h2yyO3RZ9fgX+uslTzCDR3q78JYi3yxFxj8V5UTB7CslNkEvtwrit8zqabupf517Rogl6MjQPgEUNxa9idrd1NDMroCG8C6HAhrfnO+4YR0asi3R4bj2jXRud0mrWStGkubhgjNm2aFNWJ0B9GLPDXHjf3KVrvgJoB98DbT9A2u390djo26wr8rLdkKCB24cvXF/4k9sRCqPVYdBqlZDbStM+4NkGIjvdkKw5VOklVlpa+B4bID4n85D9t7KqaoxS8B7BD2jy9mx4o+/hWGXSiSTaQ6tO3NgTdFf/1NIHP1RknMnsNsbHZK84p5/rIvGMsuHaNkAuFVRUXoXhbA=
   file:
-    - bin/app.hex
-    - bin/app.hex.sha256
+  - bin/app.hex
+  - bin/app.hex.asc
   skip_cleanup: true
   on:
     repo: IOTA-Ledger/blue-app-iota
