@@ -1,19 +1,6 @@
 #ifndef UI_DISPLAY_H
 #define UI_DISPLAY_H
 
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
-#include "bagl.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
-#include "../storage.h"
-#include "../api.h"
-
-#include "ui_types.h"
-#include "ui_misc.h"
-
 void display_init();
 void display_welcome();
 void display_about();

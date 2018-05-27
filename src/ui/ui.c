@@ -1,7 +1,5 @@
 #include "ui.h"
 #include <string.h>
-#include "common.h"
-#include "bagl.h"
 #include "os_io_seproxyhal.h"
 
 #include "ui_types.h"

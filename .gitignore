@@ -61,5 +61,8 @@ dkms.conf
 # Python Virtual Environment
 .pyenv/
 
-demo.sh
-demo_bundle.sh
+# bolos targets
+obj/
+bin/
+debug/
+dep/

@@ -1,8 +1,14 @@
 #include "ui_buttons.h"
 #include <string.h>
 #include "common.h"
-#include "iota/addresses.h"
+
 #include "ui.h"
+#include "ui_types.h"
+#include "ui_misc.h"
+
+#include "api.h"
+#include "storage.h"
+#include "iota/addresses.h"
 
 uint8_t button_init(uint8_t button_mask)
 {

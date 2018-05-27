@@ -2,8 +2,7 @@
 #define UI_TYPES_H
 
 #include <stdint.h>
-#include "../api.h"
-#include "../iota/bundle.h"
+#include "iota/bundle.h"
 
 /* -------------------------------------------------
  ------------------------------------------------- */

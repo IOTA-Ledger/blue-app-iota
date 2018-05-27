@@ -1,18 +1,7 @@
 #ifndef UI_BUTTONS_H
 #define UI_BUTTONS_H
 
-#include "os.h"
-#include "cx.h"
-#include "os_io_seproxyhal.h"
-#include "bagl.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
-#include "../storage.h"
-#include "../api.h"
-
-#include "ui_types.h"
-#include "ui_misc.h"
+#include <stdint.h>
 
 uint8_t button_init(uint8_t button_mask);
 uint8_t button_welcome(uint8_t button_mask);
