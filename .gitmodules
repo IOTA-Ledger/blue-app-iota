@@ -3,4 +3,4 @@
 	url = https://github.com/iotaledger/kerl
 [submodule "contrib/blue-app-iota-loader"]
 	path = contrib/blue-app-iota-loader
-	url = https://github.com/muXxer/blue-app-iota-loader.git
+	url = https://github.com/IOTA-Ledger/blue-app-iota-loader.git
