@@ -1,4 +1,5 @@
 #include "ui_display.h"
+#include <string.h>
 #include "common.h"
 #include "ui.h"
 #include "ui_types.h"
@@ -66,10 +67,7 @@ void display_version()
 {
     clear_display();
     char msg[10];
-
-    for (uint8_t i = 0; i < 8; i++) {
-        msg[i] = app_version[i];
-    }
+    strncpy(msg, APPVERSION, sizeof(msg));
 
     write_display(msg, TYPE_STR, MID);
 
