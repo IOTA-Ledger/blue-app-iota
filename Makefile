@@ -23,7 +23,7 @@ include $(BOLOS_SDK)/Makefile.defines
 # Main app configuration
 
 APPNAME = "IOTA"
-APPVERSION = 0.0.1
+APPVERSION = 0.1.0
 APP_LOAD_PARAMS = --path "44'/4218'" --appFlags 0x00 $(COMMON_LOAD_PARAMS)
 
 ICONNAME = icon.gif
