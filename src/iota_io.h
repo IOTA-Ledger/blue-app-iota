@@ -28,6 +28,7 @@ unsigned int iota_dispatch();
 #define INS_DISP_ADDR 0x05
 #define INS_READ_INDEXES 0x06
 #define INS_WRITE_INDEXES 0x07
+#define INS_GET_APP_CONFIG 0x08
 
 /* ---  IO constants  --- */
 
