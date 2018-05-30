@@ -11,6 +11,9 @@
 /* ----------------------------------------------------------------------- */
 /* -                      DEFINES AND MACROS                             - */
 /* ----------------------------------------------------------------------- */
+#define APPVERSION_MAJOR 0xFF
+#define APPVERSION_MINOR 0xFF
+#define APPVERSION_PATCH 0xFF
 
 void throw_exception(const char *expression, const char *file, int line);
 
