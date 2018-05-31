@@ -99,6 +99,17 @@ WRITE_INDEXES_INPUT;
 
 // no WRITE_INDEXES_OUTPUT
 
+// no GET_APP_CONFIG_NPUT
+
+typedef IO_STRUCT GET_APP_CONFIG_OUTPUT
+{
+    uint8_t app_flags;
+    uint8_t app_version_major;
+    uint8_t app_version_minor;
+    uint8_t app_version_patch;
+}
+GET_APP_CONFIG_OUTPUT;
+
 void api_initialize();
 
 unsigned int api_set_seed(const unsigned char *input_data, unsigned int len);
@@ -109,6 +120,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
                                 unsigned int len);
 unsigned int api_read_indexes();
 unsigned int api_write_indexes(unsigned char *input_data, unsigned int len);
+unsigned int api_get_app_config();
 
 void write_indexes_approve(const uint32_t *seed_indexes);
 void write_indexes_deny();

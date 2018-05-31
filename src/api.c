@@ -505,3 +505,16 @@ void write_indexes_deny()
     ui_restore();
     io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
+
+// get application configuration (flags and version)
+unsigned int api_get_app_config()
+{
+	GET_APP_CONFIG_OUTPUT output;
+    output.app_flags = (uint8_t)api.state_flags;
+    output.app_version_major = APPVERSION_MAJOR;
+    output.app_version_minor = APPVERSION_MINOR;
+    output.app_version_patch = APPVERSION_PATCH;
+
+    io_send(&output, sizeof(output), SW_OK);
+    return 0;
+}

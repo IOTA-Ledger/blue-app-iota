@@ -60,7 +60,10 @@ unsigned int iota_dispatch()
     case INS_WRITE_INDEXES:
         return api_write_indexes(input_data, len);
 
-        // unknown command ??
+    case INS_GET_APP_CONFIG:
+        return api_get_app_config();
+
+    // unknown command ??
     default:
         THROW(SW_INS_NOT_SUPPORTED);
         return 0;
