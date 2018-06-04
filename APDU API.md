@@ -1,7 +1,3 @@
----
-title: APDU Ledger API
-tags: iota, ledger
----
 # APDU Ledger API
 
 * Everything is encoded in Little-Endian without any padding or alignment.
