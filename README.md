@@ -140,13 +140,13 @@ While having (only) 256 bits of entropy does not pose a security problem, it doe
 
 All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** and refer to this document if there is any confusion.
 
-- **Do not use multiple Ledgers with the IOTA app.**
+- **The IOTA Ledger app is stateful**
 
-    Because the IOTA app is stateful (stores the seed-indexes), using multiple Ledgers with the IOTA app will make it impossible for the Ledger to properly keep track of indexes.
-
-    In the future it may be possible to use multiple Ledgers if the wallet is made solely responsible for the statefulness, however for now it is strongly recommended to use just one Ledger for IOTA.
-
-    **This also means that if you must remove an existing app to make room for a new one, you should NOT remove IOTA without first backing up it's indexes to the wallet.**
+    What this means is that the address index for your IOTA seed is stored in flash memory on the Ledger device. Therefore uninstalling the IOTA app will erase these indexes.
+    
+    Don't worry! There is no security risk by losing your address indexes and if the IOTA wallet you are using (Ex. Trinity or Romeo) has their own cache of the addresses used, you shouldn't notice any issues.
+    
+    However it is still recommended to back up your address indexes before deleting the app. (Either by hand through the options menu, or automatically using a wallet - currently not supported).
 
 - **Ensure the change index is always increasing.**
 
