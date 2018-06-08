@@ -15,7 +15,7 @@ unsigned int iota_dispatch();
 
 /* ---  CLA  --- */
 
-#define CLA 0x80
+#define CLA 0x7A
 
 /* ---  INS  --- */
 
