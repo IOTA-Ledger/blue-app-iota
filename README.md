@@ -22,6 +22,7 @@ Here we try to use natively available crypto logic to create IOTA seeds and sign
     - [Display](#display)
   + [Recovery Phrase Entropy](#recovery-phrase-entropy)
   + [IOTA Security Concerns on Ledger Nano S](#iota-security-concerns-on-ledger-nano-s)
+  + [Limitations of the Ledger Nano S](#limitations-of-the-ledger-nano-s)
 * [Future deprecation notes](#future-deprecation-notes)
 * [How to get started](#how-to-get-started)
   + [Requirements](#requirements)
