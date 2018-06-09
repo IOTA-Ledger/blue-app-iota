@@ -181,6 +181,10 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
     - If the transaction was not broadcast to the network, and you can't find it in the wallet you should be **EXTREMELY CAUTIOUS** before proceeding to sign a new transaction. If an infected machine is silently storing the signatures without broadcasting them, it could steal your funds after re-signing.
 
         If this situation should arise you should consider going to a more trusted machine before re-signing a transaction.
+        
+### Limitations of the Ledger Nano S
+
+Due to the memory limitations of the Ledger Nano S the transaction bundles have certain restrictions. The ledger can only store transactions with at most 1 output, 2 inputs, and 1 change transaction. If you need to use funds from more than 2 input addresses, first you must consolidate funds onto fewer addresses before finally sending to the receiving address.
 
 ## Future deprecation notes
 
