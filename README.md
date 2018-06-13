@@ -101,7 +101,7 @@ Instead of storing the seed on your computer (which could be stolen by an attack
 
 Instead, the host machine must ask the Ledger to provide the information (such as public keys or signatures). When creating transactions the host will generate the necessary information for the transaction bundle, and then will send it to the Ledger Nano S to be signed. The Ledger will then use the private keys associated with the input transactions to generate unique signatures, and will then transfer **only the signatures** back to the host machine.
 
-The host can then use these signatures (which are only valid for that specific transaction bundle) to broadcast the transaction to the network. However as you can see, neither the IOTA seed, nor any of the private keys ever leave the device. 
+The host can then use these signatures (which are only valid for that specific transaction bundle) to broadcast the transaction to the network. However as you can see, neither the IOTA seed, nor any of the private keys ever leave the device.
 
 *However keep in mind that in IOTA the signature contains **some** information about the private key for one specific address.*
 
@@ -131,7 +131,7 @@ See [Ledger's documentation](http://ledger.readthedocs.io) to get more info abou
 
 ### Recovery Phrase Entropy
 
-- The 24 word BIP39 recovery phrase (mnemonic) of the Ledger Nano S represents less information (256 bits of entropy) than a 27 tryte IOTA seed (384 bits of entropy). 
+- The 24 word BIP39 recovery phrase (mnemonic) of the Ledger Nano S represents less information (256 bits of entropy) than a 27 tryte IOTA seed (384 bits of entropy).
 - An additional function is used to convert this mnemonic seed and the optional passphrase (not your pin number) of your choosing into a 512 bit binary seed. This happens according to the BIP39 standard on the Ledger Nano using system calls.
 - The extended child key (512 bits) of a corresponding BIP32 path is then hashed (using Kerl) to derive the final 243 trit seed for IOTA.
 
@@ -144,9 +144,9 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
 - **The IOTA Ledger app is stateful**
 
     What this means is that the address index for your IOTA seed is stored in flash memory on the Ledger device. Therefore uninstalling the IOTA app will erase these indexes.
-    
+
     Don't worry! There is no security risk by losing your address indexes and if the IOTA wallet you are using (Ex. Trinity or Romeo) has their own cache of the addresses used, you shouldn't notice any issues.
-    
+
     However it is still recommended to back up your address indexes before deleting the app. (Either by hand through the options menu, or automatically using a wallet - currently not supported).
 
 - **Ensure the change index is always increasing.**
@@ -182,7 +182,7 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
     - If the transaction was not broadcast to the network, and you can't find it in the wallet you should be **EXTREMELY CAUTIOUS** before proceeding to sign a new transaction. If an infected machine is silently storing the signatures without broadcasting them, it could steal your funds after re-signing.
 
         If this situation should arise you should consider going to a more trusted machine before re-signing a transaction.
-        
+
 ### Limitations of the Ledger Nano S
 
 Due to the memory limitations of the Ledger Nano S the transaction bundles have certain restrictions. The ledger can only store transactions with at most 1 output, 2 inputs, and 1 change transaction. If you need to use funds from more than 2 input addresses, first you must consolidate funds onto fewer addresses before finally sending to the receiving address.
@@ -229,7 +229,7 @@ Another approach is to use our seed recovery tool which can be found here: https
 
 #### How can i uninstall the app?
 
-In order to uninstall the app simply run the installation of the app again, and this time it will first prompt you remove the existing app. 
+In order to uninstall the app simply run the installation of the app again, and this time it will first prompt you remove the existing app.
 Once the existing app is removed, just end the process (Don’t approve re-installing it).
 
 ## Development
@@ -283,7 +283,7 @@ See: [APDU API Documentation](/APDU_API.md)
 ### Donations
 Would you like to donate to help the development team? Send some IOTA to the following address:
 ```
-J9KPGBTWIKTRBIWXNDCZUWWWVVESYVISFJIY9GCMGVLQXFJBDAKLLN9PNAZOOUZFZDGDSFPWCTJYILDF9WOEVDQVMY
+ADLJXS9SKYQKMVQFXR9JDUUJHJWGDNWHQZMDGJFGZOX9BZEKDSXBSPZTTWEYPTNM9OZMYDQWZXFHRTXRCOITXAGCJZ
 ```
 Please know that the donations made to this address will be shared with everyone who contributes (the contributions has to be worth something, of course)
 
