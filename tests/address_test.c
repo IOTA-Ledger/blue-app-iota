@@ -41,6 +41,24 @@ static void test_vector(void **state, const TEST_VECTOR *vector,
                  vector->addresses[security][idx]);
 }
 
+static void test_below_min_level(void **state)
+{
+    UNUSED(state);
+
+    char output[NUM_HASH_TRYTES + NUM_CHECKSUM_TRYTES];
+    expect_assert_failure(
+        seed_address(PETER_VECTOR.seed, 0, MIN_SECURITY_LEVEL - 1, output));
+}
+
+static void test_above_max_level(void **state)
+{
+    UNUSED(state);
+
+    char output[NUM_HASH_TRYTES + NUM_CHECKSUM_TRYTES];
+    expect_assert_failure(
+        seed_address(PETER_VECTOR.seed, 0, MAX_SECURITY_LEVEL + 1, output));
+}
+
 static void test_security_level_one(void **state)
 {
     test_vector(state, &PETER_VECTOR, 1);
@@ -73,7 +91,7 @@ static void test_overflow_seed_level_three(void **state)
 
 static void test_n_addresses_for_seed(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     void test(char *hashes[])
     {
@@ -88,6 +106,8 @@ static void test_n_addresses_for_seed(void **state)
 int main(void)
 {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test(test_below_min_level),
+        cmocka_unit_test(test_above_max_level),
         cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)0),
         cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)1),
         cmocka_unit_test_prestate(test_security_level_one, (uint32_t *)2),
