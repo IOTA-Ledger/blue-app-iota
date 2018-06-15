@@ -364,13 +364,6 @@ void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
     bigint_to_bytes(bigint, bytes);
 }
 
-void trytes_to_bytes(const tryte_t *trytes, unsigned char *bytes)
-{
-    trit_t trits[243];
-    trytes_to_trits(trytes, trits, 81);
-    trits_to_bytes(trits, bytes);
-}
-
 void chars_to_bytes(const char *chars, unsigned char *bytes,
                     unsigned int chars_len)
 {
