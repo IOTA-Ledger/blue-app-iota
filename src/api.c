@@ -407,7 +407,6 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
     return 0;
 }
 
-
 NO_INLINE
 static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
 {
@@ -509,8 +508,15 @@ void write_indexes_deny()
 // get application configuration (flags and version)
 unsigned int api_get_app_config()
 {
+    if (!storage_is_initialized()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    if (CHECK_STATE(api.state_flags, GET_APP_CONFIG)) {
+        THROW(SW_COMMAND_INVALID_STATE);
+    }
+
 	GET_APP_CONFIG_OUTPUT output;
-    output.app_flags = (uint8_t)api.state_flags;
+    output.app_flags = 0; // no additional features supported
     output.app_version_major = APPVERSION_MAJOR;
     output.app_version_minor = APPVERSION_MINOR;
     output.app_version_patch = APPVERSION_PATCH;
