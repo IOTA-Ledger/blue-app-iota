@@ -4,8 +4,6 @@
 #include "kerl.h"
 #include <string.h>
 
-#define CHECKSUM_CHARS 9
-
 static void digest_single_chunk(unsigned char *key_fragment,
                                 cx_sha3_t *digest_sha3, cx_sha3_t *round_sha3)
 {
@@ -102,5 +100,6 @@ void get_address_with_checksum(const unsigned char *address_bytes,
     bytes_to_chars(address_bytes, full_address, NUM_HASH_BYTES);
 
     os_memcpy(full_address + NUM_HASH_TRYTES,
-              full_checksum + NUM_HASH_TRYTES - CHECKSUM_CHARS, CHECKSUM_CHARS);
+              full_checksum + NUM_HASH_TRYTES - NUM_CHECKSUM_TRYTES,
+              NUM_CHECKSUM_TRYTES);
 }

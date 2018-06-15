@@ -30,7 +30,7 @@ static void test_address(const char *seed, uint32_t idx, uint8_t security,
     char output[MAX_NUM_TRYTES + 1];
     seed_address(seed, idx, security, output);
 
-    assert_string_equal(output, expected);
+    assert_memory_equal(output, expected, NUM_HASH_TRYTES);
 }
 
 static void test_vector(void **state, const TEST_VECTOR *vector,

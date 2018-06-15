@@ -20,6 +20,7 @@ typedef int8_t tryte_t;
 
 #define NUM_HASH_TRITS 243
 #define NUM_HASH_TRYTES 81
+#define NUM_CHECKSUM_TRYTES 9
 #define NUM_HASH_BYTES (CX_KECCAK384_SIZE)
 
 #endif // IOTA_TYPES_H
