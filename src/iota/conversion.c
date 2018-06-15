@@ -56,12 +56,7 @@ int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
 int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
                     unsigned int trit_len)
 {
-    if (trit_len % 3 != 0) {
-        return -1;
-    }
-    unsigned int tryte_len = trit_len / 3;
-
-    for (unsigned int i = 0; i < tryte_len; i++) {
+    for (unsigned int i = 0; i < trit_len / 3; i++) {
         trytes_out[i] = trits_in[i * 3 + 0] + trits_in[i * 3 + 1] * 3 +
                         trits_in[i * 3 + 2] * 9;
     }
@@ -94,7 +89,6 @@ int trytes_to_chars(const tryte_t trytes_in[], char chars_out[],
     for (unsigned int i = 0; i < len; i++) {
         chars_out[i] = tryte_to_char_mapping[trytes_in[i] + 13];
     }
-
     return 0;
 }
 /* --------------------- END trytes > chars */
