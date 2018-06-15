@@ -35,16 +35,6 @@ void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
     ctx->indices[ctx->current_tx_index] = index;
 }
 
-void bundle_set_address_bytes(BUNDLE_CTX *ctx, const unsigned char *addresses)
-{
-    if (!bundle_has_open_txs(ctx)) {
-        THROW(INVALID_STATE);
-    }
-
-    unsigned char *bytes_ptr = TX_BYTES(ctx);
-    os_memcpy(bytes_ptr, addresses, 48);
-}
-
 static void create_bundle_bytes(int64_t value, const char *tag,
                                 uint32_t timestamp, uint8_t current_tx_index,
                                 uint8_t last_tx_index, unsigned char *bytes)

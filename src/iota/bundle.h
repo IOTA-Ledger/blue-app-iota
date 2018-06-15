@@ -57,13 +57,6 @@ void bundle_set_external_address(BUNDLE_CTX *ctx, const char *address);
 void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
                                  uint32_t index);
 
-/** @brief Sets the address for the current transaction.
- *  The address must be set befor calling bundle_add_tx().
- *  @param ctx the bundle context used
- *  @param address address in 48-byte big endian encoding
- */
-void bundle_set_address_bytes(BUNDLE_CTX *ctx, const unsigned char *addresses);
-
 /** @brief Sets the content for the current transaction, finalizing it.
  *  This will increment the current transaction, so that
  *  bundle_set_address_chars(), bundle_set_address_bytes() can be called for
