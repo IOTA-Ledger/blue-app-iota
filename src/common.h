@@ -107,6 +107,9 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
 
 #define CX_KECCAK384_SIZE 48
 
+// additional supported features
+#define APP_FLAGS 0
+
 #define CEILING(x, y) (((x) + (y)-1) / (y))
 
 #define ASSIGN(dest, src)                                                      \

@@ -506,8 +506,12 @@ void write_indexes_deny()
 }
 
 // get application configuration (flags and version)
-unsigned int api_get_app_config()
+unsigned int api_get_app_config(unsigned char *input_data, unsigned int len)
 {
+    // no input requried
+    UNUSED(input_data);
+    UNUSED(len);
+
     if (!storage_is_initialized()) {
         THROW(SW_APP_NOT_INITIALIZED);
     }
@@ -515,8 +519,8 @@ unsigned int api_get_app_config()
         THROW(SW_COMMAND_INVALID_STATE);
     }
 
-	GET_APP_CONFIG_OUTPUT output;
-    output.app_flags = 0; // no additional features supported
+    GET_APP_CONFIG_OUTPUT output;
+    output.app_flags = APP_FLAGS;
     output.app_version_major = APPVERSION_MAJOR;
     output.app_version_minor = APPVERSION_MINOR;
     output.app_version_patch = APPVERSION_PATCH;

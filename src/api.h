@@ -123,7 +123,7 @@ unsigned int api_display_pubkey(const unsigned char *input_data,
                                 unsigned int len);
 unsigned int api_read_indexes();
 unsigned int api_write_indexes(unsigned char *input_data, unsigned int len);
-unsigned int api_get_app_config();
+unsigned int api_get_app_config(unsigned char *input_data, unsigned int len);
 
 void write_indexes_approve(const uint32_t *seed_indexes);
 void write_indexes_deny();
