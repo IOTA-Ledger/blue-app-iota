@@ -29,8 +29,7 @@ static void test_get_app_config(void **state)
 
 int main(void)
 {
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_get_app_config)};
+    const struct CMUnitTest tests[] = {cmocka_unit_test(test_get_app_config)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
