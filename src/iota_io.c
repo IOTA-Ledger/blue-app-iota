@@ -27,7 +27,7 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
 
 unsigned int iota_dispatch()
 {
-    // If it doesnt start with the magic byte return error CLA is 0x80
+    // if it does not start with the magic byte, return error
     if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
         THROW(SW_CLA_NOT_SUPPORTED);
         return 0;
@@ -55,13 +55,13 @@ unsigned int iota_dispatch()
         return api_display_pubkey(input_data, len);
 
     case INS_READ_INDEXES:
-        return api_read_indexes();
+        return api_read_indexes(input_data, len);
 
     case INS_WRITE_INDEXES:
         return api_write_indexes(input_data, len);
 
     case INS_GET_APP_CONFIG:
-        return api_get_app_config();
+        return api_get_app_config(input_data, len);
 
     // unknown command ??
     default:

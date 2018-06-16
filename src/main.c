@@ -43,8 +43,8 @@ static void IOTA_main()
                     sw = SW_UNKNOWN | (e & 0x0FF);
                 }
 
-                // send  response code and reset ui
-                // TODO: what happens if io_send throws an exception
+                // send response code and reset ui
+                // TODO: could io_send ever throw an exception here?
                 io_send(NULL, 0, sw);
 
                 if (storage_is_initialized()) {
