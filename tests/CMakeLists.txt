@@ -83,7 +83,7 @@ add_test(sign_test ${CMAKE_CURRENT_BINARY_DIR}/sign_test)
 
 add_executable(get_app_config_test get_app_config_test.c)
 target_link_libraries(get_app_config_test ${CMOCKA_LIBRARIES} iota-ledger)
-add_test(get_app_config_test ${CMAKE_CURRENT_BINARY_DIR}/sign_test)
+add_test(get_app_config_test ${CMAKE_CURRENT_BINARY_DIR}/get_app_config_test)
 
 if(SUPPORT_COVERAGE)
     set(COVERAGE_EXCLUDES '/usr/*')
