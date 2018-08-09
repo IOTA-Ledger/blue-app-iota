@@ -16,16 +16,14 @@ INS_PUBKEY = 0x02
 INS_TX = 0x03
 INS_SIGN = 0x04
 INS_DISP_ADDR = 0x05
-INS_GET_INDEXES = 0x06
-INS_INIT_LEDGER = 0x07
-INS_GET_APP_CONFIG = 0x08
+INS_GET_APP_CONFIG = 0x06
 
 
 def apdu_command(ins, data, p1=0, p2=0):
     b = bytes(data)
     
     command = bytearray()
-    command.append(0x80)  # Instruction class (1)
+    command.append(0x7A)  # Instruction class (1)
     command.append(ins)  # Instruction code (1)
     command.extend([p1, p2])  # Instruction parameters (2)
     command.append(len(b))  # length of data (1)
@@ -85,15 +83,6 @@ print("  Address: %s" % struct[0].decode("utf-8"))
 
 print("\nDisplaying address on the Ledger Nano...")
 dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
-
-print("\nInitializing ledger indexes...")
-dongle.exchange(apdu_command(INS_INIT_LEDGER, pack_init_ledger_input(1, 4, 12, 2, 12)))
-
-print("\nReading ledger indexes...")
-response = dongle.exchange(apdu_command(INS_GET_INDEXES, []))
-struct = unpack_get_indexes(response)
-print("\n[1]: %d   [2]: %d   [3]: %d   [4]: %d   [5]: %d" %
-      (struct[0], struct[1], struct[2], struct[3], struct[4]))
 
 elapsed_time = time.time() - start_time
 print("\nTime Elapsed: %ds" % elapsed_time)
