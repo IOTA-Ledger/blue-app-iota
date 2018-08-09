@@ -89,6 +89,11 @@ static void test_overflow_seed_level_three(void **state)
     test_vector(state, &OVERFLOW_VECTOR, 3);
 }
 
+static void test_word_overflow_seed_level_two(void **state)
+{
+    test_vector(state, &WORD_OVERFLOW_VECTOR, 2);
+}
+
 static void test_n_addresses_for_seed(void **state)
 {
     UNUSED(state);
@@ -142,6 +147,16 @@ int main(void)
         cmocka_unit_test_prestate(test_overflow_seed_level_three,
                                   (uint32_t *)3),
         cmocka_unit_test_prestate(test_overflow_seed_level_three,
+                                  (uint32_t *)4),
+        cmocka_unit_test_prestate(test_word_overflow_seed_level_two,
+                                  (uint32_t *)0),
+        cmocka_unit_test_prestate(test_word_overflow_seed_level_two,
+                                  (uint32_t *)1),
+        cmocka_unit_test_prestate(test_word_overflow_seed_level_two,
+                                  (uint32_t *)2),
+        cmocka_unit_test_prestate(test_word_overflow_seed_level_two,
+                                  (uint32_t *)3),
+        cmocka_unit_test_prestate(test_word_overflow_seed_level_two,
                                   (uint32_t *)4),
         cmocka_unit_test(test_n_addresses_for_seed)};
 
