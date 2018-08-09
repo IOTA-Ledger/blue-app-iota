@@ -1,6 +1,12 @@
 language: c
 sudo: required
 dist: trusty
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - lcov
 install:
 - wget https://cmocka.org/files/1.1/cmocka-1.1.0.tar.xz
 - tar -xf cmocka-1.1.0.tar.xz
@@ -12,7 +18,9 @@ install:
 - rm -rf cmocka-1.1.0
 script:
 - echo "Running tests"
-- cd tests && mkdir build && cd build && cmake .. && make && make test
+- cd tests && mkdir build && cd build && cmake -DSUPPORT_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug .. && make && make test_coverage
+after_success:
+- bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
 - cd ../..
 before_deploy:
 - echo "Building binary..."
