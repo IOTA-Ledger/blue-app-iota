@@ -488,28 +488,8 @@ void get_welcome_menu(char *msg)
     uint8_t i = 0;
 
     strcpy(msg + (i++ * 21), " Welcome to IOTA");
-    strcpy(msg + (i++ * 21), "Indexes");
     strcpy(msg + (i++ * 21), "About");
     strcpy(msg + (i++ * 21), "Exit App");
-}
-
-void get_disp_idx_menu(char *msg)
-{
-    memset(msg, '\0', MENU_DISP_IDX_LEN * 21);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i * 21), "[1]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(0));
-    strcpy(msg + (i * 21), "[2]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(1));
-    strcpy(msg + (i * 21), "[3]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(2));
-    strcpy(msg + (i * 21), "[4]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(3));
-    strcpy(msg + (i * 21), "[5]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", storage_get_seed_index(4));
-    strcpy(msg + (i * 21), "Back");
 }
 
 void get_about_menu(char *msg)
@@ -551,46 +531,4 @@ void get_address_menu(char *msg)
 
         strncpy(msg + (i * 21) + 7, ui_state.addr + (j++ * 6), c_cpy);
     }
-}
-
-void get_write_indexes_menu(char *msg)
-{
-    memset(msg, '\0', MENU_WRITE_INDEXES_LEN * 21);
-
-    if (!ui_state.seed_indexes) {
-        return;
-    }
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * 21), "WARNING!");
-    strcpy(msg + (i++ * 21), "Writing Ledger");
-    strcpy(msg + (i++ * 21), "Seed Indexes");
-    strcpy(msg + (i * 21), "[1]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", ui_state.seed_indexes[0]);
-    strcpy(msg + (i * 21), "[2]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", ui_state.seed_indexes[1]);
-    strcpy(msg + (i * 21), "[3]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", ui_state.seed_indexes[2]);
-    strcpy(msg + (i * 21), "[4]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", ui_state.seed_indexes[3]);
-    strcpy(msg + (i * 21), "[5]:  ");
-    snprintf(msg + (i++ * 21) + 6, 16, "%u", ui_state.seed_indexes[4]);
-    strcpy(msg + (i++ * 21), "Approve");
-    strcpy(msg + (i++ * 21), "Deny");
-}
-
-void get_warn_change_menu(char *msg)
-{
-    memset(msg, '\0', MENU_WARN_CHANGE_LEN * 21);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * 21), "WARNING");
-    strcpy(msg + (i++ * 21), "Change tx has");
-    strcpy(msg + (i++ * 21), "lower idx than");
-    strcpy(msg + (i++ * 21), "expected!");
-    strcpy(msg + (i++ * 21), "Are you sure?");
-    strcpy(msg + (i++ * 21), "Yes");
-    strcpy(msg + (i++ * 21), "No");
 }

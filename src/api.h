@@ -77,28 +77,6 @@ typedef IO_STRUCT SIGN_OUTPUT
 }
 SIGN_OUTPUT;
 
-#define READ_INDEXES_REQUIRED_STATE 0
-#define READ_INDEXES_FORBIDDEN_STATE 0
-
-// no READ_INDEXES_INPUT
-
-typedef IO_STRUCT READ_INDEXES_OUTPUT
-{
-    int64_t seed_idx[ACCOUNT_NUM];
-}
-READ_INDEXES_OUTPUT;
-
-#define WRITE_INDEXES_REQUIRED_STATE 0
-#define WRITE_INDEXES_FORBIDDEN_STATE (BUNDLE_INITIALIZED)
-
-typedef IO_STRUCT WRITE_INDEXES_INPUT
-{
-    int64_t seed_indexes[ACCOUNT_NUM];
-}
-WRITE_INDEXES_INPUT;
-
-// no WRITE_INDEXES_OUTPUT
-
 #define GET_APP_CONFIG_REQUIRED_STATE 0
 #define GET_APP_CONFIG_FORBIDDEN_STATE 0
 
@@ -121,12 +99,7 @@ unsigned int api_tx(const unsigned char *input_data, unsigned int len);
 unsigned int api_sign(const unsigned char *input_data, unsigned int len);
 unsigned int api_display_pubkey(const unsigned char *input_data,
                                 unsigned int len);
-unsigned int api_read_indexes();
-unsigned int api_write_indexes(unsigned char *input_data, unsigned int len);
 unsigned int api_get_app_config(unsigned char *input_data, unsigned int len);
-
-void write_indexes_approve(const uint32_t *seed_indexes);
-void write_indexes_deny();
 
 void user_sign_tx();
 void user_deny_tx();

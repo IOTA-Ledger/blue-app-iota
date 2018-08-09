@@ -211,34 +211,11 @@ void ui_display_address(const unsigned char *addr_bytes)
     ui_force_draw();
 }
 
-void ui_warn_change(BUNDLE_CTX *bundle_ctx)
-{
-    ui_state.bundle_ctx = bundle_ctx;
-
-    backup_state();
-
-    state_go(STATE_WARN_CHANGE, 0);
-
-    ui_build_display();
-    ui_render();
-}
-
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
 {
     ui_state.bundle_ctx = bundle_ctx;
 
     state_go(STATE_PROMPT_TX, 0);
-
-    ui_build_display();
-    ui_render();
-}
-
-void ui_display_write_indexes(const uint32_t *seed_indexes)
-{
-    backup_state();
-
-    ui_state.seed_indexes = seed_indexes;
-    state_go(STATE_WRITE_INDEXES, 0);
 
     ui_build_display();
     ui_render();
@@ -320,10 +297,6 @@ void ui_handle_button(uint8_t button_mask)
     case STATE_MORE_INFO:
         array_sz = button_more_info(button_mask);
         break;
-        /* ------------ STATE DISPLAY_INDEXES -------------- */
-    case STATE_DISP_IDX:
-        array_sz = button_disp_idx(button_mask);
-        break;
         /* ------------ STATE DISPLAY_ADDRESS -------------- */
     case STATE_DISP_ADDR:
         array_sz = button_disp_addr(button_mask);
@@ -336,17 +309,10 @@ void ui_handle_button(uint8_t button_mask)
     case STATE_TX_ADDR:
         array_sz = button_tx_addr(button_mask);
         break;
-        /* ------------ STATE INIT LEDGER -------------- */
-    case STATE_WRITE_INDEXES:
-        array_sz = button_write_indexes(button_mask);
-        break;
         /* ------------ PROMPT TX INFO *DYNAMIC-MENU* -------------- */
     case STATE_PROMPT_TX:
         button_prompt_tx(button_mask);
         return;
-    case STATE_WARN_CHANGE:
-        array_sz = button_warn_change(button_mask);
-        break;
     case STATE_IGNORE:
         return;
         /* ------------ DEFAULT -------------- */
@@ -386,10 +352,6 @@ void ui_build_display()
     case STATE_MORE_INFO:
         display_more_info();
         break;
-        /* ------------ DISPLAY INDEXES MENU -------------- */
-    case STATE_DISP_IDX:
-        display_idxs();
-        break;
         /* ------------ DISPLAY TX ADDRESS -------------- */
     case STATE_TX_ADDR:
         display_tx_addr();
@@ -402,17 +364,9 @@ void ui_build_display()
     case STATE_DISP_ADDR_CHK:
         display_addr_chk();
         break;
-        /* ------------ INIT LEDGER MENU -------------- */
-    case STATE_WRITE_INDEXES:
-        display_write_indexes();
-        break;
         /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
     case STATE_PROMPT_TX:
         display_prompt_tx();
-        break;
-        /* ------------ WARN CHANGE -------------- */
-    case STATE_WARN_CHANGE:
-        display_warn_change();
         break;
         /* ------------ IGNORE STATE -------------- */
     case STATE_IGNORE:

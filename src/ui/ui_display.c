@@ -37,10 +37,8 @@ void display_welcome()
         break;
         // turn off TOP_H
     case MENU_WELCOME_LEN - 1:
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
-    case 1:
         write_display(NULL, TYPE_STR, TOP_H);
-        break;
+        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
     }
 }
 
@@ -84,27 +82,6 @@ void display_more_info()
     // no special overrides
 }
 
-void display_idxs()
-{
-    // write the actual menu
-    char msg[MENU_DISP_IDX_LEN * 21];
-    get_disp_idx_menu(msg);
-    write_text_array(msg, MENU_DISP_IDX_LEN);
-
-    // special override display states
-    switch (ui_state.menu_idx) {
-        // turn off BOT_H
-    case MENU_DISP_IDX_LEN - 2:
-        write_display(NULL, TYPE_STR, BOT_H);
-        break;
-        // turn off TOP_H
-    case MENU_DISP_IDX_LEN - 1:
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
-        write_display(NULL, TYPE_STR, TOP_H);
-        break;
-    }
-}
-
 void display_addr()
 {
     // write the actual menu
@@ -142,34 +119,6 @@ void display_tx_addr()
     display_addr();
 }
 
-void display_write_indexes()
-{
-    // write the actual menu
-    char msg[MENU_WRITE_INDEXES_LEN * 21];
-    get_write_indexes_menu(msg);
-    write_text_array(msg, MENU_WRITE_INDEXES_LEN);
-
-    // special override display states
-    switch (ui_state.menu_idx) {
-    case 0:
-        glyph_on(ui_glyphs.glyph_warn);
-        break;
-    case MENU_WRITE_INDEXES_LEN - 3: // [5]
-        write_display(NULL, TYPE_STR, BOT_H);
-        break;
-    case MENU_WRITE_INDEXES_LEN - 2: // Approve
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
-        write_display(NULL, TYPE_STR, BOT_H);
-        write_display(NULL, TYPE_STR, TOP_H);
-        break;
-        // turn off TOP_H
-    case MENU_WRITE_INDEXES_LEN - 1: // Deny
-        display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
-        write_display(NULL, TYPE_STR, TOP_H);
-        break;
-    }
-}
-
 void display_prompt_tx()
 {
     clear_display();
@@ -191,34 +140,6 @@ void display_prompt_tx()
         display_advanced_tx_value();
     else
         display_advanced_tx_address();
-}
-
-void display_warn_change()
-{
-    // write the actual menu
-    char msg[MENU_WARN_CHANGE_LEN * 21];
-    get_warn_change_menu(msg);
-    write_text_array(msg, MENU_WARN_CHANGE_LEN);
-
-    // special override display states
-    switch (ui_state.menu_idx) {
-    case 0:
-        glyph_on(ui_glyphs.glyph_warn);
-        break;
-    case MENU_WARN_CHANGE_LEN - 3: // Are you sure?
-        write_display(NULL, TYPE_STR, BOT_H);
-        break;
-    case MENU_WARN_CHANGE_LEN - 2: // Yes
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
-        write_display(NULL, TYPE_STR, BOT_H);
-        write_display(NULL, TYPE_STR, TOP_H);
-        break;
-        // turn off TOP_H
-    case MENU_WARN_CHANGE_LEN - 1: // No
-        display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
-        write_display(NULL, TYPE_STR, TOP_H);
-        break;
-    }
 }
 
 void display_unknown_state()

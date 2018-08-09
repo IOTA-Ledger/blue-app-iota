@@ -4,11 +4,6 @@
 #define BIP44_PATH_LEN 5u
 #define BIP44_BYTE_LENGTH (BIP44_PATH_LEN * sizeof(unsigned int))
 
-// number of accounts for wich index is stored and compared
-#define ACCOUNT_NUM 5u
-static const unsigned int ACCOUNT_BIP44_PATH[] = {0x8000002C, 0x8000107A,
-                                                  0x80000000, 0x00000000};
-
 void io_initialize();
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
 unsigned int iota_dispatch();
@@ -26,9 +21,7 @@ unsigned int iota_dispatch();
 #define INS_TX 0x03
 #define INS_SIGN 0x04
 #define INS_DISP_ADDR 0x05
-#define INS_READ_INDEXES 0x06
-#define INS_WRITE_INDEXES 0x07
-#define INS_GET_APP_CONFIG 0x08
+#define INS_GET_APP_CONFIG 0x06
 
 /* ---  IO constants  --- */
 

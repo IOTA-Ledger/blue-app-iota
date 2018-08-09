@@ -37,11 +37,8 @@ void display_advanced_tx_address();
 // Menu creation
 void get_init_menu(char *msg);
 void get_welcome_menu(char *msg);
-void get_disp_idx_menu(char *msg);
 void get_about_menu(char *msg);
 void get_more_info_menu(char *msg);
 void get_address_menu(char *msg);
-void get_write_indexes_menu(char *msg);
-void get_warn_change_menu(char *msg);
 
 #endif // UI_MISC_H
