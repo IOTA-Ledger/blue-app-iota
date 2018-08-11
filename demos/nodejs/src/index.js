@@ -32,6 +32,9 @@ function validateBundleTrytes(bundleTrytes) {
     const transport = await Transport.create();
     const ledger = new IOTALedger(transport);
 
+    const config = await ledger.getAppConfiguration();
+    console.log('Running on version: ' + config.version);
+
     // initialize
     await ledger.setActiveSeed(BIP44_PATH, SECURITY_LEVEL);
 
