@@ -20,7 +20,7 @@ unsigned int iota_dispatch();
 #define INS_PUBKEY 0x02
 #define INS_TX 0x03
 #define INS_SIGN 0x04
-#define INS_DISP_ADDR 0x05
+
 #define INS_GET_APP_CONFIG 0x06
 
 /* ---  IO constants  --- */

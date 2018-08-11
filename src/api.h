@@ -94,7 +94,7 @@ GET_APP_CONFIG_OUTPUT;
 void api_initialize();
 
 unsigned int api_set_seed(const unsigned char *input_data, unsigned int len);
-unsigned int api_pubkey(const unsigned char *input_data, unsigned int len);
+unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data, unsigned int len);
 unsigned int api_tx(const unsigned char *input_data, unsigned int len);
 unsigned int api_sign(const unsigned char *input_data, unsigned int len);
 unsigned int api_display_pubkey(const unsigned char *input_data,

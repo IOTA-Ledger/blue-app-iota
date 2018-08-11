@@ -33,7 +33,8 @@ unsigned int iota_dispatch()
         return 0;
     }
 
-    const unsigned int len = G_io_apdu_buffer[OFFSET_P3];
+    const uint8_t p1 = G_io_apdu_buffer[OFFSET_P1];
+    const uint8_t len = G_io_apdu_buffer[OFFSET_P3];
     unsigned char *input_data = G_io_apdu_buffer + OFFSET_CDATA;
 
     // check second byte for instruction
@@ -43,16 +44,13 @@ unsigned int iota_dispatch()
         return api_set_seed(input_data, len);
 
     case INS_PUBKEY:
-        return api_pubkey(input_data, len);
+        return api_pubkey(p1, input_data, len);
 
     case INS_TX:
         return api_tx(input_data, len);
 
     case INS_SIGN:
         return api_sign(input_data, len);
-
-    case INS_DISP_ADDR:
-        return api_display_pubkey(input_data, len);
 
     case INS_GET_APP_CONFIG:
         return api_get_app_config(input_data, len);

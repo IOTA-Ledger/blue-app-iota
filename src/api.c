@@ -76,9 +76,33 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
     return 0;
 }
 
-unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
+bool display_address(uint8_t p1)
+{
+    switch (p1) {
+    case 0:
+        return false;
+    case 1:
+        return true;
+    default:
+        // invalid p1 value
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+}
+
+NO_INLINE
+static void io_send_address(const unsigned char *addr_bytes)
+{
+    PUBKEY_OUTPUT output;
+    bytes_to_chars(addr_bytes, output.address, 48);
+
+    io_send(&output, sizeof(output), SW_OK);
+}
+
+unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
+                        unsigned int len)
 {
     const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
+    const bool display = display_address(p1);
 
     ui_display_calc();
 
@@ -91,12 +115,14 @@ unsigned int api_pubkey(const unsigned char *input_data, unsigned int len)
     unsigned char addr_bytes[48];
     get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
 
-    PUBKEY_OUTPUT output;
-    bytes_to_chars(addr_bytes, output.address, 48);
+    if (display) {
+        ui_display_address(addr_bytes);
+    }
+    else {
+        ui_restore();
+    }
 
-    ui_restore();
-
-    io_send(&output, sizeof(output), SW_OK);
+    io_send_address(addr_bytes);
     return 0;
 }
 
@@ -304,28 +330,6 @@ unsigned int api_sign(const unsigned char *input_data, unsigned int len)
         ui_display_welcome();
     }
 
-    return 0;
-}
-
-unsigned int api_display_pubkey(const unsigned char *input_data,
-                                unsigned int len)
-{
-    const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
-
-    ui_display_calc();
-
-    uint32_t address_idx;
-    if (!ASSIGN(address_idx, input->address_idx)) {
-        // address index overflow
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-
-    unsigned char addr_bytes[48];
-    get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
-
-    ui_display_address(addr_bytes);
-
-    io_send(NULL, 0, SW_OK);
     return 0;
 }
 
