@@ -21,7 +21,6 @@ void ui_display_calc();
 void ui_display_recv();
 void ui_display_signing();
 void ui_display_address(const unsigned char *addr_bytes);
-void ui_warn_change(BUNDLE_CTX *bundle_ctx);
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
 void ui_display_write_indexes(const uint32_t *seed_indexes);
 void ui_reset();

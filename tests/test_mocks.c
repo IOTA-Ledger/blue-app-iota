@@ -30,11 +30,6 @@ void ui_display_address(const unsigned char *addr_bytes)
     UNUSED(addr_bytes);
 }
 
-void ui_display_write_indexes(const WRITE_INDEXES_INPUT *input)
-{
-    UNUSED(input);
-}
-
 // forward declaration
 void user_sign_tx();
 
@@ -61,20 +56,6 @@ void ui_restore()
 bool storage_is_initialized()
 {
     return true;
-}
-
-__attribute__((weak)) uint32_t storage_get_seed_index(unsigned int account)
-{
-    UNUSED(account);
-
-    return 0;
-}
-
-__attribute__((weak)) void storage_write_seed_index(unsigned int account,
-                                                    uint32_t seed_index)
-{
-    UNUSED(account);
-    UNUSED(seed_index);
 }
 
 __attribute__((weak)) void derive_seed_bip32(const unsigned int *path,

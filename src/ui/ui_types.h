@@ -20,30 +20,26 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-
-#define STATE_INIT 0
-#define STATE_WELCOME 1
-#define STATE_IGNORE 2
-#define STATE_DISP_IDX 3
-#define STATE_ABOUT 4
-#define STATE_VERSION 5
-#define STATE_MORE_INFO 6
-#define STATE_DISP_ADDR 7     // Host displays pubkey on ledger
-#define STATE_TX_ADDR 8       // Display full address in TX
-#define STATE_DISP_ADDR_CHK 9 // Abbreviated address with Checksum
-#define STATE_WRITE_INDEXES 10
-#define STATE_PROMPT_TX 11
-#define STATE_WARN_CHANGE 12
+enum UI_STATES {
+    STATE_INIT,
+    STATE_WELCOME,
+    STATE_IGNORE,
+    STATE_ABOUT,
+    STATE_VERSION,
+    STATE_MORE_INFO,
+    STATE_DISP_ADDR,     // Host displays pubkey on ledger
+    STATE_TX_ADDR,       // Display full address in TX
+    STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
+    STATE_PROMPT_TX
+};
 
 #define STATE_EXIT 255
 
 // Size of Menu
 #define MENU_INIT_LEN 6
-#define MENU_WELCOME_LEN 4
-#define MENU_DISP_IDX_LEN 6
+#define MENU_WELCOME_LEN 3
 #define MENU_ABOUT_LEN 3
 #define MENU_ADDR_LEN 7
-#define MENU_WRITE_INDEXES_LEN 10
 #define MENU_WARN_CHANGE_LEN 7
 #define MENU_MORE_INFO_LEN 3
 

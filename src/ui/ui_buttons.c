@@ -28,16 +28,11 @@ uint8_t button_welcome(uint8_t button_mask)
 
     if (button_mask == BUTTON_B) {
         switch (ui_state.menu_idx) {
-            // Welcome to IOTA
-        case 0:
+        case 0: // Welcome to IOTA
             state_go(STATE_EXIT, 0);
             return array_sz;
             // View Indexes
-        case 1:
-            state_go(STATE_DISP_IDX, 0);
-            return array_sz;
-            // About
-        case 2:
+        case 1: // About
             state_go(STATE_ABOUT, 0);
             return array_sz;
             // Exit App
@@ -97,19 +92,6 @@ uint8_t button_more_info(uint8_t button_mask)
     return array_sz;
 }
 
-uint8_t button_disp_idx(uint8_t button_mask)
-{
-    uint8_t array_sz = MENU_DISP_IDX_LEN - 1;
-
-    // no special interaction on any index, so always transition back
-    if (button_mask == BUTTON_B) {
-        state_return(STATE_WELCOME, 1);
-        return array_sz;
-    }
-
-    return array_sz;
-}
-
 uint8_t button_disp_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
@@ -143,28 +125,6 @@ uint8_t button_tx_addr(uint8_t button_mask)
     if (button_mask == BUTTON_B) {
         restore_state();
         return array_sz;
-    }
-
-    return array_sz;
-}
-
-uint8_t button_write_indexes(uint8_t button_mask)
-{
-    uint8_t array_sz = MENU_WRITE_INDEXES_LEN - 1;
-
-    if (button_mask == BUTTON_B) {
-        // Deny
-        if (ui_state.menu_idx == array_sz) {
-            write_indexes_deny();
-            ui_state.seed_indexes = NULL;
-            return array_sz;
-        }
-        else if (ui_state.menu_idx == array_sz - 1) {
-            // Approve
-            write_indexes_approve(ui_state.seed_indexes);
-            ui_state.seed_indexes = NULL;
-            return array_sz;
-        }
     }
 
     return array_sz;
