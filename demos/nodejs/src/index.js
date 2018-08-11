@@ -62,7 +62,7 @@ function validateBundleTrytes(bundleTrytes) {
     var trytes = await ledger.signTransaction(transfers, inputs, remainder);
     validateBundleTrytes(trytes);
 
-    await ledger.displayAddress(4);
+    await ledger.getAddress(KEY_INDEX + 3, { display: true })
 })().catch(e => {
     console.error(e);
 });
