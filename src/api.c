@@ -29,9 +29,10 @@
     })
 
 typedef struct API_CTX {
+    unsigned int bip32_path[BIP32_PATH_LEN]; // path used for seed derivation
+    uint8_t security;                        // security level used
 
-    unsigned char seed_bytes[NUM_HASH_BYTES];
-    uint8_t security;
+    unsigned char seed_bytes[NUM_HASH_BYTES]; // IOTA seed
 
     BUNDLE_CTX bundle_ctx;
     SIGNING_CTX signing_ctx;
@@ -54,9 +55,8 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
     // setting the seed resets everything
     api_initialize();
 
-    unsigned int path[BIP44_PATH_LEN];
-    for (unsigned int i = 0; i < BIP44_PATH_LEN; i++) {
-        if (!ASSIGN(path[i], input->bip44_path[i])) {
+    for (unsigned int i = 0; i < BIP32_PATH_LEN; i++) {
+        if (!ASSIGN(api.bip32_path[i], input->bip32_path[i])) {
             // path overflow
             THROW(SW_COMMAND_INVALID_DATA);
         }
@@ -68,7 +68,7 @@ unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    derive_seed_bip32(path, BIP44_PATH_LEN, api.seed_bytes);
+    derive_seed_bip32(api.bip32_path, BIP32_PATH_LEN, api.seed_bytes);
 
     api.state_flags |= SEED_SET;
 

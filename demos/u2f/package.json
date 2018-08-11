@@ -11,7 +11,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@ledgerhq/hw-transport-u2f": "^4.7.3",
+    "@ledgerhq/hw-transport-u2f": "^4.21.0",
     "babel-polyfill": "^6.26.0",
     "budo": "^11.2.0",
     "hw-app-iota": "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git"

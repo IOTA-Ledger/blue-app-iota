@@ -17,7 +17,7 @@
 
 typedef IO_STRUCT SET_SEED_INPUT
 {
-    int64_t bip44_path[BIP44_PATH_LEN];
+    int64_t bip32_path[BIP32_PATH_LEN];
     int64_t security;
 }
 SET_SEED_INPUT;
