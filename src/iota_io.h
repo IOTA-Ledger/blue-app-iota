@@ -21,7 +21,7 @@ unsigned int iota_dispatch();
 #define INS_TX 0x03
 #define INS_SIGN 0x04
 
-#define INS_GET_APP_CONFIG 0x06
+#define INS_GET_APP_CONFIG 0x10
 
 /* ---  IO constants  --- */
 
