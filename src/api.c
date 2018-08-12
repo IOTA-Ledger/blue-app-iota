@@ -424,7 +424,7 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
     if (!storage_is_initialized()) {
         THROW(SW_APP_NOT_INITIALIZED);
     }
-    if (CHECK_STATE(api.state_flags, GET_APP_CONFIG)) {
+    if (CHECK_STATE(api.state_flags, RESET)) {
         THROW(SW_COMMAND_INVALID_STATE);
     }
 
