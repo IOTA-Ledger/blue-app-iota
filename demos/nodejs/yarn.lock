@@ -882,7 +882,7 @@ home-or-tmp@^2.0.0:
 
 "hw-app-iota@git+https://github.com/IOTA-Ledger/hw-app-iota.js.git":
   version "0.1.1"
-  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#cbb407f420ee431305650116d38e53a65196d549"
+  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#c1490c9a217637f058953815e600479ecbcde4b4"
   dependencies:
     bip32-path "^0.4.2"
     iota.lib.js "^0.4.7"
