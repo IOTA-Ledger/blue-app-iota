@@ -48,7 +48,8 @@ void api_initialize()
     os_memset(&api, 0, sizeof(api));
 }
 
-unsigned int api_set_seed(const unsigned char *input_data, unsigned int len)
+unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
+                          unsigned int len)
 {
     const SET_SEED_INPUT *input = GET_INPUT(input_data, len, SET_SEED);
 
@@ -219,7 +220,8 @@ static void io_send_unfinished_bundle()
     io_send(&output, sizeof(output), SW_OK);
 }
 
-unsigned int api_tx(const unsigned char *input_data, unsigned int len)
+unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
+                    unsigned int len)
 {
     const TX_INPUT *input = GET_INPUT(input_data, len, TX);
 
@@ -282,7 +284,8 @@ static bool next_signature_fragment(SIGNING_CTX *ctx, char *signature_fragment)
     return signing_has_next_fragment(ctx);
 }
 
-unsigned int api_sign(const unsigned char *input_data, unsigned int len)
+unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
+                      unsigned int len)
 {
     const SIGN_INPUT *input = GET_INPUT(input_data, len, SIGN);
 
@@ -370,7 +373,8 @@ void user_deny_tx()
 }
 
 // get application configuration (flags and version)
-unsigned int api_get_app_config(unsigned char *input_data, unsigned int len)
+unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
+                                unsigned int len)
 {
     // no input requried
     UNUSED(input_data);

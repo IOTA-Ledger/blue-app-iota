@@ -8,26 +8,26 @@
         0x8000002C, 0x8000107A, 0x80000000, 0x00000000, 0x00000000             \
     }
 
-#define EXPECT_API_OK(INS, input)                                              \
+#define EXPECT_API_OK(INS, p1, input)                                          \
     ({                                                                         \
         expect_value(io_send, ptr, NULL);                                      \
         expect_value(io_send, length, 0);                                      \
         expect_value(io_send, sw, 0x9000);                                     \
-        api_##INS((unsigned char *)&input, sizeof(input));                     \
+        api_##INS(p1, (unsigned char *)&input, sizeof(input));                 \
     })
 
-#define EXPECT_API_DATA_OK(INS, input, output)                                 \
+#define EXPECT_API_DATA_OK(INS, p1, input, output)                             \
     ({                                                                         \
         expect_memory(io_send, ptr, &output, sizeof(output));                  \
         expect_value(io_send, length, sizeof(output));                         \
         expect_value(io_send, sw, 0x9000);                                     \
-        api_##INS((unsigned char *)&input, sizeof(input));                     \
+        api_##INS(p1, (unsigned char *)&input, sizeof(input));                 \
     })
 
-#define EXPECT_API_EXCEPTION(INS, input)                                       \
+#define EXPECT_API_EXCEPTION(INS, p1, input)                                   \
     ({                                                                         \
         expect_assert_failure(                                                 \
-            api_##INS((unsigned char *)&input, sizeof(input)));                \
+            api_##INS(p1, (unsigned char *)&input, sizeof(input)));            \
     })
 
 #define SEED_INIT(seed)                                                        \

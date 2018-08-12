@@ -31,7 +31,7 @@ static void test_valid_index_level_one(void **state)
         api_initialize();
         {
             SET_SEED_INPUT input = {BIP32_PATH, security};
-            EXPECT_API_OK(set_seed, input);
+            EXPECT_API_OK(set_seed, 0, input);
         }
         {
             PUBKEY_INPUT input = {idx};
@@ -39,7 +39,7 @@ static void test_valid_index_level_one(void **state)
             strncpy(output.address, PETER_VECTOR.addresses[security][idx],
                     NUM_HASH_TRYTES);
 
-            EXPECT_API_DATA_OK(pubkey, input, output);
+            EXPECT_API_DATA_OK(pubkey, 0, input, output);
         }
     }
 }
@@ -55,7 +55,7 @@ static void test_valid_index_level_two(void **state)
         api_initialize();
         {
             SET_SEED_INPUT input = {BIP32_PATH, security};
-            EXPECT_API_OK(set_seed, input);
+            EXPECT_API_OK(set_seed, 0, input);
         }
         {
             PUBKEY_INPUT input = {idx};
@@ -63,7 +63,7 @@ static void test_valid_index_level_two(void **state)
             strncpy(output.address, PETER_VECTOR.addresses[security][idx],
                     NUM_HASH_TRYTES);
 
-            EXPECT_API_DATA_OK(pubkey, input, output);
+            EXPECT_API_DATA_OK(pubkey, 0, input, output);
         }
     }
 }
@@ -79,7 +79,7 @@ static void test_valid_index_level_three(void **state)
         api_initialize();
         {
             SET_SEED_INPUT input = {BIP32_PATH, security};
-            EXPECT_API_OK(set_seed, input);
+            EXPECT_API_OK(set_seed, 0, input);
         }
         {
             PUBKEY_INPUT input = {idx};
@@ -87,7 +87,7 @@ static void test_valid_index_level_three(void **state)
             strncpy(output.address, PETER_VECTOR.addresses[security][idx],
                     NUM_HASH_TRYTES);
 
-            EXPECT_API_DATA_OK(pubkey, input, output);
+            EXPECT_API_DATA_OK(pubkey, 0, input, output);
         }
     }
 }
@@ -100,19 +100,19 @@ static void test_change_security(void **state)
     {
         SEED_INIT(PETER_VECTOR.seed);
         SET_SEED_INPUT input = {BIP32_PATH, 1};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     {
         SEED_INIT(PETER_VECTOR.seed);
         SET_SEED_INPUT input = {BIP32_PATH, 2};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     {
         PUBKEY_INPUT input = {0};
         PUBKEY_OUTPUT output;
         strncpy(output.address, PETER_VECTOR.addresses[2][0], NUM_HASH_TRYTES);
 
-        EXPECT_API_DATA_OK(pubkey, input, output);
+        EXPECT_API_DATA_OK(pubkey, 0, input, output);
     }
 }
 
@@ -125,12 +125,12 @@ static void test_negative_index(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     {
         PUBKEY_INPUT input = {-1};
 
-        EXPECT_API_EXCEPTION(pubkey, input);
+        EXPECT_API_EXCEPTION(pubkey, 0, input);
     }
 }
 
@@ -143,12 +143,12 @@ static void test_index_overflow(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     {
         PUBKEY_INPUT input = {(UINT32_MAX + INT64_C(1))};
 
-        EXPECT_API_EXCEPTION(pubkey, input);
+        EXPECT_API_EXCEPTION(pubkey, 0, input);
     }
 }
 
@@ -160,7 +160,7 @@ static void test_not_set_seed(void **state)
     {
         PUBKEY_INPUT input = {0};
 
-        EXPECT_API_EXCEPTION(pubkey, input);
+        EXPECT_API_EXCEPTION(pubkey, 0, input);
     }
 }
 

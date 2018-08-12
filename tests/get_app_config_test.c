@@ -24,7 +24,7 @@ static void test_get_app_config(void **state)
     output.app_version_minor = APPVERSION_MINOR;
     output.app_version_patch = APPVERSION_PATCH;
 
-    EXPECT_API_DATA_OK(get_app_config, input, output);
+    EXPECT_API_DATA_OK(get_app_config, 0, input, output);
 }
 
 int main(void)

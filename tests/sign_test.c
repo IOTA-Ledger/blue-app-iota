@@ -27,20 +27,20 @@ static void input_valid_bundle(int security, const TX_INPUT *tx, int last_index,
 {
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     for (int i = 0; i < last_index; i++) {
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, tx[i], output);
+        EXPECT_API_DATA_OK(tx, 0, tx[i], output);
     }
     {
         TX_OUTPUT output = {0};
         output.finalized = true;
         strncpy(output.bundle_hash, bundle_hash, 81);
 
-        EXPECT_API_DATA_OK(tx, tx[last_index], output);
+        EXPECT_API_DATA_OK(tx, 0, tx[last_index], output);
     }
 }
 
@@ -64,7 +64,7 @@ static void test_valid_signatures(const char *seed, int security,
             output.fragments_remaining = (j + 1) != num_fragments;
             memcpy(output.signature_fragment, signature[i] + j * 243, 243);
 
-            EXPECT_API_DATA_OK(sign, input, output);
+            EXPECT_API_DATA_OK(sign, 0, input, output);
         }
     }
 }
@@ -90,7 +90,7 @@ static void test_unfinalized_bundle(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, 2};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     {
         TX_INPUT input;
@@ -98,13 +98,13 @@ static void test_unfinalized_bundle(void **state)
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, input, output);
+        EXPECT_API_DATA_OK(tx, 0, input, output);
     }
     {
         SIGN_INPUT input;
         input.transaction_idx = 0;
 
-        EXPECT_API_EXCEPTION(sign, input);
+        EXPECT_API_EXCEPTION(sign, 0, input);
     }
 }
 
@@ -119,7 +119,7 @@ static void test_output_index(void **state)
         SIGN_INPUT input;
         input.transaction_idx = 0;
 
-        EXPECT_API_EXCEPTION(sign, input);
+        EXPECT_API_EXCEPTION(sign, 0, input);
     }
 }
 
@@ -134,7 +134,7 @@ static void test_meta_index(void **state)
         SIGN_INPUT input;
         input.transaction_idx = 2;
 
-        EXPECT_API_EXCEPTION(sign, input);
+        EXPECT_API_EXCEPTION(sign, 0, input);
     }
 }
 
@@ -153,13 +153,13 @@ static void test_changing_index(void **state)
         output.fragments_remaining = true;
         memcpy(output.signature_fragment, PETER_VECTOR.signature[0], 243);
 
-        EXPECT_API_DATA_OK(sign, input, output);
+        EXPECT_API_DATA_OK(sign, 0, input, output);
     }
     {
         SIGN_INPUT input;
         input.transaction_idx = 2;
 
-        EXPECT_API_EXCEPTION(sign, input);
+        EXPECT_API_EXCEPTION(sign, 0, input);
     }
 }
 
@@ -172,7 +172,7 @@ static void test_not_set_seed(void **state)
         SIGN_INPUT input;
         input.transaction_idx = 0;
 
-        EXPECT_API_EXCEPTION(sign, input);
+        EXPECT_API_EXCEPTION(sign, 0, input);
     }
 }
 

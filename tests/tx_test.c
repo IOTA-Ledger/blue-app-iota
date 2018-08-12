@@ -31,20 +31,20 @@ static void test_valid_bundle(const char *seed, int security,
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     for (int i = 0; i < last_index; i++) {
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, tx[i], output);
+        EXPECT_API_DATA_OK(tx, 0, tx[i], output);
     }
     {
         TX_OUTPUT output = {0};
         output.finalized = true;
         strncpy(output.bundle_hash, bundle_hash, 81);
 
-        EXPECT_API_DATA_OK(tx, tx[last_index], output);
+        EXPECT_API_DATA_OK(tx, 0, tx[last_index], output);
     }
 }
 
@@ -134,22 +134,22 @@ static void test_invalid_input_address_index(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[0], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
     }
     { // input transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[1], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[1], output);
     }
     { // meta transaction
-        EXPECT_API_EXCEPTION(tx, txs[2]);
+        EXPECT_API_EXCEPTION(tx, 0, txs[2]);
     }
 }
 
@@ -162,14 +162,14 @@ static void test_invalid_tx_order(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     { // input transaction as the first transaction
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
         input.current_index = 0;
 
-        EXPECT_API_EXCEPTION(tx, input);
+        EXPECT_API_EXCEPTION(tx, 0, input);
     }
 }
 
@@ -182,7 +182,7 @@ static void test_tx_index_twice(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     {
         TX_INPUT input;
@@ -190,14 +190,14 @@ static void test_tx_index_twice(void **state)
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, input, output);
+        EXPECT_API_DATA_OK(tx, 0, input, output);
     }
     {
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
         input.current_index = 0;
 
-        EXPECT_API_EXCEPTION(tx, input);
+        EXPECT_API_EXCEPTION(tx, 0, input);
     }
 }
 
@@ -219,16 +219,16 @@ static void test_missing_meta_tx(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[0], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
     }
     { // input transaction
-        EXPECT_API_EXCEPTION(tx, txs[1]);
+        EXPECT_API_EXCEPTION(tx, 0, txs[1]);
     }
 }
 
@@ -253,22 +253,22 @@ static void test_missing_meta_tx_with_change(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[0], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
     }
     { // input transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[1], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[1], output);
     }
     { // 0-value change transaction
-        EXPECT_API_EXCEPTION(tx, txs[2]);
+        EXPECT_API_EXCEPTION(tx, 0, txs[2]);
     }
 }
 
@@ -281,7 +281,7 @@ static void test_meta_tx_without_reference(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
 
     int tx_index = 0;
@@ -295,7 +295,7 @@ static void test_meta_tx_without_reference(void **state)
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, input, output);
+        EXPECT_API_DATA_OK(tx, 0, input, output);
     }
     { // meta transaction
         TX_INPUT input;
@@ -303,7 +303,7 @@ static void test_meta_tx_without_reference(void **state)
         input.current_index = tx_index++;
         input.last_index = last_index;
 
-        EXPECT_API_EXCEPTION(tx, input);
+        EXPECT_API_EXCEPTION(tx, 0, input);
     }
 }
 
@@ -334,28 +334,28 @@ static void test_invalid_change_index(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[0], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
     }
     { // input transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[1], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[1], output);
     }
     { // meta transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[2], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[2], output);
     }
     { // 0-value change transaction
-        EXPECT_API_EXCEPTION(tx, txs[3]);
+        EXPECT_API_EXCEPTION(tx, 0, txs[3]);
     }
 }
 
@@ -383,28 +383,28 @@ static void test_change_address_reuses_input(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[0], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
     }
     { // input transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[1], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[1], output);
     }
     { // meta transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, txs[2], output);
+        EXPECT_API_DATA_OK(tx, 0, txs[2], output);
     }
     { // 0-value change transaction
-        EXPECT_API_EXCEPTION(tx, txs[3]);
+        EXPECT_API_EXCEPTION(tx, 0, txs[3]);
     }
 }
 
@@ -417,14 +417,14 @@ static void test_invalid_value_transaction(void **state)
     api_initialize();
     {
         SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
     { // output transaction
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
         input.value = MAX_IOTA_VALUE + 1;
 
-        EXPECT_API_EXCEPTION(tx, input);
+        EXPECT_API_EXCEPTION(tx, 0, input);
     }
 }
 
@@ -437,7 +437,7 @@ static void test_not_set_seed(void **state)
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
 
-        EXPECT_API_EXCEPTION(tx, input);
+        EXPECT_API_EXCEPTION(tx, 0, input);
     }
 }
 

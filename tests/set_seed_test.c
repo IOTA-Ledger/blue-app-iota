@@ -38,7 +38,7 @@ static void test_valid_security_levels(void **state)
         SET_SEED_INPUT input = {BIP32_PATH, security};
 
         api_initialize();
-        EXPECT_API_OK(set_seed, input);
+        EXPECT_API_OK(set_seed, 0, input);
     }
 }
 
@@ -49,7 +49,7 @@ static void test_security_level_zero(void **state)
     SET_SEED_INPUT input = {BIP32_PATH, 0};
 
     api_initialize();
-    EXPECT_API_EXCEPTION(set_seed, input);
+    EXPECT_API_EXCEPTION(set_seed, 0, input);
 }
 
 static void test_security_level_four(void **state)
@@ -59,7 +59,7 @@ static void test_security_level_four(void **state)
     SET_SEED_INPUT input = {BIP32_PATH, 4};
 
     api_initialize();
-    EXPECT_API_EXCEPTION(set_seed, input);
+    EXPECT_API_EXCEPTION(set_seed, 0, input);
 }
 
 static void test_invalid_negative_path(void **state)
@@ -71,10 +71,10 @@ static void test_invalid_negative_path(void **state)
 
     SET_SEED_INPUT input;
     input.security = 1;
-    memcpy(input.bip44_path, path, sizeof(path));
+    memcpy(input.bip32_path, path, sizeof(path));
 
     api_initialize();
-    EXPECT_API_EXCEPTION(set_seed, input);
+    EXPECT_API_EXCEPTION(set_seed, 0, input);
 }
 
 static void test_path_overflow(void **state)
@@ -86,10 +86,10 @@ static void test_path_overflow(void **state)
 
     SET_SEED_INPUT input;
     input.security = 1;
-    memcpy(input.bip44_path, path, sizeof(path));
+    memcpy(input.bip32_path, path, sizeof(path));
 
     api_initialize();
-    EXPECT_API_EXCEPTION(set_seed, input);
+    EXPECT_API_EXCEPTION(set_seed, 0, input);
 }
 
 int main(void)

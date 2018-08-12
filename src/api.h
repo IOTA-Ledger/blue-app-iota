@@ -93,13 +93,16 @@ GET_APP_CONFIG_OUTPUT;
 
 void api_initialize();
 
-unsigned int api_set_seed(const unsigned char *input_data, unsigned int len);
-unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data, unsigned int len);
-unsigned int api_tx(const unsigned char *input_data, unsigned int len);
-unsigned int api_sign(const unsigned char *input_data, unsigned int len);
-unsigned int api_display_pubkey(const unsigned char *input_data,
+unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
+                          unsigned int len);
+unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
+                        unsigned int len);
+unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
+                    unsigned int len);
+unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
+                      unsigned int len);
+unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
                                 unsigned int len);
-unsigned int api_get_app_config(unsigned char *input_data, unsigned int len);
 
 void user_sign_tx();
 void user_deny_tx();
