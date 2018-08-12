@@ -37,7 +37,8 @@
 | ----- | ---- | ------- | ----- |
 | CLA | byte (1) | Always `0x7A` |
 | INS | byte (1) | `0x02` |
-| P1-P2| byte (2)| ignored |
+| P1 | byte (1) | `0x00`: return address<br/> `0x01`: return and display address |
+| P2| byte (1)| ignored |
 | L | byte (1) | Number of bytes to follow | $[0,255]$
 | idx | signed int64 (8) | Index of the address | $[0, 2^{32}-1]$
 
@@ -101,6 +102,49 @@ Called multiple times for the same index, to query all signature fragments.
 | ----- | ----- | ------- |
 | signature_fragment | 243 char string (243) | Base-27 encoding of the signature fragment |
 | fragments_remaining | bool (1) | `true` if more fragments need to be queried |
+| SW1-SW2 | byte (2) | `0x9000` for success |
+
+## Get app configuration
+
+This command returns specific application configuration.
+
+### Input
+
+| Field | Type | Content | Range |
+| ----- | ---- | ------- | ----- |
+| CLA | byte (1) | Always `0x7A` |
+| INS | byte (1) | `0x10` |
+| P1-P2| byte (2)| ignored |
+| L | byte (1) | `0x00` |
+
+### Output
+
+| Field | Type | Content |
+| ----- | ----- | ------- |
+| app_flags | byte (1) | Bit flags for supported features |
+| app_version_major | byte (1) | Major version |
+| app_version_minor | byte (1) | Minor version |
+| app_version_patch | byte (1) | Patch version |
+
+## Reset state
+
+Called to reset the current state, e.g. reset current bundle.
+Must be called after all signatures have been queried before a new bundle can be set.
+
+### Input
+
+| Field | Type | Content | Range |
+| ----- | ---- | ------- | ----- |
+| CLA | byte (1) | Always `0x7A` |
+| INS | byte (1) | `0xFF` |
+| P1 | byte (1) | `0x00`: reset everything<br/> `0x01`: reset bundle and signatures, keep the seed |
+| P2| byte (1)| ignored |
+| L | byte (1) | `0x00` |
+
+### Output
+
+| Field | Type | Content |
+| ----- | ----- | ------- |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
 ## Response codes
