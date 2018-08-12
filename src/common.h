@@ -125,4 +125,6 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
         (_x >= (min) && _x <= (max));                                          \
     })
 
+#define MEMCLEAR(x) os_memset(&x, 0, sizeof(x))
+
 #endif // COMMON_H

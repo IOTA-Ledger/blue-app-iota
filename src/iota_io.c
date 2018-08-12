@@ -39,22 +39,20 @@ unsigned int iota_dispatch()
 
     // check second byte for instruction
     switch (G_io_apdu_buffer[OFFSET_INS]) {
-
+    case INS_NONE:
+        return 0;
     case INS_SET_SEED:
         return api_set_seed(p1, input_data, len);
-
     case INS_PUBKEY:
         return api_pubkey(p1, input_data, len);
-
     case INS_TX:
         return api_tx(p1, input_data, len);
-
     case INS_SIGN:
         return api_sign(p1, input_data, len);
-
     case INS_GET_APP_CONFIG:
         return api_get_app_config(p1, input_data, len);
-
+    case INS_RESET:
+        return api_reset(p1, input_data, len);
     // unknown command ??
     default:
         THROW(SW_INS_NOT_SUPPORTED);

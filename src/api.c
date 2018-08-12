@@ -45,12 +45,13 @@ API_CTX api;
 
 void api_initialize()
 {
-    os_memset(&api, 0, sizeof(api));
+    MEMCLEAR(api);
 }
 
 unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
                           unsigned int len)
 {
+    UNUSED(p1);
     const SET_SEED_INPUT *input = GET_INPUT(input_data, len, SET_SEED);
 
     // setting the seed resets everything
@@ -77,17 +78,18 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
     return 0;
 }
 
-bool display_address(uint8_t p1)
+static bool display_address(uint8_t p1)
 {
     switch (p1) {
-    case 0:
+    case P1_PUBKEY_NO_DISPLAY:
         return false;
-    case 1:
+    case P1_PUBKEY_DISPLAY:
         return true;
     default:
         // invalid p1 value
         THROW(SW_COMMAND_INVALID_DATA);
     }
+    return false; // avoid compiler warnings
 }
 
 NO_INLINE
@@ -223,6 +225,7 @@ static void io_send_unfinished_bundle()
 unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
                     unsigned int len)
 {
+    UNUSED(p1);
     const TX_INPUT *input = GET_INPUT(input_data, len, TX);
 
     // TODO handle not receiving complete tx
@@ -287,6 +290,7 @@ static bool next_signature_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
                       unsigned int len)
 {
+    UNUSED(p1);
     const SIGN_INPUT *input = GET_INPUT(input_data, len, SIGN);
 
     uint8_t tx_idx;
@@ -376,7 +380,7 @@ void user_deny_tx()
 unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
                                 unsigned int len)
 {
-    // no input requried
+    UNUSED(p1);
     UNUSED(input_data);
     UNUSED(len);
 
@@ -394,5 +398,49 @@ unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
     output.app_version_patch = APPVERSION_PATCH;
 
     io_send(&output, sizeof(output), SW_OK);
+    return 0;
+}
+
+static bool reset_partial(uint8_t p1)
+{
+    switch (p1) {
+    case P1_RESET_EVERYTHING:
+        return false;
+    case P1_RESET_PARTIAL:
+        return true;
+    default:
+        // invalid p1 value
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+    return false; // avoid compiler warnings
+}
+
+unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
+{
+    // no input requried
+    UNUSED(input_data);
+    UNUSED(len);
+
+    if (!storage_is_initialized()) {
+        THROW(SW_APP_NOT_INITIALIZED);
+    }
+    if (CHECK_STATE(api.state_flags, GET_APP_CONFIG)) {
+        THROW(SW_COMMAND_INVALID_STATE);
+    }
+
+    if (reset_partial(p1)) {
+        if (!(api.state_flags & SEED_SET)) {
+            THROW(SW_COMMAND_INVALID_STATE);
+        }
+        // clear bundle and signature data and reset state
+        MEMCLEAR(api.bundle_ctx);
+        MEMCLEAR(api.signing_ctx);
+        api.state_flags = SEED_SET;
+    }
+    else {
+        api_initialize();
+    }
+
+    io_send(NULL, 0, SW_OK);
     return 0;
 }
