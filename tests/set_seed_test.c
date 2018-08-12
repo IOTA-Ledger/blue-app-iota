@@ -35,9 +35,9 @@ static void test_valid_security_levels(void **state)
         will_return(derive_seed_bip32,
                     cast_ptr_to_largest_integral_type(PETER_VECTOR.seed));
 
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-
         api_initialize();
+
+        SET_SEED_INPUT input = {BIP32_PATH, security};
         EXPECT_API_OK(set_seed, 0, input);
     }
 }

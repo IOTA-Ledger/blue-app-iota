@@ -1,6 +1,7 @@
 #ifndef TEST_COMMON_H
 #define TEST_COMMON_H
 
+#include <stdbool.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
@@ -8,6 +9,7 @@
 // include for safe redefines
 #include <assert.h>
 #include "common.h"
+#include "test_vectors.h"
 
 #include "iota_types.h"
 
@@ -31,5 +33,13 @@
 
 #undef assert
 #define assert(X) mock_assert((int)(X), #X, __FILE__, __LINE__)
+
+static inline void assert_all_zero(const void *a, size_t size)
+{
+    if (size > 0) {
+        assert_int_equal(((char *)a)[0], 0);
+        assert_memory_equal(a, a + 1, size - 1);
+    }
+}
 
 #endif // TEST_COMMON_H

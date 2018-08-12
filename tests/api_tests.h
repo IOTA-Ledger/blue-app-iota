@@ -1,7 +1,8 @@
 #ifndef API_TESTS_H
 #define API_TESTS_H
 
-#include "test_vectors.h"
+#include "test_common.h"
+#include "api.h"
 
 #define BIP32_PATH                                                             \
     {                                                                          \
@@ -30,10 +31,30 @@
             api_##INS(p1, (unsigned char *)&input, sizeof(input)));            \
     })
 
-#define SEED_INIT(seed)                                                        \
-    ({                                                                         \
-        will_return(derive_seed_bip32,                                         \
-                    cast_ptr_to_largest_integral_type(seed));                  \
-    })
+static inline void EXPECT_API_SET_SEED_OK(const char *seed, int security)
+{
+    will_return(derive_seed_bip32, cast_ptr_to_largest_integral_type(seed));
+
+    SET_SEED_INPUT input = {BIP32_PATH, security};
+    EXPECT_API_OK(set_seed, 0, input);
+}
+
+static inline void EXPECT_API_SET_BUNDLE_OK(const TX_INPUT *tx, int last_index,
+                                            const char *bundle_hash)
+{
+    for (int i = 0; i < last_index; i++) {
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, tx[i], output);
+    }
+    {
+        TX_OUTPUT output = {0};
+        strncpy(output.bundle_hash, bundle_hash, 81);
+        output.finalized = true;
+
+        EXPECT_API_DATA_OK(tx, 0, tx[last_index], output);
+    }
+}
 
 #endif

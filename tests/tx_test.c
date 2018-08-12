@@ -23,44 +23,22 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
     check_expected(sw);
 }
 
-static void test_valid_bundle(const char *seed, int security,
-                              const TX_INPUT *tx, int last_index,
-                              const char *bundle_hash)
+static void test_bundle(char *seed, TX_INPUT *txs, char *bundle_hash,
+                        char signatures[][SIGNATURE_LENGTH])
 {
-    SEED_INIT(seed);
+    UNUSED(signatures);
+    static const int security = 2;
+
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
-    for (int i = 0; i < last_index; i++) {
-        TX_OUTPUT output = {0};
-        output.finalized = false;
-
-        EXPECT_API_DATA_OK(tx, 0, tx[i], output);
-    }
-    {
-        TX_OUTPUT output = {0};
-        output.finalized = true;
-        strncpy(output.bundle_hash, bundle_hash, 81);
-
-        EXPECT_API_DATA_OK(tx, 0, tx[last_index], output);
-    }
+    EXPECT_API_SET_SEED_OK(seed, security);
+    EXPECT_API_SET_BUNDLE_OK(txs, 5, bundle_hash);
 }
 
 static void test_bundles_for_seed_from_file(void **state)
 {
     UNUSED(state);
 
-    void test(char *seed, TX_INPUT *txs, char *bundle_hash,
-              char signatures[][SIGNATURE_LENGTH])
-    {
-        UNUSED(signatures);
-
-        test_valid_bundle(seed, 2, txs, 5, bundle_hash);
-    }
-
-    test_for_each_bundle("generateBundlesForSeed", test);
+    test_for_each_bundle("generateBundlesForSeed", test_bundle);
 }
 
 static void finalize_bundle(TX_INPUT *tx, int last_index)
@@ -108,8 +86,9 @@ static void test_refinalize_valid_bundle(void **state)
     // create a valid bundle
     finalize_bundle(txs, 2);
 
-    test_valid_bundle(PETER_VECTOR.seed, security, txs, 2,
-                      PETER_VECTOR.bundle_hash);
+    api_initialize();
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
+    EXPECT_API_SET_BUNDLE_OK(txs, 2, PETER_VECTOR.bundle_hash);
 }
 
 static void test_invalid_input_address_index(void **state)
@@ -130,12 +109,8 @@ static void test_invalid_input_address_index(void **state)
     // create a valid bundle
     finalize_bundle(txs, 2);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
@@ -158,12 +133,8 @@ static void test_invalid_tx_order(void **state)
     UNUSED(state);
     static const int security = 2;
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     { // input transaction as the first transaction
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[1], sizeof(input));
@@ -178,12 +149,8 @@ static void test_tx_index_twice(void **state)
     UNUSED(state);
     static const int security = 2;
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     {
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
@@ -215,12 +182,8 @@ static void test_missing_meta_tx(void **state)
     // create a valid bundle
     finalize_bundle(txs, 1);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
@@ -249,12 +212,8 @@ static void test_missing_meta_tx_with_change(void **state)
     // create a valid bundle
     finalize_bundle(txs, 2);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
@@ -277,12 +236,8 @@ static void test_meta_tx_without_reference(void **state)
     UNUSED(state);
     static const int security = 2;
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
 
     int tx_index = 0;
     const int last_index = 2;
@@ -330,12 +285,8 @@ static void test_invalid_change_index(void **state)
     // create a valid bundle
     finalize_bundle(txs, 3);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
@@ -379,12 +330,8 @@ static void test_change_address_reuses_input(void **state)
     // create a valid bundle
     finalize_bundle(txs, 3);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     { // output transaction
         TX_OUTPUT output = {0};
         output.finalized = false;
@@ -413,12 +360,8 @@ static void test_invalid_value_transaction(void **state)
     UNUSED(state);
     static const int security = 2;
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     { // output transaction
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
@@ -428,11 +371,27 @@ static void test_invalid_value_transaction(void **state)
     }
 }
 
-static void test_not_set_seed(void **state)
+static void test_not_EXPECT_API_SET_SEED_OK(void **state)
 {
     UNUSED(state);
 
     api_initialize();
+    {
+        TX_INPUT input;
+        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+
+        EXPECT_API_EXCEPTION(tx, 0, input);
+    }
+}
+
+static void test_tx_after_bundle(void **state)
+{
+    UNUSED(state);
+
+    api_initialize();
+
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
     {
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
@@ -455,7 +414,8 @@ int main(void)
         cmocka_unit_test(test_invalid_change_index),
         cmocka_unit_test(test_change_address_reuses_input),
         cmocka_unit_test(test_invalid_value_transaction),
-        cmocka_unit_test(test_not_set_seed)};
+        cmocka_unit_test(test_not_EXPECT_API_SET_SEED_OK),
+        cmocka_unit_test(test_tx_after_bundle)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

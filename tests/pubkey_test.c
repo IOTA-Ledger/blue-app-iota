@@ -27,12 +27,8 @@ static void test_valid_index_level_one(void **state)
 
     for (unsigned idx = 0; idx <= MAX_ADDRESS_INDEX; idx++) {
 
-        SEED_INIT(PETER_VECTOR.seed);
         api_initialize();
-        {
-            SET_SEED_INPUT input = {BIP32_PATH, security};
-            EXPECT_API_OK(set_seed, 0, input);
-        }
+        EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
         {
             PUBKEY_INPUT input = {idx};
             PUBKEY_OUTPUT output;
@@ -51,12 +47,8 @@ static void test_valid_index_level_two(void **state)
 
     for (unsigned idx = 0; idx <= MAX_ADDRESS_INDEX; idx++) {
 
-        SEED_INIT(PETER_VECTOR.seed);
         api_initialize();
-        {
-            SET_SEED_INPUT input = {BIP32_PATH, security};
-            EXPECT_API_OK(set_seed, 0, input);
-        }
+        EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
         {
             PUBKEY_INPUT input = {idx};
             PUBKEY_OUTPUT output;
@@ -75,12 +67,8 @@ static void test_valid_index_level_three(void **state)
 
     for (unsigned idx = 0; idx <= MAX_ADDRESS_INDEX; idx++) {
 
-        SEED_INIT(PETER_VECTOR.seed);
         api_initialize();
-        {
-            SET_SEED_INPUT input = {BIP32_PATH, security};
-            EXPECT_API_OK(set_seed, 0, input);
-        }
+        EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
         {
             PUBKEY_INPUT input = {idx};
             PUBKEY_OUTPUT output;
@@ -97,16 +85,8 @@ static void test_change_security(void **state)
     UNUSED(state);
 
     api_initialize();
-    {
-        SEED_INIT(PETER_VECTOR.seed);
-        SET_SEED_INPUT input = {BIP32_PATH, 1};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
-    {
-        SEED_INIT(PETER_VECTOR.seed);
-        SET_SEED_INPUT input = {BIP32_PATH, 2};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 1);
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
     {
         PUBKEY_INPUT input = {0};
         PUBKEY_OUTPUT output;
@@ -121,12 +101,8 @@ static void test_negative_index(void **state)
     UNUSED(state);
     static const int security = 2;
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     {
         PUBKEY_INPUT input = {-1};
 
@@ -139,12 +115,8 @@ static void test_index_overflow(void **state)
     UNUSED(state);
     static const int security = 2;
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
     {
         PUBKEY_INPUT input = {(UINT32_MAX + INT64_C(1))};
 
@@ -157,11 +129,9 @@ static void test_not_set_seed(void **state)
     UNUSED(state);
 
     api_initialize();
-    {
-        PUBKEY_INPUT input = {0};
 
-        EXPECT_API_EXCEPTION(pubkey, 0, input);
-    }
+    PUBKEY_INPUT input = {0};
+    EXPECT_API_EXCEPTION(pubkey, 0, input);
 }
 
 int main(void)

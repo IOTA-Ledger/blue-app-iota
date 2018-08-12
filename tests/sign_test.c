@@ -22,28 +22,6 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
     check_expected(sw);
 }
 
-static void input_valid_bundle(int security, const TX_INPUT *tx, int last_index,
-                               const char *bundle_hash)
-{
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, security};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
-    for (int i = 0; i < last_index; i++) {
-        TX_OUTPUT output = {0};
-        output.finalized = false;
-
-        EXPECT_API_DATA_OK(tx, 0, tx[i], output);
-    }
-    {
-        TX_OUTPUT output = {0};
-        output.finalized = true;
-        strncpy(output.bundle_hash, bundle_hash, 81);
-
-        EXPECT_API_DATA_OK(tx, 0, tx[last_index], output);
-    }
-}
-
 static void test_valid_signatures(const char *seed, int security,
                                   const TX_INPUT *tx, int last_index,
                                   const char *bundle_hash,
@@ -51,9 +29,9 @@ static void test_valid_signatures(const char *seed, int security,
 {
     const int num_fragments = NUM_SIGNATURE_FRAGMENTS(security);
 
-    SEED_INIT(seed);
     api_initialize();
-    input_valid_bundle(security, tx, last_index, bundle_hash);
+    EXPECT_API_SET_SEED_OK(seed, security);
+    EXPECT_API_SET_BUNDLE_OK(tx, last_index, bundle_hash);
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < num_fragments; j++) {
@@ -86,12 +64,8 @@ static void test_unfinalized_bundle(void **state)
 {
     UNUSED(state);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    {
-        SET_SEED_INPUT input = {BIP32_PATH, 2};
-        EXPECT_API_OK(set_seed, 0, input);
-    }
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
     {
         TX_INPUT input;
         memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
@@ -112,9 +86,9 @@ static void test_output_index(void **state)
 {
     UNUSED(state);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    input_valid_bundle(2, PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
     {
         SIGN_INPUT input;
         input.transaction_idx = 0;
@@ -127,9 +101,9 @@ static void test_meta_index(void **state)
 {
     UNUSED(state);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    input_valid_bundle(2, PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
     {
         SIGN_INPUT input;
         input.transaction_idx = 2;
@@ -142,9 +116,9 @@ static void test_changing_index(void **state)
 {
     UNUSED(state);
 
-    SEED_INIT(PETER_VECTOR.seed);
     api_initialize();
-    input_valid_bundle(2, PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
     {
         SIGN_INPUT input;
         input.transaction_idx = 1;
@@ -163,7 +137,7 @@ static void test_changing_index(void **state)
     }
 }
 
-static void test_not_set_seed(void **state)
+static void test_not_EXPECT_API_SET_SEED_OK(void **state)
 {
     UNUSED(state);
 
@@ -184,7 +158,7 @@ int main(void)
         cmocka_unit_test(test_output_index),
         cmocka_unit_test(test_meta_index),
         cmocka_unit_test(test_changing_index),
-        cmocka_unit_test(test_not_set_seed)};
+        cmocka_unit_test(test_not_EXPECT_API_SET_SEED_OK)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
