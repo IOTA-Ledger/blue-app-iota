@@ -15,8 +15,7 @@ INS_SET_SEED = 0x01
 INS_PUBKEY = 0x02
 INS_TX = 0x03
 INS_SIGN = 0x04
-INS_DISP_ADDR = 0x05
-INS_GET_APP_CONFIG = 0x06
+INS_GET_APP_CONFIG = 0x10
 
 
 def apdu_command(ins, data, p1=0, p2=0):
@@ -82,7 +81,7 @@ struct = unpack_pubkey_output(response)
 print("  Address: %s" % struct[0].decode("utf-8"))
 
 print("\nDisplaying address on the Ledger Nano...")
-dongle.exchange(apdu_command(INS_DISP_ADDR, pack_pub_key_input(SRC_INDEX)))
+dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(SRC_INDEX), 1))
 
 elapsed_time = time.time() - start_time
 print("\nTime Elapsed: %ds" % elapsed_time)
