@@ -34,6 +34,12 @@ bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
  */
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes);
 
+/** @brief Converts a big-endian binary integer into ternary representation.
+ *  @param bytes input big-endian 48-byte integers
+ *  @param trits target trit array
+ */
+void bytes_to_trits(const unsigned char *bytes, trit_t *trits);
+
 /** @brief Converts a big-endian binary integer into a balanced ternary number
  *         in tryte (3-trit) representation.
  *  The input must consist of exactly one big-endian 48-byte integer and is
@@ -83,11 +89,6 @@ void bytes_to_chars(const unsigned char *bytes, char *chars,
  *  @param bytes array consisting of 48 bytes.
  */
 void bytes_set_last_trit_zero(unsigned char *bytes);
-
-/** @brief Increment the 82nd trit without carrying overflows across 162nd trit.
- *  @param bytes array consisting of 48 bytes.
- */
-void bytes_increment_trit_area_81(unsigned char *bytes);
 
 /** @brief Adds a single integer to a 48-byte big-endian integer.
  *  The bytes are changed in such a way, that they are still a vaild big-endian

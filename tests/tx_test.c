@@ -1,11 +1,12 @@
 #include "test_common.h"
 #include <string.h>
-#include "transaction_file.h"
 #include "api_tests.h"
+#include "transaction_file.h"
 #include "api.h"
 #include "aux.h"
-#include "iota/bundle.h"
 #include "iota/conversion.h"
+// include the c-file to be able to test static functions
+#include "bundle_ext.c"
 
 void derive_seed_bip32(const unsigned int *path, unsigned int pathLength,
                        unsigned char *seed_bytes)
@@ -41,31 +42,42 @@ static void test_bundles_for_seed_from_file(void **state)
     test_for_each_bundle("generateBundlesForSeed", test_bundle);
 }
 
-static void finalize_bundle(TX_INPUT *tx, int last_index)
+static void construct_bundle_from_input(TX_INPUT *input, unsigned int num_txs,
+                                        BUNDLE_CTX *bundle_ctx)
+{
+    TX_ENTRY txs[num_txs];
+    for (unsigned int i = 0; i < num_txs; i++) {
+        rpad_chars(txs[i].address, input[i].address, NUM_HASH_TRYTES);
+        rpad_chars(txs[i].tag, input[i].tag, 27);
+        txs[i].value = input[i].value;
+        txs[i].timestamp = input[i].timestamp;
+    }
+
+    bundle_create(txs, num_txs, bundle_ctx);
+}
+
+static void finalize_bundle(TX_INPUT *input, unsigned int last_index)
 {
     BUNDLE_CTX bundle;
-    bundle_initialize(&bundle, last_index);
-
-    for (int i = 0; i <= last_index; i++) {
-        tx[i].current_index = i;
-        tx[i].last_index = last_index;
-        rpad_chars(tx[i].tag, tx[i].tag, 27);
-
-        bundle_set_internal_address(&bundle, tx[i].address, tx[i].address_idx);
-        bundle_add_tx(&bundle, tx[i].value, tx[i].tag, tx[i].timestamp);
-    }
+    construct_bundle_from_input(input, last_index + 1, &bundle);
 
     uint32_t tag_increment = bundle_finalize(&bundle);
 
     char extended_tag[NUM_HASH_TRYTES];
     unsigned char tag_bytes[NUM_HASH_BYTES];
-    rpad_chars(extended_tag, tx[0].tag, NUM_HASH_TRYTES);
+    rpad_chars(extended_tag, input[0].tag, NUM_HASH_TRYTES);
     chars_to_bytes(extended_tag, tag_bytes, NUM_HASH_TRYTES);
 
     bytes_add_u32_mem(tag_bytes, tag_increment);
     bytes_to_chars(tag_bytes, extended_tag, NUM_HASH_BYTES);
 
-    memcpy(tx[0].tag, extended_tag, 27);
+    memcpy(input[0].tag, extended_tag, 27);
+
+    // update indices
+    for (unsigned int i = 0; i <= last_index; i++) {
+        input[i].current_index = i;
+        input[i].last_index = last_index;
+    }
 }
 
 /** Test that the bundle finalization above is correct. */

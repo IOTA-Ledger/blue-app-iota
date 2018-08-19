@@ -240,6 +240,19 @@ static int validate_bundle(const BUNDLE_CTX *ctx, uint8_t change_tx_index,
 }
 
 NO_INLINE
+static bool validate_hash(const BUNDLE_CTX *ctx)
+{
+    tryte_t hash_trytes[81];
+    normalize_hash_bytes(ctx->hash, hash_trytes);
+
+    if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
+        return false;
+    }
+
+    return true;
+}
+
+NO_INLINE
 static void compute_hash(BUNDLE_CTX *ctx)
 {
     cx_sha3_t sha;
@@ -247,21 +260,6 @@ static void compute_hash(BUNDLE_CTX *ctx)
     kerl_initialize(&sha);
     kerl_absorb_bytes(&sha, ctx->bytes, TX_BYTES(ctx) - ctx->bytes);
     kerl_squeeze_final_chunk(&sha, ctx->hash);
-}
-
-NO_INLINE
-static int bundle_validate_hash(BUNDLE_CTX *ctx)
-{
-    tryte_t hash_trytes[81];
-    normalize_hash_bytes(ctx->hash, hash_trytes);
-
-    if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
-        // if the hash is invalid, reset it to zero
-        os_memset(ctx->hash, 0, 48);
-        return UNSECURE_HASH;
-    }
-
-    return OK;
 }
 
 int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_index,
@@ -278,27 +276,13 @@ int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_index,
     }
 
     compute_hash(ctx);
-    return bundle_validate_hash(ctx);
-}
-
-unsigned int bundle_finalize(BUNDLE_CTX *ctx)
-{
-    unsigned int tag_increment = 0;
-
-    if (bundle_has_open_txs(ctx)) {
-        THROW(INVALID_STATE);
+    if (!validate_hash(ctx)) {
+        // if the hash is invalid, reset it to zero
+        os_memset(ctx->hash, 0, 48);
+        return UNSECURE_HASH;
     }
 
-    compute_hash(ctx);
-    while (bundle_validate_hash(ctx) != OK) {
-        // increment the tag of the first transaction
-        bytes_increment_trit_area_81(ctx->bytes + 48);
-        compute_hash(ctx);
-        tag_increment++;
-    }
-
-    // the not normalized hash is already in the result pointer
-    return tag_increment;
+    return OK;
 }
 
 const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,

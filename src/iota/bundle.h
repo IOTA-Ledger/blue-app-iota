@@ -70,13 +70,6 @@ void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
 uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
                        uint32_t timestamp);
 
-/** @brief Finalizes the bundle by computing the valid bundle hash.
- *  @param ctx the bundle context used.
- *  @return tag increment of the first transaction that was necessary to
- *          generate a valid bundle
- */
-unsigned int bundle_finalize(BUNDLE_CTX *ctx);
-
 /** @brief Finalizes the bundle, if it has a valid bundle hash.
  *  A bundle is valid, if a) values sum up to 0 b) the index of each input
  *  transaction matches the provided address c) the normalized bundle hash does

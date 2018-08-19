@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include "common.h"
 
-// #define USE_UNSAFE_INCREMENT_TAG
-
 #define INT_LENGTH 12
 // base of the ternary system
 #define BASE 3
@@ -22,12 +20,6 @@ static const uint32_t NEG_HALF_3[12] = {
 static const uint32_t TRIT_243[12] = {
     0x4b9d12c9, 0x3e00ecd3, 0x2908a09f, 0x75bc01b2, 0x184890dc, 0xa12f3aae,
     0xf3498e04, 0x91775c6c, 0x53ed0116, 0x540d500b, 0x50ff57bf, 0xbcd3d7df};
-
-#ifdef USE_UNSAFE_INCREMENT_TAG
-// representing the value of the 82nd trit, i.e. 3^81
-static const uint32_t TRIT_82[12] = {0xd56d7cc3, 0xb6bf0c69, 0xa149e834,
-                                     0x4d98d5ce, 0x1};
-#endif // USE_UNSAFE_INCREMENT_TAG
 
 static const trit_t trits_mapping[27][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
@@ -371,7 +363,7 @@ void chars_to_bytes(const char *chars, unsigned char *bytes,
     }
 }
 
-static inline void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
+void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
 {
     uint32_t bigint[12];
     bytes_to_bigint(bytes, bigint);
@@ -402,36 +394,6 @@ void bytes_set_last_trit_zero(unsigned char *bytes)
     if (bigint_set_last_trit_zero(bigint)) {
         bigint_to_bytes(bigint, bytes);
     }
-}
-
-static void increment_trit_aera(trit_t *trits, unsigned int start_trit,
-                                unsigned int num_trits)
-{
-    trit_t *trit = trits + start_trit;
-
-    for (unsigned int i = 0; i < num_trits; i++, trit++) {
-        if (*trit < MAX_TRIT_VALUE) {
-            *trit += 1;
-            break;
-        }
-        *trit = MIN_TRIT_VALUE;
-    }
-}
-
-// TODO: there are faster and more efficient algos for this, but is it worth it?
-void bytes_increment_trit_area_81(unsigned char *bytes)
-{
-#ifdef USE_UNSAFE_INCREMENT_TAG
-    uint32_t bigint[12];
-    bytes_to_bigint(bytes, bigint);
-    bigint_add(bigint, bigint, TRIT_82);
-    bigint_to_bytes(bigint, bytes);
-#else
-    trit_t trits[243];
-    bytes_to_trits(bytes, trits);
-    increment_trit_aera(trits, 81, 81);
-    trits_to_bytes(trits, bytes);
-#endif // USE_UNSAFE_INCREMENT_TAG
 }
 
 void bytes_add_u32_mem(unsigned char *bytes, uint32_t summand)
