@@ -14,7 +14,7 @@
     "@ledgerhq/hw-transport-node-hid": "^4.22.0",
     "babel-polyfill": "^6.26.0",
     "hw-app-iota": "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git",
-    "iota.lib.js": "^0.4.7"
+    "iota.lib.js": "^0.5.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
