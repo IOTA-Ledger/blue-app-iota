@@ -29,10 +29,13 @@
     })
 
 typedef struct API_CTX {
-    unsigned int bip32_path[BIP32_PATH_LEN]; // path used for seed derivation
-    uint8_t security;                        // security level used
+    /// BIP32 path used for seed derivation
+    unsigned int bip32_path[BIP32_PATH_MAX_LEN];
+    uint8_t bip32_path_length;
 
-    unsigned char seed_bytes[NUM_HASH_BYTES]; // IOTA seed
+    uint8_t security; ///< used security level
+
+    unsigned char seed_bytes[NUM_HASH_BYTES]; ///< IOTA seed
 
     BUNDLE_CTX bundle_ctx;
     SIGNING_CTX signing_ctx;
@@ -40,7 +43,7 @@ typedef struct API_CTX {
     unsigned int state_flags;
 } API_CTX;
 
-// global variable storing all data needed across multiple api callss
+/// global variable storing all data needed across multiple api calls
 API_CTX api;
 
 void api_initialize()
@@ -57,7 +60,17 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
     // setting the seed resets everything
     api_initialize();
 
-    for (unsigned int i = 0; i < BIP32_PATH_LEN; i++) {
+    if (!ASSIGN(api.bip32_path_length, input->bip32_path_length) ||
+        !IN_RANGE(api.bip32_path_length, BIP32_PATH_MIN_LEN,
+                  BIP32_PATH_MAX_LEN)) {
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+    if (len <
+        sizeof(SET_SEED_INPUT) + api.bip32_path_length * sizeof(int64_t)) {
+        THROW(SW_INCORRECT_LENGTH);
+    }
+
+    for (unsigned int i = 0; i < api.bip32_path_length; i++) {
         if (!ASSIGN(api.bip32_path[i], input->bip32_path[i])) {
             // path overflow
             THROW(SW_COMMAND_INVALID_DATA);
@@ -70,7 +83,7 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    derive_seed_bip32(api.bip32_path, BIP32_PATH_LEN, api.seed_bytes);
+    derive_seed_bip32(api.bip32_path, api.bip32_path_length, api.seed_bytes);
 
     api.state_flags |= SEED_SET;
 

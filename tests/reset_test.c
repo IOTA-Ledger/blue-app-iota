@@ -75,7 +75,7 @@ static void test_reset_partial_path(void **state)
     }
 
     // internally the path should not have changed
-    static const unsigned int path[BIP32_PATH_LEN] = BIP32_PATH;
+    static const unsigned int path[BIP32_PATH_LENGTH] = BIP32_PATH;
     assert_memory_equal(api.bip32_path, path, sizeof(path));
 }
 

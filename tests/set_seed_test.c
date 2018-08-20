@@ -29,15 +29,15 @@ static void test_valid_security_levels(void **state)
     for (unsigned int security = 1; security <= 3; security++) {
 
         expect_memory(derive_seed_bip32, path, path, sizeof(path));
-        expect_value(derive_seed_bip32, pathLength,
-                     sizeof(path) / sizeof(path[0]));
+        expect_value(derive_seed_bip32, pathLength, BIP32_PATH_LENGTH);
 
         will_return(derive_seed_bip32,
                     cast_ptr_to_largest_integral_type(PETER_VECTOR.seed));
 
         api_initialize();
 
-        SET_SEED_INPUT input = {BIP32_PATH, security};
+        SET_SEED_FIXED_INPUT input = {
+            {security, BIP32_PATH_LENGTH, BIP32_PATH}};
         EXPECT_API_OK(set_seed, 0, input);
     }
 }
@@ -46,7 +46,7 @@ static void test_security_level_zero(void **state)
 {
     UNUSED(state);
 
-    SET_SEED_INPUT input = {BIP32_PATH, 0};
+    SET_SEED_FIXED_INPUT input = {{0, BIP32_PATH_LENGTH, BIP32_PATH}};
 
     api_initialize();
     EXPECT_API_EXCEPTION(set_seed, 0, input);
@@ -56,7 +56,7 @@ static void test_security_level_four(void **state)
 {
     UNUSED(state);
 
-    SET_SEED_INPUT input = {BIP32_PATH, 4};
+    SET_SEED_FIXED_INPUT input = {{4, BIP32_PATH_LENGTH, BIP32_PATH}};
 
     api_initialize();
     EXPECT_API_EXCEPTION(set_seed, 0, input);
@@ -71,7 +71,8 @@ static void test_invalid_negative_path(void **state)
 
     SET_SEED_INPUT input;
     input.security = 1;
-    memcpy(input.bip32_path, path, sizeof(path));
+    input.bip32_path_length = BIP32_PATH_LENGTH;
+    memcpy(input.bip32_path, path, BIP32_PATH_LENGTH * sizeof(int64_t));
 
     api_initialize();
     EXPECT_API_EXCEPTION(set_seed, 0, input);
@@ -86,7 +87,8 @@ static void test_path_overflow(void **state)
 
     SET_SEED_INPUT input;
     input.security = 1;
-    memcpy(input.bip32_path, path, sizeof(path));
+    input.bip32_path_length = BIP32_PATH_LENGTH;
+    memcpy(input.bip32_path, path, BIP32_PATH_LENGTH * sizeof(int64_t));
 
     api_initialize();
     EXPECT_API_EXCEPTION(set_seed, 0, input);

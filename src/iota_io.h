@@ -1,8 +1,8 @@
 #ifndef IOTA_IO_H
 #define IOTA_IO_H
 
-#define BIP32_PATH_LEN 5u
-#define BIP32_BYTE_LENGTH (BIP32_PATH_LEN * sizeof(unsigned int))
+#define BIP32_PATH_MIN_LEN 2
+#define BIP32_PATH_MAX_LEN 5
 
 void io_initialize();
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
