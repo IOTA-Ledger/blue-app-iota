@@ -7,6 +7,7 @@ BIP44_PATH = [0x8000002C,
               0x80000000,
               0x00000000,
               0x00000000]
+BIP44_PATH_LENGTH = 5
 SECURITY_LEVEL = 2
 SRC_INDEX = 0
 
@@ -33,8 +34,8 @@ def apdu_command(ins, data, p1=0, p2=0):
 
 
 def pack_set_seed_input(bip44_path):
-    struct = Struct("<5qq")
-    return struct.pack(bip44_path[0], bip44_path[1], bip44_path[2], bip44_path[3], bip44_path[4], SECURITY_LEVEL)
+    struct = Struct("<qq5q")
+    return struct.pack(SECURITY_LEVEL, BIP44_PATH_LENGTH, bip44_path[0], bip44_path[1], bip44_path[2], bip44_path[3], bip44_path[4])
 
 
 def pack_pub_key_input(address_idx):
