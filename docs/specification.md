@@ -30,12 +30,12 @@ The 24 word recovery phrase and the optional passphrase of the Ledger Nano S are
 | INS | byte (1) | `0x01` |
 | P1-P2| byte (2)| ignored |
 | L | byte (1) | Number of bytes to follow | [0, 255]
-| path[0] | signed int64 (8) | Level 0 of path | [0, 2<sup>32</sup>-1]
-| path[1] | signed int64 (8) | Level 1 of path | [0, 2<sup>32</sup>-1]
-| path[2] | signed int64 (8) | Level 2 of path | [0, 2<sup>32</sup>-1]
-| path[3] | signed int64 (8) | Level 3 of path | [0, 2<sup>32</sup>-1]
-| path[4] | signed int64 (8) | Level 4 of path | [0, 2<sup>32</sup>-1]
 | security| signed int64 (8) | set the used security level | [1, 3]
+| length | signed int64 (8) | number of levels in BIP32 path | [2, 5]
+| path[1] | signed int64 (8) | first level of BIP32 path | [0, 2<sup>32</sup>-1]
+| path[2] | signed int64 (8) | second level of BIP32 path | [0, 2<sup>32</sup>-1]
+| ... | ... | ... | ...
+| path[length] | signed int64 (8) | last level of BIP32 path | [0, 2<sup>32</sup>-1]
 
 ### Output
 
