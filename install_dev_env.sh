@@ -24,24 +24,6 @@ fi
 
 linux_id=`gawk -F= '/^ID=/{print $2}' /etc/os-release`
 linux_version_id=`gawk -F= '/^VERSION_ID=/{print $2}' /etc/os-release`
-if [ ${linux_id} = 'debian' ];
-then
-    if [ ${linux_version_id} != '"9"' ];
-    then
-        print_err "ERROR: This script was tested under Debian 9 (stretch) only! Exiting..."
-        exit 1
-    fi
-elif [ ${linux_id} = 'ubuntu' ];
-then
-    if ! [[ "${linux_version_id}" =~ ^('"16.04"'|'"16.10"'|'"17.04"'|'"17.10"'|'"18.04"')$ ]];
-    then
-        print_err "ERROR: This script was tested under Ubuntu 16.04 till 18.04 only! Exiting..."
-        exit 1
-	fi
-else
-    print_err "ERROR: This script was created for Debian and Ubuntu only! Exiting..."
-    exit 1
-fi
 
 ## Variables
 BLUE_APP_IOTA_PY_VIRT_ENV=`realpath .pyenv`
