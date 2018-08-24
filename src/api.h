@@ -115,5 +115,7 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len);
 
 void user_sign_tx();
 void user_deny_tx();
+void user_approve_seed();
+void user_deny_seed();
 
 #endif // API_H

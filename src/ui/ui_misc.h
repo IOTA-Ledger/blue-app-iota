@@ -13,6 +13,8 @@ void restore_state();
 void abbreviate_addr(char *dest, const char *src, uint8_t len);
 void write_display(void *o, uint8_t type, uint8_t pos);
 
+void int_to_str(int64_t num, char *str, uint8_t len);
+
 void glyph_on(char *c);
 void glyph_off(char *c);
 
@@ -39,6 +41,7 @@ void get_init_menu(char *msg);
 void get_welcome_menu(char *msg);
 void get_about_menu(char *msg);
 void get_more_info_menu(char *msg);
+void get_change_seed_menu(char *msg);
 void get_address_menu(char *msg);
 
 #endif // UI_MISC_H

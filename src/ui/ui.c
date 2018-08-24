@@ -221,6 +221,19 @@ void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
     ui_render();
 }
 
+void ui_change_seed(const unsigned int *path, unsigned int path_len)
+{
+    backup_state();
+    
+    state_go(STATE_CHANGE_SEED, 0);
+    
+    ui_state.path = path;
+    ui_state.path_len = path_len;
+    
+    ui_build_display();
+    ui_render();
+}
+
 void ui_reset()
 {
     state_go(STATE_WELCOME, 0);
@@ -297,6 +310,10 @@ void ui_handle_button(uint8_t button_mask)
     case STATE_MORE_INFO:
         array_sz = button_more_info(button_mask);
         break;
+        /* ------------ STATE CHANGE SEED -------------- */
+    case STATE_CHANGE_SEED:
+        array_sz = button_change_seed(button_mask);
+        break;
         /* ------------ STATE DISPLAY_ADDRESS -------------- */
     case STATE_DISP_ADDR:
         array_sz = button_disp_addr(button_mask);
@@ -351,6 +368,10 @@ void ui_build_display()
         /* ------------ MORE INFO -------------- */
     case STATE_MORE_INFO:
         display_more_info();
+        break;
+        /* ------------ CHANGE SEED ------------ */
+    case STATE_CHANGE_SEED:
+        display_change_seed();
         break;
         /* ------------ DISPLAY TX ADDRESS -------------- */
     case STATE_TX_ADDR:

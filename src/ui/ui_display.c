@@ -82,6 +82,39 @@ void display_more_info()
     // no special overrides
 }
 
+void display_change_seed()
+{
+    char msg[MENU_CHANGE_SEED_LEN * 21];
+    get_change_seed_menu(msg);
+    
+    write_text_array(msg, MENU_CHANGE_SEED_LEN);
+    
+    //overrides
+    switch (ui_state.menu_idx) {
+        // the new path display
+    case 1:
+        snprintf(msg, 21, "%x\' \\ %x\' \\ %x\' \\", ui_state.path[0] & 0x7fffffff,
+                                        ui_state.path[1] & 0x7fffffff,
+                                        ui_state.path[2] & 0x7fffffff);
+        //int_to_str(ui_state.path[1] & 0x7fffffff, msg + 8, 21);
+        write_display(msg, TYPE_STR, TOP);
+        
+        snprintf(msg, 21, "%x \\ %x", ui_state.path[3], ui_state.path[4]);
+        write_display(msg, TYPE_STR, BOT);
+        
+        write_display(NULL, TYPE_STR, TOP_H);
+        write_display(NULL, TYPE_STR, BOT_H);
+        break;
+    case MENU_CHANGE_SEED_LEN - 2:
+        write_display(NULL, TYPE_STR, BOT_H);
+        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        break;
+    case MENU_CHANGE_SEED_LEN - 1:
+        write_display(NULL, TYPE_STR, TOP_H);
+        display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+    }
+}
+
 void display_addr()
 {
     // write the actual menu
