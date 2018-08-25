@@ -8,13 +8,14 @@ import {
 } from 'iota.lib.js/lib/utils/utils';
 
 // use testnet path
-const BIP44_PATH = "44'/1'/0'/0/0";
+const PATH_INDEX = 0x44444444;
+const BIP32_PATH = "44'/1'/" + PATH_INDEX + "'/" + PATH_INDEX + "'/" + PATH_INDEX + "'";
 const SECURITY_LEVEL = 3;
 
 const DEST_ADDRESS = 'ADLJXS9SKYQKMVQFXR9JDUUJHJWGDNWHQZMDGJFGZOX9BZEKDSXBSPZTTWEYPTNM9OZMYDQWZXFHRTXRCOITXAGCJZ';
-const KEY_INDEX = 1;
+const KEY_INDEX = 4244444442;
 const VALUE = 10;
-const BALANCE = 12;
+const BALANCE = 2779530283277760;
 
 function validateBundleTrytes(bundleTrytes) {
 
@@ -35,7 +36,8 @@ function validateBundleTrytes(bundleTrytes) {
     console.log('Running on version: ' + await ledger.getAppVersion());
 
     // initialize
-    await ledger.setActiveSeed(BIP44_PATH, SECURITY_LEVEL);
+    console.log('Setting path: ' + BIP32_PATH);
+    await ledger.setActiveSeed(BIP32_PATH, SECURITY_LEVEL);
 
     const transfers = [{
         address: DEST_ADDRESS,
