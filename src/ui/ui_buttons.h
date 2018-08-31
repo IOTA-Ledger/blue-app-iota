@@ -8,7 +8,7 @@ uint8_t button_welcome(uint8_t button_mask);
 uint8_t button_about(uint8_t button_mask);
 void button_version(uint8_t button_mask);
 uint8_t button_more_info(uint8_t button_mask);
-uint8_t button_change_seed(uint8_t button_mask);
+void button_bip_path(uint8_t button_mask);
 uint8_t button_disp_addr(uint8_t button_mask);
 uint8_t button_disp_addr_chk(uint8_t button_mask);
 uint8_t button_tx_addr(uint8_t button_mask);

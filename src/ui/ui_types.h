@@ -31,7 +31,7 @@ enum UI_STATES {
     STATE_TX_ADDR,       // Display full address in TX
     STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
     STATE_PROMPT_TX,
-    STATE_CHANGE_SEED
+    STATE_BIP_PATH
 };
 
 #define STATE_EXIT 255
@@ -42,7 +42,6 @@ enum UI_STATES {
 #define MENU_ABOUT_LEN 3
 #define MENU_ADDR_LEN 7
 #define MENU_MORE_INFO_LEN 3
-#define MENU_CHANGE_SEED_LEN 4
 
 typedef struct UI_TEXT_CTX {
 

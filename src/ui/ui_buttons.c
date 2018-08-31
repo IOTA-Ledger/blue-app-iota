@@ -92,23 +92,14 @@ uint8_t button_more_info(uint8_t button_mask)
     return array_sz;
 }
 
-uint8_t button_change_seed(uint8_t button_mask)
+void button_bip_path(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_CHANGE_SEED_LEN - 1;
-    
-    if (button_mask == BUTTON_B) {
-        
-        if(ui_state.menu_idx == array_sz - 1) {
-            user_approve_seed();
-            restore_state();
-        }
-        else if(ui_state.menu_idx == array_sz) {
-            user_deny_seed();
-            restore_state();
-        }
+    if (button_mask == BUTTON_L) {
+        state_go(STATE_DISP_ADDR, MENU_ADDR_LEN - 1);
     }
-    
-    return array_sz;
+    if (button_mask == BUTTON_B) {
+        restore_state();
+    }
 }
 
 uint8_t button_disp_addr(uint8_t button_mask)
@@ -117,11 +108,12 @@ uint8_t button_disp_addr(uint8_t button_mask)
 
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         state_go(STATE_DISP_ADDR_CHK, 0);
-        return array_sz;
+    }
+    else if(button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
+        state_go(STATE_BIP_PATH, 0);
     }
     else if (button_mask == BUTTON_B) {
         restore_state();
-        return array_sz;
     }
 
     return array_sz;
@@ -140,10 +132,12 @@ uint8_t button_disp_addr_chk(uint8_t button_mask)
 uint8_t button_tx_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
-
-    if (button_mask == BUTTON_B) {
+    
+    if(button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
+        state_go(STATE_BIP_PATH, 0);
+    }
+    else if (button_mask == BUTTON_B) {
         restore_state();
-        return array_sz;
     }
 
     return array_sz;

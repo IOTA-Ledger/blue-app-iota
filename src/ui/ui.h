@@ -21,8 +21,8 @@ void ui_display_calc();
 void ui_display_recv();
 void ui_display_signing();
 void ui_display_address(const unsigned char *addr_bytes);
+void ui_set_path(const unsigned int *path, unsigned int path_len);
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
-void ui_change_seed(const unsigned int *path, unsigned int path_len);
 void ui_reset();
 void ui_restore();
 

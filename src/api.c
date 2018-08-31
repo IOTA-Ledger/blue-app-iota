@@ -83,8 +83,15 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    ui_change_seed(api.bip32_path, api.bip32_path_length);
-    return IO_ASYNCH_REPLY;
+    derive_seed_bip32(api.bip32_path, api.bip32_path_length, api.seed_bytes);
+    
+    // set the path and length in the UI for display whenever address is displayed
+    ui_set_path(api.bip32_path, api.bip32_path_length);
+    
+    api.state_flags |= SEED_SET;
+    
+    io_send(NULL, 0, SW_OK);
+    return 0;
 }
 
 static bool display_address(uint8_t p1)
@@ -357,24 +364,6 @@ static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
     bytes_to_chars(bundle_get_hash(ctx), output.bundle_hash, 48);
 
     io_send(&output, sizeof(output), SW_OK);
-}
-
-/** @brief This function gets called when seed change accepted by user */
-void user_approve_seed()
-{
-    derive_seed_bip32(api.bip32_path, api.bip32_path_length, api.seed_bytes);
-    
-    api.state_flags |= SEED_SET;
-    
-    io_send(NULL, 0, SW_OK);
-}
-
-/** @brief This function gets called when seed change denied by user */
-void user_deny_seed()
-{
-    // reset the bip32_path
-    memset(api.bip32_path, 0, BIP32_PATH_MAX_LEN * sizeof(unsigned int));
-    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
 }
 
 /** @brief This functions gets called, when bundle is accepted. */

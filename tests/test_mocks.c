@@ -25,6 +25,12 @@ void ui_display_signing()
 {
 }
 
+void ui_set_path(const unsigned int *path, unsigned int path_len)
+{
+    UNUSED(path);
+    UNUSED(path_len);
+}
+
 void ui_display_address(const unsigned char *addr_bytes)
 {
     UNUSED(addr_bytes);

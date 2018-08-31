@@ -519,18 +519,6 @@ void get_more_info_menu(char *msg)
     strcpy(msg + (i++ * 21), "for more info.");
 }
 
-void get_change_seed_menu(char *msg)
-{
-    memset(msg, '\0', MENU_CHANGE_SEED_LEN * 21);
-    
-    uint8_t i = 0;
-    
-    strcpy(msg + (i++ * 21), "Change Seed?");
-    strcpy(msg + (i++ * 21), "");
-    strcpy(msg + (i++ * 21), "Approve");
-    strcpy(msg + (i++ * 21), "Deny");
-}
-
 void get_address_menu(char *msg)
 {
     // address is 81 characters long

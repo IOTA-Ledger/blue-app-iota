@@ -41,7 +41,6 @@ void get_init_menu(char *msg);
 void get_welcome_menu(char *msg);
 void get_about_menu(char *msg);
 void get_more_info_menu(char *msg);
-void get_change_seed_menu(char *msg);
 void get_address_menu(char *msg);
 
 #endif // UI_MISC_H
