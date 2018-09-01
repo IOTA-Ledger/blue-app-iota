@@ -17,6 +17,10 @@ void ui_display_calc()
 {
 }
 
+void ui_display_validating()
+{
+}
+
 void ui_display_recv()
 {
 }
