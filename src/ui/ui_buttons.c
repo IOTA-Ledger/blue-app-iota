@@ -109,7 +109,7 @@ uint8_t button_disp_addr(uint8_t button_mask)
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         state_go(STATE_DISP_ADDR_CHK, 0);
     }
-    else if(button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
+    else if (button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
         state_go(STATE_BIP_PATH, 0);
     }
     else if (button_mask == BUTTON_B) {
@@ -132,8 +132,8 @@ uint8_t button_disp_addr_chk(uint8_t button_mask)
 uint8_t button_tx_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
-    
-    if(button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
+
+    if (button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
         state_go(STATE_BIP_PATH, 0);
     }
     else if (button_mask == BUTTON_B) {
@@ -154,7 +154,7 @@ void button_prompt_tx(uint8_t button_mask)
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx++;
-            val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
+            val = api.bundle_ctx.values[menu_to_tx_idx()];
         } while (val == 0 && ui_state.menu_idx < array_sz - 2);
 
         // loop back to 0
@@ -172,7 +172,7 @@ void button_prompt_tx(uint8_t button_mask)
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx--;
-            val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
+            val = api.bundle_ctx.values[menu_to_tx_idx()];
         } while (val == 0 && ui_state.menu_idx > 0 &&
                  ui_state.menu_idx < array_sz - 2);
     }
