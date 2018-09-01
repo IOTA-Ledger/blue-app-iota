@@ -51,22 +51,46 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
     dest[13] = '\0';
 }
 
+char int_to_chr(uint8_t rem, uint8_t radix)
+{
+    if(radix > 16)
+        return '?';
+    
+    switch(rem) {
+        case 10:
+            return 'a';
+        case 11:
+            return 'b';
+        case 12:
+            return 'c';
+        case 13:
+            return 'd';
+        case 14:
+            return 'e';
+        case 15:
+            return 'f';
+        default:
+            return rem + '0';
+    }
+}
+
 // len specifies max size of buffer
 // if buffer doesn't fit whole int, returns null
-void int_to_str(int64_t num, char *str, uint8_t len)
+int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix)
 {
     // minimum buffer size of 2 (digit + \0)
-    if (len < 2)
-        return;
+    // largest supported radix is 16
+    if (len < 2 || radix > 16)
+        return -1;
 
-    int64_t i = 0;
+    int8_t i = 0;
     bool isNeg = false;
 
     // handle 0 first
     if (num == 0) {
         str[0] = '0';
         str[1] = '\0';
-        return;
+        return 1;
     }
 
     if (num < 0) {
@@ -75,20 +99,22 @@ void int_to_str(int64_t num, char *str, uint8_t len)
     }
 
     while (num != 0) {
-        uint8_t rem = num % 10;
-        str[i++] = rem + '0';
-        num = num / 10;
+        str[i++] = int_to_chr(num % radix, radix);
+        num = num / radix;
 
         // ensure we have room for full int + null term
         if (i == len || (i == len - 1 && isNeg)) {
-            str[0] = '\0';
-            return;
+            str[0] = '?';
+            str[1] = '\0';
+            return -1;
         }
     }
 
     if (isNeg)
         str[i++] = '-';
 
+    uint8_t chars_written = i;
+    
     str[i--] = '\0';
 
     // reverse the string
@@ -97,6 +123,8 @@ void int_to_str(int64_t num, char *str, uint8_t len)
         str[j] = str[i];
         str[i] = c;
     }
+    
+    return chars_written;
 }
 
 // write_display(&words, TYPE_STR, MID);
@@ -134,7 +162,7 @@ void write_display(void *o, uint8_t type, uint8_t pos)
     // also does not support %i! - Use %d
     // use custom function to handle 64 bit ints
     if (type == TYPE_INT)
-        int_to_str(*(int64_t *)o, c_ptr, 21);
+        int_to_str(*(int64_t *)o, c_ptr, 21, 10);
     else if (type == TYPE_STR)
         snprintf(c_ptr, 21, "%s", (char *)o);
 }

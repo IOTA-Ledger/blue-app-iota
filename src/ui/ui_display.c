@@ -84,14 +84,60 @@ void display_more_info()
 
 void display_bip_path()
 {
+    uint8_t chars_written = 0, i = 0, isodd = ui_state.path_len % 2;
+    
+    char *msg = ui_text.top_str;
+    
     clear_display();
     
-    snprintf(ui_text.top_str, 21, "%x\' \\ %x\' \\ %x\' \\", ui_state.path[0] & 0x7fffffff,
-             ui_state.path[1] & 0x7fffffff,
-             ui_state.path[2] & 0x7fffffff);
+    while(i < ui_state.path_len) {
+        
+        bool ishard = false;
+        unsigned int path_val = ui_state.path[i];
+        
+        // check if hardened
+        if(path_val & (1<<31)) {
+            ishard = true;
+            path_val = path_val & 0x7fffffff;
+        }
+        
+        // convert into hex
+        chars_written += int_to_str(path_val, msg + chars_written,
+                                   21 - chars_written, 16);
+        
+        // check if hardened
+        if(ishard) {
+            if(chars_written == 20) {
+                msg[19] = '?';
+                msg[20] = '\0';
+            }
+            else msg[chars_written++] = '\'';
+        }
+        
+        // add spacers
+        if(i < ui_state.path_len - 1)
+        {
+            snprintf(msg + chars_written, 21-chars_written, " \\ ");
+            chars_written += 3;
+            
+            // check for overflow
+            if(chars_written > 20) {
+                msg[19] = '?';
+                msg[20] = '\0';
+            }
+        }
+        
+        i++;
+        
+        // isodd emulates math.ceil function
+        if(i == (ui_state.path_len + isodd) / 2) {
+            msg[chars_written] = '\0';
+            msg = ui_text.bot_str;
+            chars_written = 0;
+        }
+    }
     
-    snprintf(ui_text.bot_str, 21, "%x \\ %x", ui_state.path[3], ui_state.path[4]);
-    
+    msg[chars_written] = '\0';
     display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
 }
 
