@@ -84,19 +84,13 @@ void display_more_info()
 
 void display_bip_path()
 {
-    char msg[21];
-    
     clear_display();
     
-    snprintf(msg, 21, "%x\' \\ %x\' \\ %x\' \\", ui_state.path[0] & 0x7fffffff,
-                                    ui_state.path[1] & 0x7fffffff,
-                                    ui_state.path[2] & 0x7fffffff);
+    snprintf(ui_text.top_str, 21, "%x\' \\ %x\' \\ %x\' \\", ui_state.path[0] & 0x7fffffff,
+             ui_state.path[1] & 0x7fffffff,
+             ui_state.path[2] & 0x7fffffff);
     
-    //int_to_str(ui_state.path[1] & 0x7fffffff, msg + 8, 21);
-    write_display(msg, TYPE_STR, TOP);
-        
-    snprintf(msg, 21, "%x \\ %x", ui_state.path[3], ui_state.path[4]);
-    write_display(msg, TYPE_STR, BOT);
+    snprintf(ui_text.bot_str, 21, "%x \\ %x", ui_state.path[3], ui_state.path[4]);
     
     display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
 }
