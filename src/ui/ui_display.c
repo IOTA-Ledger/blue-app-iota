@@ -84,58 +84,41 @@ void display_more_info()
 
 void display_bip_path()
 {
-    uint8_t chars_written = 0, i = 0, isodd = api.bip32_path_length % 2;
-
-    char *msg = ui_text.top_str;
-
     clear_display();
 
-    while (i < api.bip32_path_length) {
+    char *msg[] = {ui_text.top_str, ui_text.bot_str};
 
-        bool ishard = false;
+    int row = 0;
+    size_t chars_written = 0;
+    for (unsigned int i = 0; i < api.bip32_path_length; i++) {
 
-        // check if hardened
-        if (api.bip32_path[i] & (1 << 31))
-            ishard = true;
-
-        // convert into hex
-        chars_written +=
-            int_to_str(api.bip32_path[i] & 0x7fffffff, msg + chars_written,
-                       21 - chars_written, 16);
-
-        // check if hardened
-        if (ishard) {
-            if (chars_written == 20) {
-                msg[19] = '?';
-                msg[20] = '\0';
-            }
-            else
-                msg[chars_written++] = '\'';
+        // this cannot happen, as "2c'/107a'/ffffffff'/\nffffffff'/ffffffff'"
+        // fits exactly into two rows
+        if (row > 1) {
+            THROW(INVALID_STATE);
         }
 
-        // add spacers
+        snprintf(msg[row] + chars_written, 21 - chars_written, "%x",
+                 api.bip32_path[i] & 0x7fffffff);
+        chars_written = strnlen(msg[row], 21);
+
+        // write apostroph if hardnend
+        if (api.bip32_path[i] & (1 << 31)) {
+            msg[row][chars_written++] = '\'';
+        }
+
+        // write the separator only if not last element
         if (i < api.bip32_path_length - 1) {
-            snprintf(msg + chars_written, 21 - chars_written, " \\ ");
-            chars_written += 3;
-
-            // check for overflow
-            if (chars_written > 20) {
-                msg[19] = '?';
-                msg[20] = '\0';
-            }
+            msg[row][chars_written++] = '|';
         }
 
-        i++;
-
-        // isodd emulates math.ceil function
-        if (i == (api.bip32_path_length + isodd) / 2) {
-            msg[chars_written] = '\0';
-            msg = ui_text.bot_str;
+        // inc row, if there might be not enough space for the next level
+        if (chars_written > 20 - 10) {
+            msg[row++][chars_written] = '\0';
             chars_written = 0;
         }
     }
 
-    msg[chars_written] = '\0';
     display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
 }
 
