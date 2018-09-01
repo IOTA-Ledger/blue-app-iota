@@ -25,10 +25,9 @@ void ui_display_signing()
 {
 }
 
-void ui_set_path(const unsigned int *path, unsigned int path_len)
+void ui_set_api(API_CTX *api_ctx)
 {
-    UNUSED(path);
-    UNUSED(path_len);
+    UNUSED(api_ctx);
 }
 
 void ui_display_address(const unsigned char *addr_bytes)

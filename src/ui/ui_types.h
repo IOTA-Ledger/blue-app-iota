@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "iota/bundle.h"
+#include "api.h"
 
 #define TYPE_INT 0
 #define TYPE_STR 1
@@ -80,8 +81,7 @@ typedef struct UI_STATE_CTX {
     uint8_t backup_menu_idx;
 
     const BUNDLE_CTX *bundle_ctx;
-    const unsigned int *path;
-    unsigned int path_len;
+    const API_CTX *api_ctx;
 
 } UI_STATE_CTX;
 

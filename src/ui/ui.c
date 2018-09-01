@@ -129,6 +129,11 @@ void ctx_initialize()
     ui_state.display_full_value = false;
 }
 
+void ui_set_api(API_CTX *api_ctx)
+{
+    ui_state.api_ctx = api_ctx;
+}
+
 void ui_init(bool flash_is_init)
 {
     ctx_initialize();
@@ -171,6 +176,21 @@ void ui_display_calc()
     ui_force_draw();
 }
 
+void ui_display_validating()
+{
+    clear_display();
+    write_display("Validating...", TYPE_STR, MID);
+    
+    display_glyphs(ui_glyphs.glyph_load, NULL);
+    
+    backup_state();
+    
+    ui_state.state = STATE_IGNORE;
+    
+    ui_render();
+    ui_force_draw();
+}
+
 void ui_display_recv()
 {
     clear_display();
@@ -209,12 +229,6 @@ void ui_display_address(const unsigned char *addr_bytes)
     ui_build_display();
     ui_render();
     ui_force_draw();
-}
-
-void ui_set_path(const unsigned int *path, unsigned int path_len)
-{
-    ui_state.path = path;
-    ui_state.path_len = path_len;
 }
 
 void ui_sign_tx(BUNDLE_CTX *bundle_ctx)

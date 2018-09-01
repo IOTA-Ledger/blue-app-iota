@@ -84,26 +84,23 @@ void display_more_info()
 
 void display_bip_path()
 {
-    uint8_t chars_written = 0, i = 0, isodd = ui_state.path_len % 2;
+    uint8_t chars_written = 0, i = 0, isodd = ui_state.api_ctx->bip32_path_length % 2;
     
     char *msg = ui_text.top_str;
     
     clear_display();
     
-    while(i < ui_state.path_len) {
+    while(i < ui_state.api_ctx->bip32_path_length) {
         
         bool ishard = false;
-        unsigned int path_val = ui_state.path[i];
         
         // check if hardened
-        if(path_val & (1<<31)) {
+        if(ui_state.api_ctx->bip32_path[i] & (1<<31))
             ishard = true;
-            path_val = path_val & 0x7fffffff;
-        }
         
         // convert into hex
-        chars_written += int_to_str(path_val, msg + chars_written,
-                                   21 - chars_written, 16);
+        chars_written += int_to_str(ui_state.api_ctx->bip32_path[i] & 0x7fffffff,
+                                    msg + chars_written, 21 - chars_written, 16);
         
         // check if hardened
         if(ishard) {
@@ -115,7 +112,7 @@ void display_bip_path()
         }
         
         // add spacers
-        if(i < ui_state.path_len - 1)
+        if(i < ui_state.api_ctx->bip32_path_length - 1)
         {
             snprintf(msg + chars_written, 21-chars_written, " \\ ");
             chars_written += 3;
@@ -130,7 +127,7 @@ void display_bip_path()
         i++;
         
         // isodd emulates math.ceil function
-        if(i == (ui_state.path_len + isodd) / 2) {
+        if(i == (ui_state.api_ctx->bip32_path_length + isodd) / 2) {
             msg[chars_written] = '\0';
             msg = ui_text.bot_str;
             chars_written = 0;
