@@ -29,11 +29,6 @@ void ui_display_signing()
 {
 }
 
-void ui_set_api(API_CTX *api_ctx)
-{
-    UNUSED(api_ctx);
-}
-
 void ui_display_address(const unsigned char *addr_bytes)
 {
     UNUSED(addr_bytes);
@@ -42,18 +37,8 @@ void ui_display_address(const unsigned char *addr_bytes)
 // forward declaration
 void user_sign_tx();
 
-void ui_warn_change(BUNDLE_CTX *bundle_ctx)
+void ui_sign_tx()
 {
-    UNUSED(bundle_ctx);
-
-    // the user ignores the warning and signs everything
-    user_sign_tx();
-}
-
-void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
-{
-    UNUSED(bundle_ctx);
-
     // the user signs everything
     user_sign_tx();
 }

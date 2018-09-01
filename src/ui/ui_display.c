@@ -84,56 +84,57 @@ void display_more_info()
 
 void display_bip_path()
 {
-    uint8_t chars_written = 0, i = 0, isodd = ui_state.api_ctx->bip32_path_length % 2;
-    
+    uint8_t chars_written = 0, i = 0, isodd = api.bip32_path_length % 2;
+
     char *msg = ui_text.top_str;
-    
+
     clear_display();
-    
-    while(i < ui_state.api_ctx->bip32_path_length) {
-        
+
+    while (i < api.bip32_path_length) {
+
         bool ishard = false;
-        
+
         // check if hardened
-        if(ui_state.api_ctx->bip32_path[i] & (1<<31))
+        if (api.bip32_path[i] & (1 << 31))
             ishard = true;
-        
+
         // convert into hex
-        chars_written += int_to_str(ui_state.api_ctx->bip32_path[i] & 0x7fffffff,
-                                    msg + chars_written, 21 - chars_written, 16);
-        
+        chars_written +=
+            int_to_str(api.bip32_path[i] & 0x7fffffff, msg + chars_written,
+                       21 - chars_written, 16);
+
         // check if hardened
-        if(ishard) {
-            if(chars_written == 20) {
+        if (ishard) {
+            if (chars_written == 20) {
                 msg[19] = '?';
                 msg[20] = '\0';
             }
-            else msg[chars_written++] = '\'';
+            else
+                msg[chars_written++] = '\'';
         }
-        
+
         // add spacers
-        if(i < ui_state.api_ctx->bip32_path_length - 1)
-        {
-            snprintf(msg + chars_written, 21-chars_written, " \\ ");
+        if (i < api.bip32_path_length - 1) {
+            snprintf(msg + chars_written, 21 - chars_written, " \\ ");
             chars_written += 3;
-            
+
             // check for overflow
-            if(chars_written > 20) {
+            if (chars_written > 20) {
                 msg[19] = '?';
                 msg[20] = '\0';
             }
         }
-        
+
         i++;
-        
+
         // isodd emulates math.ceil function
-        if(i == (ui_state.api_ctx->bip32_path_length + isodd) / 2) {
+        if (i == (api.bip32_path_length + isodd) / 2) {
             msg[chars_written] = '\0';
             msg = ui_text.bot_str;
             chars_written = 0;
         }
     }
-    
+
     msg[chars_written] = '\0';
     display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
 }
@@ -151,8 +152,8 @@ void display_addr()
     // special overrides
     if (ui_state.menu_idx == 0 && ui_state.state == STATE_DISP_ADDR)
         glyph_on(ui_glyphs.glyph_up);
-    
-    if(ui_state.menu_idx == MENU_ADDR_LEN - 1)
+
+    if (ui_state.menu_idx == MENU_ADDR_LEN - 1)
         glyph_on(ui_glyphs.glyph_down);
 }
 

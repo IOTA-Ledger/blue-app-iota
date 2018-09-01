@@ -31,6 +31,9 @@ typedef struct API_CTX {
     unsigned int state_flags;
 } API_CTX;
 
+/// global context with everything related to the current api state
+extern API_CTX api;
+
 typedef IO_STRUCT SET_SEED_INPUT
 {
     int64_t security;

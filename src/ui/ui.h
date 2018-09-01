@@ -15,7 +15,6 @@
  - Create msg to display [ui_misc.c]
  - Define behavior (ui_handle_menus) [ui_handling.c] */
 
-void ui_set_api(API_CTX *api_ctx);
 void ui_init(bool flash_is_init);
 
 void ui_display_welcome();
@@ -24,8 +23,7 @@ void ui_display_validating();
 void ui_display_recv();
 void ui_display_signing();
 void ui_display_address(const unsigned char *addr_bytes);
-void ui_set_path(API_CTX *api_ctx);
-void ui_sign_tx(BUNDLE_CTX *bundle_ctx);
+void ui_sign_tx();
 void ui_reset();
 void ui_restore();
 

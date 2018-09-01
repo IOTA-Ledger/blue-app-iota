@@ -68,12 +68,9 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
     }
 
     derive_seed_bip32(api.bip32_path, api.bip32_path_length, api.seed_bytes);
-    
-    // give the API to the UI
-    ui_set_api(&api);
-    
+
     api.state_flags |= SEED_SET;
-    
+
     io_send(NULL, 0, SW_OK);
     return 0;
 }
