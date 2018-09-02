@@ -35,6 +35,15 @@ void api_initialize()
     MEMCLEAR(api);
 }
 
+void api_reset_bundle()
+{
+    MEMCLEAR(api.bundle_ctx);
+    MEMCLEAR(api.signing_ctx);
+
+    // keep the SEED_SET flag, if it was set
+    api.state_flags &= SEED_SET;
+}
+
 unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
                           unsigned int len)
 {
@@ -427,13 +436,7 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
     }
 
     if (reset_partial(p1)) {
-        if (!(api.state_flags & SEED_SET)) {
-            THROW(SW_COMMAND_INVALID_STATE);
-        }
-        // clear bundle and signature data and reset state
-        MEMCLEAR(api.bundle_ctx);
-        MEMCLEAR(api.signing_ctx);
-        api.state_flags = SEED_SET;
+        api_reset_bundle();
     }
     else {
         api_initialize();
