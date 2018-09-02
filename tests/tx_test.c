@@ -322,25 +322,22 @@ static void test_invalid_change_index(void **state)
     }
 }
 
-static void test_change_address_reuses_input(void **state)
+static void test_output_address_reuses_input(void **state)
 {
     UNUSED(state);
     static const int security = 2;
 
     TX_INPUT txs[8];
-    // output transaction
+    // output transaction with input address
     memcpy(&txs[0], &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
-    txs[0].value -= 1;
+    memcpy(txs[0].address, PETER_VECTOR.bundle[1].address, NUM_HASH_TRYTES);
     // input transaction
     memcpy(&txs[1], &PETER_VECTOR.bundle[1], sizeof(TX_INPUT));
     // meta transaction
     memcpy(&txs[2], &PETER_VECTOR.bundle[2], sizeof(TX_INPUT));
-    // valued change transaction to input address
-    memcpy(&txs[3], &PETER_VECTOR.bundle[1], sizeof(TX_INPUT));
-    txs[3].value = 1;
 
     // create a valid bundle
-    finalize_bundle(txs, 3);
+    finalize_bundle(txs, 2);
 
     api_initialize();
     EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
@@ -357,13 +354,7 @@ static void test_change_address_reuses_input(void **state)
         EXPECT_API_DATA_OK(tx, 0, txs[1], output);
     }
     { // meta transaction
-        TX_OUTPUT output = {0};
-        output.finalized = false;
-
-        EXPECT_API_DATA_OK(tx, 0, txs[2], output);
-    }
-    { // 0-value change transaction
-        EXPECT_API_EXCEPTION(tx, 0, txs[3]);
+        EXPECT_API_EXCEPTION(tx, 0, txs[2]);
     }
 }
 
@@ -476,7 +467,7 @@ int main(void)
         cmocka_unit_test(test_missing_meta_tx_with_change),
         cmocka_unit_test(test_meta_tx_without_reference),
         cmocka_unit_test(test_invalid_change_index),
-        cmocka_unit_test(test_change_address_reuses_input),
+        cmocka_unit_test(test_output_address_reuses_input),
         cmocka_unit_test(test_change_index_low),
         cmocka_unit_test(test_invalid_value_transaction),
         cmocka_unit_test(test_seed_not_set),
