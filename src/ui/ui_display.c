@@ -82,6 +82,51 @@ void display_more_info()
     // no special overrides
 }
 
+void display_bip_path()
+{
+    clear_display();
+
+    char *msg[] = {ui_text.top_str, ui_text.bot_str};
+
+    int row = 0;
+    size_t chars_written = 0;
+    for (unsigned int i = 0; i < api.bip32_path_length; i++) {
+
+        // this cannot happen, as "2c'/107a'/ffffffff'/\nffffffff'/ffffffff'"
+        // fits exactly into two rows
+        if (row > 1) {
+            THROW(INVALID_STATE);
+        }
+
+        snprintf(msg[row] + chars_written, 21 - chars_written, "%x",
+                 api.bip32_path[i] & 0x7fffffff);
+        chars_written = strnlen(msg[row], 21);
+
+        // write apostroph if hardnend
+        if (api.bip32_path[i] & (1u << 31)) {
+            msg[row][chars_written++] = '\'';
+        }
+
+        // write the separator only if not last element
+        if (i < api.bip32_path_length - 1) {
+            msg[row][chars_written++] = '|';
+        }
+
+        // inc row, if there might be not enough space for the next level
+        if (chars_written > 20 - 10) {
+            msg[row++][chars_written] = '\0';
+            chars_written = 0;
+        }
+    }
+
+    // make sure that the current row is terminated
+    if (row <= 1) {
+        msg[row][chars_written] = '\0';
+    }
+
+    display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+}
+
 void display_addr()
 {
     // write the actual menu
@@ -95,6 +140,9 @@ void display_addr()
     // special overrides
     if (ui_state.menu_idx == 0 && ui_state.state == STATE_DISP_ADDR)
         glyph_on(ui_glyphs.glyph_up);
+
+    if (ui_state.menu_idx == MENU_ADDR_LEN - 1)
+        glyph_on(ui_glyphs.glyph_down);
 }
 
 void display_addr_chk()

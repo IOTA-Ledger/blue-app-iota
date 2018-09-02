@@ -13,7 +13,11 @@ void ui_display_welcome()
 {
 }
 
-void ui_display_calc()
+void ui_display_getting_addr()
+{
+}
+
+void ui_display_validating()
 {
 }
 
@@ -33,18 +37,8 @@ void ui_display_address(const unsigned char *addr_bytes)
 // forward declaration
 void user_sign_tx();
 
-void ui_warn_change(BUNDLE_CTX *bundle_ctx)
+void ui_sign_tx()
 {
-    UNUSED(bundle_ctx);
-
-    // the user ignores the warning and signs everything
-    user_sign_tx();
-}
-
-void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
-{
-    UNUSED(bundle_ctx);
-
     // the user signs everything
     user_sign_tx();
 }

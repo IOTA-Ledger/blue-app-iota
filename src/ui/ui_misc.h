@@ -13,6 +13,8 @@ void restore_state();
 void abbreviate_addr(char *dest, const char *src, uint8_t len);
 void write_display(void *o, uint8_t type, uint8_t pos);
 
+int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix);
+
 void glyph_on(char *c);
 void glyph_off(char *c);
 

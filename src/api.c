@@ -9,7 +9,6 @@
 // iota-related stuff
 #include "iota/conversion.h"
 #include "iota/addresses.h"
-#include "iota/bundle.h"
 #include "iota/seed.h"
 #include "iota/signing.h"
 
@@ -27,21 +26,6 @@
             THROW(SW_INCORRECT_LENGTH);                                        \
         (INS##_INPUT *)(input_data);                                           \
     })
-
-typedef struct API_CTX {
-    /// BIP32 path used for seed derivation
-    unsigned int bip32_path[BIP32_PATH_MAX_LEN];
-    uint8_t bip32_path_length;
-
-    uint8_t security; ///< used security level
-
-    unsigned char seed_bytes[NUM_HASH_BYTES]; ///< IOTA seed
-
-    BUNDLE_CTX bundle_ctx;
-    SIGNING_CTX signing_ctx;
-
-    unsigned int state_flags;
-} API_CTX;
 
 /// global variable storing all data needed across multiple api calls
 API_CTX api;
@@ -120,7 +104,7 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
     const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
     const bool display = display_address(p1);
 
-    ui_display_calc();
+    ui_display_getting_addr();
 
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
@@ -366,7 +350,7 @@ static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
 /** @brief This functions gets called, when bundle is accepted. */
 void user_sign_tx()
 {
-    ui_display_calc();
+    ui_display_validating();
 
     int retcode = bundle_validating_finalize(
         &api.bundle_ctx, get_change_tx_index(&api.bundle_ctx), api.seed_bytes,

@@ -30,7 +30,8 @@ enum UI_STATES {
     STATE_DISP_ADDR,     // Host displays pubkey on ledger
     STATE_TX_ADDR,       // Display full address in TX
     STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
-    STATE_PROMPT_TX
+    STATE_PROMPT_TX,
+    STATE_BIP_PATH
 };
 
 #define STATE_EXIT 255
@@ -40,7 +41,6 @@ enum UI_STATES {
 #define MENU_WELCOME_LEN 3
 #define MENU_ABOUT_LEN 3
 #define MENU_ADDR_LEN 7
-#define MENU_WARN_CHANGE_LEN 7
 #define MENU_MORE_INFO_LEN 3
 
 typedef struct UI_TEXT_CTX {
@@ -78,9 +78,6 @@ typedef struct UI_STATE_CTX {
 
     uint8_t backup_state;
     uint8_t backup_menu_idx;
-
-    const BUNDLE_CTX *bundle_ctx;
-    const uint32_t *seed_indexes;
 
 } UI_STATE_CTX;
 

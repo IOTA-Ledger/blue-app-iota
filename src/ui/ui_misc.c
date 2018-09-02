@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "ui_types.h"
+#include "api.h"
 #include "storage.h"
 #include "iota/addresses.h"
 
@@ -51,22 +52,46 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
     dest[13] = '\0';
 }
 
+char int_to_chr(uint8_t rem, uint8_t radix)
+{
+    if (radix > 16)
+        return '?';
+
+    switch (rem) {
+    case 10:
+        return 'a';
+    case 11:
+        return 'b';
+    case 12:
+        return 'c';
+    case 13:
+        return 'd';
+    case 14:
+        return 'e';
+    case 15:
+        return 'f';
+    default:
+        return rem + '0';
+    }
+}
+
 // len specifies max size of buffer
 // if buffer doesn't fit whole int, returns null
-void int_to_str(int64_t num, char *str, uint8_t len)
+int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix)
 {
     // minimum buffer size of 2 (digit + \0)
-    if (len < 2)
-        return;
+    // largest supported radix is 16
+    if (len < 2 || radix > 16)
+        return -1;
 
-    int64_t i = 0;
+    int8_t i = 0;
     bool isNeg = false;
 
     // handle 0 first
     if (num == 0) {
         str[0] = '0';
         str[1] = '\0';
-        return;
+        return 1;
     }
 
     if (num < 0) {
@@ -75,19 +100,21 @@ void int_to_str(int64_t num, char *str, uint8_t len)
     }
 
     while (num != 0) {
-        uint8_t rem = num % 10;
-        str[i++] = rem + '0';
-        num = num / 10;
+        str[i++] = int_to_chr(num % radix, radix);
+        num = num / radix;
 
         // ensure we have room for full int + null term
         if (i == len || (i == len - 1 && isNeg)) {
-            str[0] = '\0';
-            return;
+            str[0] = '?';
+            str[1] = '\0';
+            return -1;
         }
     }
 
     if (isNeg)
         str[i++] = '-';
+
+    uint8_t chars_written = i;
 
     str[i--] = '\0';
 
@@ -97,6 +124,8 @@ void int_to_str(int64_t num, char *str, uint8_t len)
         str[j] = str[i];
         str[i] = c;
     }
+
+    return chars_written;
 }
 
 // write_display(&words, TYPE_STR, MID);
@@ -134,7 +163,7 @@ void write_display(void *o, uint8_t type, uint8_t pos)
     // also does not support %i! - Use %d
     // use custom function to handle 64 bit ints
     if (type == TYPE_INT)
-        int_to_str(*(int64_t *)o, c_ptr, 21);
+        int_to_str(*(int64_t *)o, c_ptr, 21, 10);
     else if (type == TYPE_STR)
         snprintf(c_ptr, 21, "%s", (char *)o);
 }
@@ -381,7 +410,7 @@ void value_convert_readability()
 
 void display_advanced_tx_value()
 {
-    ui_state.val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
+    ui_state.val = api.bundle_ctx.values[menu_to_tx_idx()];
 
     if (ui_state.val > 0) { // outgoing tx
         // -1 is deny, -2 approve, -3 addr, -4 val of change
@@ -389,8 +418,8 @@ void display_advanced_tx_value()
             char msg[21];
             // write the index along with Change
             snprintf(msg, 21, "Change: [%u]",
-                     (unsigned int)ui_state.bundle_ctx
-                         ->indices[ui_state.bundle_ctx->last_tx_index]);
+                     (unsigned int)
+                         api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
 
             write_display(msg, TYPE_STR, TOP);
         }
@@ -399,7 +428,11 @@ void display_advanced_tx_value()
     }
     else {
         // input tx (skip meta)
-        write_display("Input:", TYPE_STR, TOP);
+        char msg[21];
+        snprintf(msg, 21, "Input: [%u]",
+                 (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
+
+        write_display(msg, TYPE_STR, TOP);
         ui_state.val = -ui_state.val;
     }
 
@@ -413,7 +446,7 @@ void display_advanced_tx_value()
 void display_advanced_tx_address()
 {
     const unsigned char *addr_bytes =
-        bundle_get_address_bytes(ui_state.bundle_ctx, menu_to_tx_idx());
+        bundle_get_address_bytes(&api.bundle_ctx, menu_to_tx_idx());
 
     get_address_with_checksum(addr_bytes, ui_state.addr);
 
@@ -433,8 +466,8 @@ uint8_t get_tx_arr_sz()
 {
     uint8_t i = 0, counter = 0;
 
-    while (i <= ui_state.bundle_ctx->last_tx_index) {
-        if (ui_state.bundle_ctx->values[i] != 0)
+    while (i <= api.bundle_ctx.last_tx_index) {
+        if (api.bundle_ctx.values[i] != 0)
             counter++;
 
         i++;
@@ -450,9 +483,8 @@ uint8_t menu_to_tx_idx()
     // i counts number of non-meta tx's, j just iterates
     uint8_t i = 0, j = 0;
 
-    while (j <= ui_state.bundle_ctx->last_tx_index &&
-           i <= ui_state.menu_idx / 2) {
-        if (ui_state.bundle_ctx->values[j] != 0) {
+    while (j <= api.bundle_ctx.last_tx_index && i <= ui_state.menu_idx / 2) {
+        if (api.bundle_ctx.values[j] != 0) {
             i++;
         }
         j++;
@@ -487,7 +519,7 @@ void get_welcome_menu(char *msg)
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * 21), " Welcome to IOTA");
+    strcpy(msg + (i++ * 21), "IOTA");
     strcpy(msg + (i++ * 21), "About");
     strcpy(msg + (i++ * 21), "Exit App");
 }

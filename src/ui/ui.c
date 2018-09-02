@@ -156,10 +156,25 @@ void ui_display_welcome()
     ui_render();
 }
 
-void ui_display_calc()
+void ui_display_getting_addr()
 {
     clear_display();
-    write_display("Calculating...", TYPE_STR, MID);
+    write_display("Getting Addr...", TYPE_STR, MID);
+
+    display_glyphs(ui_glyphs.glyph_load, NULL);
+
+    backup_state();
+
+    ui_state.state = STATE_IGNORE;
+
+    ui_render();
+    ui_force_draw();
+}
+
+void ui_display_validating()
+{
+    clear_display();
+    write_display("Validating...", TYPE_STR, MID);
 
     display_glyphs(ui_glyphs.glyph_load, NULL);
 
@@ -211,10 +226,8 @@ void ui_display_address(const unsigned char *addr_bytes)
     ui_force_draw();
 }
 
-void ui_sign_tx(BUNDLE_CTX *bundle_ctx)
+void ui_sign_tx()
 {
-    ui_state.bundle_ctx = bundle_ctx;
-
     state_go(STATE_PROMPT_TX, 0);
 
     ui_build_display();
@@ -297,6 +310,10 @@ void ui_handle_button(uint8_t button_mask)
     case STATE_MORE_INFO:
         array_sz = button_more_info(button_mask);
         break;
+        /* ------------ STATE BIP PATH -------------- */
+    case STATE_BIP_PATH:
+        button_bip_path(button_mask);
+        return;
         /* ------------ STATE DISPLAY_ADDRESS -------------- */
     case STATE_DISP_ADDR:
         array_sz = button_disp_addr(button_mask);
@@ -351,6 +368,10 @@ void ui_build_display()
         /* ------------ MORE INFO -------------- */
     case STATE_MORE_INFO:
         display_more_info();
+        break;
+        /* ------------ BIP PATH ------------ */
+    case STATE_BIP_PATH:
+        display_bip_path();
         break;
         /* ------------ DISPLAY TX ADDRESS -------------- */
     case STATE_TX_ADDR:

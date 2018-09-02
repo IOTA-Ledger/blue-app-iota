@@ -3,6 +3,7 @@
 
 #include "iota_io.h"
 #include "iota/signing.h"
+#include "iota/bundle.h"
 
 // state bit flags
 #define SEED_SET (1 << 0)
@@ -14,6 +15,24 @@
 
 #define SET_SEED_REQUIRED_STATE 0
 #define SET_SEED_FORBIDDEN_STATE 0
+
+typedef struct API_CTX {
+    /// BIP32 path used for seed derivation
+    unsigned int bip32_path[BIP32_PATH_MAX_LEN];
+    uint8_t bip32_path_length;
+    
+    uint8_t security; ///< used security level
+    
+    unsigned char seed_bytes[NUM_HASH_BYTES]; ///< IOTA seed
+    
+    BUNDLE_CTX bundle_ctx;
+    SIGNING_CTX signing_ctx;
+    
+    unsigned int state_flags;
+} API_CTX;
+
+/// global context with everything related to the current api state
+extern API_CTX api;
 
 typedef IO_STRUCT SET_SEED_INPUT
 {
@@ -115,5 +134,7 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len);
 
 void user_sign_tx();
 void user_deny_tx();
+void user_approve_seed();
+void user_deny_seed();
 
 #endif // API_H

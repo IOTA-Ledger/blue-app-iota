@@ -63,7 +63,7 @@ uint8_t button_about(uint8_t button_mask)
             return array_sz;
         }
         else {
-            state_go(STATE_WELCOME, 2); // Back
+            state_go(STATE_WELCOME, 1); // Back
 
             return array_sz;
         }
@@ -92,17 +92,28 @@ uint8_t button_more_info(uint8_t button_mask)
     return array_sz;
 }
 
+void button_bip_path(uint8_t button_mask)
+{
+    if (button_mask == BUTTON_L) {
+        state_go(STATE_DISP_ADDR, MENU_ADDR_LEN - 1);
+    }
+    if (button_mask == BUTTON_B) {
+        restore_state();
+    }
+}
+
 uint8_t button_disp_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
 
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         state_go(STATE_DISP_ADDR_CHK, 0);
-        return array_sz;
+    }
+    else if (button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
+        state_go(STATE_BIP_PATH, 0);
     }
     else if (button_mask == BUTTON_B) {
         restore_state();
-        return array_sz;
     }
 
     return array_sz;
@@ -122,9 +133,11 @@ uint8_t button_tx_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
 
-    if (button_mask == BUTTON_B) {
+    if (button_mask == BUTTON_R && ui_state.menu_idx == array_sz) {
+        state_go(STATE_BIP_PATH, 0);
+    }
+    else if (button_mask == BUTTON_B) {
         restore_state();
-        return array_sz;
     }
 
     return array_sz;
@@ -141,7 +154,7 @@ void button_prompt_tx(uint8_t button_mask)
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx++;
-            val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
+            val = api.bundle_ctx.values[menu_to_tx_idx()];
         } while (val == 0 && ui_state.menu_idx < array_sz - 2);
 
         // loop back to 0
@@ -159,7 +172,7 @@ void button_prompt_tx(uint8_t button_mask)
         // bypass displaying confirmations for meta-tx's
         do {
             ui_state.menu_idx--;
-            val = ui_state.bundle_ctx->values[menu_to_tx_idx()];
+            val = api.bundle_ctx.values[menu_to_tx_idx()];
         } while (val == 0 && ui_state.menu_idx > 0 &&
                  ui_state.menu_idx < array_sz - 2);
     }
@@ -187,28 +200,6 @@ void button_prompt_tx(uint8_t button_mask)
             }
         }
     }
-}
-
-uint8_t button_warn_change(uint8_t button_mask)
-{
-    uint8_t array_sz = MENU_WARN_CHANGE_LEN - 1;
-
-    if (button_mask == BUTTON_B) {
-        // Deny
-        if (ui_state.menu_idx == array_sz) {
-            user_deny_tx();
-            // restore_state();
-            state_go(STATE_WELCOME, 0);
-            return array_sz;
-        }
-        else if (ui_state.menu_idx == array_sz - 1) {
-            // Approve
-            state_go(STATE_PROMPT_TX, 0);
-            return array_sz;
-        }
-    }
-
-    return array_sz;
 }
 
 void button_handle_menu_idx(uint8_t button_mask, uint8_t array_sz)
