@@ -39,8 +39,8 @@ static void bytes_increment_trit_area_81(unsigned char *bytes)
  *  @param num_txs number of elements in the transaction array
  *  @param bundle_ctx target bundle
  */
-void bundle_create(const TX_ENTRY *txs, unsigned int num_txs,
-                      BUNDLE_CTX *bundle_ctx)
+static void bundle_create(const TX_ENTRY *txs, unsigned int num_txs,
+                          BUNDLE_CTX *bundle_ctx)
 {
     bundle_initialize(bundle_ctx, num_txs - 1);
 
@@ -58,7 +58,7 @@ void bundle_create(const TX_ENTRY *txs, unsigned int num_txs,
  *  @return tag increment of the first transaction that was necessary to
  *          generate a valid bundle
  */
-unsigned int bundle_finalize(BUNDLE_CTX *ctx)
+static unsigned int bundle_finalize(BUNDLE_CTX *ctx)
 {
     unsigned int tag_increment = 0;
 
