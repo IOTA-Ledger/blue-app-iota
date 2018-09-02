@@ -140,6 +140,7 @@ static bool validate_address(const unsigned char *addr_bytes,
     return (memcmp(addr_bytes, computed_addr, 48) == 0);
 }
 
+/** @return Whether all values sum up to zero. */
 static bool validate_balance(const BUNDLE_CTX *ctx)
 {
     int64_t value = 0;
@@ -151,7 +152,7 @@ static bool validate_balance(const BUNDLE_CTX *ctx)
     return value == 0;
 }
 
-/** @brief Checks that every input transaction has meta transactions. */
+/** @return Whether every input transaction has meta transactions. */
 static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
 {
     for (uint8_t i = 0; i <= ctx->last_tx_index; i++) {
@@ -198,6 +199,7 @@ static bool validate_change_index(const BUNDLE_CTX *ctx,
     return true;
 }
 
+/** @return Whether the provided seed indices match the addresses. */
 static bool validate_address_indices(const BUNDLE_CTX *ctx,
                                      uint8_t change_tx_index,
                                      const unsigned char *seed_bytes,
@@ -218,6 +220,7 @@ static bool validate_address_indices(const BUNDLE_CTX *ctx,
     return true;
 }
 
+/** @return Whether each address occures only once in the bundle. */
 static bool validate_address_reuse(const BUNDLE_CTX *ctx)
 {
     for (uint8_t i = 0; i <= ctx->last_tx_index; i++) {
