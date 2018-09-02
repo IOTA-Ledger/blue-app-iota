@@ -36,9 +36,9 @@ extern API_CTX api;
 
 typedef IO_STRUCT SET_SEED_INPUT
 {
-    int64_t security;
-    int64_t bip32_path_length;
-    int64_t bip32_path[];
+    uint8_t security;
+    uint8_t bip32_path_length;
+    uint32_t bip32_path[];
 }
 SET_SEED_INPUT;
 
@@ -49,7 +49,7 @@ SET_SEED_INPUT;
 
 typedef IO_STRUCT PUBKEY_INPUT
 {
-    int64_t address_idx;
+    uint32_t address_idx;
 }
 PUBKEY_INPUT;
 
@@ -65,12 +65,12 @@ PUBKEY_OUTPUT;
 typedef IO_STRUCT TX_INPUT
 {
     char address[81];
-    int64_t address_idx;
+    uint32_t address_idx;
     int64_t value;
     char tag[27];
-    int64_t current_index;
-    int64_t last_index;
-    int64_t timestamp;
+    uint32_t current_index;
+    uint32_t last_index;
+    uint32_t timestamp;
 }
 TX_INPUT;
 
@@ -86,7 +86,7 @@ TX_OUTPUT;
 
 typedef IO_STRUCT SIGN_INPUT
 {
-    int64_t transaction_idx;
+    uint32_t transaction_idx;
 }
 SIGN_INPUT;
 

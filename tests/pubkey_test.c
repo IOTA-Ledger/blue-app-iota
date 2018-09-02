@@ -96,34 +96,6 @@ static void test_change_security(void **state)
     }
 }
 
-static void test_negative_index(void **state)
-{
-    UNUSED(state);
-    static const int security = 2;
-
-    api_initialize();
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
-    {
-        PUBKEY_INPUT input = {-1};
-
-        EXPECT_API_EXCEPTION(pubkey, 0, input);
-    }
-}
-
-static void test_index_overflow(void **state)
-{
-    UNUSED(state);
-    static const int security = 2;
-
-    api_initialize();
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
-    {
-        PUBKEY_INPUT input = {(UINT32_MAX + INT64_C(1))};
-
-        EXPECT_API_EXCEPTION(pubkey, 0, input);
-    }
-}
-
 static void test_not_set_seed(void **state)
 {
     UNUSED(state);
@@ -141,8 +113,6 @@ int main(void)
         cmocka_unit_test(test_valid_index_level_two),
         cmocka_unit_test(test_valid_index_level_three),
         cmocka_unit_test(test_change_security),
-        cmocka_unit_test(test_negative_index),
-        cmocka_unit_test(test_index_overflow),
         cmocka_unit_test(test_not_set_seed)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);

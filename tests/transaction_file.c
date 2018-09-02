@@ -43,8 +43,8 @@ void test_for_each_bundle(const char *file_name,
 
         for (int i = 0; i <= LAST_TX_INDEX; i++) {
             sscanf(line + offset,
-                   "%81" SCNs27 ",%" SCNd64 ",%" SCNd64 ",%27" SCNs27
-                   ",%" SCNd64 ",%n",
+                   "%81" SCNs27 ",%" SCNu32 ",%" SCNd64 ",%27" SCNs27
+                   ",%" SCNu32 ",%n",
                    tx[i].address, &tx[i].address_idx, &tx[i].value, tx[i].tag,
                    &tx[i].timestamp, &scanned);
 
