@@ -106,14 +106,9 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
 
     ui_display_getting_addr();
 
-    uint32_t address_idx;
-    if (!ASSIGN(address_idx, input->address_idx)) {
-        // address index overflow
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-
     unsigned char addr_bytes[48];
-    get_public_addr(api.seed_bytes, address_idx, api.security, addr_bytes);
+    get_public_addr(api.seed_bytes, input->address_idx, api.security,
+                    addr_bytes);
 
     if (display) {
         ui_display_address(addr_bytes);
@@ -190,13 +185,7 @@ static void add_tx(const TX_INPUT *input)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    uint32_t timestamp;
-    if (!ASSIGN(timestamp, input->timestamp)) {
-        // timestamp overflow
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-
-    bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, timestamp);
+    bundle_add_tx(&api.bundle_ctx, input->value, padded_tag, input->timestamp);
 }
 
 static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
@@ -248,13 +237,8 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     // if input, or change address then set internal
     if (input->value < 0 ||
         api.bundle_ctx.current_tx_index == api.bundle_ctx.last_tx_index) {
-        uint32_t address_idx;
-        if (!ASSIGN(address_idx, input->address_idx)) {
-            // index overflow
-            THROW(SW_COMMAND_INVALID_DATA);
-        }
         bundle_set_internal_address(&api.bundle_ctx, input->address,
-                                    address_idx);
+                                    input->address_idx);
     }
     else {
         // ignore index completely
