@@ -43,13 +43,12 @@ static void IOTA_main()
                     sw = SW_UNKNOWN | (e & 0x0FF);
                 }
 
-                // send response code and reset ui
+                // send response code and reset
                 // TODO: could io_send ever throw an exception here?
                 io_send(NULL, 0, sw);
 
-                if (storage_is_initialized()) {
-                    ui_reset();
-                }
+                ui_reset();
+                api_reset_bundle();
 
                 flags = 0;
             }
