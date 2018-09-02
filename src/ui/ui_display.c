@@ -103,7 +103,7 @@ void display_bip_path()
         chars_written = strnlen(msg[row], 21);
 
         // write apostroph if hardnend
-        if (api.bip32_path[i] & (1 << 31)) {
+        if (api.bip32_path[i] & (1u << 31)) {
             msg[row][chars_written++] = '\'';
         }
 
@@ -117,6 +117,11 @@ void display_bip_path()
             msg[row++][chars_written] = '\0';
             chars_written = 0;
         }
+    }
+
+    // make sure that the current row is terminated
+    if (row <= 1) {
+        msg[row][chars_written] = '\0';
     }
 
     display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
