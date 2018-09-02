@@ -64,10 +64,7 @@ void display_about()
 void display_version()
 {
     clear_display();
-    char msg[10];
-    strncpy(msg, APPVERSION, sizeof(msg));
-
-    write_display_str(msg, MID);
+    write_display_str(APPVERSION, MID);
 
     display_glyphs_confirm(ui_glyphs.glyph_dash, NULL);
 }
@@ -78,8 +75,6 @@ void display_more_info()
     char msg[MENU_MORE_INFO_LEN * 21];
     get_more_info_menu(msg);
     write_text_array(msg, MENU_MORE_INFO_LEN);
-
-    // no special overrides
 }
 
 void display_bip_path()
