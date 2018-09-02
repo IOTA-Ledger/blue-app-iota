@@ -519,7 +519,7 @@ void get_welcome_menu(char *msg)
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * 21), " Welcome to IOTA");
+    strcpy(msg + (i++ * 21), "IOTA");
     strcpy(msg + (i++ * 21), "About");
     strcpy(msg + (i++ * 21), "Exit App");
 }

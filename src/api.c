@@ -104,7 +104,7 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
     const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
     const bool display = display_address(p1);
 
-    ui_display_calc();
+    ui_display_getting_addr();
 
     uint32_t address_idx;
     if (!ASSIGN(address_idx, input->address_idx)) {
