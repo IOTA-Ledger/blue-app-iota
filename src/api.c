@@ -211,7 +211,7 @@ static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 }
 
 NO_INLINE
-static void io_send_unfinished_bundle()
+static void io_send_unfinished_bundle(void)
 {
     TX_OUTPUT output;
     os_memset(&output, 0, sizeof(TX_OUTPUT));
