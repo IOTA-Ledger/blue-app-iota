@@ -75,7 +75,7 @@ uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
  *  transaction matches the provided address c) the normalized bundle hash does
  *  not contain 'M'.
  *  @param ctx the bundle context used.
- *  @param change_index the index of the change transaction
+ *  @param change_tx_index the index of the change transaction
  *  @param seed_bytes seed used for the addresses
  *  @param security security level used for the addresses
  *  @return true if the bundle is valid, false otherwise

@@ -4,9 +4,9 @@
 #define BIP32_PATH_MIN_LEN 2
 #define BIP32_PATH_MAX_LEN 5
 
-void io_initialize();
+void io_initialize(void);
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
-unsigned int iota_dispatch();
+unsigned int iota_dispatch(void);
 
 /* ---  CLA  --- */
 

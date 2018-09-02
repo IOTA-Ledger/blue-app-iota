@@ -20,14 +20,14 @@ typedef struct API_CTX {
     /// BIP32 path used for seed derivation
     unsigned int bip32_path[BIP32_PATH_MAX_LEN];
     uint8_t bip32_path_length;
-    
+
     uint8_t security; ///< used security level
-    
+
     unsigned char seed_bytes[NUM_HASH_BYTES]; ///< IOTA seed
-    
+
     BUNDLE_CTX bundle_ctx;
     SIGNING_CTX signing_ctx;
-    
+
     unsigned int state_flags;
 } API_CTX;
 
@@ -118,7 +118,7 @@ GET_APP_CONFIG_OUTPUT;
 
 // no RESET_OUTPUT
 
-void api_initialize();
+void api_initialize(void);
 
 unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
                           unsigned int len);
@@ -132,9 +132,9 @@ unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
                                 unsigned int len);
 unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len);
 
-void user_sign_tx();
-void user_deny_tx();
-void user_approve_seed();
-void user_deny_seed();
+void user_sign_tx(void);
+void user_deny_tx(void);
+void user_approve_seed(void);
+void user_deny_seed(void);
 
 #endif // API_H

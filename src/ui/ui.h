@@ -17,17 +17,17 @@
 
 void ui_init(bool flash_is_init);
 
-void ui_display_welcome();
-void ui_display_getting_addr();
-void ui_display_validating();
-void ui_display_recv();
-void ui_display_signing();
+void ui_display_welcome(void);
+void ui_display_getting_addr(void);
+void ui_display_validating(void);
+void ui_display_recv(void);
+void ui_display_signing(void);
 void ui_display_address(const unsigned char *addr_bytes);
-void ui_sign_tx();
-void ui_reset();
-void ui_restore();
+void ui_sign_tx(void);
+void ui_reset(void);
+void ui_restore(void);
 
-void ui_render();
-void ui_force_draw();
+void ui_render(void);
+void ui_force_draw(void);
 
 #endif // UI_H

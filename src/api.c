@@ -67,7 +67,8 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    derive_seed_bip32(api.bip32_path, api.bip32_path_length, api.seed_bytes);
+    seed_derive_from_bip32(api.bip32_path, api.bip32_path_length,
+                           api.seed_bytes);
 
     api.state_flags |= SEED_SET;
 
@@ -210,7 +211,7 @@ static unsigned int get_change_tx_index(const BUNDLE_CTX *ctx)
 }
 
 NO_INLINE
-static void io_send_unfinished_bundle()
+static void io_send_unfinished_bundle(void)
 {
     TX_OUTPUT output;
     os_memset(&output, 0, sizeof(TX_OUTPUT));
@@ -264,7 +265,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
         // perfectly valid bundle
-        ui_sign_tx(&api.bundle_ctx);
+        ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
 

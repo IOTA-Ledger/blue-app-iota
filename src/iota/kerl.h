@@ -46,7 +46,7 @@ void kerl_squeeze_chunk(cx_sha3_t *sha3, unsigned char *bytes);
  *  @param sha3 the SHA context used for hashing
  *  @param bytes result byte array
  */
-void kerl_squeeze_final_chunk(cx_sha3_t *sha3, unsigned char *bytes_out);
+void kerl_squeeze_final_chunk(cx_sha3_t *sha3, unsigned char *bytes);
 
 /** @brief Squeeze multiple chunks of 48 byte data.
  *  @param sha3 the SHA context used for hashing

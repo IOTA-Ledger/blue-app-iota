@@ -14,10 +14,10 @@ UI_GLYPH_CTX ui_glyphs;
 UI_STATE_CTX ui_state;
 
 // ----------- local function prototypes
-void ui_transition_state(unsigned int button_mask);
-void ui_build_display();
+static void ui_transition_state(unsigned int button_mask);
+static void ui_build_display(void);
 
-unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
 
 // *************************
 // Ledger Nano S specific UI
@@ -118,7 +118,7 @@ void ui_force_draw()
                            sizeof(G_io_seproxyhal_spi_buffer), 0);
 }
 
-void ctx_initialize()
+static void ctx_initialize()
 {
     os_memset(&ui_text, 0, sizeof(ui_text));
     os_memset(&ui_glyphs, 0, sizeof(ui_glyphs));
@@ -258,15 +258,16 @@ void ui_restore()
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------
  ---------------------------------------------------------------
  --------------------------------------------------------------- */
-unsigned int bagl_ui_nanos_screen_button(unsigned int button_mask,
-                                         unsigned int button_mask_counter)
+static unsigned int
+bagl_ui_nanos_screen_button(unsigned int button_mask,
+                            unsigned int button_mask_counter)
 {
     ui_transition_state(button_mask);
 
     return 0;
 }
 
-uint8_t ui_translate_mask(unsigned int button_mask)
+static uint8_t ui_translate_mask(unsigned int button_mask)
 {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT:
@@ -285,7 +286,7 @@ uint8_t ui_translate_mask(unsigned int button_mask)
             Special button actions
  ------------------------------------------------------
  --------------------------------------------------- */
-void ui_handle_button(uint8_t button_mask)
+static void ui_handle_button(uint8_t button_mask)
 {
     uint8_t array_sz;
 
@@ -346,7 +347,7 @@ void ui_handle_button(uint8_t button_mask)
          Default display options per state
  ------------------------------------------------------
  --------------------------------------------------- */
-void ui_build_display()
+static void ui_build_display()
 {
     switch (ui_state.state) {
         /* ------------ INIT MENU -------------- */
@@ -405,7 +406,7 @@ void ui_build_display()
         Every button press calls transition_state
  ------------------------------------------------------
  --------------------------------------------------- */
-void ui_transition_state(unsigned int button_mask)
+static void ui_transition_state(unsigned int button_mask)
 {
     uint8_t translated_mask = ui_translate_mask(button_mask);
 

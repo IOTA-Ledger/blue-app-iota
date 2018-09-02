@@ -4,8 +4,8 @@
 #include "api.h"
 #include "iota/conversion.h"
 
-void derive_seed_bip32(const unsigned int *path, unsigned int pathLength,
-                       unsigned char *seed_bytes)
+void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
+                            unsigned char *seed_bytes)
 {
     UNUSED(path);
     UNUSED(pathLength);

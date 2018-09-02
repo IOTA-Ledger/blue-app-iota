@@ -1,7 +1,10 @@
 #include "test_common.h"
 #include <stdio.h>
 #include "api.h"
+#include "seed.h"
+#include "storage.h"
 #include "iota/bundle.h"
+#include "ui/ui.h"
 #include "keccak/sha3.h"
 
 void throw_exception(const char *expression, const char *file, int line)
@@ -35,7 +38,7 @@ void ui_display_address(const unsigned char *addr_bytes)
 }
 
 // forward declaration
-void user_sign_tx();
+void user_sign_tx(void);
 
 void ui_sign_tx()
 {
@@ -52,9 +55,9 @@ bool storage_is_initialized()
     return true;
 }
 
-__attribute__((weak)) void derive_seed_bip32(const unsigned int *path,
-                                             unsigned int pathLength,
-                                             unsigned char *seed_bytes)
+__attribute__((weak)) void seed_derive_from_bip32(const unsigned int *path,
+                                                  unsigned int pathLength,
+                                                  unsigned char *seed_bytes)
 {
     UNUSED(path);
     UNUSED(pathLength);

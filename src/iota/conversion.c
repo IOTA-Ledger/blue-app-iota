@@ -33,8 +33,8 @@ static const char tryte_to_char_mapping[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
 
 /* --------------------- trits > trytes and back */
 // used for bytes to chars and back
-int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
-                    unsigned int tryte_len)
+static int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
+                           unsigned int tryte_len)
 {
     for (unsigned int i = 0; i < tryte_len; i++) {
         int8_t idx = (int8_t)trytes_in[i] + 13;
@@ -45,8 +45,8 @@ int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
     return 0;
 }
 
-int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
-                    unsigned int trit_len)
+static int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
+                           unsigned int trit_len)
 {
     for (unsigned int i = 0; i < trit_len / 3; i++) {
         trytes_out[i] = trits_in[i * 3 + 0] + trits_in[i * 3 + 1] * 3 +
@@ -75,8 +75,8 @@ int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
     return 0;
 }
 
-int trytes_to_chars(const tryte_t trytes_in[], char chars_out[],
-                    unsigned int len)
+static int trytes_to_chars(const tryte_t trytes_in[], char chars_out[],
+                           unsigned int len)
 {
     for (unsigned int i = 0; i < len; i++) {
         chars_out[i] = tryte_to_char_mapping[trytes_in[i] + 13];
@@ -146,7 +146,7 @@ static bool bigint_sub(uint32_t *r, const uint32_t *a, const uint32_t *b)
 /** @brief adds a single 32-bit integer to a long little-endian integer.
  *  @return index of the most significant word which changed during the addition
  */
-unsigned int bigint_add_u32_mem(uint32_t *a, uint32_t summand)
+static unsigned int bigint_add_u32_mem(uint32_t *a, uint32_t summand)
 {
     bool carry = addcarry_u32(&a[0], a[0], summand, false);
     if (carry == false) {

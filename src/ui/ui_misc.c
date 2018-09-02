@@ -52,7 +52,7 @@ void abbreviate_addr(char *dest, const char *src, uint8_t len)
     dest[13] = '\0';
 }
 
-char int_to_chr(uint8_t rem, uint8_t radix)
+static char int_to_chr(uint8_t rem, uint8_t radix)
 {
     if (radix > 16)
         return '?';
@@ -170,7 +170,7 @@ void write_display(void *o, uint8_t type, uint8_t pos)
 
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
-void clear_text()
+static void clear_text()
 {
     write_display(NULL, TYPE_STR, TOP_H);
     write_display(NULL, TYPE_STR, TOP);
@@ -268,7 +268,7 @@ uint8_t get_num_digits(int64_t val)
     return i;
 }
 
-void str_add_units(char *str, uint8_t unit)
+static void str_add_units(char *str, uint8_t unit)
 {
     char unit_str[] = " i\0\0 Ki\0 Mi\0 Gi\0 Ti\0";
 
@@ -281,7 +281,7 @@ void str_add_units(char *str, uint8_t unit)
     }
 }
 
-char *str_defn_to_ptr(uint8_t str_defn)
+static char *str_defn_to_ptr(uint8_t str_defn)
 {
     char *str_ptr;
 
@@ -307,12 +307,12 @@ char *str_defn_to_ptr(uint8_t str_defn)
     return str_ptr;
 }
 
-bool char_is_num(char c)
+static bool char_is_num(char c)
 {
     return c - '0' >= 0 && c - '0' <= 9;
 }
 
-void str_add_commas(char *str, uint8_t num_digits, bool full)
+static void str_add_commas(char *str, uint8_t num_digits, bool full)
 {
     // largest int that can fit with commas
     // and units at end. if bigger, don't write commas
@@ -365,7 +365,7 @@ void str_add_commas(char *str, uint8_t num_digits, bool full)
 }
 
 // display's full amount in base iotas Ex. 3,040,981,551 i
-void write_full_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
+static void write_full_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
 {
     write_display(&val, TYPE_INT, str_defn);
     str_add_commas(str_defn_to_ptr(str_defn), num_digits, true);
@@ -373,7 +373,8 @@ void write_full_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
 }
 
 // displays brief amount with units Ex. 3.04 Gi
-void write_readable_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
+static void write_readable_val(int64_t val, uint8_t str_defn,
+                               uint8_t num_digits)
 {
     uint8_t base = MIN(((num_digits - 1) / 3), 4);
 
