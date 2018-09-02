@@ -13,7 +13,7 @@ void ui_display_welcome()
 {
 }
 
-void ui_display_calc()
+void ui_display_getting_addr()
 {
 }
 
