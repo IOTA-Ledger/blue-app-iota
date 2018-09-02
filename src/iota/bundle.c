@@ -176,6 +176,28 @@ static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
     return true;
 }
 
+/**
+ * @return Whether the index of the change address is higher than all input
+ * indices.
+ */
+static bool validate_change_index(const BUNDLE_CTX *ctx,
+                                  uint8_t change_tx_index)
+{
+    // if there is no change transaction, this is always valid
+    if (change_tx_index > ctx->last_tx_index) {
+        return true;
+    }
+
+    for (uint8_t i = 0; i <= ctx->last_tx_index; i++) {
+        if (ctx->values[i] < 0 &&
+            ctx->indices[i] >= ctx->indices[change_tx_index]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static bool validate_address_indices(const BUNDLE_CTX *ctx,
                                      uint8_t change_tx_index,
                                      const unsigned char *seed_bytes,
@@ -223,15 +245,15 @@ static int validate_bundle(const BUNDLE_CTX *ctx, uint8_t change_tx_index,
     if (!validate_balance(ctx)) {
         return NONZERO_BALANCE;
     }
-
     if (!validate_meta_txs(ctx, security)) {
         return INVALID_META_TX;
     }
-
+    if (!validate_change_index(ctx, change_tx_index)) {
+        return CHANGE_IDX_LOW;
+    }
     if (!validate_address_indices(ctx, change_tx_index, seed_bytes, security)) {
         return INVALID_ADDRESS_INDEX;
     }
-
     if (!validate_address_reuse(ctx)) {
         return ADDRESS_REUSED;
     }
