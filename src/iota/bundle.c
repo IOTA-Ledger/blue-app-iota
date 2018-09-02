@@ -123,8 +123,8 @@ static inline void normalize_hash(tryte_t *hash_trytes)
     }
 }
 
-void normalize_hash_bytes(const unsigned char *hash_bytes,
-                          tryte_t *normalized_hash_trytes)
+static void normalize_hash_bytes(const unsigned char *hash_bytes,
+                                 tryte_t *normalized_hash_trytes)
 {
     bytes_to_trytes(hash_bytes, normalized_hash_trytes);
     normalize_hash(normalized_hash_trytes);
