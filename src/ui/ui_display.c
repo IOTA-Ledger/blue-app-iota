@@ -33,11 +33,11 @@ void display_welcome()
     case 0:
         display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
     case MENU_WELCOME_LEN - 2:
-        write_display(NULL, TYPE_STR, BOT_H);
+        write_display_str(NULL, BOT_H);
         break;
         // turn off TOP_H
     case MENU_WELCOME_LEN - 1:
-        write_display(NULL, TYPE_STR, TOP_H);
+        write_display_str(NULL, TOP_H);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
     }
 }
@@ -52,11 +52,11 @@ void display_about()
     // special override display states
     switch (ui_state.menu_idx) {
     case MENU_ABOUT_LEN - 2:
-        write_display(NULL, TYPE_STR, BOT_H);
+        write_display_str(NULL, BOT_H);
         break;
         // turn off TOP_H
     case MENU_ABOUT_LEN - 1:
-        write_display(NULL, TYPE_STR, TOP_H);
+        write_display_str(NULL, TOP_H);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
     }
 }
@@ -67,7 +67,7 @@ void display_version()
     char msg[10];
     strncpy(msg, APPVERSION, sizeof(msg));
 
-    write_display(msg, TYPE_STR, MID);
+    write_display_str(msg, MID);
 
     display_glyphs_confirm(ui_glyphs.glyph_dash, NULL);
 }
@@ -152,8 +152,8 @@ void display_addr_chk()
     char abbrv[14];
     abbreviate_addr(abbrv, ui_state.addr, 81);
 
-    write_display(abbrv, TYPE_STR, TOP);
-    write_display("Chk: ", TYPE_STR, BOT);
+    write_display_str(abbrv, TOP);
+    write_display_str("Chk: ", BOT);
 
     // copy the remaining 9 chars in the buffer
     os_memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
@@ -172,12 +172,12 @@ void display_prompt_tx()
     clear_display();
 
     if (ui_state.menu_idx == get_tx_arr_sz() - 2) {
-        write_display("Approve", TYPE_STR, MID);
+        write_display_str("Approve", MID);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         return;
     }
     else if (ui_state.menu_idx == get_tx_arr_sz() - 1) {
-        write_display("Deny", TYPE_STR, MID);
+        write_display_str("Deny", MID);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         return;
     }
@@ -193,7 +193,7 @@ void display_prompt_tx()
 void display_unknown_state()
 {
     clear_display();
-    write_display("UI ERROR", TYPE_STR, MID);
+    write_display_str("UI ERROR", MID);
 
     display_glyphs_confirm(NULL, NULL);
 }

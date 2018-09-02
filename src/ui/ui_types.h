@@ -4,9 +4,6 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
-#define TYPE_INT 0
-#define TYPE_STR 1
-
 // Different positions a text can have
 typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
 

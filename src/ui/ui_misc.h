@@ -12,9 +12,8 @@ void set_backup(uint8_t state, uint8_t menu_idx);
 void restore_state(void);
 
 void abbreviate_addr(char *dest, const char *src, uint8_t len);
-void write_display(void *o, uint8_t type, UI_TEXT_POS pos);
-
-int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix);
+void write_display_str(const char *string, UI_TEXT_POS pos);
+void write_display_int64(int64_t value, UI_TEXT_POS pos);
 
 void glyph_on(char *c);
 void glyph_off(char *c);

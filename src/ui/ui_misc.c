@@ -75,7 +75,7 @@ static char int_to_chr(uint8_t rem, uint8_t radix)
 
 // len specifies max size of buffer
 // if buffer doesn't fit whole int, returns null
-int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix)
+static int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix)
 {
     // minimum buffer size of 2 (digit + \0)
     // largest supported radix is 16
@@ -126,55 +126,51 @@ int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix)
     return chars_written;
 }
 
-// write_display(&words, TYPE_STR, MID);
-// write_display(&int_val, TYPE_INT, MID);
-void write_display(void *o, uint8_t type, UI_TEXT_POS pos)
+/** @brief Returns buffer for corresponding position). */
+static char *get_str_buffer(UI_TEXT_POS pos)
 {
-    char *c_ptr = NULL;
-
     switch (pos) {
     case TOP_H:
-        c_ptr = ui_text.half_top;
-        break;
+        return ui_text.half_top;
     case TOP:
-        c_ptr = ui_text.top_str;
-        break;
+        return ui_text.top_str;
     case BOT:
-        c_ptr = ui_text.bot_str;
-        break;
+        return ui_text.bot_str;
     case BOT_H:
-        c_ptr = ui_text.half_bot;
-        break;
+        return ui_text.half_bot;
     case MID:
+        return ui_text.mid_str;
     default:
-        c_ptr = ui_text.mid_str;
-        break;
+        THROW(INVALID_PARAMETER);
     }
+}
+
+void write_display_str(const char *string, UI_TEXT_POS pos)
+{
+    char *c_ptr = get_str_buffer(pos);
 
     // NULL value sets line blank
-    if (o == NULL) {
+    if (string == NULL) {
         c_ptr[0] = '\0';
         return;
     }
-
-    // ledger does not support printing 64 bit ints
-    // also does not support %i! - Use %d
-    // use custom function to handle 64 bit ints
-    if (type == TYPE_INT)
-        int_to_str(*(int64_t *)o, c_ptr, 21, 10);
-    else if (type == TYPE_STR)
-        snprintf(c_ptr, 21, "%s", (char *)o);
+    snprintf(c_ptr, 21, "%s", string);
 }
 
+void write_display_int64(int64_t value, UI_TEXT_POS pos)
+{
+    char *c_ptr = get_str_buffer(pos);
+    int_to_str(value, c_ptr, 21, 10);
+}
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
 static void clear_text()
 {
-    write_display(NULL, TYPE_STR, TOP_H);
-    write_display(NULL, TYPE_STR, TOP);
-    write_display(NULL, TYPE_STR, MID);
-    write_display(NULL, TYPE_STR, BOT);
-    write_display(NULL, TYPE_STR, BOT_H);
+    write_display_str(NULL, TOP_H);
+    write_display_str(NULL, TOP);
+    write_display_str(NULL, MID);
+    write_display_str(NULL, BOT);
+    write_display_str(NULL, BOT_H);
 }
 
 // Turns a single glyph on or off
@@ -241,14 +237,14 @@ void write_text_array(char *array, uint8_t len)
     clear_glyphs();
 
     if (ui_state.menu_idx > 0) {
-        write_display(array + (21 * (ui_state.menu_idx - 1)), TYPE_STR, TOP_H);
+        write_display_str(array + (21 * (ui_state.menu_idx - 1)), TOP_H);
         glyph_on(ui_glyphs.glyph_up);
     }
 
-    write_display(array + (21 * ui_state.menu_idx), TYPE_STR, MID);
+    write_display_str(array + (21 * ui_state.menu_idx), MID);
 
     if (ui_state.menu_idx < len - 1) {
-        write_display(array + (21 * (ui_state.menu_idx + 1)), TYPE_STR, BOT_H);
+        write_display_str(array + (21 * (ui_state.menu_idx + 1)), BOT_H);
         glyph_on(ui_glyphs.glyph_down);
     }
 }
@@ -276,25 +272,6 @@ static void str_add_units(char *str, uint8_t unit)
             strncpy(str + i, unit_str + (unit * 4), 4);
             return;
         }
-    }
-}
-
-/** @brief Returns buffer for corresponding position). */
-static char *get_str_buffer(UI_TEXT_POS pos)
-{
-    switch (pos) {
-    case TOP_H:
-        return ui_text.half_top;
-    case TOP:
-        return ui_text.top_str;
-    case BOT:
-        return ui_text.bot_str;
-    case BOT_H:
-        return ui_text.half_bot;
-    case MID:
-        return ui_text.mid_str;
-    default:
-        THROW(INVALID_PARAMETER);
     }
 }
 
@@ -358,7 +335,7 @@ static void str_add_commas(char *str, uint8_t num_digits, bool full)
 // display's full amount in base iotas Ex. 3,040,981,551 i
 static void write_full_val(int64_t val, UI_TEXT_POS pos, uint8_t num_digits)
 {
-    write_display(&val, TYPE_INT, pos);
+    write_display_int64(val, pos);
     str_add_commas(get_str_buffer(pos), num_digits, true);
     str_add_units(get_str_buffer(pos), 0);
 }
@@ -373,7 +350,7 @@ static void write_readable_val(int64_t val, UI_TEXT_POS pos, uint8_t num_digits)
     for (uint8_t i = 0; i < base - 1; i++)
         new_val /= 1000;
 
-    write_display(&new_val, TYPE_INT, pos);
+    write_display_int64(new_val, pos);
     str_add_commas(get_str_buffer(pos), num_digits - (3 * (base - 1)), false);
     str_add_units(get_str_buffer(pos), base);
 }
@@ -411,10 +388,10 @@ void display_advanced_tx_value()
                      (unsigned int)
                          api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
 
-            write_display(msg, TYPE_STR, TOP);
+            write_display_str(msg, TOP);
         }
         else
-            write_display("Output:", TYPE_STR, TOP);
+            write_display_str("Output:", TOP);
     }
     else {
         // input tx (skip meta)
@@ -422,7 +399,7 @@ void display_advanced_tx_value()
         snprintf(msg, 21, "Input: [%u]",
                  (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
 
-        write_display(msg, TYPE_STR, TOP);
+        write_display_str(msg, TOP);
         ui_state.val = -ui_state.val;
     }
 
@@ -443,8 +420,8 @@ void display_advanced_tx_address()
     char abbrv[14];
     abbreviate_addr(abbrv, ui_state.addr, 81);
 
-    write_display(abbrv, TYPE_STR, TOP);
-    write_display("Chk: ", TYPE_STR, BOT);
+    write_display_str(abbrv, TOP);
+    write_display_str("Chk: ", BOT);
 
     // copy the remaining 9 chars in the buffer
     memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
