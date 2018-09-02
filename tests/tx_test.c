@@ -103,6 +103,78 @@ static void test_refinalize_valid_bundle(void **state)
     EXPECT_API_SET_BUNDLE_OK(txs, 2, PETER_VECTOR.bundle_hash);
 }
 
+static void test_payment_higher_than_balance(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    TX_INPUT txs[8];
+    // output transaction
+    memcpy(&txs[0], &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+    txs[0].value += 1;
+    // input transaction
+    memcpy(&txs[1], &PETER_VECTOR.bundle[1], sizeof(TX_INPUT));
+    // meta transaction
+    memcpy(&txs[2], &PETER_VECTOR.bundle[2], sizeof(TX_INPUT));
+
+    // create a valid bundle
+    finalize_bundle(txs, 2);
+
+    api_initialize();
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
+    { // output transaction
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
+    }
+    { // input transaction
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, txs[1], output);
+    }
+    { // meta transaction
+        EXPECT_API_EXCEPTION(tx, 0, txs[2]);
+    }
+}
+
+static void test_payment_lower_than_balance(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    TX_INPUT txs[8];
+    // output transaction
+    memcpy(&txs[0], &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+    // input transaction
+    memcpy(&txs[1], &PETER_VECTOR.bundle[1], sizeof(TX_INPUT));
+    txs[1].value += 1;
+    // meta transaction
+    memcpy(&txs[2], &PETER_VECTOR.bundle[2], sizeof(TX_INPUT));
+
+    // create a valid bundle
+    finalize_bundle(txs, 2);
+
+    api_initialize();
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
+    { // output transaction
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
+    }
+    { // input transaction
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, txs[1], output);
+    }
+    { // meta transaction
+        EXPECT_API_EXCEPTION(tx, 0, txs[2]);
+    }
+}
+
 static void test_invalid_input_address_index(void **state)
 {
     UNUSED(state);
@@ -463,6 +535,8 @@ int main(void)
         cmocka_unit_test(test_invalid_input_address_index),
         cmocka_unit_test(test_invalid_tx_order),
         cmocka_unit_test(test_tx_index_twice),
+        cmocka_unit_test(test_payment_higher_than_balance),
+        cmocka_unit_test(test_payment_lower_than_balance),
         cmocka_unit_test(test_missing_meta_tx),
         cmocka_unit_test(test_missing_meta_tx_with_change),
         cmocka_unit_test(test_meta_tx_without_reference),
