@@ -367,6 +367,58 @@ static void test_change_address_reuses_input(void **state)
     }
 }
 
+static void test_change_index_low(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    TX_INPUT txs[8];
+    // output transaction
+    memcpy(&txs[0], &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+    txs[0].value -= 1;
+    // input transaction
+    memcpy(&txs[1], &PETER_VECTOR.bundle[1], sizeof(TX_INPUT));
+    // meta transaction
+    memcpy(&txs[2], &PETER_VECTOR.bundle[2], sizeof(TX_INPUT));
+    {
+        // use output as boilerplate
+        memcpy(&txs[3], &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+        // lower than the input
+        txs[3].address_idx = txs[1].address_idx - 1;
+        memcpy(txs[3].address,
+               &PETER_VECTOR.addresses[security][txs[3].address_idx],
+               NUM_HASH_TRYTES);
+        txs[3].value = 1;
+    }
+
+    // create a valid bundle
+    finalize_bundle(txs, 3);
+
+    api_initialize();
+    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
+    { // output transaction
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, txs[0], output);
+    }
+    { // input transaction
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, txs[1], output);
+    }
+    { // meta transaction
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, 0, txs[2], output);
+    }
+    { // invalid change transaction
+        EXPECT_API_EXCEPTION(tx, 0, txs[3]);
+    }
+}
+
 static void test_invalid_value_transaction(void **state)
 {
     UNUSED(state);
@@ -425,6 +477,7 @@ int main(void)
         cmocka_unit_test(test_meta_tx_without_reference),
         cmocka_unit_test(test_invalid_change_index),
         cmocka_unit_test(test_change_address_reuses_input),
+        cmocka_unit_test(test_change_index_low),
         cmocka_unit_test(test_invalid_value_transaction),
         cmocka_unit_test(test_seed_not_set),
         cmocka_unit_test(test_tx_after_bundle)};
