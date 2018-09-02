@@ -264,7 +264,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
         // perfectly valid bundle
-        ui_sign_tx(&api.bundle_ctx);
+        ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
 
