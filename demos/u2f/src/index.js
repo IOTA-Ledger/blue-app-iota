@@ -1,4 +1,4 @@
-import "babel-polyfill";
+import "@babel/polyfill";
 
 import Transport from "@ledgerhq/hw-transport-u2f";
 import AppIota from "hw-app-iota";
