@@ -49,8 +49,8 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
                   BIP32_PATH_MAX_LEN)) {
         THROW(SW_COMMAND_INVALID_DATA);
     }
-    if (len <
-        sizeof(SET_SEED_INPUT) + api.bip32_path_length * sizeof(uint32_t)) {
+    if (len < sizeof(SET_SEED_INPUT) +
+                  api.bip32_path_length * sizeof(input->bip32_path[0])) {
         THROW(SW_INCORRECT_LENGTH);
     }
 
