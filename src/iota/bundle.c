@@ -262,7 +262,7 @@ static void compute_hash(BUNDLE_CTX *ctx)
     kerl_squeeze_final_chunk(&sha, ctx->hash);
 }
 
-int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_index,
+int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
                                const unsigned char *seed_bytes,
                                uint8_t security)
 {
@@ -270,7 +270,7 @@ int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_index,
         THROW(INVALID_STATE);
     }
 
-    int result = validate_bundle(ctx, change_index, seed_bytes, security);
+    int result = validate_bundle(ctx, change_tx_index, seed_bytes, security);
     if (result != OK) {
         return result;
     }
