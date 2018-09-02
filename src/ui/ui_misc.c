@@ -1,8 +1,6 @@
 #include "ui_misc.h"
-#include <stdbool.h>
-#include <stdint.h>
 #include <string.h>
-#include "ui_types.h"
+#include "common.h"
 #include "api.h"
 #include "storage.h"
 #include "iota/addresses.h"
@@ -130,7 +128,7 @@ int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix)
 
 // write_display(&words, TYPE_STR, MID);
 // write_display(&int_val, TYPE_INT, MID);
-void write_display(void *o, uint8_t type, uint8_t pos)
+void write_display(void *o, uint8_t type, UI_TEXT_POS pos)
 {
     char *c_ptr = NULL;
 
@@ -281,30 +279,23 @@ static void str_add_units(char *str, uint8_t unit)
     }
 }
 
-static char *str_defn_to_ptr(uint8_t str_defn)
+/** @brief Returns buffer for corresponding position). */
+static char *get_str_buffer(UI_TEXT_POS pos)
 {
-    char *str_ptr;
-
-    switch (str_defn) {
+    switch (pos) {
     case TOP_H:
-        str_ptr = ui_text.half_top;
-        break;
+        return ui_text.half_top;
     case TOP:
-        str_ptr = ui_text.top_str;
-        break;
+        return ui_text.top_str;
     case BOT:
-        str_ptr = ui_text.bot_str;
-        break;
+        return ui_text.bot_str;
     case BOT_H:
-        str_ptr = ui_text.half_bot;
-        break;
+        return ui_text.half_bot;
     case MID:
+        return ui_text.mid_str;
     default:
-        str_ptr = ui_text.mid_str;
-        break;
+        THROW(INVALID_PARAMETER);
     }
-
-    return str_ptr;
 }
 
 static bool char_is_num(char c)
@@ -365,16 +356,15 @@ static void str_add_commas(char *str, uint8_t num_digits, bool full)
 }
 
 // display's full amount in base iotas Ex. 3,040,981,551 i
-static void write_full_val(int64_t val, uint8_t str_defn, uint8_t num_digits)
+static void write_full_val(int64_t val, UI_TEXT_POS pos, uint8_t num_digits)
 {
-    write_display(&val, TYPE_INT, str_defn);
-    str_add_commas(str_defn_to_ptr(str_defn), num_digits, true);
-    str_add_units(str_defn_to_ptr(str_defn), 0);
+    write_display(&val, TYPE_INT, pos);
+    str_add_commas(get_str_buffer(pos), num_digits, true);
+    str_add_units(get_str_buffer(pos), 0);
 }
 
 // displays brief amount with units Ex. 3.04 Gi
-static void write_readable_val(int64_t val, uint8_t str_defn,
-                               uint8_t num_digits)
+static void write_readable_val(int64_t val, UI_TEXT_POS pos, uint8_t num_digits)
 {
     uint8_t base = MIN(((num_digits - 1) / 3), 4);
 
@@ -383,21 +373,20 @@ static void write_readable_val(int64_t val, uint8_t str_defn,
     for (uint8_t i = 0; i < base - 1; i++)
         new_val /= 1000;
 
-    write_display(&new_val, TYPE_INT, str_defn);
-    str_add_commas(str_defn_to_ptr(str_defn), num_digits - (3 * (base - 1)),
-                   false);
-    str_add_units(str_defn_to_ptr(str_defn), base);
+    write_display(&new_val, TYPE_INT, pos);
+    str_add_commas(get_str_buffer(pos), num_digits - (3 * (base - 1)), false);
+    str_add_units(get_str_buffer(pos), base);
 }
 
 // displays full/readable value based on the ui_state
-bool display_value(int64_t val, uint8_t str_defn)
+static bool display_value(int64_t val, UI_TEXT_POS pos)
 {
     uint8_t num_digits = get_num_digits(val);
 
     if (ui_state.display_full_value || num_digits <= 3)
-        write_full_val(val, str_defn, num_digits);
+        write_full_val(val, pos, num_digits);
     else
-        write_readable_val(val, str_defn, num_digits);
+        write_readable_val(val, pos, num_digits);
 
     // return whether a shortened version is possible
     return num_digits > 3;

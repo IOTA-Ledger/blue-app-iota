@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "ui_types.h"
 
 void state_go(uint8_t state, uint8_t idx);
 void state_return(uint8_t state, uint8_t idx);
@@ -11,7 +12,7 @@ void set_backup(uint8_t state, uint8_t menu_idx);
 void restore_state(void);
 
 void abbreviate_addr(char *dest, const char *src, uint8_t len);
-void write_display(void *o, uint8_t type, uint8_t pos);
+void write_display(void *o, uint8_t type, UI_TEXT_POS pos);
 
 int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix);
 
@@ -27,7 +28,6 @@ void display_glyphs_confirm(char *c1, char *c2);
 void write_text_array(char *array, uint8_t len);
 
 uint8_t get_num_digits(int64_t val);
-bool display_value(int64_t val, uint8_t str_defn);
 void value_convert_readability(void);
 uint8_t get_tx_arr_sz(void);
 uint8_t menu_to_tx_idx(void);

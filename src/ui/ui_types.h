@@ -7,11 +7,8 @@
 #define TYPE_INT 0
 #define TYPE_STR 1
 
-#define TOP_H 0
-#define TOP 1
-#define MID 2
-#define BOT 3
-#define BOT_H 4
+// Different positions a text can have
+typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
 
 #define BUTTON_L 0
 #define BUTTON_R 1
