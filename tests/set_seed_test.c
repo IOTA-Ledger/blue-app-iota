@@ -4,8 +4,8 @@
 #include "api.h"
 #include "iota/conversion.h"
 
-void derive_seed_bip32(const unsigned int *path, unsigned int pathLength,
-                       unsigned char *seed_bytes)
+void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
+                            unsigned char *seed_bytes)
 {
     check_expected(path);
     check_expected(pathLength);
@@ -28,10 +28,10 @@ static void test_valid_security_levels(void **state)
 
     for (unsigned int security = 1; security <= 3; security++) {
 
-        expect_memory(derive_seed_bip32, path, path, sizeof(path));
-        expect_value(derive_seed_bip32, pathLength, BIP32_PATH_LENGTH);
+        expect_memory(seed_derive_from_bip32, path, path, sizeof(path));
+        expect_value(seed_derive_from_bip32, pathLength, BIP32_PATH_LENGTH);
 
-        will_return(derive_seed_bip32,
+        will_return(seed_derive_from_bip32,
                     cast_ptr_to_largest_integral_type(PETER_VECTOR.seed));
 
         api_initialize();

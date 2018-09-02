@@ -67,7 +67,8 @@ unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    derive_seed_bip32(api.bip32_path, api.bip32_path_length, api.seed_bytes);
+    seed_derive_from_bip32(api.bip32_path, api.bip32_path_length,
+                           api.seed_bytes);
 
     api.state_flags |= SEED_SET;
 

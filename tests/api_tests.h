@@ -3,6 +3,7 @@
 
 #include "test_common.h"
 #include "api.h"
+#include "seed.h"
 
 #define BIP32_PATH_LENGTH 5
 #define BIP32_PATH                                                             \
@@ -46,7 +47,8 @@ typedef union {
 
 static inline void EXPECT_API_SET_SEED_OK(const char *seed, int security)
 {
-    will_return(derive_seed_bip32, cast_ptr_to_largest_integral_type(seed));
+    will_return(seed_derive_from_bip32,
+                cast_ptr_to_largest_integral_type(seed));
 
     SET_SEED_FIXED_INPUT input = {{security, BIP32_PATH_LENGTH, BIP32_PATH}};
     EXPECT_API_OK(set_seed, 0, input);
