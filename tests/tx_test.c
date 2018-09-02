@@ -383,7 +383,7 @@ static void test_invalid_value_transaction(void **state)
     }
 }
 
-static void test_not_EXPECT_API_SET_SEED_OK(void **state)
+static void test_seed_not_set(void **state)
 {
     UNUSED(state);
 
@@ -426,7 +426,7 @@ int main(void)
         cmocka_unit_test(test_invalid_change_index),
         cmocka_unit_test(test_change_address_reuses_input),
         cmocka_unit_test(test_invalid_value_transaction),
-        cmocka_unit_test(test_not_EXPECT_API_SET_SEED_OK),
+        cmocka_unit_test(test_seed_not_set),
         cmocka_unit_test(test_tx_after_bundle)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
