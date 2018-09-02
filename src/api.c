@@ -35,7 +35,8 @@ void api_initialize()
     MEMCLEAR(api);
 }
 
-void api_reset_bundle()
+/** @brief Clear bundle and signature data and reset state. */
+static void api_reset_bundle(void)
 {
     MEMCLEAR(api.bundle_ctx);
     MEMCLEAR(api.signing_ctx);
@@ -436,6 +437,9 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
     }
 
     if (reset_partial(p1)) {
+        if (!(api.state_flags & SEED_SET)) {
+            THROW(SW_COMMAND_INVALID_STATE);
+        }
         api_reset_bundle();
     }
     else {

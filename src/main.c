@@ -48,7 +48,7 @@ static void IOTA_main()
                 io_send(NULL, 0, sw);
 
                 ui_reset();
-                api_reset_bundle();
+                api_initialize();
 
                 flags = 0;
             }

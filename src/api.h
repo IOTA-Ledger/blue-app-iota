@@ -121,9 +121,6 @@ GET_APP_CONFIG_OUTPUT;
 /** @brief Clear and initialize the entire API context. */
 void api_initialize(void);
 
-/** @brief Clear bundle and signature data and reset state. */
-void api_reset_bundle(void);
-
 unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
                           unsigned int len);
 unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
