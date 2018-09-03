@@ -1,4 +1,4 @@
-IOTA Application -- Common Technical Specifications
+IOTA Application &mdash; Common Technical Specifications
 ===================================================
 
 ## About
@@ -12,7 +12,7 @@ The IO between host and the IOTA application is [APDU](https://en.wikipedia.org/
 - Boolean values are encoded in one byte, with `0x00` meaning `false` and any other value meaning `true`.
 - IOTA addresses are always transferred in their 81 character base-27 encoding without checksum information.
 
-## Set the active IOTA seed -- `SET-SEED`
+## Set the active IOTA seed &mdash; `SET-SEED`
 
 ### Description
 
@@ -43,7 +43,7 @@ The 24 word recovery phrase and the optional passphrase of the Ledger Nano S are
 | ----- | ----- | ------- |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
-## Get Public Key of active Seed -- `PUBKEY`
+## Get Public Key of active Seed &mdash; `PUBKEY`
 
 ### Description
 
@@ -69,7 +69,7 @@ The execution time of `PUBKEY` is about 2s for security level 2.
 | address | 81 char string (81) | Base-27 encoding of public address |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
-## Add single transaction -- `TX`
+## Add single transaction &mdash; `TX`
 
 ### Description
 
@@ -114,7 +114,7 @@ After a bundle has been set, the state needs to be reset in order to set a new b
 | hash | 81 char string (81) | Base-27 encoding of the bundle hash; undefined if bundle was not finalized |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
-## Sign a single transaction input -- `SIGN`
+## Sign a single transaction input &mdash; `SIGN`
 
 ### Description
 
@@ -166,7 +166,7 @@ The application version uses [Semantic Versioning](https://semver.org/).
 | app_version_minor | byte (1) | Minor version |
 | app_version_patch | byte (1) | Patch version |
 
-## Reset state -- `RESET`
+## Reset state &mdash; `RESET`
 
 ### Description
 
