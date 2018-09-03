@@ -11,7 +11,7 @@ void backup_state(void);
 void set_backup(uint8_t state, uint8_t menu_idx);
 void restore_state(void);
 
-void abbreviate_addr(char *dest, const char *src, uint8_t len);
+void abbreviate_addr(char *dest, const char *src);
 void write_display_str(const char *string, UI_TEXT_POS pos);
 void write_display_int64(int64_t value, UI_TEXT_POS pos);
 

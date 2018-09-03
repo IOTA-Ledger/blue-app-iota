@@ -150,7 +150,7 @@ void display_addr_chk()
     clear_display();
 
     char abbrv[14];
-    abbreviate_addr(abbrv, ui_state.addr, 81);
+    abbreviate_addr(abbrv, ui_state.addr);
 
     write_display_str(abbrv, TOP);
     write_display_str("Chk: ", BOT);

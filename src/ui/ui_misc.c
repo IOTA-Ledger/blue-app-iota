@@ -37,12 +37,8 @@ void restore_state()
     ui_state.backup_menu_idx = 0;
 }
 
-void abbreviate_addr(char *dest, const char *src, uint8_t len)
+void abbreviate_addr(char *dest, const char *src)
 {
-    // length 81 or 82 means full address with or without '\0'
-    if (len != 81)
-        return;
-
     // copy the abbreviated address over
     strncpy(dest, src, 4);
     strncpy(dest + 4, " ... ", 5);
@@ -418,7 +414,7 @@ void display_advanced_tx_address()
     get_address_with_checksum(addr_bytes, ui_state.addr);
 
     char abbrv[14];
-    abbreviate_addr(abbrv, ui_state.addr, 81);
+    abbreviate_addr(abbrv, ui_state.addr);
 
     write_display_str(abbrv, TOP);
     write_display_str("Chk: ", BOT);
