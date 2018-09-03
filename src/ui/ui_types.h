@@ -14,7 +14,7 @@ typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
 #define BUTTON_BAD 255
 
 // UI STATES
-enum UI_STATES {
+typedef enum {
     STATE_INIT,
     STATE_WELCOME,
     STATE_IGNORE,
@@ -25,10 +25,9 @@ enum UI_STATES {
     STATE_TX_ADDR,       // Display full address in TX
     STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
     STATE_PROMPT_TX,
-    STATE_BIP_PATH
-};
-
-#define STATE_EXIT 255
+    STATE_BIP_PATH,
+    STATE_EXIT = 255
+} UI_STATES;
 
 // Size of Menu
 #define MENU_INIT_LEN 6
