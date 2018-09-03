@@ -13,7 +13,6 @@ void restore_state(void);
 
 void abbreviate_addr(char *dest, const char *src);
 void write_display_str(const char *string, UI_TEXT_POS pos);
-void write_display_int64(int64_t value, UI_TEXT_POS pos);
 
 void glyph_on(char *c);
 void glyph_off(char *c);

@@ -5,6 +5,12 @@
 #include "storage.h"
 #include "iota/addresses.h"
 
+/// the largest power of 10 that still fits into uint32
+#define MAX_INT_DEC INT64_C(1000000000)
+
+/// the different IOTA units
+static const char IOTA_UNITS[][3] = {"i", "Ki", "Mi", "Gi", "Ti", "Pi"};
+
 // go to state with menu index
 void state_go(uint8_t state, uint8_t idx)
 {
@@ -46,82 +52,6 @@ void abbreviate_addr(char *dest, const char *src)
     dest[13] = '\0';
 }
 
-static char int_to_chr(uint8_t rem, uint8_t radix)
-{
-    if (radix > 16)
-        return '?';
-
-    switch (rem) {
-    case 10:
-        return 'a';
-    case 11:
-        return 'b';
-    case 12:
-        return 'c';
-    case 13:
-        return 'd';
-    case 14:
-        return 'e';
-    case 15:
-        return 'f';
-    default:
-        return rem + '0';
-    }
-}
-
-// len specifies max size of buffer
-// if buffer doesn't fit whole int, returns null
-static int8_t int_to_str(int64_t num, char *str, uint8_t len, uint8_t radix)
-{
-    // minimum buffer size of 2 (digit + \0)
-    // largest supported radix is 16
-    if (len < 2 || radix > 16)
-        return -1;
-
-    int8_t i = 0;
-    bool isNeg = false;
-
-    // handle 0 first
-    if (num == 0) {
-        str[0] = '0';
-        str[1] = '\0';
-        return 1;
-    }
-
-    if (num < 0) {
-        isNeg = true;
-        num = -num;
-    }
-
-    while (num != 0) {
-        str[i++] = int_to_chr(num % radix, radix);
-        num = num / radix;
-
-        // ensure we have room for full int + null term
-        if (i == len || (i == len - 1 && isNeg)) {
-            str[0] = '?';
-            str[1] = '\0';
-            return -1;
-        }
-    }
-
-    if (isNeg)
-        str[i++] = '-';
-
-    uint8_t chars_written = i;
-
-    str[i--] = '\0';
-
-    // reverse the string
-    for (uint8_t j = 0; j < i; j++, i--) {
-        char c = str[j];
-        str[j] = str[i];
-        str[i] = c;
-    }
-
-    return chars_written;
-}
-
 /** @brief Returns buffer for corresponding position). */
 static char *get_str_buffer(UI_TEXT_POS pos)
 {
@@ -151,12 +81,6 @@ void write_display_str(const char *string, UI_TEXT_POS pos)
         return;
     }
     snprintf(c_ptr, TEXT_LEN, "%s", string);
-}
-
-void write_display_int64(int64_t value, UI_TEXT_POS pos)
-{
-    char *c_ptr = get_str_buffer(pos);
-    int_to_str(value, c_ptr, TEXT_LEN, 10);
 }
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
@@ -246,6 +170,7 @@ void write_text_array(const char *array, uint8_t len)
 }
 
 /* --------- FUNCTIONS FOR DISPLAYING BALANCE ----------- */
+
 uint8_t get_num_digits(int64_t val)
 {
     uint8_t i = 0;
@@ -258,97 +183,46 @@ uint8_t get_num_digits(int64_t val)
     return i;
 }
 
-static void str_add_units(char *str, uint8_t unit)
+// display full amount in base iotas without commas Ex. 3040981551 i
+static void write_full_val(int64_t val, UI_TEXT_POS pos)
 {
-    char unit_str[] = " i\0\0 Ki\0 Mi\0 Gi\0 Ti\0";
-
-    // if there isn't room for units don't write
-    for (uint8_t i = 0; i < 17; i++) {
-        if (str[i] == '\0') {
-            strncpy(str + i, unit_str + (unit * 4), 4);
-            return;
-        }
-    }
-}
-
-static bool char_is_num(char c)
-{
-    return c - '0' >= 0 && c - '0' <= 9;
-}
-
-static void str_add_commas(char *str, uint8_t num_digits, bool full)
-{
-    // largest int that can fit with commas
-    // and units at end. if bigger, don't write commas
-    if (num_digits > 13)
-        return;
-
-    char tmp[TEXT_LEN];
-    memcpy(tmp, str, TEXT_LEN);
-
-    // first place for a comma
-    uint8_t comma_val = num_digits % 3, last_comma;
-
-    if (comma_val == 0)
-        comma_val = 3;
-
-    if (full)
-        last_comma = num_digits - 1;
-    else
-        last_comma = num_digits - 3;
-
-    // i traces str, j traces tmp, k counts numbers
-    for (int8_t i = 0, j = 0, k = 0; i < 20;) {
-        if (!full) {
-            // only store 2 decimal places for short amt
-            if (j == num_digits - 1)
-                j++;
-            else if (j == num_digits - 3) {
-                // stop recording comma's and instead put a period
-                comma_val = 0;
-                str[i++] = '.';
-            }
-        }
-
-        // check if number and incr if so
-        if (char_is_num(tmp[j]))
-            k++;
-
-        // copy over the character
-        str[i++] = tmp[j++];
-
-        // if we just copied the 3rd number, add a comma
-        if (k == comma_val && j < last_comma) {
-            str[i++] = ',';
-            k = 0;
-            comma_val = 3;
-        }
+    if (val < 0 || val >= MAX_INT_DEC * MAX_INT_DEC) {
+        THROW(INVALID_PARAMETER);
     }
 
-    str[20] = '\0';
-}
+    char *msg = get_str_buffer(pos);
 
-// display's full amount in base iotas Ex. 3,040,981,551 i
-static void write_full_val(int64_t val, UI_TEXT_POS pos, uint8_t num_digits)
-{
-    write_display_int64(val, pos);
-    str_add_commas(get_str_buffer(pos), num_digits, true);
-    str_add_units(get_str_buffer(pos), 0);
+    if (val >= MAX_INT_DEC) {
+        snprintf(msg, TEXT_LEN, "%u%09u %s", (unsigned int)(val / MAX_INT_DEC),
+                 (unsigned int)(val % MAX_INT_DEC), IOTA_UNITS[0]);
+    }
+    else {
+        snprintf(msg, TEXT_LEN, "%u %s", (unsigned int)(val % MAX_INT_DEC),
+                 IOTA_UNITS[0]);
+    }
 }
 
 // displays brief amount with units Ex. 3.04 Gi
-static void write_readable_val(int64_t val, UI_TEXT_POS pos, uint8_t num_digits)
+static void write_readable_val(int64_t val, UI_TEXT_POS pos)
 {
-    uint8_t base = MIN(((num_digits - 1) / 3), 4);
+    char *msg = get_str_buffer(pos);
 
-    int64_t new_val = val;
+    if (val < 1000) {
+        snprintf(msg, TEXT_LEN, "%u %s", (unsigned int)(val), IOTA_UNITS[0]);
+    }
+    else {
+        unsigned int base = 1;
+        while (val >= 1000 * 1000) {
+            val /= 1000;
+            base++;
+        }
+        if (base > sizeof(IOTA_UNITS) / sizeof(IOTA_UNITS[0]) - 1) {
+            THROW(INVALID_STATE);
+        }
 
-    for (uint8_t i = 0; i < base - 1; i++)
-        new_val /= 1000;
-
-    write_display_int64(new_val, pos);
-    str_add_commas(get_str_buffer(pos), num_digits - (3 * (base - 1)), false);
-    str_add_units(get_str_buffer(pos), base);
+        snprintf(msg, TEXT_LEN, "%u.%03u %s", (unsigned int)(val / 1000),
+                 (unsigned int)(val % 1000), IOTA_UNITS[base]);
+    }
 }
 
 // displays full/readable value based on the ui_state
@@ -357,9 +231,9 @@ static bool display_value(int64_t val, UI_TEXT_POS pos)
     uint8_t num_digits = get_num_digits(val);
 
     if (ui_state.display_full_value || num_digits <= 3)
-        write_full_val(val, pos, num_digits);
+        write_full_val(val, pos);
     else
-        write_readable_val(val, pos, num_digits);
+        write_readable_val(val, pos);
 
     // return whether a shortened version is possible
     return num_digits > 3;
@@ -439,7 +313,6 @@ uint8_t get_tx_arr_sz()
     return (counter * 2) + 2;
 }
 
-
 uint8_t menu_to_tx_idx()
 {
     // each non-meta tx prompt will have 2 screens
@@ -459,7 +332,6 @@ uint8_t menu_to_tx_idx()
     // j will be incremented one beyond our desired index
     return j - 1;
 }
-
 
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
 void get_init_menu(char *msg)
