@@ -159,7 +159,7 @@ void ui_display_welcome()
 void ui_display_getting_addr()
 {
     clear_display();
-    write_display_str("Getting Addr...", MID);
+    write_display_str("    Getting Addr...", MID);
 
     display_glyphs(ui_glyphs.glyph_load, NULL);
 

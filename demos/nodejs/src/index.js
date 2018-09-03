@@ -1,5 +1,3 @@
-import 'babel-polyfill';
-
 import Transport from '@ledgerhq/hw-transport-node-hid';
 import IOTALedger from 'hw-app-iota';
 import {

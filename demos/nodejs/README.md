@@ -11,12 +11,6 @@ This path must therefore never be used to derive addresses storing actual mainne
 yarn
 ```
 
-### Build
-
-```bash
-yarn run build
-```
-
 ### Run demo on the real device
 
 ```bash
