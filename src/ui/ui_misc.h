@@ -24,7 +24,7 @@ void clear_display(void);
 void display_glyphs(char *c1, char *c2);
 void display_glyphs_confirm(char *c1, char *c2);
 
-void write_text_array(char *array, uint8_t len);
+void write_text_array(const char *array, uint8_t len);
 
 uint8_t get_num_digits(int64_t val);
 void value_convert_readability(void);

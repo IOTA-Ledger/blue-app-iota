@@ -227,7 +227,7 @@ void display_glyphs_confirm(char *c1, char *c2)
 }
 
 
-void write_text_array(char *array, uint8_t len)
+void write_text_array(const char *array, uint8_t len)
 {
     clear_display();
     clear_glyphs();
