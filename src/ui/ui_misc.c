@@ -150,13 +150,13 @@ void write_display_str(const char *string, UI_TEXT_POS pos)
         c_ptr[0] = '\0';
         return;
     }
-    snprintf(c_ptr, 21, "%s", string);
+    snprintf(c_ptr, TEXT_LEN, "%s", string);
 }
 
 void write_display_int64(int64_t value, UI_TEXT_POS pos)
 {
     char *c_ptr = get_str_buffer(pos);
-    int_to_str(value, c_ptr, 21, 10);
+    int_to_str(value, c_ptr, TEXT_LEN, 10);
 }
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
@@ -233,14 +233,14 @@ void write_text_array(const char *array, uint8_t len)
     clear_glyphs();
 
     if (ui_state.menu_idx > 0) {
-        write_display_str(array + (21 * (ui_state.menu_idx - 1)), TOP_H);
+        write_display_str(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
         glyph_on(ui_glyphs.glyph_up);
     }
 
-    write_display_str(array + (21 * ui_state.menu_idx), MID);
+    write_display_str(array + (TEXT_LEN * ui_state.menu_idx), MID);
 
     if (ui_state.menu_idx < len - 1) {
-        write_display_str(array + (21 * (ui_state.menu_idx + 1)), BOT_H);
+        write_display_str(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
         glyph_on(ui_glyphs.glyph_down);
     }
 }
@@ -283,8 +283,8 @@ static void str_add_commas(char *str, uint8_t num_digits, bool full)
     if (num_digits > 13)
         return;
 
-    char tmp[21];
-    memcpy(tmp, str, 21);
+    char tmp[TEXT_LEN];
+    memcpy(tmp, str, TEXT_LEN);
 
     // first place for a comma
     uint8_t comma_val = num_digits % 3, last_comma;
@@ -378,9 +378,9 @@ void display_advanced_tx_value()
     if (ui_state.val > 0) { // outgoing tx
         // -1 is deny, -2 approve, -3 addr, -4 val of change
         if (ui_state.menu_idx == get_tx_arr_sz() - 4) {
-            char msg[21];
+            char msg[TEXT_LEN];
             // write the index along with Change
-            snprintf(msg, 21, "Change: [%u]",
+            snprintf(msg, sizeof msg, "Change: [%u]",
                      (unsigned int)
                          api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
 
@@ -391,8 +391,8 @@ void display_advanced_tx_value()
     }
     else {
         // input tx (skip meta)
-        char msg[21];
-        snprintf(msg, 21, "Input: [%u]",
+        char msg[TEXT_LEN];
+        snprintf(msg, sizeof msg, "Input: [%u]",
                  (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
 
         write_display_str(msg, TOP);
@@ -464,66 +464,66 @@ uint8_t menu_to_tx_idx()
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
 void get_init_menu(char *msg)
 {
-    memset(msg, '\0', MENU_INIT_LEN * 21);
+    memset(msg, '\0', MENU_INIT_LEN * TEXT_LEN);
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * 21), "WARNING!");
-    strcpy(msg + (i++ * 21), "IOTA is not like");
-    strcpy(msg + (i++ * 21), "other cryptos!");
-    strcpy(msg + (i++ * 21), "Please visit");
-    strcpy(msg + (i++ * 21), "iotasec.info");
-    strcpy(msg + (i++ * 21), "for more info.");
+    strcpy(msg + (i++ * TEXT_LEN), "WARNING!");
+    strcpy(msg + (i++ * TEXT_LEN), "IOTA is not like");
+    strcpy(msg + (i++ * TEXT_LEN), "other cryptos!");
+    strcpy(msg + (i++ * TEXT_LEN), "Please visit");
+    strcpy(msg + (i++ * TEXT_LEN), "iotasec.info");
+    strcpy(msg + (i++ * TEXT_LEN), "for more info.");
 }
 
 void get_welcome_menu(char *msg)
 {
-    memset(msg, '\0', MENU_WELCOME_LEN * 21);
+    memset(msg, '\0', MENU_WELCOME_LEN * TEXT_LEN);
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * 21), "IOTA");
-    strcpy(msg + (i++ * 21), "About");
-    strcpy(msg + (i++ * 21), "Exit App");
+    strcpy(msg + (i++ * TEXT_LEN), "IOTA");
+    strcpy(msg + (i++ * TEXT_LEN), "About");
+    strcpy(msg + (i++ * TEXT_LEN), "Exit App");
 }
 
 void get_about_menu(char *msg)
 {
-    memset(msg, '\0', MENU_ABOUT_LEN * 21);
+    memset(msg, '\0', MENU_ABOUT_LEN * TEXT_LEN);
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * 21), "Version");
-    strcpy(msg + (i++ * 21), "More Info");
-    strcpy(msg + (i++ * 21), "Back");
+    strcpy(msg + (i++ * TEXT_LEN), "Version");
+    strcpy(msg + (i++ * TEXT_LEN), "More Info");
+    strcpy(msg + (i++ * TEXT_LEN), "Back");
 }
 
 void get_more_info_menu(char *msg)
 {
-    memset(msg, '\0', MENU_MORE_INFO_LEN * 21);
+    memset(msg, '\0', MENU_MORE_INFO_LEN * TEXT_LEN);
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * 21), "Please visit");
-    strcpy(msg + (i++ * 21), "iotasec.info");
-    strcpy(msg + (i++ * 21), "for more info.");
+    strcpy(msg + (i++ * TEXT_LEN), "Please visit");
+    strcpy(msg + (i++ * TEXT_LEN), "iotasec.info");
+    strcpy(msg + (i++ * TEXT_LEN), "for more info.");
 }
 
 void get_address_menu(char *msg)
 {
     // address is 81 characters long
-    memset(msg, '\0', MENU_ADDR_LEN * 21);
+    memset(msg, '\0', MENU_ADDR_LEN * TEXT_LEN);
 
     uint8_t i = 0, j = 0, c_cpy = 6;
 
     // 13 chunks of 6 characters
     for (; i < MENU_ADDR_LEN; i++) {
-        strncpy(msg + (i * 21), ui_state.addr + (j++ * 6), c_cpy);
-        msg[i * 21 + 6] = ' ';
+        strncpy(msg + (i * TEXT_LEN), ui_state.addr + (j++ * 6), c_cpy);
+        msg[i * TEXT_LEN + 6] = ' ';
 
         if (i == MENU_ADDR_LEN - 1)
             c_cpy = 3;
 
-        strncpy(msg + (i * 21) + 7, ui_state.addr + (j++ * 6), c_cpy);
+        strncpy(msg + (i * TEXT_LEN) + 7, ui_state.addr + (j++ * 6), c_cpy);
     }
 }

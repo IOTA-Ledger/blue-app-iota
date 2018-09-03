@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
+/// length of one text line
+#define TEXT_LEN 21
+
 // Different positions a text can have
 typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
 
@@ -40,11 +43,11 @@ typedef struct UI_TEXT_CTX {
 
     // half_top/bot are text lines half off the screen
     // to make text menus appear scrollable
-    char half_top[21];
-    char top_str[21];
-    char mid_str[21];
-    char bot_str[21];
-    char half_bot[21];
+    char half_top[TEXT_LEN];
+    char top_str[TEXT_LEN];
+    char mid_str[TEXT_LEN];
+    char bot_str[TEXT_LEN];
+    char half_bot[TEXT_LEN];
 
 } UI_TEXT_CTX;
 

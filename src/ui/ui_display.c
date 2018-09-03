@@ -8,7 +8,7 @@
 void display_init()
 {
     // write the actual menu
-    char msg[MENU_INIT_LEN * 21];
+    char msg[MENU_INIT_LEN * TEXT_LEN];
     get_init_menu(msg);
     write_text_array(msg, MENU_INIT_LEN);
 
@@ -23,7 +23,7 @@ void display_init()
 void display_welcome()
 {
     // write the actual menu
-    char msg[MENU_WELCOME_LEN * 21];
+    char msg[MENU_WELCOME_LEN * TEXT_LEN];
     get_welcome_menu(msg);
     write_text_array(msg, MENU_WELCOME_LEN);
 
@@ -45,7 +45,7 @@ void display_welcome()
 void display_about()
 {
     // write the actual menu
-    char msg[MENU_ABOUT_LEN * 21];
+    char msg[MENU_ABOUT_LEN * TEXT_LEN];
     get_about_menu(msg);
     write_text_array(msg, MENU_ABOUT_LEN);
 
@@ -72,7 +72,7 @@ void display_version()
 void display_more_info()
 {
     // write the actual menu
-    char msg[MENU_MORE_INFO_LEN * 21];
+    char msg[MENU_MORE_INFO_LEN * TEXT_LEN];
     get_more_info_menu(msg);
     write_text_array(msg, MENU_MORE_INFO_LEN);
 }
@@ -93,9 +93,9 @@ void display_bip_path()
             THROW(INVALID_STATE);
         }
 
-        snprintf(msg[row] + chars_written, 21 - chars_written, "%x",
+        snprintf(msg[row] + chars_written, TEXT_LEN - chars_written, "%x",
                  api.bip32_path[i] & 0x7fffffff);
-        chars_written = strnlen(msg[row], 21);
+        chars_written = strnlen(msg[row], TEXT_LEN);
 
         // write apostroph if hardnend
         if (api.bip32_path[i] & (1u << 31)) {
@@ -108,7 +108,7 @@ void display_bip_path()
         }
 
         // inc row, if there might be not enough space for the next level
-        if (chars_written > 20 - 10) {
+        if (chars_written > TEXT_LEN - 11) {
             msg[row++][chars_written] = '\0';
             chars_written = 0;
         }
@@ -125,7 +125,7 @@ void display_bip_path()
 void display_addr()
 {
     // write the actual menu
-    char msg[MENU_ADDR_LEN * 21];
+    char msg[MENU_ADDR_LEN * TEXT_LEN];
     get_address_menu(msg);
     write_text_array(msg, MENU_ADDR_LEN);
 
