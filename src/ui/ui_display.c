@@ -141,8 +141,13 @@ void display_addr()
     if (ui_state.menu_idx == 0 && ui_state.state == STATE_DISP_ADDR)
         glyph_on(ui_glyphs.glyph_up);
 
-    if (ui_state.menu_idx == MENU_ADDR_LEN - 1)
+    // add down arrow to show bip path, don't show
+    // bip path on output addr of a tx
+    if (ui_state.menu_idx == MENU_ADDR_LEN - 1 &&
+        !(ui_state.backup_state == STATE_PROMPT_TX &&
+          ui_state.backup_menu_idx == 1)) {
         glyph_on(ui_glyphs.glyph_down);
+    }
 }
 
 void display_addr_chk()
