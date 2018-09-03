@@ -1,4 +1,4 @@
-IOTA Application -- Common Technical Specifications
+IOTA Application &mdash; Common Technical Specifications
 ===================================================
 
 ## About
@@ -8,11 +8,11 @@ The IOTA application does not preserve any states or information on application 
 The IO between host and the IOTA application is [APDU](https://en.wikipedia.org/wiki/Smart_card_application_protocol_data_unit) compatible with the following general properties:
 - Everything is encoded in Little-Endian without any padding or alignment.
 - Strings have a fixed length but can be null-terminated if they are shorter.
-- All integer numbers are always encoded in 8 bytes using two's complement representation.
+- Integer numbers are either encoded as unsigned byte (1 byte), unsigned 32-bit (4 bytes) or signed 64-bit (8 bytes) using two's complement representation.
 - Boolean values are encoded in one byte, with `0x00` meaning `false` and any other value meaning `true`.
 - IOTA addresses are always transferred in their 81 character base-27 encoding without checksum information.
 
-## Set the active IOTA seed -- `SET-SEED`
+## Set the active IOTA seed &mdash; `SET-SEED`
 
 ### Description
 
@@ -30,12 +30,12 @@ The 24 word recovery phrase and the optional passphrase of the Ledger Nano S are
 | INS | byte (1) | `0x01` |
 | P1-P2| byte (2)| ignored |
 | L | byte (1) | Number of bytes to follow | [0, 255]
-| security| signed int64 (8) | set the used security level | [1, 3]
-| length | signed int64 (8) | number of levels in BIP32 path | [2, 5]
-| path[1] | signed int64 (8) | first level of BIP32 path | [0, 2<sup>32</sup>-1]
-| path[2] | signed int64 (8) | second level of BIP32 path | [0, 2<sup>32</sup>-1]
+| security| byte (1) | set the used security level | [1, 3]
+| length | unsigned int32 (4) | number of levels in BIP32 path | [2, 5]
+| path[1] | unsigned int32 (4) | first level of BIP32 path | [0, 2<sup>32</sup>-1]
+| path[2] | unsigned int32 (4) | second level of BIP32 path | [0, 2<sup>32</sup>-1]
 | ... | ... | ... | ...
-| path[length] | signed int64 (8) | last level of BIP32 path | [0, 2<sup>32</sup>-1]
+| path[length] | unsigned int32 (4) | last level of BIP32 path | [0, 2<sup>32</sup>-1]
 
 ### Output
 
@@ -43,7 +43,7 @@ The 24 word recovery phrase and the optional passphrase of the Ledger Nano S are
 | ----- | ----- | ------- |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
-## Get Public Key of active Seed -- `PUBKEY`
+## Get Public Key of active Seed &mdash; `PUBKEY`
 
 ### Description
 
@@ -60,7 +60,7 @@ The execution time of `PUBKEY` is about 2s for security level 2.
 | P1 | byte (1) | `0x00`: return address<br/> `0x01`: return and display address |
 | P2| byte (1)| ignored |
 | L | byte (1) | Number of bytes to follow | [0, 255]
-| idx | signed int64 (8) | Index of the address | [0, 2<sup>32</sup>-1]
+| idx | unsigned int32 (4) | Index of the address | [0, 2<sup>32</sup>-1]
 
 ### Output
 
@@ -69,7 +69,7 @@ The execution time of `PUBKEY` is about 2s for security level 2.
 | address | 81 char string (81) | Base-27 encoding of public address |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
-## Add single transaction -- `TX`
+## Add single transaction &mdash; `TX`
 
 ### Description
 
@@ -99,12 +99,12 @@ After a bundle has been set, the state needs to be reset in order to set a new b
 | P1-P2| byte (2)| ignored |
 | L | byte (1) | Number of bytes to follow | [0, 255]
 | address | 81 char string (81) | Base-27 encoding of transaction address |
-| address_idx | signed int64 (8) | Corresponding index of the address;<br> ignored for non-input transactions  | [0, 2<sup>32</sup>-1]
+| address_idx | unsigned int32 (4) | Corresponding index of the address;<br> ignored for non-input transactions  | [0, 2<sup>32</sup>-1]
 | value | signed int64 (8) | Transaction value | < 0 for input transactions<br> &ge; 0 otherwise
 | obsolete_tag | 27 char string (27) | Base-27 encoding of transaction tag |
-| index | signed int64 (8) | Index of that transaction in the bundle | [0, 7]
-| last_index | signed int64 (8) | Last transaction index in the bundle | [1, 7]
-| timestamp | signed int64 (8) | Timestamp | [0, 2<sup>32</sup>-1]
+| index | unsigned int32 (4) | Index of that transaction in the bundle | [0, 7]
+| last_index | unsigned int32 (4) | Last transaction index in the bundle | [1, 7]
+| timestamp | unsigned int32 (4) | Timestamp | [0, 2<sup>32</sup>-1]
 
 ### Output
 
@@ -114,7 +114,7 @@ After a bundle has been set, the state needs to be reset in order to set a new b
 | hash | 81 char string (81) | Base-27 encoding of the bundle hash; undefined if bundle was not finalized |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
-## Sign a single transaction input -- `SIGN`
+## Sign a single transaction input &mdash; `SIGN`
 
 ### Description
 
@@ -166,7 +166,7 @@ The application version uses [Semantic Versioning](https://semver.org/).
 | app_version_minor | byte (1) | Minor version |
 | app_version_patch | byte (1) | Patch version |
 
-## Reset state -- `RESET`
+## Reset state &mdash; `RESET`
 
 ### Description
 

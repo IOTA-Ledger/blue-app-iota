@@ -37,9 +37,9 @@
 typedef union {
     IO_STRUCT
     {
-        int64_t security;
-        int64_t bip32_path_length;
-        int64_t bip32_path[BIP32_PATH_LENGTH];
+        uint8_t security;
+        uint32_t bip32_path_length;
+        uint32_t bip32_path[BIP32_PATH_LENGTH];
     }
     a;
     SET_SEED_INPUT b;
