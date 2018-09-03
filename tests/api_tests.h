@@ -37,7 +37,7 @@ typedef union {
     IO_STRUCT
     {
         uint8_t security;
-        uint8_t bip32_path_length;
+        uint32_t bip32_path_length;
         uint32_t bip32_path[BIP32_PATH_LENGTH];
     }
     a;

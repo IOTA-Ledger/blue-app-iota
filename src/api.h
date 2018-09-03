@@ -37,7 +37,7 @@ extern API_CTX api;
 typedef IO_STRUCT SET_SEED_INPUT
 {
     uint8_t security;
-    uint8_t bip32_path_length;
+    uint32_t bip32_path_length;
     uint32_t bip32_path[];
 }
 SET_SEED_INPUT;
