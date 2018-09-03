@@ -21,7 +21,7 @@ INS_GET_APP_CONFIG = 0x10
 
 def apdu_command(ins, data, p1=0, p2=0):
     b = bytes(data)
-    
+
     command = bytearray()
     command.append(0x7A)  # Instruction class (1)
     command.append(ins)  # Instruction code (1)
@@ -29,17 +29,24 @@ def apdu_command(ins, data, p1=0, p2=0):
     command.append(len(b))  # length of data (1)
     command.extend(b)  # Command data
     command.append(0)
-    
+
     return command
 
 
 def pack_set_seed_input(bip44_path):
-    struct = Struct("<qq5q")
-    return struct.pack(SECURITY_LEVEL, BIP44_PATH_LENGTH, bip44_path[0], bip44_path[1], bip44_path[2], bip44_path[3], bip44_path[4])
+    struct = Struct("<BI5I")
+    return struct.pack(
+        SECURITY_LEVEL,
+        BIP44_PATH_LENGTH,
+        bip44_path[0],
+        bip44_path[1],
+        bip44_path[2],
+        bip44_path[3],
+        bip44_path[4])
 
 
 def pack_pub_key_input(address_idx):
-    struct = Struct("<q")
+    struct = Struct("<I")
     return struct.pack(address_idx)
 
 
@@ -48,20 +55,11 @@ def unpack_pubkey_output(data):
     return struct.unpack(data)
 
 
-def pack_init_ledger_input(idx1, idx2, idx3, idx4, idx5):
-    struct = Struct("<5q")
-    return struct.pack(idx1, idx2, idx3, idx4, idx5)
-
-
-def unpack_get_indexes(data):
-    struct = Struct("<5q")
-    return struct.unpack(data)
-
-
 def unpack_get_app_config(data):
-    print( len(data))
+    print(len(data))
     struct = Struct("<4B")
     return struct.unpack(data)
+
 
 dongle = getDongle(True)
 exceptionCount = 0
@@ -77,7 +75,8 @@ print("\nInitializing IOTA seed for security-level=%d..." % SECURITY_LEVEL)
 dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
 
 print("\nGenerating address for index=%d..." % SRC_INDEX)
-response = dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
+response = dongle.exchange(apdu_command(
+    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
 struct = unpack_pubkey_output(response)
 print("  Address: %s" % struct[0].decode("utf-8"))
 
