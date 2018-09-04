@@ -170,23 +170,63 @@ void write_text_array(const char *array, uint8_t len)
 
 /* --------- FUNCTIONS FOR DISPLAYING BALANCE ----------- */
 
-// display full amount in base iotas without commas Ex. 3040981551 i
-static void write_full_val(int64_t val, UI_TEXT_POS pos)
+static size_t snprint_int64(char *s, size_t n, int64_t val)
 {
     // we cannot display the full range of int64 with this function
     if (ABS(val) >= MAX_INT_DEC * MAX_INT_DEC) {
         THROW(INVALID_PARAMETER);
     }
 
-    char *msg = get_str_buffer(pos);
-
     if (ABS(val) < MAX_INT_DEC) {
-        snprintf(msg, TEXT_LEN, "%d %s", (int)val, IOTA_UNITS[0]);
+        snprintf(s, n, "%d", (int)val);
     }
     else {
         // emulate printing of integers larger than 32 bit
-        snprintf(msg, TEXT_LEN, "%d%09d %s", (int)(val / MAX_INT_DEC),
-                 (int)(ABS(val) % MAX_INT_DEC), IOTA_UNITS[0]);
+        snprintf(s, n, "%d%09d", (int)(val / MAX_INT_DEC),
+                 (int)(ABS(val) % MAX_INT_DEC));
+    }
+    return strnlen(s, n);
+}
+
+/// groups the string by adding a comma every 3 chars from the right
+static size_t str_add_commas(char *dst, const char *src, size_t num_len)
+{
+    char *p_dst = dst;
+    const char *p_src = src;
+
+    // ignore leading minus
+    if (*p_src == '-') {
+        *p_dst++ = *p_src++;
+        num_len--;
+    }
+    for (int commas = 2 - num_len % 3; *p_src; commas = (commas + 1) % 3) {
+        *p_dst++ = *p_src++;
+        if (commas == 1) {
+            *p_dst++ = ',';
+        }
+    }
+    // remove the last comma and zero-terminate
+    *--p_dst = '\0';
+
+    return (p_dst - dst);
+}
+
+// display full amount in base iotas without commas Ex. 3040981551 i
+static void write_full_val(int64_t val, UI_TEXT_POS pos)
+{
+    char buffer[TEXT_LEN];
+    char *msg = get_str_buffer(pos);
+
+    const size_t num_len = snprint_int64(buffer, sizeof buffer, val);
+
+    // numbers shorter will have at most 3 commas and fit the text length
+    if (num_len > 13) {
+        snprintf(msg, TEXT_LEN, "%s %s", buffer, IOTA_UNITS[0]);
+    }
+    else {
+        const size_t chars_written = str_add_commas(msg, buffer, num_len);
+        snprintf(msg + chars_written, TEXT_LEN - chars_written, " %s",
+                 IOTA_UNITS[0]);
     }
 }
 
