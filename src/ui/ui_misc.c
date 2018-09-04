@@ -73,14 +73,14 @@ static char *get_str_buffer(UI_TEXT_POS pos)
 
 void write_display(const char *string, UI_TEXT_POS pos)
 {
-    char *c_ptr = get_str_buffer(pos);
+    char *msg = get_str_buffer(pos);
 
     // NULL value sets line blank
     if (string == NULL) {
-        c_ptr[0] = '\0';
+        msg[0] = '\0';
         return;
     }
-    snprintf(c_ptr, TEXT_LEN, "%s", string);
+    snprintf(msg, TEXT_LEN, "%s", string);
 }
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
