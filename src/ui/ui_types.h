@@ -4,14 +4,11 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
-#define TYPE_INT 0
-#define TYPE_STR 1
+/// length of one text line
+#define TEXT_LEN 21
 
-#define TOP_H 0
-#define TOP 1
-#define MID 2
-#define BOT 3
-#define BOT_H 4
+// Different positions a text can have
+typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
 
 #define BUTTON_L 0
 #define BUTTON_R 1
@@ -20,7 +17,7 @@
 #define BUTTON_BAD 255
 
 // UI STATES
-enum UI_STATES {
+typedef enum {
     STATE_INIT,
     STATE_WELCOME,
     STATE_IGNORE,
@@ -31,10 +28,9 @@ enum UI_STATES {
     STATE_TX_ADDR,       // Display full address in TX
     STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
     STATE_PROMPT_TX,
-    STATE_BIP_PATH
-};
-
-#define STATE_EXIT 255
+    STATE_BIP_PATH,
+    STATE_EXIT = 255
+} UI_STATES;
 
 // Size of Menu
 #define MENU_INIT_LEN 6
@@ -47,11 +43,11 @@ typedef struct UI_TEXT_CTX {
 
     // half_top/bot are text lines half off the screen
     // to make text menus appear scrollable
-    char half_top[21];
-    char top_str[21];
-    char mid_str[21];
-    char bot_str[21];
-    char half_bot[21];
+    char half_top[TEXT_LEN];
+    char top_str[TEXT_LEN];
+    char mid_str[TEXT_LEN];
+    char bot_str[TEXT_LEN];
+    char half_bot[TEXT_LEN];
 
 } UI_TEXT_CTX;
 

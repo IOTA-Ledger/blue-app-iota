@@ -8,7 +8,7 @@
 void display_init()
 {
     // write the actual menu
-    char msg[MENU_INIT_LEN * 21];
+    char msg[MENU_INIT_LEN * TEXT_LEN];
     get_init_menu(msg);
     write_text_array(msg, MENU_INIT_LEN);
 
@@ -23,7 +23,7 @@ void display_init()
 void display_welcome()
 {
     // write the actual menu
-    char msg[MENU_WELCOME_LEN * 21];
+    char msg[MENU_WELCOME_LEN * TEXT_LEN];
     get_welcome_menu(msg);
     write_text_array(msg, MENU_WELCOME_LEN);
 
@@ -33,11 +33,11 @@ void display_welcome()
     case 0:
         display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
     case MENU_WELCOME_LEN - 2:
-        write_display(NULL, TYPE_STR, BOT_H);
+        write_display(NULL, BOT_H);
         break;
         // turn off TOP_H
     case MENU_WELCOME_LEN - 1:
-        write_display(NULL, TYPE_STR, TOP_H);
+        write_display(NULL, TOP_H);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
     }
 }
@@ -45,18 +45,18 @@ void display_welcome()
 void display_about()
 {
     // write the actual menu
-    char msg[MENU_ABOUT_LEN * 21];
+    char msg[MENU_ABOUT_LEN * TEXT_LEN];
     get_about_menu(msg);
     write_text_array(msg, MENU_ABOUT_LEN);
 
     // special override display states
     switch (ui_state.menu_idx) {
     case MENU_ABOUT_LEN - 2:
-        write_display(NULL, TYPE_STR, BOT_H);
+        write_display(NULL, BOT_H);
         break;
         // turn off TOP_H
     case MENU_ABOUT_LEN - 1:
-        write_display(NULL, TYPE_STR, TOP_H);
+        write_display(NULL, TOP_H);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
     }
 }
@@ -64,10 +64,7 @@ void display_about()
 void display_version()
 {
     clear_display();
-    char msg[10];
-    strncpy(msg, APPVERSION, sizeof(msg));
-
-    write_display(msg, TYPE_STR, MID);
+    write_display(APPVERSION, MID);
 
     display_glyphs_confirm(ui_glyphs.glyph_dash, NULL);
 }
@@ -75,11 +72,9 @@ void display_version()
 void display_more_info()
 {
     // write the actual menu
-    char msg[MENU_MORE_INFO_LEN * 21];
+    char msg[MENU_MORE_INFO_LEN * TEXT_LEN];
     get_more_info_menu(msg);
     write_text_array(msg, MENU_MORE_INFO_LEN);
-
-    // no special overrides
 }
 
 void display_bip_path()
@@ -98,9 +93,9 @@ void display_bip_path()
             THROW(INVALID_STATE);
         }
 
-        snprintf(msg[row] + chars_written, 21 - chars_written, "%x",
+        snprintf(msg[row] + chars_written, TEXT_LEN - chars_written, "%x",
                  api.bip32_path[i] & 0x7fffffff);
-        chars_written = strnlen(msg[row], 21);
+        chars_written = strnlen(msg[row], TEXT_LEN);
 
         // write apostroph if hardnend
         if (api.bip32_path[i] & (1u << 31)) {
@@ -113,7 +108,7 @@ void display_bip_path()
         }
 
         // inc row, if there might be not enough space for the next level
-        if (chars_written > 20 - 10) {
+        if (chars_written > TEXT_LEN - 11) {
             msg[row++][chars_written] = '\0';
             chars_written = 0;
         }
@@ -130,7 +125,7 @@ void display_bip_path()
 void display_addr()
 {
     // write the actual menu
-    char msg[MENU_ADDR_LEN * 21];
+    char msg[MENU_ADDR_LEN * TEXT_LEN];
     get_address_menu(msg);
     write_text_array(msg, MENU_ADDR_LEN);
 
@@ -155,10 +150,10 @@ void display_addr_chk()
     clear_display();
 
     char abbrv[14];
-    abbreviate_addr(abbrv, ui_state.addr, 81);
+    abbreviate_addr(abbrv, ui_state.addr);
 
-    write_display(abbrv, TYPE_STR, TOP);
-    write_display("Chk: ", TYPE_STR, BOT);
+    write_display(abbrv, TOP);
+    write_display("Chk: ", BOT);
 
     // copy the remaining 9 chars in the buffer
     os_memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
@@ -177,12 +172,12 @@ void display_prompt_tx()
     clear_display();
 
     if (ui_state.menu_idx == get_tx_arr_sz() - 2) {
-        write_display("Approve", TYPE_STR, MID);
+        write_display("Approve", MID);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         return;
     }
     else if (ui_state.menu_idx == get_tx_arr_sz() - 1) {
-        write_display("Deny", TYPE_STR, MID);
+        write_display("Deny", MID);
         display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
         return;
     }
@@ -198,7 +193,7 @@ void display_prompt_tx()
 void display_unknown_state()
 {
     clear_display();
-    write_display("UI ERROR", TYPE_STR, MID);
+    write_display("UI ERROR", MID);
 
     display_glyphs_confirm(NULL, NULL);
 }

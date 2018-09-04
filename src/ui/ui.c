@@ -159,7 +159,7 @@ void ui_display_welcome()
 void ui_display_getting_addr()
 {
     clear_display();
-    write_display("    Getting Addr...", TYPE_STR, MID);
+    write_display("    Getting Addr...", MID);
 
     display_glyphs(ui_glyphs.glyph_load, NULL);
 
@@ -174,7 +174,7 @@ void ui_display_getting_addr()
 void ui_display_validating()
 {
     clear_display();
-    write_display("Validating...", TYPE_STR, MID);
+    write_display("Validating...", MID);
 
     display_glyphs(ui_glyphs.glyph_load, NULL);
 
@@ -189,7 +189,7 @@ void ui_display_validating()
 void ui_display_recv()
 {
     clear_display();
-    write_display("Receiving TX...", TYPE_STR, MID);
+    write_display("Receiving TX...", MID);
 
     display_glyphs(ui_glyphs.glyph_load, NULL);
 
@@ -204,7 +204,7 @@ void ui_display_recv()
 void ui_display_signing()
 {
     clear_display();
-    write_display("Signing TX...", TYPE_STR, MID);
+    write_display("Signing TX...", MID);
 
     display_glyphs(ui_glyphs.glyph_load, NULL);
 
