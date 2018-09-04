@@ -197,8 +197,9 @@ void button_prompt_tx(uint8_t button_mask)
         else { // all other options alternate between val/addr
             if (ui_state.menu_idx % 2 == 0) {
                 // on a value screen
-                if (get_num_digits(ui_state.val) > 3)
+                if (ui_state.val >= 1000) {
                     value_convert_readability();
+                }
             }
             else {
                 // on an address screen

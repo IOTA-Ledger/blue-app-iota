@@ -150,7 +150,6 @@ void display_glyphs_confirm(char *c1, char *c2)
     glyph_on(c2);
 }
 
-
 void write_text_array(const char *array, uint8_t len)
 {
     clear_display();
@@ -171,18 +170,6 @@ void write_text_array(const char *array, uint8_t len)
 
 /* --------- FUNCTIONS FOR DISPLAYING BALANCE ----------- */
 
-uint8_t get_num_digits(int64_t val)
-{
-    uint8_t i = 0;
-
-    while (val > 0) {
-        val /= 10;
-        i++;
-    }
-
-    return i;
-}
-
 // display full amount in base iotas without commas Ex. 3040981551 i
 static void write_full_val(int64_t val, UI_TEXT_POS pos)
 {
@@ -197,6 +184,7 @@ static void write_full_val(int64_t val, UI_TEXT_POS pos)
         snprintf(msg, TEXT_LEN, "%d %s", (int)val, IOTA_UNITS[0]);
     }
     else {
+        // emulate printing of integers larger than 32 bit
         snprintf(msg, TEXT_LEN, "%d%09d %s", (int)(val / MAX_INT_DEC),
                  (int)(ABS(val) % MAX_INT_DEC), IOTA_UNITS[0]);
     }
@@ -218,7 +206,7 @@ static void write_readable_val(int64_t val, UI_TEXT_POS pos)
         base++;
     }
     if (base >= sizeof(IOTA_UNITS) / sizeof(IOTA_UNITS[0])) {
-        THROW(INVALID_STATE);
+        THROW(INVALID_PARAMETER);
     }
 
     snprintf(msg, TEXT_LEN, "%d.%03d %s", (int)(val / 1000),
