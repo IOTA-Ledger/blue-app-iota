@@ -71,7 +71,7 @@ static char *get_str_buffer(UI_TEXT_POS pos)
     }
 }
 
-void write_display_str(const char *string, UI_TEXT_POS pos)
+void write_display(const char *string, UI_TEXT_POS pos)
 {
     char *c_ptr = get_str_buffer(pos);
 
@@ -86,11 +86,11 @@ void write_display_str(const char *string, UI_TEXT_POS pos)
 /* --------- STATE RELATED FUNCTIONS ----------- */
 static void clear_text()
 {
-    write_display_str(NULL, TOP_H);
-    write_display_str(NULL, TOP);
-    write_display_str(NULL, MID);
-    write_display_str(NULL, BOT);
-    write_display_str(NULL, BOT_H);
+    write_display(NULL, TOP_H);
+    write_display(NULL, TOP);
+    write_display(NULL, MID);
+    write_display(NULL, BOT);
+    write_display(NULL, BOT_H);
 }
 
 // Turns a single glyph on or off
@@ -157,14 +157,14 @@ void write_text_array(const char *array, uint8_t len)
     clear_glyphs();
 
     if (ui_state.menu_idx > 0) {
-        write_display_str(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
         glyph_on(ui_glyphs.glyph_up);
     }
 
-    write_display_str(array + (TEXT_LEN * ui_state.menu_idx), MID);
+    write_display(array + (TEXT_LEN * ui_state.menu_idx), MID);
 
     if (ui_state.menu_idx < len - 1) {
-        write_display_str(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
         glyph_on(ui_glyphs.glyph_down);
     }
 }
@@ -258,10 +258,10 @@ void display_advanced_tx_value()
                      (unsigned int)
                          api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
 
-            write_display_str(msg, TOP);
+            write_display(msg, TOP);
         }
         else
-            write_display_str("Output:", TOP);
+            write_display("Output:", TOP);
     }
     else {
         // input tx (skip meta)
@@ -269,7 +269,7 @@ void display_advanced_tx_value()
         snprintf(msg, sizeof msg, "Input: [%u]",
                  (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
 
-        write_display_str(msg, TOP);
+        write_display(msg, TOP);
         ui_state.val = -ui_state.val;
     }
 
@@ -290,8 +290,8 @@ void display_advanced_tx_address()
     char abbrv[14];
     abbreviate_addr(abbrv, ui_state.addr);
 
-    write_display_str(abbrv, TOP);
-    write_display_str("Chk: ", BOT);
+    write_display(abbrv, TOP);
+    write_display("Chk: ", BOT);
 
     // copy the remaining 9 chars in the buffer
     memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
