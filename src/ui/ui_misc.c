@@ -5,7 +5,7 @@
 #include "storage.h"
 #include "iota/addresses.h"
 
-/// the largest power of 10 that still fits into uint32
+/// the largest power of 10 that still fits into int32
 #define MAX_INT_DEC INT64_C(1000000000)
 
 /// the different IOTA units
@@ -186,57 +186,57 @@ uint8_t get_num_digits(int64_t val)
 // display full amount in base iotas without commas Ex. 3040981551 i
 static void write_full_val(int64_t val, UI_TEXT_POS pos)
 {
-    if (val < 0 || val >= MAX_INT_DEC * MAX_INT_DEC) {
+    // we cannot display the full range of int64 with this function
+    if (ABS(val) >= MAX_INT_DEC * MAX_INT_DEC) {
         THROW(INVALID_PARAMETER);
     }
 
     char *msg = get_str_buffer(pos);
 
-    if (val >= MAX_INT_DEC) {
-        snprintf(msg, TEXT_LEN, "%u%09u %s", (unsigned int)(val / MAX_INT_DEC),
-                 (unsigned int)(val % MAX_INT_DEC), IOTA_UNITS[0]);
+    if (ABS(val) < MAX_INT_DEC) {
+        snprintf(msg, TEXT_LEN, "%d %s", (int)val, IOTA_UNITS[0]);
     }
     else {
-        snprintf(msg, TEXT_LEN, "%u %s", (unsigned int)(val % MAX_INT_DEC),
-                 IOTA_UNITS[0]);
+        snprintf(msg, TEXT_LEN, "%d%09d %s", (int)(val / MAX_INT_DEC),
+                 (int)(ABS(val) % MAX_INT_DEC), IOTA_UNITS[0]);
     }
 }
 
-// displays brief amount with units Ex. 3.04 Gi
+// displays brief amount with units Ex. 3.040 Gi
 static void write_readable_val(int64_t val, UI_TEXT_POS pos)
 {
     char *msg = get_str_buffer(pos);
 
-    if (val < 1000) {
-        snprintf(msg, TEXT_LEN, "%u %s", (unsigned int)(val), IOTA_UNITS[0]);
+    if (ABS(val) < 1000) {
+        snprintf(msg, TEXT_LEN, "%d %s", (int)(val), IOTA_UNITS[0]);
+        return;
     }
-    else {
-        unsigned int base = 1;
-        while (val >= 1000 * 1000) {
-            val /= 1000;
-            base++;
-        }
-        if (base > sizeof(IOTA_UNITS) / sizeof(IOTA_UNITS[0]) - 1) {
-            THROW(INVALID_STATE);
-        }
 
-        snprintf(msg, TEXT_LEN, "%u.%03u %s", (unsigned int)(val / 1000),
-                 (unsigned int)(val % 1000), IOTA_UNITS[base]);
+    unsigned int base = 1;
+    while (ABS(val) >= 1000 * 1000) {
+        val /= 1000;
+        base++;
     }
+    if (base >= sizeof(IOTA_UNITS) / sizeof(IOTA_UNITS[0])) {
+        THROW(INVALID_STATE);
+    }
+
+    snprintf(msg, TEXT_LEN, "%d.%03d %s", (int)(val / 1000),
+             (int)(ABS(val) % 1000), IOTA_UNITS[base]);
 }
 
 // displays full/readable value based on the ui_state
 static bool display_value(int64_t val, UI_TEXT_POS pos)
 {
-    uint8_t num_digits = get_num_digits(val);
-
-    if (ui_state.display_full_value || num_digits <= 3)
+    if (ui_state.display_full_value || ABS(val) < 1000) {
         write_full_val(val, pos);
-    else
+    }
+    else {
         write_readable_val(val, pos);
+    }
 
     // return whether a shortened version is possible
-    return num_digits > 3;
+    return ABS(val) >= 1000;
 }
 
 // swap between full value and readable value

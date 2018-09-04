@@ -112,6 +112,11 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
 
 #define CEILING(x, y) (((x) + (y)-1) / (y))
 
+#define ABS(a)                                                                 \
+    ({                                                                         \
+        typeof(a) _a = (a);                                                    \
+        _a < 0 ? -_a : _a;                                                     \
+    })
 #define ASSIGN(dest, src)                                                      \
     ({                                                                         \
         typeof(src) _x = (src);                                                \
