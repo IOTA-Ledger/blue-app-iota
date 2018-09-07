@@ -29,7 +29,7 @@ APPVERSION_PATCH = 0
 APPVERSION = $(APPVERSION_MAJOR).$(APPVERSION_MINOR).$(APPVERSION_PATCH)
 APP_LOAD_PARAMS = --path "44'/4218'" --appFlags 0x00 $(COMMON_LOAD_PARAMS)
 
-ICONNAME = icon.gif
+ICONNAME = nanos_app_iota.gif
 
 # Build configuration
 
