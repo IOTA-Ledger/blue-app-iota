@@ -4,7 +4,6 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf dist/ && babel ./src --out-dir dist/ --ignore ./node_modules --copy-files",
     "start": "npm run build && budo --ssl dist/index.js"
   },
@@ -15,7 +14,7 @@
     "@ledgerhq/hw-transport-u2f": "^4.21.0",
     "babel-runtime": "^6.26.0",
     "budo": "^11.3.2",
-    "hw-app-iota": "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git"
+    "hw-app-iota": "^0.4.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",
