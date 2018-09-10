@@ -2,7 +2,7 @@
   "name": "iota-nodejs-demo",
   "version": "0.1.0",
   "description": "",
-  "main": "srv/index.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "babel-node src/index.js"
   },
@@ -11,7 +11,7 @@
   "dependencies": {
     "@ledgerhq/hw-transport-node-hid": "^4.22.0",
     "babel-runtime": "6.26.0",
-    "hw-app-iota": "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git",
+    "hw-app-iota": "^0.4.1",
     "iota.lib.js": "^0.5.0"
   },
   "devDependencies": {

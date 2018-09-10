@@ -599,7 +599,7 @@ async@^2.5.0:
   dependencies:
     lodash "^4.17.10"
 
-babel-runtime@6.26.0:
+babel-runtime@6.26.0, babel-runtime@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
   dependencies:
@@ -867,10 +867,11 @@ homedir-polyfill@^1.0.1:
   dependencies:
     parse-passwd "^1.0.0"
 
-"hw-app-iota@git+https://github.com/IOTA-Ledger/hw-app-iota.js.git":
-  version "0.1.1"
-  resolved "git+https://github.com/IOTA-Ledger/hw-app-iota.js.git#e3960d91cffc9db819eba2cc63ba3ad3dc682c64"
+hw-app-iota@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/hw-app-iota/-/hw-app-iota-0.4.1.tgz#4acfe75aa218f27ff6e16dc540815d4fcd5cc858"
   dependencies:
+    babel-runtime "^6.26.0"
     bip32-path "^0.4.2"
     iota.lib.js "^0.5.0"
     struct "0.0.12"
