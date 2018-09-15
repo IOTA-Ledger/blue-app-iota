@@ -131,7 +131,7 @@ Called multiple times for the same index, to query all signature fragments. The 
 | INS | byte (1) | `0x04` |
 | P1-P2| byte (2)| ignored |
 | L | byte (1) | Number of bytes to follow | [0, 255]
-| transaction_idx | signed int64 (8) | Index of the input transaction in the bundle;<br>**must be an input transaction** | [0, 7]
+| transaction_idx | unsigned int32 (4) | Index of the input transaction in the bundle;<br>**must be an input transaction** | [0, 7]
 
 ### Output
 
