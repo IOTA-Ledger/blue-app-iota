@@ -4,8 +4,6 @@
 
 Here we try to use natively available crypto logic to create IOTA seeds and sign transactions on the fly.<br>
 
-**WARNING: It's currently heavily in alpha so don't transfer all your funds to this yet!**
-
 ***It is strongly recommended to take a few minutes to read this document to make sure you fully understand how IOTA and the Ledger Nano S work, and how they interact together.***
 
 ## Table of contents
@@ -23,13 +21,8 @@ Here we try to use natively available crypto logic to create IOTA seeds and sign
   + [Recovery Phrase Entropy](#recovery-phrase-entropy)
   + [IOTA Security Concerns on Ledger Nano S](#iota-security-concerns-on-ledger-nano-s)
   + [Limitations of the Ledger Nano S](#limitations-of-the-ledger-nano-s)
-* [Future deprecation notes](#future-deprecation-notes)
-* [How to get started](#how-to-get-started)
-  + [Requirements](#requirements)
-  + [Installation of the IOTA app on the ledger](#installation-of-the-iota-app-on-the-ledger)
 * [FAQ](#faq)
     - [I lost my ledger, what should I do now?](#i-lost-my-ledger--what-should-i-do-now-)
-    - [How can i uninstall the app?](#how-can-i-uninstall-the-app-)
 * [Development](#development)
   + [Preparing development environment under Ubuntu 17.10](#preparing-development-environment-under-ubuntu-1710)
   + [Preparing development environment in other distributions](#preparing-development-environment-in-other-distributions)
@@ -117,17 +110,13 @@ See [Ledger's documentation](http://ledger.readthedocs.io) to get more info abou
 
     *Note: this does not pertain to displaying addresses in transactions. Transactions will be denoted as "output", "input", or "change" transactions. Input and Change are verified to belong to the Ledger. Output are not.*
 
-- *Initialize Ledger Indexes:* The wallet will provide new indexes to write to the Ledger Nano S. **THIS IS A CRITICAL OPERATION.** If you approve inaccurate/bad indexes from the wallet you could generate bad transactions and lose funds.
-
-    If this happens you should use the wallet to reinitialize the seed from scratch. This could potentially take a long time as the Ledger hardware is slow at generating addresses (compared to a computer). The wallet has to ask the Ledger for new addresses until the last address was not used in the tangle yet (not spend from and no funds on it).
-
 - *Sign Transaction:* The wallet will generate a transaction for the user to approve before the Ledger signs it. **Ensure all amounts and addresses are correct before signing**. These signatures are then sent back to the host machine.
 
 #### Display
 
 - The sides of the display will have an up or down arrow indicating that you can scroll to a new screen.
 
-- Two bars along the top (just below the buttons) indicates that there is a double press function available (generally confirm/toggle). We will be working to ensure this function is always intuitive.
+- Two bars along the top (just below the buttons) indicates that there is a double press function available (generally confirm/toggle or back). We will be working to ensure this function is always intuitive.
 
 ### Recovery Phrase Entropy
 
@@ -141,35 +130,17 @@ While having (only) 256 bits of entropy does not pose a security problem, it doe
 
 All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** and refer to this document if there is any confusion.
 
-- **The IOTA Ledger app is stateful**
-
-    What this means is that the address index for your IOTA seed is stored in flash memory on the Ledger device. Therefore uninstalling the IOTA app will erase these indexes.
-
-    Don't worry! There is no security risk by losing your address indexes and if the IOTA wallet you are using (Ex. Trinity or Romeo) has their own cache of the addresses used, you shouldn't notice any issues.
-
-    However it is still recommended to back up your address indexes before deleting the app. (Either by hand through the options menu, or automatically using a wallet - currently not supported).
-
-- **Ensure the change index is always increasing.**
-
-    The Ledger generates 5 unique IOTA seeds based on the 24 word mnemonic, and tracks the index for each seed. Because the index is stored on the device, you can quickly transfer to a new wallet and initialize your seed faster than scanning every index to find the one that holds your funds.
-
-    Whenever you sign a transaction with the Ledger it will write whatever the seed-index of the change transaction is into memory on the Ledger.
-
-    As such it is *strongly recommended* to never use a change index that is lower than an address that has already been used, as this can inadvertently cause address reuse.
-
-    If a Ledger has a seed-index of 10 in memory, and a new transaction uses the change index of any value lower than 10, it will warn the user and ask "Are you sure?".
-
 - **Don't rush through signing a transaction.**
 
     When generating a transaction for the Ledger to sign, you will scroll through each transaction before signing off on the bundle. The transaction information will come up in order (while scrolling from left to right). The first screen will display the tx type (output, input, or change), as well as the amount. The next screen will display the corresponding address for said transaction. This will repeat until all transactions have been displayed, then you can select "Approve" or "Deny".
 
     - All output transactions to 3rd party addresses will say "Output:" and below that "1.56 Mi" (for example). "Output" being the key word here.
 
-        All input transactions will say "Input:", and the final output transaction (the change transaction) will say "Change: [4]" ([4] being the seed-index of the change tx). This means the Ledger has verified the address used for the change tx belongs to the Ledger.
+        All input transactions will say "Input: [0]", and the final output transaction (the change transaction) will say "Change: [4]" ([4] being the seed-index of the change tx). This means the Ledger has verified the addresses used for inputs as well as the change tx all belong to the Ledger.
 
-        **If you are not sending all of your funds off of the seed, MAKE SURE one of the tx says "Change".**
+        If the input amount perfectly matches the output amount, there will be no change transaction. **If there is no change transaction, double check that you are sending the proper amount to the proper address because there is no remainder being sent back to your seed.**
 
-        *Note: When transferring between IOTA Ledger accounts (from one account seed to another) the ledger will not display it as a "Change tx". The wallet should first display the address that it intends to send it to on the Ledger (thus verifying it still belongs to the Ledger), and then create the transaction. The user would then verify in the transaction that the "Output:" tx is in fact going to the address previously displayed on the Ledger.*
+        *Note: When transferring from one seed (controlled by the Ledger device) to another seed (also controlled by the Ledger device) it will not display a "Change tx". As such the wallet should first display the address on the new seed that it intends to send it to on the Ledger (thus verifying it belongs to the Ledger), and then create the transaction. The user would then verify in the transaction that the "Output:" tx is in fact going to the address previously displayed on the Ledger.*
 
 - **Verify ALL information in a transaction and NEVER re-sign a transaction.**
 
@@ -187,33 +158,6 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
 
 Due to the memory limitations of the Ledger Nano S the transaction bundles have certain restrictions. The ledger can only store transactions with at most 1 output, 2 inputs, and 1 change transaction. If you need to use funds from more than 2 input addresses, first you must consolidate funds onto fewer addresses before finally sending to the receiving address.
 
-## Future deprecation notes
-
-- **Address generation**
-
-    In the current alpha version of the IOTA application on Ledger we use a special test path for the address generator that might be incompatible with future versions. This is due to the fact that Romeo web wallet uses a different approach than Trinity to keep track of addresses (paging system vs cache). It could happen that when we integrate the Ledger in Trinity, you end up with **a different seed and therefore addresses than you had before**.
-
-    In such an event, you will have to move your funds over from the existing addresses to a new address. This may include that you must send your funds off the Ledger to an IOTA desktop wallet like Trinity, then update your IOTA ledger app, and transfer your funds back to the new ledger addresses.
-
-    It is highly recommended that you do not send all your funds to the ledger as long as this is heavily in alpha!
-
-## How to get started
-
-### Requirements
-
-- Make sure that your Ledger Nano S is running firmware 1.4.2.
-For update instructions see: [How to update my Ledger Nano S with the firmware 1.4](https://support.ledgerwallet.com/hc/en-us/articles/360001340473-How-to-update-my-Ledger-Nano-S-with-the-firmware-1-4)
-
-### Installation of the IOTA app on the ledger
-
-You can follow one of these methods to install the IOTA app to your Ledger device:
-
-- If you would like a one-size-fits-all (including Windows, Mac, Linux) solution you can find instructions on how to install the app using VirtualBox here: [blue-app-iota-loader-alpine](https://github.com/IOTA-Ledger/blue-app-iota-loader-alpine)
-    This option will download a pre-configured Virtual Machine with the necessary prerequisites to install the app.
-    The application is automatically downloaded from our [releases page](https://github.com/IOTA-Ledger/blue-app-iota/releases), checked for correct digital signature and then installed.
-
-- If you don't like VirtualBox, and are on a Mac or Linux machine you can find instructions to install the app here: [blue-app-iota-loader](https://github.com/IOTA-Ledger/blue-app-iota-loader)
-- If you are a developer, just install the toolchain described here: [Development](#development)
 
 ## FAQ
 
@@ -226,11 +170,6 @@ After installation of the IOTA Ledger app, all your funds are restored. Take car
 
 Another approach is to use our seed recovery tool which can be found here: https://github.com/IOTA-Ledger/recover-iota-seed-from-ledger-mnemonics.<br>
 **WARNING: Only use this tool in emergencies**, as exposing your seed defeats the primary purpose of the Ledger Nano S.
-
-#### How can i uninstall the app?
-
-In order to uninstall the app simply run the installation of the app again, and this time it will first prompt you remove the existing app.
-Once the existing app is removed, just end the process (Don’t approve re-installing it).
 
 ## Development
 
