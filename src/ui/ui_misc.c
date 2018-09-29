@@ -107,11 +107,10 @@ void check_special_glyph(UI_GLYPH_TYPES g)
 // Turns a single glyph on or off
 void glyph_on(UI_GLYPH_TYPES g)
 {
-    if (g < TOTAL_GLYPHS) {
+    if (g < TOTAL_GLYPHS)
         ui_glyphs.glyph[g] = '\0';
-        
+    else
         check_special_glyph(g);
-    }
 }
 
 void glyph_off(UI_GLYPH_TYPES g)
@@ -124,8 +123,6 @@ void clear_glyphs()
 {
     // turn off all glyphs
     glyph_off(GLYPH_CONFIRM);
-    glyph_off(GLYPH_CROSS);
-    glyph_off(GLYPH_CHECK);
     glyph_off(GLYPH_UP);
     glyph_off(GLYPH_DOWN);
     glyph_off(GLYPH_WARN);

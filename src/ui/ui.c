@@ -177,6 +177,7 @@ void ui_display_getting_addr()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -192,6 +193,7 @@ void ui_display_validating()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -207,6 +209,7 @@ void ui_display_recv()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -222,6 +225,7 @@ void ui_display_signing()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();

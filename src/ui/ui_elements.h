@@ -50,18 +50,6 @@
         BAGL_GLYPH_ICON_LESS}, &ui_glyphs.glyph[GLYPH_CONFIRM],                     \
         0, 0, 0, NULL, NULL, NULL}
 
-// -- Cross on left
-#define SCREEN_GLYPH_CROSS                                                          \
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,                 \
-        BAGL_GLYPH_ICON_CROSS}, &ui_glyphs.glyph[GLYPH_CROSS],                      \
-        0, 0, 0, NULL, NULL, NULL}
-
-// -- Checkmark on right
-#define SCREEN_GLYPH_CHECK                                                          \
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,               \
-        BAGL_GLYPH_ICON_CHECK}, &ui_glyphs.glyph[GLYPH_CHECK],                      \
-        0, 0, 0, NULL, NULL, NULL}
-
 // -- Up arrow on left
 #define SCREEN_GLYPH_UP                                                             \
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,                 \
@@ -105,8 +93,6 @@
 // -- Define all screen glyphs
 #define SCREEN_GLYPHS_ALL                                                           \
 SCREEN_GLYPH_CONFIRM,                                                               \
-SCREEN_GLYPH_CROSS,                                                                 \
-SCREEN_GLYPH_CHECK,                                                                 \
 SCREEN_GLYPH_UP,                                                                    \
 SCREEN_GLYPH_DOWN,                                                                  \
 SCREEN_GLYPH_WARN,                                                                  \

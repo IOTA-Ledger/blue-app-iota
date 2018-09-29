@@ -46,14 +46,12 @@ typedef enum {
     GLYPH_CONFIRM,
     GLYPH_UP,
     GLYPH_DOWN,
-    GLYPH_CHECK,
-    GLYPH_CROSS,
     GLYPH_WARN,
     GLYPH_DASH,
     GLYPH_LOAD,
+    GLYPH_NONE, // glyphs after none require special screens
     GLYPH_IOTA,
-    GLYPH_BACK,
-    GLYPH_NONE
+    GLYPH_BACK
 } UI_GLYPH_TYPES;
 
 // Size of Menu
