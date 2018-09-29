@@ -7,6 +7,7 @@
 #include "ui_buttons.h"
 #include "ui_display.h"
 #include "ui_elements.h"
+#include "glyphs.h"
 
 #include "iota/addresses.h"
 
@@ -22,6 +23,8 @@ static void ui_build_display(void);
 
 static unsigned int bagl_ui_title_screen_button(unsigned int, unsigned int);
 static unsigned int bagl_ui_menu_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_iota_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_back_screen_button(unsigned int, unsigned int);
 
 // *************************
 // Ledger Nano S specific UI
@@ -31,22 +34,38 @@ static unsigned int bagl_ui_menu_screen_button(unsigned int, unsigned int);
 // screen for title on top, info on bottom
 static const bagl_element_t bagl_ui_title_screen[] = {
     SCREEN_CLEAR,
-    
     SCREEN_MSG_TOP,
     SCREEN_MSG_BOT,
-    
     SCREEN_GLYPHS_ALL
 };
 
 // screen for info in the middle, and half text elements above and below (menu effect)
 static const bagl_element_t bagl_ui_menu_screen[] = {
     SCREEN_CLEAR,
-    
     SCREEN_MSG_TOP_OFF,
     SCREEN_MSG_MID,
     SCREEN_MSG_BOT_OFF,
-    
     SCREEN_GLYPHS_ALL
+};
+
+// screen for displaying IOTA icon
+static const bagl_element_t bagl_ui_iota_screen[] = {
+    SCREEN_CLEAR,
+    SCREEN_MSG_MID,
+    SCREEN_GLYPH_DASH,
+    SCREEN_GLYPH_CONFIRM,
+    SCREEN_GLYPH_IOTA,
+    SCREEN_GLYPH_DOWN
+};
+
+// screen for displaying a back icon
+static const bagl_element_t bagl_ui_back_screen[] = {
+    SCREEN_CLEAR,
+    SCREEN_MSG_TOP_OFF,
+    SCREEN_MSG_MID,
+    SCREEN_GLYPH_BACK,
+    SCREEN_GLYPH_CONFIRM,
+    SCREEN_GLYPH_UP
 };
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
@@ -65,6 +84,12 @@ void ui_render()
             break;
         case SCREEN_MENU:
             UX_DISPLAY(bagl_ui_menu_screen, NULL);
+            break;
+        case SCREEN_IOTA:
+            UX_DISPLAY(bagl_ui_iota_screen, NULL);
+            break;
+        case SCREEN_BACK:
+            UX_DISPLAY(bagl_ui_back_screen, NULL);
             break;
         default:
             os_sched_exit(0);
@@ -240,39 +265,26 @@ void ui_restore()
     ui_force_draw();
 }
 
-
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------
  ---------------------------------------------------------------
  --------------------------------------------------------------- */
-static unsigned int
-bagl_ui_title_screen_button(unsigned int button_mask,
-                            unsigned int button_mask_counter)
-{
-    ui_transition_state(button_mask);
-
-    return 0;
-}
-
-static unsigned int
-bagl_ui_menu_screen_button(unsigned int button_mask,
-                            unsigned int button_mask_counter)
-{
-    ui_transition_state(button_mask);
-    
-    return 0;
-}
+// macros for button functions
+BUTTON_FUNCTION(title)
+BUTTON_FUNCTION(menu)
+BUTTON_FUNCTION(iota)
+BUTTON_FUNCTION(back)
 
 static uint8_t ui_translate_mask(unsigned int button_mask)
 {
     switch (button_mask) {
-    case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-        return BUTTON_L;
-    case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-        return BUTTON_R;
-    case BUTTON_EVT_RELEASED | BUTTON_RIGHT | BUTTON_LEFT:
-        return BUTTON_B;
-    default:
-        return BUTTON_BAD;
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+            return BUTTON_L;
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+            return BUTTON_R;
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT | BUTTON_LEFT:
+            return BUTTON_B;
+        default:
+            return BUTTON_BAD;
     }
 }
 
@@ -334,6 +346,7 @@ static void ui_handle_button(uint8_t button_mask)
         return;
     }
 
+    // incr/decr menu index
     button_handle_menu_idx(button_mask, array_sz);
 }
 

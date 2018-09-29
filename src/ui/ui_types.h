@@ -20,7 +20,9 @@ typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
 // UI SCREENS
 typedef enum {
     SCREEN_TITLE,
-    SCREEN_MENU
+    SCREEN_MENU,
+    SCREEN_IOTA,
+    SCREEN_BACK
 } UI_SCREENS;
 
 // UI STATES
@@ -50,6 +52,7 @@ typedef enum {
     GLYPH_DASH,
     GLYPH_LOAD,
     GLYPH_IOTA,
+    GLYPH_BACK,
     GLYPH_NONE
 } UI_GLYPH_TYPES;
 

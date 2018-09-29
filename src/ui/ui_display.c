@@ -3,6 +3,7 @@
 #include "common.h"
 #include "ui.h"
 #include "ui_types.h"
+#include "ui_text.h"
 #include "ui_misc.h"
 
 void display_init()
@@ -35,7 +36,7 @@ void display_welcome()
     switch (ui_state.menu_idx) {
         // turn off BOT_H
     case 0:
-        display_glyphs_confirm(GLYPH_NONE, GLYPH_DOWN);
+        display_glyphs_confirm(GLYPH_IOTA, GLYPH_DOWN);
     case MENU_WELCOME_LEN - 2:
         write_display(NULL, BOT_H);
         break;
@@ -63,7 +64,7 @@ void display_about()
         // turn off TOP_H
     case MENU_ABOUT_LEN - 1:
         write_display(NULL, TOP_H);
-        display_glyphs_confirm(GLYPH_UP, GLYPH_DASH);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_BACK);
     }
 }
 
@@ -74,7 +75,7 @@ void display_version()
     clear_display();
     write_display(APPVERSION, MID);
 
-    display_glyphs_confirm(GLYPH_DASH, GLYPH_NONE);
+    display_glyphs_confirm(GLYPH_BACK, GLYPH_NONE);
 }
 
 void display_more_info()

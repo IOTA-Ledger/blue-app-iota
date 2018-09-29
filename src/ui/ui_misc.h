@@ -33,11 +33,4 @@ void reenter_tx_info(uint8_t state);
 void display_advanced_tx_value(void);
 void display_advanced_tx_address(void);
 
-// Menu creation
-void get_init_menu(char *msg);
-void get_welcome_menu(char *msg);
-void get_about_menu(char *msg);
-void get_more_info_menu(char *msg);
-void get_address_menu(char *msg);
-
 #endif // UI_MISC_H

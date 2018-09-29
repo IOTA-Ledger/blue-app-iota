@@ -6,12 +6,12 @@
 #include "api.h"
 #include "ui_types.h"
 
-/* To create a new UI screen -
+/* To create a new generic UI screen -
  - #define new STATE_ [ui_types.h]
- - Define what to display (ui_build_display) [ui_handling.c]
- - Define special button functions (ui_handle_button) [ui_handling.c]
+ - Add entries in ui_build_display and ui_handle_button [ui.c]
+ - Create a display/button function [ui_display.c/ui_buttons.c]
 
- - If scrollable menu screen, also do:
+ - If text menu screen, also do:
  - #define Size of Menu [ui_types.h]
  - Create msg to display [ui_misc.c]
  - Define behavior (ui_handle_menus) [ui_handling.c] */
