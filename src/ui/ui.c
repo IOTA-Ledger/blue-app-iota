@@ -35,7 +35,7 @@ static const bagl_element_t bagl_ui_title_screen[] = {
     SCREEN_MSG_TOP,
     SCREEN_MSG_BOT,
     
-    SCREEN_ICONS_ALL
+    SCREEN_GLYPHS_ALL
 };
 
 // screen for info in the middle, and half text elements above and below (menu effect)
@@ -46,7 +46,7 @@ static const bagl_element_t bagl_ui_menu_screen[] = {
     SCREEN_MSG_MID,
     SCREEN_MSG_BOT_OFF,
     
-    SCREEN_ICONS_ALL
+    SCREEN_GLYPHS_ALL
 };
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
