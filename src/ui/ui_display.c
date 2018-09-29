@@ -7,6 +7,8 @@
 
 void display_init()
 {
+    ui_set_screen(SCREEN_MENU);
+    
     // write the actual menu
     char msg[MENU_INIT_LEN * TEXT_LEN];
     get_init_menu(msg);
@@ -22,6 +24,8 @@ void display_init()
 
 void display_welcome()
 {
+    ui_set_screen(SCREEN_MENU);
+    
     // write the actual menu
     char msg[MENU_WELCOME_LEN * TEXT_LEN];
     get_welcome_menu(msg);
@@ -44,6 +48,8 @@ void display_welcome()
 
 void display_about()
 {
+    ui_set_screen(SCREEN_MENU);
+    
     // write the actual menu
     char msg[MENU_ABOUT_LEN * TEXT_LEN];
     get_about_menu(msg);
@@ -63,6 +69,8 @@ void display_about()
 
 void display_version()
 {
+    ui_set_screen(SCREEN_MENU);
+    
     clear_display();
     write_display(APPVERSION, MID);
 
@@ -71,6 +79,8 @@ void display_version()
 
 void display_more_info()
 {
+    ui_set_screen(SCREEN_MENU);
+    
     // write the actual menu
     char msg[MENU_MORE_INFO_LEN * TEXT_LEN];
     get_more_info_menu(msg);
@@ -79,6 +89,8 @@ void display_more_info()
 
 void display_bip_path()
 {
+    ui_set_screen(SCREEN_TITLE);
+    
     clear_display();
 
     char *msg[] = {ui_text.top_str, ui_text.bot_str};
@@ -124,6 +136,8 @@ void display_bip_path()
 
 void display_addr()
 {
+    ui_set_screen(SCREEN_MENU);
+    
     // write the actual menu
     char msg[MENU_ADDR_LEN * TEXT_LEN];
     get_address_menu(msg);
@@ -146,6 +160,8 @@ void display_addr()
 
 void display_addr_chk()
 {
+    ui_set_screen(SCREEN_TITLE);
+    
     clear_display();
 
     char abbrv[14];
@@ -168,6 +184,9 @@ void display_tx_addr()
 
 void display_prompt_tx()
 {
+    // for approve/deny
+    ui_set_screen(SCREEN_MENU);
+    
     clear_display();
 
     if (ui_state.menu_idx == get_tx_arr_sz() - 2) {
@@ -180,6 +199,9 @@ void display_prompt_tx()
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
+    
+    // if not approve/deny, it will be a title screen (top/bottom)
+    ui_set_screen(SCREEN_TITLE);
 
     // even indices (not include approve/deny)
     // will be amounts, odd will be addr

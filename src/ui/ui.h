@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "iota/bundle.h"
 #include "api.h"
+#include "ui_types.h"
 
 /* To create a new UI screen -
  - #define new STATE_ [ui_types.h]
@@ -27,6 +28,7 @@ void ui_sign_tx(void);
 void ui_reset(void);
 void ui_restore(void);
 
+void ui_set_screen(UI_SCREENS s);
 void ui_render(void);
 void ui_force_draw(void);
 

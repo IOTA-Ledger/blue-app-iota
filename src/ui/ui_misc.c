@@ -57,13 +57,11 @@ static char *get_str_buffer(UI_TEXT_POS pos)
 {
     switch (pos) {
     case TOP_H:
-        return ui_text.half_top;
     case TOP:
         return ui_text.top_str;
     case BOT:
-        return ui_text.bot_str;
     case BOT_H:
-        return ui_text.half_bot;
+        return ui_text.bot_str;
     case MID:
         return ui_text.mid_str;
     default:
@@ -86,11 +84,9 @@ void write_display(const char *string, UI_TEXT_POS pos)
 /* --------- STATE RELATED FUNCTIONS ----------- */
 static void clear_text()
 {
-    write_display(NULL, TOP_H);
     write_display(NULL, TOP);
     write_display(NULL, MID);
     write_display(NULL, BOT);
-    write_display(NULL, BOT_H);
 }
 
 // Turns a single glyph on or off

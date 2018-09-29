@@ -8,14 +8,20 @@
 #define TEXT_LEN 21
 #define TOTAL_GLYPHS GLYPH_NONE
 
-// Different positions a text can have
-typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
-
 #define BUTTON_L 0
 #define BUTTON_R 1
 #define BUTTON_B 2
 
 #define BUTTON_BAD 255
+
+// Different positions a text can have
+typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
+
+// UI SCREENS
+typedef enum {
+    SCREEN_TITLE,
+    SCREEN_MENU
+} UI_SCREENS;
 
 // UI STATES
 typedef enum {
@@ -56,13 +62,9 @@ typedef enum {
 
 typedef struct UI_TEXT_CTX {
 
-    // half_top/bot are text lines half off the screen
-    // to make text menus appear scrollable
-    char half_top[TEXT_LEN];
     char top_str[TEXT_LEN];
     char mid_str[TEXT_LEN];
     char bot_str[TEXT_LEN];
-    char half_bot[TEXT_LEN];
 
 } UI_TEXT_CTX;
 
