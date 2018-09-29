@@ -6,6 +6,7 @@
 #include "ui_misc.h"
 #include "ui_buttons.h"
 #include "ui_display.h"
+#include "ui_elements.h"
 
 #include "iota/addresses.h"
 
@@ -27,96 +28,26 @@ static unsigned int bagl_ui_menu_screen_button(unsigned int, unsigned int);
 // *************************
 // one dynamic screen that changes based on the ui state
 
-// clang-format off
-
 // screen for title on top, info on bottom
 static const bagl_element_t bagl_ui_title_screen[] = {
-    // {type, userid, x, y, width, height, stroke, radius, fill,
-    // fgcolor, bgcolor, fontid, iconid}, text .....
-    {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
-        0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
+    SCREEN_CLEAR,
     
-    {{BAGL_LABELINE, 0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.top_str, 0, 0, 0, NULL, NULL, NULL},
+    SCREEN_MSG_TOP,
+    SCREEN_MSG_BOT,
     
-    {{BAGL_LABELINE, 0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_CROSS}, &ui_glyphs.glyph[GLYPH_CROSS], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_CHECK}, &ui_glyphs.glyph[GLYPH_CHECK], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_UP}, &ui_glyphs.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DOWN}, &ui_glyphs.glyph[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_WARNING_BADGE}, &ui_glyphs.glyph[GLYPH_WARN], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LOADING_BADGE}, &ui_glyphs.glyph[GLYPH_LOAD], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 24, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DASHBOARD_BADGE}, &ui_glyphs.glyph[GLYPH_DASH], 0, 0, 0, NULL, NULL, NULL}};
+    SCREEN_ICONS_ALL
+};
 
 // screen for info in the middle, and half text elements above and below (menu effect)
 static const bagl_element_t bagl_ui_menu_screen[] = {
-    // {type, userid, x, y, width, height, stroke, radius, fill,
-    // fgcolor, bgcolor, fontid, iconid}, text .....
-    {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
-        0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
+    SCREEN_CLEAR,
     
-    {{BAGL_LABELINE, 0x01, 0, 3, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.top_str, 0, 0, 0, NULL, NULL, NULL},
+    SCREEN_MSG_TOP_OFF,
+    SCREEN_MSG_MID,
+    SCREEN_MSG_BOT_OFF,
     
-    {{BAGL_LABELINE, 0x01, 0, 19, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_LABELINE, 0x01, 0, 36, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_CROSS}, &ui_glyphs.glyph[GLYPH_CROSS], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_CHECK}, &ui_glyphs.glyph[GLYPH_CHECK], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_UP}, &ui_glyphs.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DOWN}, &ui_glyphs.glyph[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_WARNING_BADGE}, &ui_glyphs.glyph[GLYPH_WARN], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LOADING_BADGE}, &ui_glyphs.glyph[GLYPH_LOAD], 0, 0, 0, NULL, NULL, NULL},
-    
-    {{BAGL_ICON, 0x00, 24, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DASHBOARD_BADGE}, &ui_glyphs.glyph[GLYPH_DASH], 0, 0, 0, NULL, NULL, NULL}};
-// clang-format on
+    SCREEN_ICONS_ALL
+};
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
  ---------------------------------------------------------
