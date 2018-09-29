@@ -110,7 +110,4 @@ bagl_ui_##name##_screen_button(unsigned int button_mask,                        
     return 0;                                                                       \
 }
 
-#define BUTTON_PROTOTYPE(name)                                                      \
-static unsigned int bagl_ui_##name##_screen_button(unsigned int, unsigned int);
-
 #endif // UI_ELEMENTS_H
