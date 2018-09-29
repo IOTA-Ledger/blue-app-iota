@@ -14,9 +14,9 @@ void display_init()
 
     // special override display states
     if (ui_state.menu_idx == 0)
-        glyph_on(ui_glyphs.glyph_warn);
+        glyph_on(GLYPH_WARN);
     if (ui_state.menu_idx == MENU_INIT_LEN - 1) {
-        display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
     }
 }
 
@@ -31,14 +31,14 @@ void display_welcome()
     switch (ui_state.menu_idx) {
         // turn off BOT_H
     case 0:
-        display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
+        display_glyphs_confirm(GLYPH_NONE, GLYPH_DOWN);
     case MENU_WELCOME_LEN - 2:
         write_display(NULL, BOT_H);
         break;
         // turn off TOP_H
     case MENU_WELCOME_LEN - 1:
         write_display(NULL, TOP_H);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DASH);
     }
 }
 
@@ -57,7 +57,7 @@ void display_about()
         // turn off TOP_H
     case MENU_ABOUT_LEN - 1:
         write_display(NULL, TOP_H);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DASH);
     }
 }
 
@@ -66,7 +66,7 @@ void display_version()
     clear_display();
     write_display(APPVERSION, MID);
 
-    display_glyphs_confirm(ui_glyphs.glyph_dash, NULL);
+    display_glyphs_confirm(GLYPH_DASH, GLYPH_NONE);
 }
 
 void display_more_info()
@@ -119,7 +119,7 @@ void display_bip_path()
         msg[row][chars_written] = '\0';
     }
 
-    display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+    display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
 }
 
 void display_addr()
@@ -129,19 +129,18 @@ void display_addr()
     get_address_menu(msg);
     write_text_array(msg, MENU_ADDR_LEN);
 
-    glyph_on(ui_glyphs.glyph_bar_l);
-    glyph_on(ui_glyphs.glyph_bar_r);
+    glyph_on(GLYPH_CONFIRM);
 
     // special overrides
     if (ui_state.menu_idx == 0 && ui_state.state == STATE_DISP_ADDR)
-        glyph_on(ui_glyphs.glyph_up);
+        glyph_on(GLYPH_UP);
 
     // add down arrow to show bip path, don't show
     // bip path on output addr of a tx
     if (ui_state.menu_idx == MENU_ADDR_LEN - 1 &&
         !(ui_state.backup_state == STATE_PROMPT_TX &&
           ui_state.backup_menu_idx == 1)) {
-        glyph_on(ui_glyphs.glyph_down);
+        glyph_on(GLYPH_DOWN);
     }
 }
 
@@ -158,7 +157,7 @@ void display_addr_chk()
     // copy the remaining 9 chars in the buffer
     os_memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
 
-    display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
+    display_glyphs_confirm(GLYPH_NONE, GLYPH_DOWN);
 }
 
 void display_tx_addr()
@@ -173,12 +172,12 @@ void display_prompt_tx()
 
     if (ui_state.menu_idx == get_tx_arr_sz() - 2) {
         write_display("Approve", MID);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
     else if (ui_state.menu_idx == get_tx_arr_sz() - 1) {
         write_display("Deny", MID);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
 
@@ -195,5 +194,5 @@ void display_unknown_state()
     clear_display();
     write_display("UI ERROR", MID);
 
-    display_glyphs_confirm(NULL, NULL);
+    display_glyphs_confirm(GLYPH_NONE, GLYPH_NONE);
 }

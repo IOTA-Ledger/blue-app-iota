@@ -6,6 +6,7 @@
 
 /// length of one text line
 #define TEXT_LEN 21
+#define TOTAL_GLYPHS GLYPH_NONE
 
 // Different positions a text can have
 typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
@@ -32,6 +33,20 @@ typedef enum {
     STATE_EXIT = 255
 } UI_STATES;
 
+// GLYPH TYPES
+typedef enum {
+    GLYPH_CONFIRM,
+    GLYPH_UP,
+    GLYPH_DOWN,
+    GLYPH_CHECK,
+    GLYPH_CROSS,
+    GLYPH_WARN,
+    GLYPH_DASH,
+    GLYPH_LOAD,
+    GLYPH_IOTA,
+    GLYPH_NONE
+} UI_GLYPH_TYPES;
+
 // Size of Menu
 #define MENU_INIT_LEN 6
 #define MENU_WELCOME_LEN 3
@@ -54,10 +69,7 @@ typedef struct UI_TEXT_CTX {
 typedef struct UI_GLYPH_CTX {
 
     // flags for turning on/off certain glyphs
-    char glyph_bar_l[2], glyph_bar_r[2];
-    char glyph_cross[2], glyph_check[2];
-    char glyph_up[2], glyph_down[2];
-    char glyph_warn[2], glyph_dash[2], glyph_load[2];
+    char glyph[TOTAL_GLYPHS + 1];
 
 } UI_GLYPH_CTX;
 

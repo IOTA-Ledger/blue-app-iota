@@ -14,14 +14,14 @@ void restore_state(void);
 void abbreviate_addr(char *dest, const char *src);
 void write_display(const char *string, UI_TEXT_POS pos);
 
-void glyph_on(char *c);
-void glyph_off(char *c);
+void glyph_on(UI_GLYPH_TYPES g);
+void glyph_off(UI_GLYPH_TYPES g);
 
 void clear_glyphs(void);
 void clear_display(void);
 
-void display_glyphs(char *c1, char *c2);
-void display_glyphs_confirm(char *c1, char *c2);
+void display_glyphs(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2);
+void display_glyphs_confirm(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2);
 
 void write_text_array(const char *array, uint8_t len);
 

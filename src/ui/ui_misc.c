@@ -94,32 +94,29 @@ static void clear_text()
 }
 
 // Turns a single glyph on or off
-void glyph_on(char *c)
+void glyph_on(UI_GLYPH_TYPES g)
 {
-    if (c != NULL)
-        c[0] = '\0';
+    if (g < TOTAL_GLYPHS)
+        ui_glyphs.glyph[g] = '\0';
 }
 
-void glyph_off(char *c)
+void glyph_off(UI_GLYPH_TYPES g)
 {
-    if (c != NULL) {
-        c[0] = '.';
-        c[1] = '\0';
-    }
+    if (g < TOTAL_GLYPHS)
+        ui_glyphs.glyph[g] = '.';
 }
 
 void clear_glyphs()
 {
     // turn off all glyphs
-    glyph_off(ui_glyphs.glyph_bar_l);
-    glyph_off(ui_glyphs.glyph_bar_r);
-    glyph_off(ui_glyphs.glyph_cross);
-    glyph_off(ui_glyphs.glyph_check);
-    glyph_off(ui_glyphs.glyph_up);
-    glyph_off(ui_glyphs.glyph_down);
-    glyph_off(ui_glyphs.glyph_warn);
-    glyph_off(ui_glyphs.glyph_load);
-    glyph_off(ui_glyphs.glyph_dash);
+    glyph_off(GLYPH_CONFIRM);
+    glyph_off(GLYPH_CROSS);
+    glyph_off(GLYPH_CHECK);
+    glyph_off(GLYPH_UP);
+    glyph_off(GLYPH_DOWN);
+    glyph_off(GLYPH_WARN);
+    glyph_off(GLYPH_LOAD);
+    glyph_off(GLYPH_DASH);
 }
 
 void clear_display()
@@ -129,25 +126,24 @@ void clear_display()
 }
 
 // turns on 2 glyphs (often glyph on left + right)
-void display_glyphs(char *c1, char *c2)
+void display_glyphs(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2)
 {
     clear_glyphs();
 
     // turn on ones we want
-    glyph_on(c1);
-    glyph_on(c2);
+    glyph_on(g1);
+    glyph_on(g2);
 }
 
 // combine glyphs with bars along top for confirm
-void display_glyphs_confirm(char *c1, char *c2)
+void display_glyphs_confirm(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2)
 {
     clear_glyphs();
 
     // turn on ones we want
-    glyph_on(ui_glyphs.glyph_bar_l);
-    glyph_on(ui_glyphs.glyph_bar_r);
-    glyph_on(c1);
-    glyph_on(c2);
+    glyph_on(GLYPH_CONFIRM);
+    glyph_on(g1);
+    glyph_on(g2);
 }
 
 void write_text_array(const char *array, uint8_t len)
@@ -157,14 +153,14 @@ void write_text_array(const char *array, uint8_t len)
 
     if (ui_state.menu_idx > 0) {
         write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
-        glyph_on(ui_glyphs.glyph_up);
+        glyph_on(GLYPH_UP);
     }
 
     write_display(array + (TEXT_LEN * ui_state.menu_idx), MID);
 
     if (ui_state.menu_idx < len - 1) {
         write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
-        glyph_on(ui_glyphs.glyph_down);
+        glyph_on(GLYPH_DOWN);
     }
 }
 
@@ -303,9 +299,9 @@ void display_advanced_tx_value()
 
     // display_value returns true if readable form is possible
     if (display_value(ui_state.val, BOT))
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
     else
-        display_glyphs(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs(GLYPH_UP, GLYPH_DOWN);
 }
 
 void display_advanced_tx_address()
@@ -324,7 +320,7 @@ void display_advanced_tx_address()
     // copy the remaining 9 chars in the buffer
     memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
 
-    display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+    display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 }
 
 uint8_t get_tx_arr_sz()

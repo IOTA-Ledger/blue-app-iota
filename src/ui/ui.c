@@ -52,31 +52,31 @@ static const bagl_element_t bagl_ui_nanos_screen[] = {
         ui_text.half_bot, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, ui_glyphs.glyph_bar_l, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_LESS}, &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, ui_glyphs.glyph_bar_r, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_LESS}, &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_CROSS}, ui_glyphs.glyph_cross, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_CROSS}, &ui_glyphs.glyph[GLYPH_CROSS], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_CHECK}, ui_glyphs.glyph_check, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_CHECK}, &ui_glyphs.glyph[GLYPH_CHECK], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_UP}, ui_glyphs.glyph_up, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_UP}, &ui_glyphs.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DOWN}, ui_glyphs.glyph_down, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_DOWN}, &ui_glyphs.glyph[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_WARNING_BADGE}, ui_glyphs.glyph_warn, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_WARNING_BADGE}, &ui_glyphs.glyph[GLYPH_WARN], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LOADING_BADGE}, ui_glyphs.glyph_load, 0, 0, 0, NULL, NULL, NULL},
+        BAGL_GLYPH_ICON_LOADING_BADGE}, &ui_glyphs.glyph[GLYPH_LOAD], 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_ICON, 0x00, 24, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DASHBOARD_BADGE}, ui_glyphs.glyph_dash, 0, 0, 0, NULL, NULL, NULL}};
+        BAGL_GLYPH_ICON_DASHBOARD_BADGE}, &ui_glyphs.glyph[GLYPH_DASH], 0, 0, 0, NULL, NULL, NULL}};
 // clang-format on
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
@@ -142,6 +142,8 @@ void ui_init(bool flash_is_init)
         ui_state.backup_state = STATE_INIT;
     }
 
+    ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
+
     ui_build_display();
     ui_render();
 }
@@ -161,7 +163,7 @@ void ui_display_getting_addr()
     clear_display();
     write_display("    Getting Addr...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
@@ -176,7 +178,7 @@ void ui_display_validating()
     clear_display();
     write_display("Validating...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
@@ -191,7 +193,7 @@ void ui_display_recv()
     clear_display();
     write_display("Receiving TX...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
@@ -206,7 +208,7 @@ void ui_display_signing()
     clear_display();
     write_display("Signing TX...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
