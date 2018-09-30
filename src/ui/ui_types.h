@@ -28,7 +28,7 @@ typedef enum {
 // UI STATES
 typedef enum {
     STATE_INIT,
-    STATE_WELCOME,
+    STATE_MAIN_MENU,
     STATE_IGNORE,
     STATE_ABOUT,
     STATE_VERSION,
@@ -56,10 +56,32 @@ typedef enum {
 
 // Size of Menu
 #define MENU_INIT_LEN 6
-#define MENU_WELCOME_LEN 3
-#define MENU_ABOUT_LEN 3
 #define MENU_ADDR_LEN 7
 #define MENU_MORE_INFO_LEN 3
+
+#define MENU_INIT_LAST MENU_INIT_LEN - 1
+#define MENU_ADDR_LAST MENU_ADDR_LEN - 1
+
+#define MENU_TX_APPROVE tx_array_sz - 2
+#define MENU_TX_DENY tx_array_sz - 1
+
+// Main menu entries
+typedef enum {
+    MENU_MAIN_CONNECT,
+    MENU_MAIN_ABOUT,
+    MENU_MAIN_EXIT,
+    MENU_MAIN_LEN
+} MENU_MAIN_ENTRIES;
+
+// About menu entries
+typedef enum {
+    MENU_ABOUT_VERSION,
+    MENU_ABOUT_MORE_INFO,
+    MENU_ABOUT_BACK,
+    MENU_ABOUT_LEN
+} MENU_ABOUT_ENTRIES;
+
+
 
 typedef struct UI_TEXT_CTX {
 

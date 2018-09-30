@@ -42,26 +42,26 @@ static const bagl_element_t bagl_ui_title_screen[] = {
 // screen for info in the middle, and half text elements above and below (menu effect)
 static const bagl_element_t bagl_ui_menu_screen[] = {
     SCREEN_CLEAR,
-    SCREEN_MSG_TOP_OFF,
+    SCREEN_MSG_TOP_HALF,
     SCREEN_MSG_MID,
-    SCREEN_MSG_BOT_OFF,
+    SCREEN_MSG_BOT_HALF,
     SCREEN_GLYPHS_ALL
 };
 
 // screen for displaying IOTA icon
 static const bagl_element_t bagl_ui_iota_screen[] = {
     SCREEN_CLEAR,
-    SCREEN_MSG_MID,
-    SCREEN_GLYPH_DASH,
+    SCREEN_MSG_TOP_BOLD,
+    SCREEN_MSG_BOT_BOLD,
     SCREEN_GLYPH_CONFIRM,
     SCREEN_GLYPH_IOTA,
     SCREEN_GLYPH_DOWN
 };
 
-// screen for displaying a back icon
+// screen for displaying back icon
 static const bagl_element_t bagl_ui_back_screen[] = {
     SCREEN_CLEAR,
-    SCREEN_MSG_TOP_OFF,
+    SCREEN_MSG_TOP_HALF,
     SCREEN_MSG_MID,
     SCREEN_GLYPH_BACK,
     SCREEN_GLYPH_CONFIRM,
@@ -143,8 +143,8 @@ void ui_init(bool flash_is_init)
     ctx_initialize();
 
     if (flash_is_init) {
-        ui_state.state = STATE_WELCOME;
-        ui_state.backup_state = STATE_WELCOME;
+        ui_state.state = STATE_MAIN_MENU;
+        ui_state.backup_state = STATE_MAIN_MENU;
     }
     else {
         ui_state.state = STATE_INIT;
@@ -154,13 +154,21 @@ void ui_init(bool flash_is_init)
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
 
     ui_build_display();
+    
+    if(ui_state.state == STATE_MAIN_MENU) {
+        // seed_set flag isn't registering properly upon app initial launch
+        // so make sure it starts as "not connected"
+        write_display("Connect To", TOP);
+        write_display("Wallet", BOT);
+    }
+    
     ui_render();
 }
 
 // Entry points for main to modify display
-void ui_display_welcome()
+void ui_display_main_menu()
 {
-    state_go(STATE_WELCOME, 0);
+    state_go(STATE_MAIN_MENU, 0);
     backup_state();
 
     ui_build_display();
@@ -251,7 +259,7 @@ void ui_sign_tx()
 
 void ui_reset()
 {
-    state_go(STATE_WELCOME, 0);
+    state_go(STATE_MAIN_MENU, 0);
 
     ui_build_display();
     ui_render();
@@ -307,8 +315,8 @@ static void ui_handle_button(uint8_t button_mask)
         array_sz = button_init(button_mask);
         break;
         /* ------------ STATE OPTIONS -------------- */
-    case STATE_WELCOME:
-        array_sz = button_welcome(button_mask);
+    case STATE_MAIN_MENU:
+        array_sz = button_main_menu(button_mask);
         break;
         /* ------------ STATE ABOUT -------------- */
     case STATE_ABOUT:
@@ -332,8 +340,8 @@ static void ui_handle_button(uint8_t button_mask)
         break;
         /* ------------ STATE DISPLAY CHECKSUM -------------- */
     case STATE_DISP_ADDR_CHK:
-        array_sz = button_disp_addr_chk(button_mask);
-        break;
+        button_disp_addr_chk(button_mask);
+        return;
         /* ------------ STATE MENU_TX_ADDRESS -------------- */
     case STATE_TX_ADDR:
         array_sz = button_tx_addr(button_mask);
@@ -345,7 +353,7 @@ static void ui_handle_button(uint8_t button_mask)
     case STATE_IGNORE:
         return;
         /* ------------ DEFAULT -------------- */
-    default: // fall through and return
+    default: // this would be an unkown state/error
         ui_state.menu_idx = 0;
         return;
     }
@@ -366,9 +374,9 @@ static void ui_build_display()
     case STATE_INIT:
         display_init();
         break;
-        /* ------------ WELCOME MENU -------------- */
-    case STATE_WELCOME:
-        display_welcome();
+        /* ------------ MAIN MENU -------------- */
+    case STATE_MAIN_MENU:
+        display_main_menu();
         break;
         /* ------------ ABOUT -------------- */
     case STATE_ABOUT:
