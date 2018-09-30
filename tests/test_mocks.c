@@ -12,7 +12,7 @@ void throw_exception(const char *expression, const char *file, int line)
     mock_assert(false, expression, file, line);
 }
 
-void ui_display_welcome()
+void ui_display_main_menu()
 {
 }
 
