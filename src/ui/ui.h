@@ -9,12 +9,11 @@
 /* To create a new generic UI screen -
  - #define new STATE_ [ui_types.h]
  - Add entries in ui_build_display and ui_handle_button [ui.c]
- - Create a display/button function [ui_display.c/ui_buttons.c]
+ - Create display/button functions [ui_display.c/ui_buttons.c]
 
  - If text menu screen, also do:
  - #define Size of Menu [ui_types.h]
- - Create msg to display [ui_misc.c]
- - Define behavior (ui_handle_menus) [ui_handling.c] */
+ - Create msg to display [ui_text.c] */
 
 void ui_init(bool flash_is_init);
 
