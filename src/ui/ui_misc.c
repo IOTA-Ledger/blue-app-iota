@@ -39,7 +39,7 @@ void restore_state()
 {
     state_return(ui_state.backup_state, ui_state.backup_menu_idx);
 
-    ui_state.backup_state = STATE_WELCOME;
+    ui_state.backup_state = STATE_MAIN_MENU;
     ui_state.backup_menu_idx = 0;
 }
 
@@ -52,7 +52,7 @@ void abbreviate_addr(char *dest, const char *src)
     dest[13] = '\0';
 }
 
-/** @brief Returns buffer for corresponding position). */
+/** @brief Returns buffer for corresponding position. */
 static char *get_str_buffer(UI_TEXT_POS pos)
 {
     switch (pos) {

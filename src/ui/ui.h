@@ -18,7 +18,7 @@
 
 void ui_init(bool flash_is_init);
 
-void ui_display_welcome(void);
+void ui_display_main_menu(void);
 void ui_display_getting_addr(void);
 void ui_display_validating(void);
 void ui_display_recv(void);
