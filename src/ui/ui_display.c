@@ -106,7 +106,7 @@ void display_more_info()
     get_more_info_menu(msg);
     write_text_array(msg, MENU_MORE_INFO_LEN);
     
-    // no special handling
+    glyph_on(GLYPH_CONFIRM);
 }
 
 void display_bip_path()
