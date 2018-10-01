@@ -1,7 +1,6 @@
 #include "ui_misc.h"
 #include <string.h>
 #include "common.h"
-#include "api.h"
 #include "iota/addresses.h"
 #include "ui.h"
 

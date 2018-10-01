@@ -1,7 +1,6 @@
 #include "ui_display.h"
 #include <string.h>
 #include "common.h"
-#include "api.h"
 #include "ui.h"
 #include "ui_types.h"
 #include "ui_text.h"
@@ -46,15 +45,8 @@ void display_main_menu()
             
     case MENU_MAIN_CONNECT:
         display_glyphs_confirm(GLYPH_IOTA, GLYPH_DOWN);
-        // override text based on whether or not the wallet has connected
-        if(api.state_flags & SEED_SET) {
-            write_display("Wallet", TOP);
-            write_display("Connected", BOT);
-        }
-        else {
-            write_display("Connect To", TOP);
-            write_display("Wallet", BOT);
-        }
+            
+        write_display("IOTA", MID);
         break;
             
     case MENU_MAIN_EXIT:

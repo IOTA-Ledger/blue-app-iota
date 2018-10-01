@@ -22,18 +22,6 @@
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},          \
         ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL}
 
-// -- Title screen top message
-#define SCREEN_MSG_TOP_BOLD                                                         \
-    {{BAGL_LABELINE, 0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,             \
-        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},        \
-        ui_text.top_str, 0, 0, 0, NULL, NULL, NULL}
-
-// -- Title screen bottom message
-#define SCREEN_MSG_BOT_BOLD                                                         \
-    {{BAGL_LABELINE, 0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,             \
-        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},        \
-        ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL}
-
 // -- Menu screen top message half off screen
 #define SCREEN_MSG_TOP_HALF                                                         \
     {{BAGL_LABELINE, 0x01, 0, 3, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,              \
@@ -51,6 +39,11 @@
     {{BAGL_LABELINE, 0x01, 0, 36, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,             \
         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},          \
         ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL}
+
+// -- Underline for "IOTA"
+#define SCREEN_UNDERLINE                                                            \
+    {{BAGL_RECTANGLE, 0x00, 48, 22, 33, 1, 0, 0, BAGL_FILL, 0xFFFFFF, 0x000000,     \
+        0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL}
 
 // -- Confirm bars along top
 #define SCREEN_GLYPH_CONFIRM                                                        \
@@ -94,7 +87,7 @@
 
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                           \
-    {{BAGL_ICON, 0x00, 8, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,                  \
+    {{BAGL_ICON, 0x00, 18, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,                 \
         0}, (const char *)&C_icon_iota, 0, 0, 0, NULL, NULL, NULL}
 
 // -- Back icon on left
