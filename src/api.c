@@ -326,7 +326,7 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
 
-        ui_display_welcome();
+        ui_display_main_menu();
     }
 
     return 0;

@@ -1,9 +1,8 @@
 #include "ui_misc.h"
 #include <string.h>
 #include "common.h"
-#include "api.h"
-#include "storage.h"
 #include "iota/addresses.h"
+#include "ui.h"
 
 /// the largest power of 10 that still fits into int32
 #define MAX_INT_DEC INT64_C(1000000000)
@@ -29,17 +28,11 @@ void backup_state()
     ui_state.backup_menu_idx = ui_state.menu_idx;
 }
 
-void set_backup(uint8_t state, uint8_t menu_idx)
-{
-    ui_state.backup_state = state;
-    ui_state.backup_menu_idx = menu_idx;
-}
-
 void restore_state()
 {
     state_return(ui_state.backup_state, ui_state.backup_menu_idx);
 
-    ui_state.backup_state = STATE_WELCOME;
+    ui_state.backup_state = STATE_MAIN_MENU;
     ui_state.backup_menu_idx = 0;
 }
 
@@ -52,18 +45,16 @@ void abbreviate_addr(char *dest, const char *src)
     dest[13] = '\0';
 }
 
-/** @brief Returns buffer for corresponding position). */
+/** @brief Returns buffer for corresponding position. */
 static char *get_str_buffer(UI_TEXT_POS pos)
 {
     switch (pos) {
     case TOP_H:
-        return ui_text.half_top;
     case TOP:
         return ui_text.top_str;
     case BOT:
-        return ui_text.bot_str;
     case BOT_H:
-        return ui_text.half_bot;
+        return ui_text.bot_str;
     case MID:
         return ui_text.mid_str;
     default:
@@ -86,40 +77,50 @@ void write_display(const char *string, UI_TEXT_POS pos)
 /* --------- STATE RELATED FUNCTIONS ----------- */
 static void clear_text()
 {
-    write_display(NULL, TOP_H);
     write_display(NULL, TOP);
     write_display(NULL, MID);
     write_display(NULL, BOT);
-    write_display(NULL, BOT_H);
+}
+
+// Checks for custom glyphs that require their own screen
+void check_special_glyph(UI_GLYPH_TYPES g)
+{
+    switch (g) {
+    case GLYPH_IOTA:
+        ui_set_screen(SCREEN_IOTA);
+        break;
+    case GLYPH_BACK:
+        ui_set_screen(SCREEN_BACK);
+        break;
+    default:
+        return;
+    }
 }
 
 // Turns a single glyph on or off
-void glyph_on(char *c)
+void glyph_on(UI_GLYPH_TYPES g)
 {
-    if (c != NULL)
-        c[0] = '\0';
+    if (g < TOTAL_GLYPHS)
+        ui_glyphs.glyph[g] = '\0';
+    else
+        check_special_glyph(g);
 }
 
-void glyph_off(char *c)
+void glyph_off(UI_GLYPH_TYPES g)
 {
-    if (c != NULL) {
-        c[0] = '.';
-        c[1] = '\0';
-    }
+    if (g < TOTAL_GLYPHS)
+        ui_glyphs.glyph[g] = '.';
 }
 
 void clear_glyphs()
 {
     // turn off all glyphs
-    glyph_off(ui_glyphs.glyph_bar_l);
-    glyph_off(ui_glyphs.glyph_bar_r);
-    glyph_off(ui_glyphs.glyph_cross);
-    glyph_off(ui_glyphs.glyph_check);
-    glyph_off(ui_glyphs.glyph_up);
-    glyph_off(ui_glyphs.glyph_down);
-    glyph_off(ui_glyphs.glyph_warn);
-    glyph_off(ui_glyphs.glyph_load);
-    glyph_off(ui_glyphs.glyph_dash);
+    glyph_off(GLYPH_CONFIRM);
+    glyph_off(GLYPH_UP);
+    glyph_off(GLYPH_DOWN);
+    glyph_off(GLYPH_WARN);
+    glyph_off(GLYPH_LOAD);
+    glyph_off(GLYPH_DASH);
 }
 
 void clear_display()
@@ -129,25 +130,24 @@ void clear_display()
 }
 
 // turns on 2 glyphs (often glyph on left + right)
-void display_glyphs(char *c1, char *c2)
+void display_glyphs(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2)
 {
     clear_glyphs();
 
     // turn on ones we want
-    glyph_on(c1);
-    glyph_on(c2);
+    glyph_on(g1);
+    glyph_on(g2);
 }
 
 // combine glyphs with bars along top for confirm
-void display_glyphs_confirm(char *c1, char *c2)
+void display_glyphs_confirm(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2)
 {
     clear_glyphs();
 
     // turn on ones we want
-    glyph_on(ui_glyphs.glyph_bar_l);
-    glyph_on(ui_glyphs.glyph_bar_r);
-    glyph_on(c1);
-    glyph_on(c2);
+    glyph_on(GLYPH_CONFIRM);
+    glyph_on(g1);
+    glyph_on(g2);
 }
 
 void write_text_array(const char *array, uint8_t len)
@@ -157,14 +157,14 @@ void write_text_array(const char *array, uint8_t len)
 
     if (ui_state.menu_idx > 0) {
         write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
-        glyph_on(ui_glyphs.glyph_up);
+        glyph_on(GLYPH_UP);
     }
 
     write_display(array + (TEXT_LEN * ui_state.menu_idx), MID);
 
     if (ui_state.menu_idx < len - 1) {
         write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
-        glyph_on(ui_glyphs.glyph_down);
+        glyph_on(GLYPH_DOWN);
     }
 }
 
@@ -303,9 +303,9 @@ void display_advanced_tx_value()
 
     // display_value returns true if readable form is possible
     if (display_value(ui_state.val, BOT))
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
     else
-        display_glyphs(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs(GLYPH_UP, GLYPH_DOWN);
 }
 
 void display_advanced_tx_address()
@@ -324,7 +324,7 @@ void display_advanced_tx_address()
     // copy the remaining 9 chars in the buffer
     memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
 
-    display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+    display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 }
 
 uint8_t get_tx_arr_sz()
@@ -359,71 +359,4 @@ uint8_t menu_to_tx_idx()
 
     // j will be incremented one beyond our desired index
     return j - 1;
-}
-
-/* ----------- BUILDING MENU / TEXT ARRAY ------------- */
-void get_init_menu(char *msg)
-{
-    memset(msg, '\0', MENU_INIT_LEN * TEXT_LEN);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * TEXT_LEN), "WARNING!");
-    strcpy(msg + (i++ * TEXT_LEN), "IOTA is not like");
-    strcpy(msg + (i++ * TEXT_LEN), "other cryptos!");
-    strcpy(msg + (i++ * TEXT_LEN), "Please visit");
-    strcpy(msg + (i++ * TEXT_LEN), "iotasec.info");
-    strcpy(msg + (i++ * TEXT_LEN), "for more info.");
-}
-
-void get_welcome_menu(char *msg)
-{
-    memset(msg, '\0', MENU_WELCOME_LEN * TEXT_LEN);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * TEXT_LEN), "IOTA");
-    strcpy(msg + (i++ * TEXT_LEN), "About");
-    strcpy(msg + (i++ * TEXT_LEN), "Exit App");
-}
-
-void get_about_menu(char *msg)
-{
-    memset(msg, '\0', MENU_ABOUT_LEN * TEXT_LEN);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * TEXT_LEN), "Version");
-    strcpy(msg + (i++ * TEXT_LEN), "More Info");
-    strcpy(msg + (i++ * TEXT_LEN), "Back");
-}
-
-void get_more_info_menu(char *msg)
-{
-    memset(msg, '\0', MENU_MORE_INFO_LEN * TEXT_LEN);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * TEXT_LEN), "Please visit");
-    strcpy(msg + (i++ * TEXT_LEN), "iotasec.info");
-    strcpy(msg + (i++ * TEXT_LEN), "for more info.");
-}
-
-void get_address_menu(char *msg)
-{
-    // address is 81 characters long
-    memset(msg, '\0', MENU_ADDR_LEN * TEXT_LEN);
-
-    uint8_t i = 0, j = 0, c_cpy = 6;
-
-    // 13 chunks of 6 characters
-    for (; i < MENU_ADDR_LEN; i++) {
-        strncpy(msg + (i * TEXT_LEN), ui_state.addr + (j++ * 6), c_cpy);
-        msg[i * TEXT_LEN + 6] = ' ';
-
-        if (i == MENU_ADDR_LEN - 1)
-            c_cpy = 3;
-
-        strncpy(msg + (i * TEXT_LEN) + 7, ui_state.addr + (j++ * 6), c_cpy);
-    }
 }

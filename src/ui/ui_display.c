@@ -3,47 +3,62 @@
 #include "common.h"
 #include "ui.h"
 #include "ui_types.h"
+#include "ui_text.h"
 #include "ui_misc.h"
 
 void display_init()
 {
+    ui_set_screen(SCREEN_MENU);
+
     // write the actual menu
     char msg[MENU_INIT_LEN * TEXT_LEN];
     get_init_menu(msg);
     write_text_array(msg, MENU_INIT_LEN);
 
     // special override display states
-    if (ui_state.menu_idx == 0)
-        glyph_on(ui_glyphs.glyph_warn);
-    if (ui_state.menu_idx == MENU_INIT_LEN - 1) {
-        display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+    switch (ui_state.menu_idx) {
+
+    case 0: // first menu entry
+        glyph_on(GLYPH_WARN);
+        break;
+    case MENU_INIT_LAST:
+        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
+        break;
     }
 }
 
-void display_welcome()
+void display_main_menu()
 {
+    ui_set_screen(SCREEN_MENU);
+
     // write the actual menu
-    char msg[MENU_WELCOME_LEN * TEXT_LEN];
-    get_welcome_menu(msg);
-    write_text_array(msg, MENU_WELCOME_LEN);
+    char msg[MENU_MAIN_LEN * TEXT_LEN];
+    get_main_menu(msg);
+    write_text_array(msg, MENU_MAIN_LEN);
+
+    // Turn off menu effect
+    write_display(NULL, TOP_H);
+    write_display(NULL, BOT_H);
 
     // special override display states
     switch (ui_state.menu_idx) {
-        // turn off BOT_H
-    case 0:
-        display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
-    case MENU_WELCOME_LEN - 2:
-        write_display(NULL, BOT_H);
+
+    case MENU_MAIN_CONNECT:
+        display_glyphs_confirm(GLYPH_IOTA, GLYPH_DOWN);
+
+        write_display("IOTA", MID);
         break;
-        // turn off TOP_H
-    case MENU_WELCOME_LEN - 1:
-        write_display(NULL, TOP_H);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
+
+    case MENU_MAIN_EXIT:
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DASH);
+        break;
     }
 }
 
 void display_about()
 {
+    ui_set_screen(SCREEN_MENU);
+
     // write the actual menu
     char msg[MENU_ABOUT_LEN * TEXT_LEN];
     get_about_menu(msg);
@@ -51,34 +66,45 @@ void display_about()
 
     // special override display states
     switch (ui_state.menu_idx) {
-    case MENU_ABOUT_LEN - 2:
+
+    case MENU_ABOUT_MORE_INFO:
+        // turn off BOT_H
         write_display(NULL, BOT_H);
         break;
+
+    case MENU_ABOUT_BACK:
         // turn off TOP_H
-    case MENU_ABOUT_LEN - 1:
         write_display(NULL, TOP_H);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_dash);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_BACK);
     }
 }
 
 void display_version()
 {
+    ui_set_screen(SCREEN_MENU);
+
     clear_display();
     write_display(APPVERSION, MID);
 
-    display_glyphs_confirm(ui_glyphs.glyph_dash, NULL);
+    display_glyphs_confirm(GLYPH_BACK, GLYPH_NONE);
 }
 
 void display_more_info()
 {
+    ui_set_screen(SCREEN_MENU);
+
     // write the actual menu
     char msg[MENU_MORE_INFO_LEN * TEXT_LEN];
     get_more_info_menu(msg);
     write_text_array(msg, MENU_MORE_INFO_LEN);
+
+    glyph_on(GLYPH_CONFIRM);
 }
 
 void display_bip_path()
 {
+    ui_set_screen(SCREEN_TITLE);
+
     clear_display();
 
     char *msg[] = {ui_text.top_str, ui_text.bot_str};
@@ -119,34 +145,39 @@ void display_bip_path()
         msg[row][chars_written] = '\0';
     }
 
-    display_glyphs_confirm(ui_glyphs.glyph_up, NULL);
+    display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
 }
 
 void display_addr()
 {
+    ui_set_screen(SCREEN_MENU);
+
     // write the actual menu
     char msg[MENU_ADDR_LEN * TEXT_LEN];
     get_address_menu(msg);
     write_text_array(msg, MENU_ADDR_LEN);
 
-    glyph_on(ui_glyphs.glyph_bar_l);
-    glyph_on(ui_glyphs.glyph_bar_r);
+    glyph_on(GLYPH_CONFIRM);
 
     // special overrides
+
+    // if DISP_ADDR then above is actually checksum screen
     if (ui_state.menu_idx == 0 && ui_state.state == STATE_DISP_ADDR)
-        glyph_on(ui_glyphs.glyph_up);
+        glyph_on(GLYPH_UP);
 
     // add down arrow to show bip path, don't show
     // bip path on output addr of a tx
-    if (ui_state.menu_idx == MENU_ADDR_LEN - 1 &&
+    if (ui_state.menu_idx == MENU_ADDR_LAST &&
         !(ui_state.backup_state == STATE_PROMPT_TX &&
           ui_state.backup_menu_idx == 1)) {
-        glyph_on(ui_glyphs.glyph_down);
+        glyph_on(GLYPH_DOWN);
     }
 }
 
 void display_addr_chk()
 {
+    ui_set_screen(SCREEN_TITLE);
+
     clear_display();
 
     char abbrv[14];
@@ -158,7 +189,7 @@ void display_addr_chk()
     // copy the remaining 9 chars in the buffer
     os_memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
 
-    display_glyphs_confirm(NULL, ui_glyphs.glyph_down);
+    display_glyphs_confirm(GLYPH_NONE, GLYPH_DOWN);
 }
 
 void display_tx_addr()
@@ -169,18 +200,27 @@ void display_tx_addr()
 
 void display_prompt_tx()
 {
+    // for approve/deny
+    ui_set_screen(SCREEN_MENU);
+
     clear_display();
 
-    if (ui_state.menu_idx == get_tx_arr_sz() - 2) {
+    const uint8_t tx_array_sz = get_tx_arr_sz();
+
+    // can't use switch statement because array sz isn't known
+    if (ui_state.menu_idx == MENU_TX_APPROVE) {
         write_display("Approve", MID);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
-    else if (ui_state.menu_idx == get_tx_arr_sz() - 1) {
+    else if (ui_state.menu_idx == MENU_TX_DENY) {
         write_display("Deny", MID);
-        display_glyphs_confirm(ui_glyphs.glyph_up, ui_glyphs.glyph_down);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
+
+    // if not approve/deny, it will be a title screen (top/bottom)
+    ui_set_screen(SCREEN_TITLE);
 
     // even indices (not include approve/deny)
     // will be amounts, odd will be addr
@@ -195,5 +235,5 @@ void display_unknown_state()
     clear_display();
     write_display("UI ERROR", MID);
 
-    display_glyphs_confirm(NULL, NULL);
+    display_glyphs_confirm(GLYPH_NONE, GLYPH_NONE);
 }

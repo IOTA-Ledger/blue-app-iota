@@ -6,6 +6,8 @@
 #include "ui_misc.h"
 #include "ui_buttons.h"
 #include "ui_display.h"
+#include "ui_elements.h"
+#include "glyphs.h"
 
 #include "iota/addresses.h"
 
@@ -13,78 +15,68 @@ UI_TEXT_CTX ui_text;
 UI_GLYPH_CTX ui_glyphs;
 UI_STATE_CTX ui_state;
 
+UI_SCREENS current_screen;
+
 // ----------- local function prototypes
 static void ui_transition_state(unsigned int button_mask);
 static void ui_build_display(void);
 
-static unsigned int bagl_ui_nanos_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_title_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_menu_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_iota_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_back_screen_button(unsigned int, unsigned int);
 
 // *************************
 // Ledger Nano S specific UI
 // *************************
 // one dynamic screen that changes based on the ui state
 
-// clang-format off
-static const bagl_element_t bagl_ui_nanos_screen[] = {
-    // {type, userid, x, y, width, height, stroke, radius, fill,
-    // fgcolor, bgcolor, fontid, iconid}, text .....
-    {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
-        0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},
+// screen for title on top, info on bottom
+static const bagl_element_t bagl_ui_title_screen[] = {
+    SCREEN_CLEAR, SCREEN_MSG_TOP, SCREEN_MSG_BOT, SCREEN_GLYPHS_ALL};
 
-    {{BAGL_LABELINE, 0x01, 0, 3, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.half_top, 0, 0, 0, NULL, NULL, NULL},
+// screen for info in the middle, and half text elements above and below (menu
+// effect)
+static const bagl_element_t bagl_ui_menu_screen[] = {
+    SCREEN_CLEAR, SCREEN_MSG_TOP_HALF, SCREEN_MSG_MID, SCREEN_MSG_BOT_HALF,
+    SCREEN_GLYPHS_ALL};
 
-    {{BAGL_LABELINE, 0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.top_str, 0, 0, 0, NULL, NULL, NULL},
+// screen for displaying IOTA icon
+static const bagl_element_t bagl_ui_iota_screen[] = {
+    SCREEN_CLEAR,         SCREEN_MSG_MID,    SCREEN_UNDERLINE,
+    SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_IOTA, SCREEN_GLYPH_DOWN};
 
-    {{BAGL_LABELINE, 0x01, 0, 19, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_LABELINE, 0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_LABELINE, 0x01, 0, 36, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-        ui_text.half_bot, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, ui_glyphs.glyph_bar_l, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 117, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LESS}, ui_glyphs.glyph_bar_r, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_CROSS}, ui_glyphs.glyph_cross, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_CHECK}, ui_glyphs.glyph_check, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0,
-        BAGL_GLYPH_ICON_UP}, ui_glyphs.glyph_up, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DOWN}, ui_glyphs.glyph_down, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_WARNING_BADGE}, ui_glyphs.glyph_warn, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 9, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_LOADING_BADGE}, ui_glyphs.glyph_load, 0, 0, 0, NULL, NULL, NULL},
-
-    {{BAGL_ICON, 0x00, 24, 12, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-        BAGL_GLYPH_ICON_DASHBOARD_BADGE}, ui_glyphs.glyph_dash, 0, 0, 0, NULL, NULL, NULL}};
-// clang-format on
+// screen for displaying back icon
+static const bagl_element_t bagl_ui_back_screen[] = {
+    SCREEN_CLEAR,      SCREEN_MSG_TOP_HALF,  SCREEN_MSG_MID,
+    SCREEN_GLYPH_BACK, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP};
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
  ---------------------------------------------------------
  --------------------------------------------------------- */
+void ui_set_screen(UI_SCREENS s)
+{
+    current_screen = s;
+}
+
 void ui_render()
 {
-    UX_DISPLAY(bagl_ui_nanos_screen, NULL);
+    switch (current_screen) {
+    case SCREEN_TITLE:
+        UX_DISPLAY(bagl_ui_title_screen, NULL);
+        break;
+    case SCREEN_MENU:
+        UX_DISPLAY(bagl_ui_menu_screen, NULL);
+        break;
+    case SCREEN_IOTA:
+        UX_DISPLAY(bagl_ui_iota_screen, NULL);
+        break;
+    case SCREEN_BACK:
+        UX_DISPLAY(bagl_ui_back_screen, NULL);
+        break;
+    default:
+        os_sched_exit(0);
+    }
 }
 
 void ui_force_draw()
@@ -134,22 +126,32 @@ void ui_init(bool flash_is_init)
     ctx_initialize();
 
     if (flash_is_init) {
-        ui_state.state = STATE_WELCOME;
-        ui_state.backup_state = STATE_WELCOME;
+        ui_state.state = STATE_MAIN_MENU;
+        ui_state.backup_state = STATE_MAIN_MENU;
     }
     else {
         ui_state.state = STATE_INIT;
         ui_state.backup_state = STATE_INIT;
     }
 
+    ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
+
     ui_build_display();
+
+    if (ui_state.state == STATE_MAIN_MENU) {
+        // seed_set flag isn't registering properly upon app initial launch
+        // so make sure it starts as "not connected"
+        write_display("Connect To", TOP);
+        write_display("Wallet", BOT);
+    }
+
     ui_render();
 }
 
 // Entry points for main to modify display
-void ui_display_welcome()
+void ui_display_main_menu()
 {
-    state_go(STATE_WELCOME, 0);
+    state_go(STATE_MAIN_MENU, 0);
     backup_state();
 
     ui_build_display();
@@ -161,11 +163,12 @@ void ui_display_getting_addr()
     clear_display();
     write_display("    Getting Addr...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -176,11 +179,12 @@ void ui_display_validating()
     clear_display();
     write_display("Validating...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -191,11 +195,12 @@ void ui_display_recv()
     clear_display();
     write_display("Receiving TX...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -206,11 +211,12 @@ void ui_display_signing()
     clear_display();
     write_display("Signing TX...", MID);
 
-    display_glyphs(ui_glyphs.glyph_load, NULL);
+    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -236,7 +242,7 @@ void ui_sign_tx()
 
 void ui_reset()
 {
-    state_go(STATE_WELCOME, 0);
+    state_go(STATE_MAIN_MENU, 0);
 
     ui_build_display();
     ui_render();
@@ -254,18 +260,14 @@ void ui_restore()
     ui_force_draw();
 }
 
-
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------
  ---------------------------------------------------------------
  --------------------------------------------------------------- */
-static unsigned int
-bagl_ui_nanos_screen_button(unsigned int button_mask,
-                            unsigned int button_mask_counter)
-{
-    ui_transition_state(button_mask);
-
-    return 0;
-}
+// macros for button functions
+BUTTON_FUNCTION(title)
+BUTTON_FUNCTION(menu)
+BUTTON_FUNCTION(iota)
+BUTTON_FUNCTION(back)
 
 static uint8_t ui_translate_mask(unsigned int button_mask)
 {
@@ -296,8 +298,8 @@ static void ui_handle_button(uint8_t button_mask)
         array_sz = button_init(button_mask);
         break;
         /* ------------ STATE OPTIONS -------------- */
-    case STATE_WELCOME:
-        array_sz = button_welcome(button_mask);
+    case STATE_MAIN_MENU:
+        array_sz = button_main_menu(button_mask);
         break;
         /* ------------ STATE ABOUT -------------- */
     case STATE_ABOUT:
@@ -321,8 +323,8 @@ static void ui_handle_button(uint8_t button_mask)
         break;
         /* ------------ STATE DISPLAY CHECKSUM -------------- */
     case STATE_DISP_ADDR_CHK:
-        array_sz = button_disp_addr_chk(button_mask);
-        break;
+        button_disp_addr_chk(button_mask);
+        return;
         /* ------------ STATE MENU_TX_ADDRESS -------------- */
     case STATE_TX_ADDR:
         array_sz = button_tx_addr(button_mask);
@@ -334,11 +336,12 @@ static void ui_handle_button(uint8_t button_mask)
     case STATE_IGNORE:
         return;
         /* ------------ DEFAULT -------------- */
-    default: // fall through and return
+    default: // this would be an unkown state/error
         ui_state.menu_idx = 0;
         return;
     }
 
+    // incr/decr menu index
     button_handle_menu_idx(button_mask, array_sz);
 }
 
@@ -354,9 +357,9 @@ static void ui_build_display()
     case STATE_INIT:
         display_init();
         break;
-        /* ------------ WELCOME MENU -------------- */
-    case STATE_WELCOME:
-        display_welcome();
+        /* ------------ MAIN MENU -------------- */
+    case STATE_MAIN_MENU:
+        display_main_menu();
         break;
         /* ------------ ABOUT -------------- */
     case STATE_ABOUT:
