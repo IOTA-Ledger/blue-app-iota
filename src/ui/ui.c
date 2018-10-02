@@ -33,40 +33,23 @@ static unsigned int bagl_ui_back_screen_button(unsigned int, unsigned int);
 
 // screen for title on top, info on bottom
 static const bagl_element_t bagl_ui_title_screen[] = {
-    SCREEN_CLEAR,
-    SCREEN_MSG_TOP,
-    SCREEN_MSG_BOT,
-    SCREEN_GLYPHS_ALL
-};
+    SCREEN_CLEAR, SCREEN_MSG_TOP, SCREEN_MSG_BOT, SCREEN_GLYPHS_ALL};
 
-// screen for info in the middle, and half text elements above and below (menu effect)
+// screen for info in the middle, and half text elements above and below (menu
+// effect)
 static const bagl_element_t bagl_ui_menu_screen[] = {
-    SCREEN_CLEAR,
-    SCREEN_MSG_TOP_HALF,
-    SCREEN_MSG_MID,
-    SCREEN_MSG_BOT_HALF,
-    SCREEN_GLYPHS_ALL
-};
+    SCREEN_CLEAR, SCREEN_MSG_TOP_HALF, SCREEN_MSG_MID, SCREEN_MSG_BOT_HALF,
+    SCREEN_GLYPHS_ALL};
 
 // screen for displaying IOTA icon
 static const bagl_element_t bagl_ui_iota_screen[] = {
-    SCREEN_CLEAR,
-    SCREEN_MSG_MID,
-    SCREEN_UNDERLINE,
-    SCREEN_GLYPH_CONFIRM,
-    SCREEN_GLYPH_IOTA,
-    SCREEN_GLYPH_DOWN
-};
+    SCREEN_CLEAR,         SCREEN_MSG_MID,    SCREEN_UNDERLINE,
+    SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_IOTA, SCREEN_GLYPH_DOWN};
 
 // screen for displaying back icon
 static const bagl_element_t bagl_ui_back_screen[] = {
-    SCREEN_CLEAR,
-    SCREEN_MSG_TOP_HALF,
-    SCREEN_MSG_MID,
-    SCREEN_GLYPH_BACK,
-    SCREEN_GLYPH_CONFIRM,
-    SCREEN_GLYPH_UP
-};
+    SCREEN_CLEAR,      SCREEN_MSG_TOP_HALF,  SCREEN_MSG_MID,
+    SCREEN_GLYPH_BACK, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP};
 
 /* ------------------- DISPLAY UI FUNCTIONS -------------
  ---------------------------------------------------------
@@ -78,21 +61,21 @@ void ui_set_screen(UI_SCREENS s)
 
 void ui_render()
 {
-    switch(current_screen) {
-        case SCREEN_TITLE:
-            UX_DISPLAY(bagl_ui_title_screen, NULL);
-            break;
-        case SCREEN_MENU:
-            UX_DISPLAY(bagl_ui_menu_screen, NULL);
-            break;
-        case SCREEN_IOTA:
-            UX_DISPLAY(bagl_ui_iota_screen, NULL);
-            break;
-        case SCREEN_BACK:
-            UX_DISPLAY(bagl_ui_back_screen, NULL);
-            break;
-        default:
-            os_sched_exit(0);
+    switch (current_screen) {
+    case SCREEN_TITLE:
+        UX_DISPLAY(bagl_ui_title_screen, NULL);
+        break;
+    case SCREEN_MENU:
+        UX_DISPLAY(bagl_ui_menu_screen, NULL);
+        break;
+    case SCREEN_IOTA:
+        UX_DISPLAY(bagl_ui_iota_screen, NULL);
+        break;
+    case SCREEN_BACK:
+        UX_DISPLAY(bagl_ui_back_screen, NULL);
+        break;
+    default:
+        os_sched_exit(0);
     }
 }
 
@@ -154,14 +137,14 @@ void ui_init(bool flash_is_init)
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
 
     ui_build_display();
-    
-    if(ui_state.state == STATE_MAIN_MENU) {
+
+    if (ui_state.state == STATE_MAIN_MENU) {
         // seed_set flag isn't registering properly upon app initial launch
         // so make sure it starts as "not connected"
         write_display("Connect To", TOP);
         write_display("Wallet", BOT);
     }
-    
+
     ui_render();
 }
 
@@ -289,14 +272,14 @@ BUTTON_FUNCTION(back)
 static uint8_t ui_translate_mask(unsigned int button_mask)
 {
     switch (button_mask) {
-        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            return BUTTON_L;
-        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            return BUTTON_R;
-        case BUTTON_EVT_RELEASED | BUTTON_RIGHT | BUTTON_LEFT:
-            return BUTTON_B;
-        default:
-            return BUTTON_BAD;
+    case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+        return BUTTON_L;
+    case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+        return BUTTON_R;
+    case BUTTON_EVT_RELEASED | BUTTON_RIGHT | BUTTON_LEFT:
+        return BUTTON_B;
+    default:
+        return BUTTON_BAD;
     }
 }
 

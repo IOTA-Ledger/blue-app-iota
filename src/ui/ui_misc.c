@@ -28,12 +28,6 @@ void backup_state()
     ui_state.backup_menu_idx = ui_state.menu_idx;
 }
 
-void set_backup(uint8_t state, uint8_t menu_idx)
-{
-    ui_state.backup_state = state;
-    ui_state.backup_menu_idx = menu_idx;
-}
-
 void restore_state()
 {
     state_return(ui_state.backup_state, ui_state.backup_menu_idx);
@@ -91,15 +85,15 @@ static void clear_text()
 // Checks for custom glyphs that require their own screen
 void check_special_glyph(UI_GLYPH_TYPES g)
 {
-    switch(g) {
-        case GLYPH_IOTA:
-            ui_set_screen(SCREEN_IOTA);
-            break;
-        case GLYPH_BACK:
-            ui_set_screen(SCREEN_BACK);
-            break;
-        default:
-            return;
+    switch (g) {
+    case GLYPH_IOTA:
+        ui_set_screen(SCREEN_IOTA);
+        break;
+    case GLYPH_BACK:
+        ui_set_screen(SCREEN_BACK);
+        break;
+    default:
+        return;
     }
 }
 
@@ -127,7 +121,6 @@ void clear_glyphs()
     glyph_off(GLYPH_WARN);
     glyph_off(GLYPH_LOAD);
     glyph_off(GLYPH_DASH);
-    
 }
 
 void clear_display()

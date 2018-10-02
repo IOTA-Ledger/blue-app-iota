@@ -9,15 +9,15 @@
 void display_init()
 {
     ui_set_screen(SCREEN_MENU);
-    
+
     // write the actual menu
     char msg[MENU_INIT_LEN * TEXT_LEN];
     get_init_menu(msg);
     write_text_array(msg, MENU_INIT_LEN);
 
     // special override display states
-    switch(ui_state.menu_idx) {
-            
+    switch (ui_state.menu_idx) {
+
     case 0: // first menu entry
         glyph_on(GLYPH_WARN);
         break;
@@ -30,25 +30,25 @@ void display_init()
 void display_main_menu()
 {
     ui_set_screen(SCREEN_MENU);
-    
+
     // write the actual menu
     char msg[MENU_MAIN_LEN * TEXT_LEN];
     get_main_menu(msg);
     write_text_array(msg, MENU_MAIN_LEN);
-    
+
     // Turn off menu effect
     write_display(NULL, TOP_H);
     write_display(NULL, BOT_H);
 
     // special override display states
     switch (ui_state.menu_idx) {
-            
+
     case MENU_MAIN_CONNECT:
         display_glyphs_confirm(GLYPH_IOTA, GLYPH_DOWN);
-            
+
         write_display("IOTA", MID);
         break;
-            
+
     case MENU_MAIN_EXIT:
         display_glyphs_confirm(GLYPH_UP, GLYPH_DASH);
         break;
@@ -58,7 +58,7 @@ void display_main_menu()
 void display_about()
 {
     ui_set_screen(SCREEN_MENU);
-    
+
     // write the actual menu
     char msg[MENU_ABOUT_LEN * TEXT_LEN];
     get_about_menu(msg);
@@ -82,7 +82,7 @@ void display_about()
 void display_version()
 {
     ui_set_screen(SCREEN_MENU);
-    
+
     clear_display();
     write_display(APPVERSION, MID);
 
@@ -92,19 +92,19 @@ void display_version()
 void display_more_info()
 {
     ui_set_screen(SCREEN_MENU);
-    
+
     // write the actual menu
     char msg[MENU_MORE_INFO_LEN * TEXT_LEN];
     get_more_info_menu(msg);
     write_text_array(msg, MENU_MORE_INFO_LEN);
-    
+
     glyph_on(GLYPH_CONFIRM);
 }
 
 void display_bip_path()
 {
     ui_set_screen(SCREEN_TITLE);
-    
+
     clear_display();
 
     char *msg[] = {ui_text.top_str, ui_text.bot_str};
@@ -151,7 +151,7 @@ void display_bip_path()
 void display_addr()
 {
     ui_set_screen(SCREEN_MENU);
-    
+
     // write the actual menu
     char msg[MENU_ADDR_LEN * TEXT_LEN];
     get_address_menu(msg);
@@ -160,7 +160,7 @@ void display_addr()
     glyph_on(GLYPH_CONFIRM);
 
     // special overrides
-    
+
     // if DISP_ADDR then above is actually checksum screen
     if (ui_state.menu_idx == 0 && ui_state.state == STATE_DISP_ADDR)
         glyph_on(GLYPH_UP);
@@ -177,7 +177,7 @@ void display_addr()
 void display_addr_chk()
 {
     ui_set_screen(SCREEN_TITLE);
-    
+
     clear_display();
 
     char abbrv[14];
@@ -202,23 +202,23 @@ void display_prompt_tx()
 {
     // for approve/deny
     ui_set_screen(SCREEN_MENU);
-    
+
     clear_display();
-    
+
     const uint8_t tx_array_sz = get_tx_arr_sz();
 
     // can't use switch statement because array sz isn't known
-    if(ui_state.menu_idx == MENU_TX_APPROVE) {
+    if (ui_state.menu_idx == MENU_TX_APPROVE) {
         write_display("Approve", MID);
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
-    else if(ui_state.menu_idx == MENU_TX_DENY) {
+    else if (ui_state.menu_idx == MENU_TX_DENY) {
         write_display("Deny", MID);
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
-    
+
     // if not approve/deny, it will be a title screen (top/bottom)
     ui_set_screen(SCREEN_TITLE);
 

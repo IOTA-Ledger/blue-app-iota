@@ -18,12 +18,7 @@
 typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
 
 // UI SCREENS
-typedef enum {
-    SCREEN_TITLE,
-    SCREEN_MENU,
-    SCREEN_IOTA,
-    SCREEN_BACK
-} UI_SCREENS;
+typedef enum { SCREEN_TITLE, SCREEN_MENU, SCREEN_IOTA, SCREEN_BACK } UI_SCREENS;
 
 // UI STATES
 typedef enum {
@@ -80,7 +75,6 @@ typedef enum {
     MENU_ABOUT_BACK,
     MENU_ABOUT_LEN
 } MENU_ABOUT_ENTRIES;
-
 
 
 typedef struct UI_TEXT_CTX {

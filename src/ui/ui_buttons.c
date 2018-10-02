@@ -51,16 +51,16 @@ uint8_t button_about(uint8_t button_mask)
     uint8_t array_sz = MENU_ABOUT_LEN - 1;
 
     if (button_mask == BUTTON_B) {
-        switch(ui_state.menu_idx) {
-            
+        switch (ui_state.menu_idx) {
+
         case MENU_ABOUT_VERSION:
             state_go(STATE_VERSION, 0);
             break;
-            
+
         case MENU_ABOUT_MORE_INFO:
             state_go(STATE_MORE_INFO, 0);
             break;
-            
+
         case MENU_ABOUT_BACK:
             state_go(STATE_MAIN_MENU, MENU_MAIN_ABOUT);
             break;
@@ -180,14 +180,14 @@ void button_prompt_tx(uint8_t button_mask)
                  ui_state.menu_idx < MENU_TX_APPROVE);
     }
     else if (button_mask == BUTTON_B) {
-        
+
         // can't use switch statement because array sz isn't known
-        if(ui_state.menu_idx == MENU_TX_DENY) {
+        if (ui_state.menu_idx == MENU_TX_DENY) {
             user_deny_tx();
             ui_state.display_full_value = false;
             state_go(STATE_MAIN_MENU, 0);
         }
-        else if(ui_state.menu_idx == MENU_TX_APPROVE) {
+        else if (ui_state.menu_idx == MENU_TX_APPROVE) {
             user_sign_tx();
             ui_state.display_full_value = false;
         }
