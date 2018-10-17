@@ -31,7 +31,7 @@ before_deploy:
 - gpg --import ./contrib/private.key && gpg --detach-sign -au IOTA-Ledger bin/app.hex
 - zip -j bin/app-${TRAVIS_TAG}.zip bin/app.hex bin/app.hex.asc
 - echo "Packing blue-app-iota-loader"
-- zip -j iota-loader-python-${TRAVIS_TAG}.zip bin/app.hex contrib/blue-app-iota-loader/README.md contrib/blue-app-iota-loader/install_env.sh contrib/blue-app-iota-loader/download_app.py contrib/blue-app-iota-loader/delete_app.py
+- zip -j iota-loader-python-${TRAVIS_TAG}.zip bin/app.hex contrib/blue-app-iota-loader/README.md contrib/blue-app-iota-loader/install_app.py contrib/blue-app-iota-loader/get_ledger_version.py contrib/blue-app-iota-loader/delete_app.py
 deploy:
   provider: releases
   api_key:
