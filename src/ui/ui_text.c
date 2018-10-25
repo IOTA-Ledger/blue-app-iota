@@ -12,9 +12,9 @@ void get_init_menu(char *msg)
 
     strcpy(msg + (i++ * TEXT_LEN), "WARNING!");
     strcpy(msg + (i++ * TEXT_LEN), "IOTA is not like");
-    strcpy(msg + (i++ * TEXT_LEN), "other cryptos!");
+    strcpy(msg + (i++ * TEXT_LEN), "other cryptos.");
     strcpy(msg + (i++ * TEXT_LEN), "Please visit");
-    strcpy(msg + (i++ * TEXT_LEN), "iotasec.info");
+    strcpy(msg + (i++ * TEXT_LEN), "iota.org/sec");
     strcpy(msg + (i++ * TEXT_LEN), "for more info.");
 }
 
@@ -47,7 +47,7 @@ void get_more_info_menu(char *msg)
     uint8_t i = 0;
 
     strcpy(msg + (i++ * TEXT_LEN), "Please visit");
-    strcpy(msg + (i++ * TEXT_LEN), "iotasec.info");
+    strcpy(msg + (i++ * TEXT_LEN), "iota.org/sec");
     strcpy(msg + (i++ * TEXT_LEN), "for more info.");
 }
 
