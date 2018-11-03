@@ -51,7 +51,7 @@ typedef enum {
 
 // Size of Menu
 #define MENU_INIT_LEN 6
-#define MENU_ADDR_LEN 7
+#define MENU_ADDR_LEN 8
 #define MENU_MORE_INFO_LEN 3
 
 #define MENU_INIT_LAST MENU_INIT_LEN - 1

@@ -103,49 +103,59 @@ void display_more_info()
 
 void display_bip_path()
 {
-    ui_set_screen(SCREEN_TITLE);
-
-    clear_display();
-
-    char *msg[] = {ui_text.top_str, ui_text.bot_str};
-
-    int row = 0;
-    size_t chars_written = 0;
-    for (unsigned int i = 0; i < api.bip32_path_length; i++) {
-
-        // this cannot happen, as "2c'/107a'/ffffffff'/\nffffffff'/ffffffff'"
-        // fits exactly into two rows
-        if (row > 1) {
-            THROW(INVALID_STATE);
-        }
-
-        snprintf(msg[row] + chars_written, TEXT_LEN - chars_written, "%x",
-                 api.bip32_path[i] & 0x7fffffff);
-        chars_written = strnlen(msg[row], TEXT_LEN);
-
-        // write apostroph if hardnend
-        if (api.bip32_path[i] & (1u << 31)) {
-            msg[row][chars_written++] = '\'';
-        }
-
-        // write the separator only if not last element
-        if (i < api.bip32_path_length - 1) {
-            msg[row][chars_written++] = '|';
-        }
-
-        // inc row, if there might be not enough space for the next level
-        if (chars_written > TEXT_LEN - 11) {
-            msg[row++][chars_written] = '\0';
-            chars_written = 0;
-        }
+    if(ui_state.menu_idx == 0) {
+        ui_set_screen(SCREEN_MENU);
+        
+        clear_display();
+        
+        write_display("BIP Path:", MID);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
     }
+    else {
+        ui_set_screen(SCREEN_TITLE);
 
-    // make sure that the current row is terminated
-    if (row <= 1) {
-        msg[row][chars_written] = '\0';
+        clear_display();
+
+        char *msg[] = {ui_text.top_str, ui_text.bot_str};
+
+        int row = 0;
+        size_t chars_written = 0;
+        for (unsigned int i = 0; i < api.bip32_path_length; i++) {
+
+            // this cannot happen, as "2c'/107a'/ffffffff'/\nffffffff'/ffffffff'"
+            // fits exactly into two rows
+            if (row > 1) {
+                THROW(INVALID_STATE);
+            }
+
+            snprintf(msg[row] + chars_written, TEXT_LEN - chars_written, "%x",
+                     api.bip32_path[i] & 0x7fffffff);
+            chars_written = strnlen(msg[row], TEXT_LEN);
+
+            // write apostroph if hardnend
+            if (api.bip32_path[i] & (1u << 31)) {
+                msg[row][chars_written++] = '\'';
+            }
+
+            // write the separator only if not last element
+            if (i < api.bip32_path_length - 1) {
+                msg[row][chars_written++] = '|';
+            }
+
+            // inc row, if there might be not enough space for the next level
+            if (chars_written > TEXT_LEN - 11) {
+                msg[row++][chars_written] = '\0';
+                chars_written = 0;
+            }
+        }
+
+        // make sure that the current row is terminated
+        if (row <= 1) {
+            msg[row][chars_written] = '\0';
+        }
+
+        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
     }
-
-    display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
 }
 
 void display_addr()

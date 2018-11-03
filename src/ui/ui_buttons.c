@@ -10,19 +10,20 @@
 #include "storage.h"
 #include "iota/addresses.h"
 
-uint8_t button_init(uint8_t button_mask)
+int8_t button_init(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_INIT_LEN - 1;
 
     if (button_mask == BUTTON_B && ui_state.menu_idx == MENU_INIT_LAST) {
         storage_initialize();
         state_go(STATE_MAIN_MENU, 0);
+        return -1;
     }
 
     return array_sz;
 }
 
-uint8_t button_main_menu(uint8_t button_mask)
+int8_t button_main_menu(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_MAIN_LEN - 1;
 
@@ -31,22 +32,22 @@ uint8_t button_main_menu(uint8_t button_mask)
 
         case MENU_MAIN_CONNECT:
             state_go(STATE_EXIT, 0);
-            break;
+            return -1;
 
         case MENU_MAIN_ABOUT:
             state_go(STATE_ABOUT, 0);
-            break;
+            return -1;
 
         case MENU_MAIN_EXIT:
             state_go(STATE_EXIT, 0);
-            break;
+            return -1;
         }
     }
 
     return array_sz;
 }
 
-uint8_t button_about(uint8_t button_mask)
+int8_t button_about(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ABOUT_LEN - 1;
 
@@ -55,15 +56,15 @@ uint8_t button_about(uint8_t button_mask)
 
         case MENU_ABOUT_VERSION:
             state_go(STATE_VERSION, 0);
-            break;
+            return -1;
 
         case MENU_ABOUT_MORE_INFO:
             state_go(STATE_MORE_INFO, 0);
-            break;
+            return -1;
 
         case MENU_ABOUT_BACK:
             state_go(STATE_MAIN_MENU, MENU_MAIN_ABOUT);
-            break;
+            return -1;
         }
     }
 
@@ -78,44 +79,57 @@ void button_version(uint8_t button_mask)
     }
 }
 
-uint8_t button_more_info(uint8_t button_mask)
+int8_t button_more_info(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_MORE_INFO_LEN - 1;
 
     if (button_mask == BUTTON_B) {
         // return to About -> More Info
         state_go(STATE_ABOUT, MENU_ABOUT_MORE_INFO);
+        return -1;
     }
 
     return array_sz;
 }
 
-void button_bip_path(uint8_t button_mask)
+int8_t button_bip_path(uint8_t button_mask)
 {
-    if (button_mask == BUTTON_L) {
+    uint8_t array_sz = 1;
+    
+    if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         // we came from tx
-        if (ui_state.backup_state == STATE_PROMPT_TX)
+        if (ui_state.backup_state == STATE_PROMPT_TX) {
             state_go(STATE_TX_ADDR, MENU_ADDR_LAST);
-        else // we came from disp_addr
+            return -1;
+        }
+        else { // we came from disp_addr
             state_go(STATE_DISP_ADDR, MENU_ADDR_LAST);
+            return -1;
+        }
     }
     else if (button_mask == BUTTON_B) {
         restore_state();
+        return -1;
     }
+    
+    return array_sz;
 }
 
-uint8_t button_disp_addr(uint8_t button_mask)
+int8_t button_disp_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
 
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         state_go(STATE_DISP_ADDR_CHK, 0);
+        return -1;
     }
     else if (button_mask == BUTTON_R && ui_state.menu_idx == MENU_ADDR_LAST) {
         state_go(STATE_BIP_PATH, 0);
+        return -1;
     }
     else if (button_mask == BUTTON_B) {
         restore_state();
+        return -1;
     }
 
     return array_sz;
@@ -129,7 +143,7 @@ void button_disp_addr_chk(uint8_t button_mask)
         restore_state();
 }
 
-uint8_t button_tx_addr(uint8_t button_mask)
+int8_t button_tx_addr(uint8_t button_mask)
 {
     uint8_t array_sz = MENU_ADDR_LEN - 1;
 
@@ -138,9 +152,11 @@ uint8_t button_tx_addr(uint8_t button_mask)
         !(ui_state.backup_state == STATE_PROMPT_TX &&
           ui_state.backup_menu_idx == 1)) {
         state_go(STATE_BIP_PATH, 0);
+        return -1;
     }
     else if (button_mask == BUTTON_B) {
         restore_state();
+        return -1;
     }
 
     return array_sz;

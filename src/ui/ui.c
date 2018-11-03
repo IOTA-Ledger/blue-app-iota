@@ -290,7 +290,7 @@ static uint8_t ui_translate_mask(unsigned int button_mask)
  --------------------------------------------------- */
 static void ui_handle_button(uint8_t button_mask)
 {
-    uint8_t array_sz;
+    int8_t array_sz;
 
     switch (ui_state.state) {
         /* ------------ STATE INIT -------------- */
@@ -315,8 +315,8 @@ static void ui_handle_button(uint8_t button_mask)
         break;
         /* ------------ STATE BIP PATH -------------- */
     case STATE_BIP_PATH:
-        button_bip_path(button_mask);
-        return;
+        array_sz = button_bip_path(button_mask);
+        break;
         /* ------------ STATE DISPLAY_ADDRESS -------------- */
     case STATE_DISP_ADDR:
         array_sz = button_disp_addr(button_mask);
@@ -342,7 +342,8 @@ static void ui_handle_button(uint8_t button_mask)
     }
 
     // incr/decr menu index
-    button_handle_menu_idx(button_mask, array_sz);
+    if(array_sz >= 0)
+        button_handle_menu_idx(button_mask, array_sz);
 }
 
 /* ----------------------------------------------------
