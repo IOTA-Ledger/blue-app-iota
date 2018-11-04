@@ -118,16 +118,12 @@ unsigned char io_event(unsigned char channel)
         break;
 
     case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-        if (UX_DISPLAYED()) {
-            // do nothing
-        }
-        else {
-            UX_DISPLAYED_EVENT();
-        }
+        UX_DISPLAYED_EVENT({});
         break;
 
         // unknown events are acknowledged
     default:
+        UX_DEFAULT_EVENT();
         break;
     }
 
