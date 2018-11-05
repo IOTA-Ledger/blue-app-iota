@@ -25,6 +25,8 @@ static unsigned int bagl_ui_title_screen_button(unsigned int, unsigned int);
 static unsigned int bagl_ui_menu_screen_button(unsigned int, unsigned int);
 static unsigned int bagl_ui_iota_screen_button(unsigned int, unsigned int);
 static unsigned int bagl_ui_back_screen_button(unsigned int, unsigned int);
+static unsigned int bagl_ui_title_bold_screen_button(unsigned int,
+                                                     unsigned int);
 
 // *************************
 // Ledger Nano S specific UI
@@ -34,6 +36,10 @@ static unsigned int bagl_ui_back_screen_button(unsigned int, unsigned int);
 // screen for title on top, info on bottom
 static const bagl_element_t bagl_ui_title_screen[] = {
     SCREEN_CLEAR, SCREEN_MSG_TOP, SCREEN_MSG_BOT, SCREEN_GLYPHS_ALL};
+
+// screen for title on top info on bottom BOLD
+static const bagl_element_t bagl_ui_title_bold_screen[] = {
+    SCREEN_CLEAR, SCREEN_MSG_TOP_BOLD, SCREEN_MSG_BOT_BOLD, SCREEN_GLYPHS_ALL};
 
 // screen for info in the middle, and half text elements above and below (menu
 // effect)
@@ -64,6 +70,9 @@ void ui_render()
     switch (current_screen) {
     case SCREEN_TITLE:
         UX_DISPLAY(bagl_ui_title_screen, NULL);
+        break;
+    case SCREEN_TITLE_BOLD:
+        UX_DISPLAY(bagl_ui_title_bold_screen, NULL);
         break;
     case SCREEN_MENU:
         UX_DISPLAY(bagl_ui_menu_screen, NULL);
@@ -137,14 +146,6 @@ void ui_init(bool flash_is_init)
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
 
     ui_build_display();
-
-    if (ui_state.state == STATE_MAIN_MENU) {
-        // seed_set flag isn't registering properly upon app initial launch
-        // so make sure it starts as "not connected"
-        write_display("Connect To", TOP);
-        write_display("Wallet", BOT);
-    }
-
     ui_render();
 }
 
@@ -160,15 +161,17 @@ void ui_display_main_menu()
 
 void ui_display_getting_addr()
 {
+    ui_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
-    write_display("    Getting Addr...", MID);
+
+    write_display("    Generating", TOP);
+    write_display("     Address...", BOT);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
-    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -176,15 +179,16 @@ void ui_display_getting_addr()
 
 void ui_display_validating()
 {
+    ui_set_screen(SCREEN_MENU);
     clear_display();
-    write_display("Validating...", MID);
+
+    write_display("    Validating...", MID);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
-    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -192,15 +196,17 @@ void ui_display_validating()
 
 void ui_display_recv()
 {
+    ui_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
-    write_display("Receiving TX...", MID);
+
+    write_display("    Receiving", TOP);
+    write_display("      Transaction...", BOT);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
-    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -208,15 +214,17 @@ void ui_display_recv()
 
 void ui_display_signing()
 {
+    ui_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
-    write_display("Signing TX...", MID);
+
+    write_display("    Signing", TOP);
+    write_display("      Transaction...", BOT);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
     backup_state();
 
     ui_state.state = STATE_IGNORE;
-    ui_set_screen(SCREEN_MENU);
 
     ui_render();
     ui_force_draw();
@@ -265,6 +273,7 @@ void ui_restore()
  --------------------------------------------------------------- */
 // macros for button functions
 BUTTON_FUNCTION(title)
+BUTTON_FUNCTION(title_bold)
 BUTTON_FUNCTION(menu)
 BUTTON_FUNCTION(iota)
 BUTTON_FUNCTION(back)
@@ -342,7 +351,7 @@ static void ui_handle_button(uint8_t button_mask)
     }
 
     // incr/decr menu index
-    if(array_sz >= 0)
+    if (array_sz >= 0)
         button_handle_menu_idx(button_mask, array_sz);
 }
 

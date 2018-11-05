@@ -95,7 +95,7 @@ int8_t button_more_info(uint8_t button_mask)
 int8_t button_bip_path(uint8_t button_mask)
 {
     uint8_t array_sz = 1;
-    
+
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         // we came from tx
         if (ui_state.backup_state == STATE_PROMPT_TX) {
@@ -111,7 +111,7 @@ int8_t button_bip_path(uint8_t button_mask)
         restore_state();
         return -1;
     }
-    
+
     return array_sz;
 }
 

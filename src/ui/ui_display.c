@@ -103,12 +103,12 @@ void display_more_info()
 
 void display_bip_path()
 {
-    if(ui_state.menu_idx == 0) {
+    if (ui_state.menu_idx == 0) {
         ui_set_screen(SCREEN_MENU);
-        
+
         clear_display();
-        
-        write_display("BIP Path:", MID);
+
+        write_display("BIP32 Path:", MID);
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
     }
     else {
@@ -122,8 +122,9 @@ void display_bip_path()
         size_t chars_written = 0;
         for (unsigned int i = 0; i < api.bip32_path_length; i++) {
 
-            // this cannot happen, as "2c'/107a'/ffffffff'/\nffffffff'/ffffffff'"
-            // fits exactly into two rows
+            // this cannot happen, as
+            // "2c'/107a'/ffffffff'/\nffffffff'/ffffffff'" fits exactly into two
+            // rows
             if (row > 1) {
                 THROW(INVALID_STATE);
             }
