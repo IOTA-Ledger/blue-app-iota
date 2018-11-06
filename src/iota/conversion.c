@@ -287,8 +287,14 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
 
 bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 {
-    const bool is_negative = value < 0;
+    os_memset(trits, 0, num_trits);
 
+    // nothing to compute for zero value
+    if (value == 0) {
+        return false;
+    }
+
+    const bool is_negative = value < 0;
     uint64_t v_abs;
     if (value == INT64_MIN) {
         v_abs = INT64_MAX + UINT64_C(1);
@@ -299,8 +305,6 @@ bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
     else {
         v_abs = value;
     }
-
-    os_memset(trits, 0, num_trits);
 
     for (unsigned int i = 0; i < num_trits; i++) {
         if (v_abs == 0) {
