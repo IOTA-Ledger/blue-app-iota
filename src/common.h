@@ -110,7 +110,11 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
 // additional supported features
 #define APP_FLAGS 0
 
-#define CEILING(x, y) (((x) + (y)-1) / (y))
+#define CEILING(x, y)                                                          \
+    ({                                                                         \
+        typeof(y) _y = (y);                                                    \
+        (((x) + _y - 1) / _y);                                                 \
+    })
 
 #define ABS(a)                                                                 \
     ({                                                                         \
