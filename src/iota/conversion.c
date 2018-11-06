@@ -285,31 +285,39 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     trits[242] = 0;
 }
 
-bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits)
+bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 {
     const bool is_negative = value < 0;
-    if (is_negative) {
-        value = -value;
+
+    uint64_t v_abs;
+    if (value == INT64_MIN) {
+        v_abs = INT64_MAX + UINT64_C(1);
+    }
+    else if (is_negative) {
+        v_abs = -value;
+    }
+    else {
+        v_abs = value;
     }
 
     os_memset(trits, 0, num_trits);
 
     for (unsigned int i = 0; i < num_trits; i++) {
-        if (value == 0) {
+        if (v_abs == 0) {
             return false;
         }
 
-        int rem = value % BASE;
-        value = value / BASE;
+        int rem = v_abs % BASE;
+        v_abs = v_abs / BASE;
         if (rem > 1) {
             rem = -1;
-            value += 1;
+            v_abs += 1;
         }
 
         trits[i] = is_negative ? -rem : rem;
     }
 
-    return value != 0;
+    return v_abs != 0;
 }
 /* --------------------- END trits > bigint */
 
