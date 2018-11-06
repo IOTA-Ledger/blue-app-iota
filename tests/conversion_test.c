@@ -168,6 +168,17 @@ static void test_all_zero(void **state)
     assert_chars_equal(chars, ZERO_CHARS);
 }
 
+static void test_all_one(void **state)
+{
+    UNUSED(state);
+
+    static const char ONE_CHARS[NUM_HASH_TRYTES] =
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+        "MMMMMMMMMMM";
+
+    test_chars_via_bytes(ONE_CHARS);
+}
+
 static void test_all_neg_one(void **state)
 {
     UNUSED(state);
@@ -181,7 +192,7 @@ static void test_all_neg_one(void **state)
 
 static void test_random_chars_via_bytes(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     srand(2);
     for (uint i = 0; i < NUM_RANDOM_TESTS; i++) {
@@ -201,6 +212,7 @@ int main(void)
         cmocka_unit_test(test_int64_to_trits_overflow),
         cmocka_unit_test(test_int64_to_trits_int_min),
         cmocka_unit_test(test_all_zero),
+        cmocka_unit_test(test_all_one),
         cmocka_unit_test(test_all_neg_one),
         cmocka_unit_test(test_random_bytes_via_chars),
         cmocka_unit_test(test_random_chars_via_bytes)};
