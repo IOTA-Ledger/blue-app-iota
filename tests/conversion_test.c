@@ -61,6 +61,23 @@ static void test_int64_to_trits_overflow(void **state)
     assert_true(result);
 }
 
+static void test_int64_to_trits_int_min(void **state)
+{
+    UNUSED(state);
+
+    static const int64_t input_value = INT64_MIN;
+    static const trit_t expected_trits[41] = {
+        1,  0,  0,  -1, 1, 0,  1,  -1, -1, 0,  1,  0,  1, 0,
+        -1, 0,  -1, 0,  1, -1, -1, 1,  1,  -1, 0,  -1, 1, 0,
+        0,  -1, -1, -1, 0, 0,  -1, -1, -1, 1,  -1, 1,  -1};
+
+    trit_t trits_out[41];
+    bool result = int64_to_trits(input_value, trits_out, 41);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 41);
+}
+
 static void random_bytes(unsigned char *bytes)
 {
     for (int i = 0; i < NUM_HASH_BYTES; i++) {
@@ -182,6 +199,7 @@ int main(void)
         cmocka_unit_test(test_int64_to_trits_one),
         cmocka_unit_test(test_int64_to_trits_neg_one),
         cmocka_unit_test(test_int64_to_trits_overflow),
+        cmocka_unit_test(test_int64_to_trits_int_min),
         cmocka_unit_test(test_all_zero),
         cmocka_unit_test(test_all_neg_one),
         cmocka_unit_test(test_random_bytes_via_chars),
