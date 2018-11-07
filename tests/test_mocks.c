@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "api.h"
 #include "seed.h"
-#include "storage.h"
 #include "iota/bundle.h"
 #include "ui/ui.h"
 #include "keccak/sha3.h"
@@ -48,11 +47,6 @@ void ui_sign_tx()
 
 void ui_restore()
 {
-}
-
-bool storage_is_initialized()
-{
-    return true;
 }
 
 __attribute__((weak)) void seed_derive_from_bip32(const unsigned int *path,
