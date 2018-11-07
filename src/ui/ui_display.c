@@ -220,8 +220,21 @@ void display_prompt_tx()
         display_advanced_tx_address();
 }
 
+void display_tx_cancelled()
+{
+    ui_set_screen(SCREEN_TITLE);
+
+    clear_display();
+    write_display("   Transaction", TOP);
+    write_display("   Cancelled", BOT);
+
+    display_glyphs_confirm(GLYPH_WARN, GLYPH_NONE);
+}
+
 void display_unknown_state()
 {
+    ui_set_screen(SCREEN_MENU);
+
     clear_display();
     write_display("UI ERROR", MID);
 

@@ -38,6 +38,7 @@ typedef enum {
     STATE_TX_ADDR,       // Display full address in TX
     STATE_PROMPT_TX,
     STATE_BIP_PATH,
+    STATE_TX_CANCELLED,
     STATE_EXIT = 255
 } UI_STATES;
 
@@ -46,6 +47,7 @@ typedef enum {
     GLYPH_CONFIRM,
     GLYPH_UP,
     GLYPH_DOWN,
+    GLYPH_WARN,
     GLYPH_DASH,
     GLYPH_LOAD,
     GLYPH_NONE, // glyphs after none require special screens

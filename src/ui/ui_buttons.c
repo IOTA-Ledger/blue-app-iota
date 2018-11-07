@@ -210,6 +210,16 @@ void button_prompt_tx(uint8_t button_mask)
     }
 }
 
+void button_tx_cancelled(uint8_t button_mask)
+{
+    if (button_mask == BUTTON_B) {
+        user_deny_tx();
+        state_go(STATE_MAIN_MENU, 0);
+    }
+
+    return;
+}
+
 void button_handle_menu_idx(uint8_t button_mask, uint8_t array_sz)
 {
     // incr or decr ui_state.menu_idx

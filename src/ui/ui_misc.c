@@ -128,6 +128,7 @@ void clear_glyphs()
     glyph_off(GLYPH_CONFIRM);
     glyph_off(GLYPH_UP);
     glyph_off(GLYPH_DOWN);
+    glyph_off(GLYPH_WARN);
     glyph_off(GLYPH_LOAD);
     glyph_off(GLYPH_DASH);
 }

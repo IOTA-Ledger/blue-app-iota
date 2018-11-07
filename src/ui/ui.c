@@ -245,8 +245,6 @@ void ui_reset()
     ui_force_draw();
 }
 
-// external function for main to restore previous state
-// ui_reset generally used instead though
 void ui_restore()
 {
     restore_state();
@@ -262,8 +260,13 @@ void ui_queue_reset(bool islocked)
         ui_state.queued_ui_reset = true;
     }
     else if (!islocked && ui_state.queued_ui_reset) {
-        // ui_reset();
-        os_sched_exit(0);
+        ui_state.queued_ui_reset = false;
+
+        state_go(STATE_TX_CANCELLED, 0);
+
+        ui_build_display();
+        ui_render();
+        ui_force_draw();
     }
 }
 
@@ -337,6 +340,10 @@ static void ui_handle_button(uint8_t button_mask)
     case STATE_PROMPT_TX:
         button_prompt_tx(button_mask);
         return;
+        /* ------------ STATE TX CANCELLED -------------- */
+    case STATE_TX_CANCELLED:
+        button_tx_cancelled(button_mask);
+        return;
     case STATE_IGNORE:
         return;
         /* ------------ DEFAULT -------------- */
@@ -393,6 +400,10 @@ static void ui_build_display()
         /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
     case STATE_PROMPT_TX:
         display_prompt_tx();
+        break;
+        /* ------------ STATE TX CANCELLED -------------- */
+    case STATE_TX_CANCELLED:
+        display_tx_cancelled();
         break;
         /* ------------ IGNORE STATE -------------- */
     case STATE_IGNORE:
