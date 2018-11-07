@@ -17,11 +17,6 @@ void state_go(uint8_t state, uint8_t idx)
     ui_state.menu_idx = idx;
 }
 
-void state_return(uint8_t state, uint8_t idx)
-{
-    state_go(state, idx);
-}
-
 void backup_state()
 {
     ui_state.backup_state = ui_state.state;
@@ -30,10 +25,25 @@ void backup_state()
 
 void restore_state()
 {
-    state_return(ui_state.backup_state, ui_state.backup_menu_idx);
+    state_go(ui_state.backup_state, ui_state.backup_menu_idx);
 
     ui_state.backup_state = STATE_MAIN_MENU;
     ui_state.backup_menu_idx = 0;
+}
+
+bool in_tx_state()
+{
+    switch (ui_state.state) {
+    // BIP Path could be in tx or disp_addr (backup state will tell us which)
+    case STATE_BIP_PATH:
+        if (ui_state.backup_state != STATE_PROMPT_TX)
+            return false;
+    case STATE_PROMPT_TX:
+    case STATE_TX_ADDR:
+        return true;
+    default:
+        return false;
+    }
 }
 
 void abbreviate_addr(char *dest, const char *src)
@@ -118,7 +128,6 @@ void clear_glyphs()
     glyph_off(GLYPH_CONFIRM);
     glyph_off(GLYPH_UP);
     glyph_off(GLYPH_DOWN);
-    glyph_off(GLYPH_WARN);
     glyph_off(GLYPH_LOAD);
     glyph_off(GLYPH_DASH);
 }

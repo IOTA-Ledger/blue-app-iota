@@ -27,6 +27,10 @@ static void IOTA_main()
                     rx < G_io_apdu_buffer[OFFSET_P3] + OFFSET_P3) {
                     THROW(SW_INCORRECT_LENGTH_P3);
                 }
+
+                if (!os_global_pin_is_validated())
+                    THROW(SW_SECURITY_APP_LOCKED);
+
                 flags = iota_dispatch();
             }
             CATCH_OTHER(e)
@@ -46,8 +50,8 @@ static void IOTA_main()
                 // TODO: could io_send ever throw an exception here?
                 io_send(NULL, 0, sw);
 
-                ui_reset();
-                api_initialize();
+                // ui_reset();
+                // api_initialize();
 
                 flags = 0;
             }
@@ -120,7 +124,8 @@ unsigned char io_event(unsigned char channel)
         UX_DISPLAYED_EVENT({});
         break;
 
-        // unknown events are acknowledged
+    case SEPROXYHAL_TAG_TICKER_EVENT:
+        ui_queue_reset(!os_global_pin_is_validated());
     default:
         UX_DEFAULT_EVENT();
         break;

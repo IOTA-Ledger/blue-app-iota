@@ -9,6 +9,7 @@ void state_go(uint8_t state, uint8_t idx);
 void state_return(uint8_t state, uint8_t idx);
 void backup_state(void);
 void restore_state(void);
+bool in_tx_state();
 
 void abbreviate_addr(char *dest, const char *src);
 void write_display(const char *string, UI_TEXT_POS pos);

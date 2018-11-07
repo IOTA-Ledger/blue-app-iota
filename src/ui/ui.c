@@ -139,9 +139,9 @@ void ui_display_main_menu()
 void ui_init()
 {
     ctx_initialize();
-    
+
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
-    
+
     ui_display_main_menu();
 }
 
@@ -236,6 +236,8 @@ void ui_sign_tx()
 
 void ui_reset()
 {
+    ui_state.queued_ui_reset = false;
+
     state_go(STATE_MAIN_MENU, 0);
 
     ui_build_display();
@@ -252,6 +254,17 @@ void ui_restore()
     ui_build_display();
     ui_render();
     ui_force_draw();
+}
+
+void ui_queue_reset(bool islocked)
+{
+    if (islocked && in_tx_state()) {
+        ui_state.queued_ui_reset = true;
+    }
+    else if (!islocked && ui_state.queued_ui_reset) {
+        // ui_reset();
+        os_sched_exit(0);
+    }
 }
 
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------

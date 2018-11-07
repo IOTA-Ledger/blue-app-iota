@@ -210,25 +210,6 @@
             &ui_glyphs.glyph[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL            \
     }
 
-// -- Warning icon on left
-#define SCREEN_GLYPH_WARN                                                      \
-    {                                                                          \
-        {BAGL_ICON,                                                            \
-         0x00,                                                                 \
-         9,                                                                    \
-         12,                                                                   \
-         8,                                                                    \
-         6,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         0,                                                                    \
-         BAGL_GLYPH_ICON_WARNING_BADGE},                                       \
-            &ui_glyphs.glyph[GLYPH_WARN], 0, 0, 0, NULL, NULL, NULL            \
-    }
-
 // -- Loading icon on left
 #define SCREEN_GLYPH_LOAD                                                      \
     {                                                                          \
@@ -284,7 +265,7 @@
 // -- Define all screen glyphs
 #define SCREEN_GLYPHS_ALL                                                      \
     SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN,                  \
-        SCREEN_GLYPH_WARN, SCREEN_GLYPH_LOAD, SCREEN_GLYPH_DASH
+        SCREEN_GLYPH_LOAD, SCREEN_GLYPH_DASH
 
 // -- Define button functions with specific names
 #define BUTTON_FUNCTION(name)                                                  \

@@ -25,6 +25,7 @@ void ui_display_address(const unsigned char *addr_bytes);
 void ui_sign_tx(void);
 void ui_reset(void);
 void ui_restore(void);
+void ui_queue_reset(bool islocked);
 
 void ui_set_screen(UI_SCREENS s);
 void ui_render(void);

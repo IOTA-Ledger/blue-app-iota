@@ -33,9 +33,9 @@ typedef enum {
     STATE_ABOUT,
     STATE_VERSION,
     STATE_MORE_INFO,
+    STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
     STATE_DISP_ADDR,     // Host displays pubkey on ledger
     STATE_TX_ADDR,       // Display full address in TX
-    STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
     STATE_PROMPT_TX,
     STATE_BIP_PATH,
     STATE_EXIT = 255
@@ -46,7 +46,6 @@ typedef enum {
     GLYPH_CONFIRM,
     GLYPH_UP,
     GLYPH_DOWN,
-    GLYPH_WARN,
     GLYPH_DASH,
     GLYPH_LOAD,
     GLYPH_NONE, // glyphs after none require special screens
@@ -100,6 +99,7 @@ typedef struct UI_STATE_CTX {
     // tx information
     int64_t val;
     bool display_full_value;
+    bool queued_ui_reset;
 
     char addr[90];
 
