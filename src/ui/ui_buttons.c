@@ -7,21 +7,7 @@
 #include "ui_misc.h"
 
 #include "api.h"
-#include "storage.h"
 #include "iota/addresses.h"
-
-int8_t button_init(uint8_t button_mask)
-{
-    uint8_t array_sz = MENU_INIT_LEN - 1;
-
-    if (button_mask == BUTTON_B && ui_state.menu_idx == MENU_INIT_LAST) {
-        storage_initialize();
-        state_go(STATE_MAIN_MENU, 0);
-        return -1;
-    }
-
-    return array_sz;
-}
 
 int8_t button_main_menu(uint8_t button_mask)
 {

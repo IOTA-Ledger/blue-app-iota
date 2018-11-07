@@ -6,27 +6,6 @@
 #include "ui_text.h"
 #include "ui_misc.h"
 
-void display_init()
-{
-    ui_set_screen(SCREEN_MENU);
-
-    // write the actual menu
-    char msg[MENU_INIT_LEN * TEXT_LEN];
-    get_init_menu(msg);
-    write_text_array(msg, MENU_INIT_LEN);
-
-    // special override display states
-    switch (ui_state.menu_idx) {
-
-    case 0: // first menu entry
-        glyph_on(GLYPH_WARN);
-        break;
-    case MENU_INIT_LAST:
-        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
-        break;
-    }
-}
-
 void display_main_menu()
 {
     ui_set_screen(SCREEN_MENU);

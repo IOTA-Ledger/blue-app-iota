@@ -1,6 +1,5 @@
 #include "os_io_seproxyhal.h"
 #include "iota_io.h"
-#include "storage.h"
 #include "ui/ui.h"
 
 // define global SDK variables
@@ -11,7 +10,7 @@ static void IOTA_main()
 {
     volatile unsigned int flags = 0;
 
-    ui_init(storage_is_initialized());
+    ui_init();
     // init the API
     io_initialize();
 

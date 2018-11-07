@@ -4,20 +4,6 @@
 #include <string.h>
 
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
-void get_init_menu(char *msg)
-{
-    memset(msg, '\0', MENU_INIT_LEN * TEXT_LEN);
-
-    uint8_t i = 0;
-
-    strcpy(msg + (i++ * TEXT_LEN), "WARNING!");
-    strcpy(msg + (i++ * TEXT_LEN), "IOTA is not like");
-    strcpy(msg + (i++ * TEXT_LEN), "other cryptos.");
-    strcpy(msg + (i++ * TEXT_LEN), "Please visit");
-    strcpy(msg + (i++ * TEXT_LEN), "iota.org/sec");
-    strcpy(msg + (i++ * TEXT_LEN), "for more info.");
-}
-
 void get_main_menu(char *msg)
 {
     memset(msg, '\0', MENU_MAIN_LEN * TEXT_LEN);

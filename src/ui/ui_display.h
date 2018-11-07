@@ -1,7 +1,6 @@
 #ifndef UI_DISPLAY_H
 #define UI_DISPLAY_H
 
-void display_init(void);
 void display_main_menu(void);
 void display_about(void);
 void display_version(void);

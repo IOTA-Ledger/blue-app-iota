@@ -2,7 +2,6 @@
 #include "common.h"
 #include "aux.h"
 #include "iota_io.h"
-#include "storage.h"
 #include "ui/ui.h"
 #include <string.h>
 
@@ -18,8 +17,6 @@
 
 #define GET_INPUT(input_data, len, INS)                                        \
     ({                                                                         \
-        if (!storage_is_initialized())                                         \
-            THROW(SW_APP_NOT_INITIALIZED);                                     \
         if (CHECK_STATE(api.state_flags, INS))                                 \
             THROW(SW_COMMAND_INVALID_STATE);                                   \
         if (len < sizeof(INS##_INPUT))                                         \
@@ -376,9 +373,6 @@ unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
     UNUSED(input_data);
     UNUSED(len);
 
-    if (!storage_is_initialized()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
     if (CHECK_STATE(api.state_flags, GET_APP_CONFIG)) {
         THROW(SW_COMMAND_INVALID_STATE);
     }
@@ -413,9 +407,6 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
     UNUSED(input_data);
     UNUSED(len);
 
-    if (!storage_is_initialized()) {
-        THROW(SW_APP_NOT_INITIALIZED);
-    }
     if (CHECK_STATE(api.state_flags, RESET)) {
         THROW(SW_COMMAND_INVALID_STATE);
     }

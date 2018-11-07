@@ -28,7 +28,6 @@ typedef enum {
 
 // UI STATES
 typedef enum {
-    STATE_INIT,
     STATE_MAIN_MENU,
     STATE_IGNORE,
     STATE_ABOUT,
@@ -56,11 +55,9 @@ typedef enum {
 } UI_GLYPH_TYPES;
 
 // Size of Menu
-#define MENU_INIT_LEN 6
 #define MENU_ADDR_LEN 8
 #define MENU_MORE_INFO_LEN 3
 
-#define MENU_INIT_LAST MENU_INIT_LEN - 1
 #define MENU_ADDR_LAST MENU_ADDR_LEN - 1
 
 #define MENU_TX_APPROVE tx_array_sz - 2

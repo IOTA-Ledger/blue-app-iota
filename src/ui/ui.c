@@ -124,29 +124,6 @@ static void ctx_initialize()
     os_memset(&ui_text, 0, sizeof(ui_text));
     os_memset(&ui_glyphs, 0, sizeof(ui_glyphs));
     os_memset(&ui_state, 0, sizeof(ui_state));
-
-    ui_state.menu_idx = 0;
-    ui_state.backup_menu_idx = 0;
-    ui_state.display_full_value = false;
-}
-
-void ui_init(bool flash_is_init)
-{
-    ctx_initialize();
-
-    if (flash_is_init) {
-        ui_state.state = STATE_MAIN_MENU;
-        ui_state.backup_state = STATE_MAIN_MENU;
-    }
-    else {
-        ui_state.state = STATE_INIT;
-        ui_state.backup_state = STATE_INIT;
-    }
-
-    ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
-
-    ui_build_display();
-    ui_render();
 }
 
 // Entry points for main to modify display
@@ -157,6 +134,15 @@ void ui_display_main_menu()
 
     ui_build_display();
     ui_render();
+}
+
+void ui_init()
+{
+    ctx_initialize();
+    
+    ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
+    
+    ui_display_main_menu();
 }
 
 void ui_display_getting_addr()
@@ -302,11 +288,7 @@ static void ui_handle_button(uint8_t button_mask)
     int8_t array_sz;
 
     switch (ui_state.state) {
-        /* ------------ STATE INIT -------------- */
-    case STATE_INIT:
-        array_sz = button_init(button_mask);
-        break;
-        /* ------------ STATE OPTIONS -------------- */
+        /* ------------ STATE MAIN MENU -------------- */
     case STATE_MAIN_MENU:
         array_sz = button_main_menu(button_mask);
         break;
@@ -363,10 +345,6 @@ static void ui_handle_button(uint8_t button_mask)
 static void ui_build_display()
 {
     switch (ui_state.state) {
-        /* ------------ INIT MENU -------------- */
-    case STATE_INIT:
-        display_init();
-        break;
         /* ------------ MAIN MENU -------------- */
     case STATE_MAIN_MENU:
         display_main_menu();

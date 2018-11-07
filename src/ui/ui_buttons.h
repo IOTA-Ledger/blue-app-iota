@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-int8_t button_init(uint8_t button_mask);
 int8_t button_main_menu(uint8_t button_mask);
 int8_t button_about(uint8_t button_mask);
 void button_version(uint8_t button_mask);
