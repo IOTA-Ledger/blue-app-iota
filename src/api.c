@@ -106,10 +106,75 @@ static void io_send_address(const unsigned char *addr_bytes)
     io_send(&output, sizeof(output), SW_OK);
 }
 
+bool compare_bip32_path(const SET_SEED_INPUT seed)
+{
+    if (api.bip32_path_length != seed.bip32_path_length)
+        return false;
+
+    for (uint8_t i = 0; i < seed.bip32_path_length; i++) {
+        if (api.bip32_path[i] != seed.bip32_path[i])
+            return false;
+    }
+
+    return true;
+}
+
+void change_seed(const SET_SEED_INPUT seed)
+{
+    if (!ASSIGN(api.bip32_path_length, seed.bip32_path_length) ||
+        !IN_RANGE(api.bip32_path_length, BIP32_PATH_MIN_LEN,
+                  BIP32_PATH_MAX_LEN)) {
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    for (unsigned int i = 0; i < api.bip32_path_length; i++) {
+        if (!ASSIGN(api.bip32_path[i], seed.bip32_path[i])) {
+            // path overflow
+            THROW(SW_COMMAND_INVALID_DATA);
+        }
+    }
+
+    if (!ASSIGN(api.security, seed.security) ||
+        !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
+        // invalid security
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    seed_derive_from_bip32(api.bip32_path, api.bip32_path_length,
+                           api.seed_bytes);
+}
+
+void update_seed(SET_SEED_INPUT seed)
+{
+    // seed has changed
+    if (api.security != seed.security || !compare_bip32_path(seed)) {
+        change_seed(seed);
+    }
+}
+
+bool input_length_correct(unsigned int len, unsigned int struct_sz,
+                          unsigned int bip32_path_length)
+{
+    if (len < struct_sz + bip32_path_length * sizeof(api.bip32_path[0])) {
+        return false;
+    }
+
+    return true;
+}
+
 unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
                         unsigned int len)
 {
+    ui_display_validating();
     const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
+
+    if (!input_length_correct(len, sizeof(PUBKEY_INPUT),
+                              input->seed.bip32_path_length)) {
+        THROW(SW_INCORRECT_LENGTH);
+    }
+
+    update_seed(input->seed);
+
     const bool display = display_address(p1);
 
     ui_display_getting_addr();
@@ -122,7 +187,7 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
         ui_display_address(addr_bytes);
     }
     else {
-        ui_restore();
+        ui_reset();
     }
 
     io_send_address(addr_bytes);
