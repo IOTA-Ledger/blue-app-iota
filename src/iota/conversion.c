@@ -355,6 +355,17 @@ static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
     }
 }
 
+/** @brief Converts a big-endian binary integer into ternary representation.
+ *  @param bytes input big-endian 48-byte integers
+ *  @param trits target trit array
+ */
+static void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
+{
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    bigint_to_trits_mem(bigint, trits);
+}
+
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
 {
     uint32_t bigint[12];
@@ -373,13 +384,6 @@ void chars_to_bytes(const char *chars, unsigned char *bytes,
 
         trits_to_bytes(trits, bytes + i * 48);
     }
-}
-
-void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
-{
-    uint32_t bigint[12];
-    bytes_to_bigint(bytes, bigint);
-    bigint_to_trits_mem(bigint, trits);
 }
 
 void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
