@@ -33,7 +33,7 @@ void api_initialize()
 }
 
 /** @brief Clear bundle and signature data and reset state. */
-static void api_reset_bundle(void)
+void api_reset_bundle(void)
 {
     MEMCLEAR(api.bundle_ctx);
     MEMCLEAR(api.signing_ctx);
@@ -146,7 +146,7 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
         ui_display_address(addr_bytes);
     }
     else {
-        ui_reset();
+        ui_restore();
     }
 
     io_send_address(addr_bytes);
@@ -314,9 +314,6 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
     }
 
     if ((api.state_flags & SIGNING_STARTED) == 0) {
-        // temporary screen during signing process
-        ui_display_signing();
-
         if (api.bundle_ctx.values[tx_idx] >= 0) {
             // no input transaction
             THROW(SW_COMMAND_INVALID_DATA);
@@ -335,6 +332,9 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
         // transaction changed after initialization
         THROW(SW_COMMAND_INVALID_DATA);
     }
+
+    // temporary screen during signing process
+    ui_display_signing();
 
     SIGN_OUTPUT output;
     output.fragments_remaining =

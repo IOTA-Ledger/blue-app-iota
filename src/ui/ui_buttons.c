@@ -216,8 +216,14 @@ void button_tx_cancelled(uint8_t button_mask)
         user_deny_tx();
         state_go(STATE_MAIN_MENU, 0);
     }
+}
 
-    return;
+void button_ui_timeout(uint8_t button_mask)
+{
+    if (button_mask == BUTTON_B) {
+        api_reset_bundle();
+        ui_reset();
+    }
 }
 
 void button_handle_menu_idx(uint8_t button_mask, uint8_t array_sz)

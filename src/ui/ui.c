@@ -175,6 +175,7 @@ void ui_display_validating()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_state.ui_timer = 0;
 
     ui_render();
     ui_force_draw();
@@ -193,6 +194,7 @@ void ui_display_recv()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_state.ui_timer = 0;
 
     ui_render();
     ui_force_draw();
@@ -211,6 +213,7 @@ void ui_display_signing()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
+    ui_state.ui_timer = 0;
 
     ui_render();
     ui_force_draw();
@@ -232,6 +235,15 @@ void ui_sign_tx()
 
     ui_build_display();
     ui_render();
+}
+
+void ui_display_timeout()
+{
+    state_go(STATE_UI_TIMEOUT, 0);
+
+    ui_build_display();
+    ui_render();
+    ui_force_draw();
 }
 
 void ui_reset()
@@ -256,6 +268,17 @@ void ui_restore()
 
 void ui_queue_reset(bool islocked)
 {
+    // use a timer on state_ignore to reset if something goes wrong
+    if (ui_state.state == STATE_IGNORE) {
+        ui_state.ui_timer++;
+        if (ui_state.ui_timer > STATE_IGNORE_TIMEOUT * 10) {
+            ui_display_timeout();
+        }
+    }
+    else {
+        ui_state.ui_timer = 0;
+    }
+
     if (islocked && in_tx_state()) {
         ui_state.queued_ui_reset = true;
     }
@@ -344,6 +367,10 @@ static void ui_handle_button(uint8_t button_mask)
     case STATE_TX_CANCELLED:
         button_tx_cancelled(button_mask);
         return;
+    /* ------------ STATE UI TIMEOUT -------------- */
+    case STATE_UI_TIMEOUT:
+        button_ui_timeout(button_mask);
+        return;
     case STATE_IGNORE:
         return;
         /* ------------ DEFAULT -------------- */
@@ -404,6 +431,10 @@ static void ui_build_display()
         /* ------------ STATE TX CANCELLED -------------- */
     case STATE_TX_CANCELLED:
         display_tx_cancelled();
+        break;
+    /* ------------ STATE UI TIMEOUT -------------- */
+    case STATE_UI_TIMEOUT:
+        display_ui_timeout();
         break;
         /* ------------ IGNORE STATE -------------- */
     case STATE_IGNORE:

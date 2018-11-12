@@ -222,11 +222,22 @@ void display_prompt_tx()
 
 void display_tx_cancelled()
 {
-    ui_set_screen(SCREEN_TITLE);
+    ui_set_screen(SCREEN_TITLE_BOLD);
 
     clear_display();
     write_display("   Transaction", TOP);
     write_display("   Cancelled", BOT);
+
+    display_glyphs_confirm(GLYPH_WARN, GLYPH_NONE);
+}
+
+void display_ui_timeout()
+{
+    ui_set_screen(SCREEN_TITLE_BOLD);
+
+    clear_display();
+    write_display("   Transaction", TOP);
+    write_display("  Timed Out", BOT);
 
     display_glyphs_confirm(GLYPH_WARN, GLYPH_NONE);
 }

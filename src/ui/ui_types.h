@@ -8,6 +8,10 @@
 #define TEXT_LEN 21
 #define TOTAL_GLYPHS GLYPH_NONE
 
+// this must be below 25 seconds
+// (255 max val for the timer, 25s * 10ticks/s = 250)
+#define STATE_IGNORE_TIMEOUT 3
+
 #define BUTTON_L 0
 #define BUTTON_R 1
 #define BUTTON_B 2
@@ -39,6 +43,7 @@ typedef enum {
     STATE_PROMPT_TX,
     STATE_BIP_PATH,
     STATE_TX_CANCELLED,
+    STATE_UI_TIMEOUT,
     STATE_EXIT = 255
 } UI_STATES;
 
@@ -102,6 +107,7 @@ typedef struct UI_STATE_CTX {
     int64_t val;
     bool display_full_value;
     bool queued_ui_reset;
+    uint8_t ui_timer;
 
     char addr[90];
 

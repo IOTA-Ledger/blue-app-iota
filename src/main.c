@@ -50,8 +50,7 @@ static void IOTA_main()
                 // TODO: could io_send ever throw an exception here?
                 io_send(NULL, 0, sw);
 
-                // ui_reset();
-                // api_initialize();
+                api_reset_bundle();
 
                 flags = 0;
             }
