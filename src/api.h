@@ -50,7 +50,6 @@ SET_SEED_INPUT;
 typedef IO_STRUCT PUBKEY_INPUT
 {
     uint32_t address_idx;
-    SET_SEED_INPUT seed;
 }
 PUBKEY_INPUT;
 
