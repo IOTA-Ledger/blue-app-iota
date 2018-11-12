@@ -6,10 +6,9 @@
 #include "iota/bundle.h"
 
 // state bit flags
-#define SEED_SET (1 << 0)
-#define BUNDLE_INITIALIZED (1 << 1)
-#define BUNDLE_FINALIZED (1 << 2)
-#define SIGNING_STARTED (1 << 3)
+#define BUNDLE_INITIALIZED (1 << 0)
+#define BUNDLE_FINALIZED (1 << 1)
+#define SIGNING_STARTED (1 << 2)
 
 #define IO_STRUCT struct __attribute__((packed, may_alias))
 
@@ -42,10 +41,9 @@ typedef IO_STRUCT SET_SEED_INPUT
 }
 SET_SEED_INPUT;
 
-// no SET_SEED_OUTPUT
-
 #define PUBKEY_REQUIRED_STATE 0
-#define PUBKEY_FORBIDDEN_STATE 0
+#define PUBKEY_FORBIDDEN_STATE                                                 \
+    (BUNDLE_INITIALIZED | BUNDLE_FINALIZED | SIGNING_STARTED)
 
 typedef IO_STRUCT PUBKEY_INPUT
 {
@@ -59,7 +57,7 @@ typedef IO_STRUCT PUBKEY_OUTPUT
 }
 PUBKEY_OUTPUT;
 
-#define TX_REQUIRED_STATE (SEED_SET)
+#define TX_REQUIRED_STATE 0
 #define TX_FORBIDDEN_STATE (BUNDLE_FINALIZED)
 
 typedef IO_STRUCT TX_INPUT
@@ -81,7 +79,7 @@ typedef IO_STRUCT TX_OUTPUT
 }
 TX_OUTPUT;
 
-#define SIGN_REQUIRED_STATE (SEED_SET | BUNDLE_FINALIZED)
+#define SIGN_REQUIRED_STATE (BUNDLE_FINALIZED)
 #define SIGN_FORBIDDEN_STATE 0
 
 typedef IO_STRUCT SIGN_INPUT
@@ -121,8 +119,6 @@ GET_APP_CONFIG_OUTPUT;
 /** @brief Clear and initialize the entire API context. */
 void api_initialize(void);
 
-unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
-                          unsigned int len);
 unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
                         unsigned int len);
 unsigned int api_tx(uint8_t p1, const unsigned char *input_data,

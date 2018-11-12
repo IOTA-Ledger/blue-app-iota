@@ -37,9 +37,7 @@ static void api_reset_bundle(void)
 {
     MEMCLEAR(api.bundle_ctx);
     MEMCLEAR(api.signing_ctx);
-
-    // keep the SEED_SET flag, if it was set
-    api.state_flags &= SEED_SET;
+    api.state_flags = 0;
 }
 
 static bool bip32_path_changed(const SET_SEED_INPUT *seed)
@@ -56,13 +54,6 @@ static bool bip32_path_changed(const SET_SEED_INPUT *seed)
     return false;
 }
 
-// TODO - remove set_seed command
-unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
-                          unsigned int len)
-{
-    return 0;
-}
-
 static unsigned int update_seed(const unsigned char *input_data,
                                 unsigned int len)
 {
@@ -73,7 +64,7 @@ static unsigned int update_seed(const unsigned char *input_data,
         !IN_RANGE(bip32_path_length, BIP32_PATH_MIN_LEN, BIP32_PATH_MAX_LEN)) {
         THROW(SW_COMMAND_INVALID_DATA);
     }
-    
+
     const unsigned int seed_struct_len =
         sizeof(SET_SEED_INPUT) +
         (bip32_path_length * sizeof(input->bip32_path[0]));
@@ -97,11 +88,16 @@ static unsigned int update_seed(const unsigned char *input_data,
                                api.seed_bytes);
     }
 
-    // security level can be changed independently of the seed
-    if (!ASSIGN(api.security, input->security) ||
-        !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
-        // invalid security
-        THROW(SW_COMMAND_INVALID_DATA);
+    if (api.security != input->security) {
+        // security level can be changed independently of the seed
+        if (!ASSIGN(api.security, input->security) ||
+            !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
+            // invalid security
+            THROW(SW_COMMAND_INVALID_DATA);
+        }
+
+        // if security does get changed, reset bundle
+        api_reset_bundle();
     }
 
     return seed_struct_len;
@@ -248,9 +244,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
                     unsigned int len)
 {
     UNUSED(p1);
-    
     const unsigned int offset = update_seed(input_data, len);
-    
     const TX_INPUT *input = GET_INPUT(input_data + offset, len - offset, TX);
 
     ui_display_recv();
@@ -352,6 +346,7 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
+        api_reset_bundle();
 
         ui_display_main_menu();
     }
@@ -442,9 +437,6 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
     }
 
     if (reset_partial(p1)) {
-        if (!(api.state_flags & SEED_SET)) {
-            THROW(SW_COMMAND_INVALID_STATE);
-        }
         api_reset_bundle();
     }
     else {

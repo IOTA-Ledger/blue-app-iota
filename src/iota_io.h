@@ -16,7 +16,6 @@ unsigned int iota_dispatch(void);
 
 #define INS_NONE 0x00
 
-#define INS_SET_SEED 0x01
 #define INS_PUBKEY 0x02
 #define INS_TX 0x03
 #define INS_SIGN 0x04

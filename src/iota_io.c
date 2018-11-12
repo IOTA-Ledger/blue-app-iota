@@ -41,8 +41,6 @@ unsigned int iota_dispatch()
     switch (G_io_apdu_buffer[OFFSET_INS]) {
     case INS_NONE:
         return 0;
-    case INS_SET_SEED:
-        return api_set_seed(p1, input_data, len);
     case INS_PUBKEY:
         return api_pubkey(p1, input_data, len);
     case INS_TX:
