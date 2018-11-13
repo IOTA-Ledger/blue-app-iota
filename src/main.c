@@ -46,11 +46,12 @@ static void IOTA_main()
                     sw = SW_UNKNOWN | (e & 0x0FF);
                 }
 
-                // send response code and reset
-                // TODO: could io_send ever throw an exception here?
+                // prevent ledger live's background polling
+                // from resetting the app
+                if (sw != SW_CLA_NOT_SUPPORTED) {
+                    api_reset_bundle();
+                }
                 io_send(NULL, 0, sw);
-
-                api_reset_bundle();
 
                 flags = 0;
             }
