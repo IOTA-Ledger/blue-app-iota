@@ -354,7 +354,6 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
-        api_reset_bundle();
 
         ui_display_main_menu();
     }
