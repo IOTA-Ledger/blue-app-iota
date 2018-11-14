@@ -27,13 +27,13 @@
 /// global variable storing all data needed across multiple api calls
 API_CTX api;
 
-void api_initialize()
+void api_initialize(void)
 {
     MEMCLEAR(api);
 }
 
 /** @brief Clear bundle and signature data and reset state. */
-void api_reset_bundle(void)
+static void api_reset_bundle(void)
 {
     MEMCLEAR(api.bundle_ctx);
     MEMCLEAR(api.signing_ctx);
@@ -419,23 +419,9 @@ unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
     return 0;
 }
 
-static bool reset_partial(uint8_t p1)
-{
-    switch (p1) {
-    case P1_RESET_EVERYTHING:
-        return false;
-    case P1_RESET_PARTIAL:
-        return true;
-    default:
-        // invalid p1 value
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-    return false; // avoid compiler warnings
-}
-
 unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
 {
-    // no input requried
+    UNUSED(p1);
     UNUSED(input_data);
     UNUSED(len);
 
@@ -443,12 +429,7 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_STATE);
     }
 
-    if (reset_partial(p1)) {
-        api_reset_bundle();
-    }
-    else {
-        api_initialize();
-    }
+    api_initialize();
 
     io_send(NULL, 0, SW_OK);
     return 0;

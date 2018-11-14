@@ -221,7 +221,7 @@ void button_tx_cancelled(uint8_t button_mask)
 void button_ui_timeout(uint8_t button_mask)
 {
     if (button_mask == BUTTON_B) {
-        api_reset_bundle();
+        api_initialize();
         ui_reset();
     }
 }

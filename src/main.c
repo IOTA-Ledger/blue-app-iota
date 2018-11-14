@@ -49,7 +49,7 @@ static void IOTA_main()
                 // prevent ledger live's background polling
                 // from resetting the app
                 if (sw != SW_CLA_NOT_SUPPORTED) {
-                    api_reset_bundle();
+                    api_initialize();
                 }
                 io_send(NULL, 0, sw);
 
