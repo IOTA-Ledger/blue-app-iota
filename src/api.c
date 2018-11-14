@@ -40,20 +40,25 @@ void api_reset_bundle(void)
     api.state_flags = 0;
 }
 
+/** @brief Checks whether the given path differes from the stored path. */
 static bool bip32_path_changed(const SET_SEED_INPUT *seed)
 {
     if (api.bip32_path_length != seed->bip32_path_length) {
         return true;
     }
 
-    for (uint8_t i = 0; i < seed->bip32_path_length; i++) {
-        if (api.bip32_path[i] != seed->bip32_path[i])
+    for (unsigned int i = 0; i < seed->bip32_path_length; i++) {
+        if (api.bip32_path[i] != seed->bip32_path[i]) {
             return true;
+        }
     }
 
     return false;
 }
 
+/** @brief Extracts the bip32 info from the input data and computes a new seed
+ *  if the path differs from the previous one.
+ *  @return the number bytes read as part of the bip path input. */
 static unsigned int update_seed(const unsigned char *input_data,
                                 unsigned int len)
 {
@@ -74,8 +79,7 @@ static unsigned int update_seed(const unsigned char *input_data,
     }
 
     if (bip32_path_changed(input)) {
-        api_reset_bundle();
-
+        // only compute the seed if the path was changed
         api.bip32_path_length = bip32_path_length;
         for (unsigned int i = 0; i < api.bip32_path_length; i++) {
             if (!ASSIGN(api.bip32_path[i], input->bip32_path[i])) {
@@ -86,6 +90,9 @@ static unsigned int update_seed(const unsigned char *input_data,
 
         seed_derive_from_bip32(api.bip32_path, api.bip32_path_length,
                                api.seed_bytes);
+
+        // if the path was changed, reset bundle
+        api_reset_bundle();
     }
 
     if (api.security != input->security) {
@@ -313,6 +320,7 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
+    // initialize signing if necessary
     if ((api.state_flags & SIGNING_STARTED) == 0) {
         if (api.bundle_ctx.values[tx_idx] >= 0) {
             // no input transaction

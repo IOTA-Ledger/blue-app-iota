@@ -11,10 +11,6 @@
 #define SIGNING_STARTED (1 << 2)
 
 #define IO_STRUCT struct __attribute__((packed, may_alias))
-
-#define SET_SEED_REQUIRED_STATE 0
-#define SET_SEED_FORBIDDEN_STATE 0
-
 typedef struct API_CTX {
     /// BIP32 path used for seed derivation
     unsigned int bip32_path[BIP32_PATH_MAX_LEN];
@@ -32,6 +28,9 @@ typedef struct API_CTX {
 
 /// global context with everything related to the current api state
 extern API_CTX api;
+
+#define SET_SEED_REQUIRED_STATE 0
+#define SET_SEED_FORBIDDEN_STATE 0
 
 typedef IO_STRUCT SET_SEED_INPUT
 {
