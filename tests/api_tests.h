@@ -33,25 +33,31 @@
             api_##INS(p1, (unsigned char *)&input, sizeof(input)));            \
     })
 
-// Create union with a fixed path length
-typedef union {
-    IO_STRUCT
-    {
-        uint8_t security;
-        uint32_t bip32_path_length;
-        uint32_t bip32_path[BIP32_PATH_LENGTH];
-    }
-    a;
-    SET_SEED_INPUT b;
-} SET_SEED_FIXED_INPUT;
+// Create struct with a fixed path length
+typedef IO_STRUCT SET_SEED_FIXED_INPUT
+{
+    uint8_t security;
+    uint32_t bip32_path_length;
+    uint32_t bip32_path[BIP32_PATH_LENGTH];
+}
+SET_SEED_FIXED_INPUT;
 
-static inline void EXPECT_API_SET_SEED_OK(const char *seed, int security)
+// Pubkey input struct with seed input
+typedef IO_STRUCT SET_SEED_PUBKEY_INPUT
+{
+    SET_SEED_FIXED_INPUT set_seed;
+    PUBKEY_INPUT pubkey;
+}
+SET_SEED_PUBKEY_INPUT;
+
+static inline void SET_SEED_IN_INPUT(const char *seed, int security,
+                                     unsigned char *input)
 {
     will_return(seed_derive_from_bip32,
                 cast_ptr_to_largest_integral_type(seed));
 
-    SET_SEED_FIXED_INPUT input = {{security, BIP32_PATH_LENGTH, BIP32_PATH}};
-    EXPECT_API_OK(set_seed, 0, input);
+    SET_SEED_FIXED_INPUT seed_input = {security, BIP32_PATH_LENGTH, BIP32_PATH};
+    memcpy(input, &seed_input, sizeof(seed_input));
 }
 
 static inline void EXPECT_API_SET_BUNDLE_OK(const TX_INPUT *tx, int last_index,

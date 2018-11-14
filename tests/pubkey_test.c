@@ -28,9 +28,11 @@ static void test_valid_index_level_one(void **state)
     for (unsigned idx = 0; idx <= MAX_ADDRESS_INDEX; idx++) {
 
         api_initialize();
-        EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
         {
-            PUBKEY_INPUT input = {idx};
+            SET_SEED_PUBKEY_INPUT input;
+            SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
+            input.pubkey.address_idx = idx;
+
             PUBKEY_OUTPUT output;
             strncpy(output.address, PETER_VECTOR.addresses[security][idx],
                     NUM_HASH_TRYTES);
@@ -48,9 +50,11 @@ static void test_valid_index_level_two(void **state)
     for (unsigned idx = 0; idx <= MAX_ADDRESS_INDEX; idx++) {
 
         api_initialize();
-        EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
         {
-            PUBKEY_INPUT input = {idx};
+            SET_SEED_PUBKEY_INPUT input;
+            SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
+            input.pubkey.address_idx = idx;
+
             PUBKEY_OUTPUT output;
             strncpy(output.address, PETER_VECTOR.addresses[security][idx],
                     NUM_HASH_TRYTES);
@@ -68,9 +72,11 @@ static void test_valid_index_level_three(void **state)
     for (unsigned idx = 0; idx <= MAX_ADDRESS_INDEX; idx++) {
 
         api_initialize();
-        EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, security);
         {
-            PUBKEY_INPUT input = {idx};
+            SET_SEED_PUBKEY_INPUT input;
+            SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
+            input.pubkey.address_idx = idx;
+
             PUBKEY_OUTPUT output;
             strncpy(output.address, PETER_VECTOR.addresses[security][idx],
                     NUM_HASH_TRYTES);
@@ -80,40 +86,12 @@ static void test_valid_index_level_three(void **state)
     }
 }
 
-static void test_change_security(void **state)
-{
-    UNUSED(state);
-
-    api_initialize();
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 1);
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
-    {
-        PUBKEY_INPUT input = {0};
-        PUBKEY_OUTPUT output;
-        strncpy(output.address, PETER_VECTOR.addresses[2][0], NUM_HASH_TRYTES);
-
-        EXPECT_API_DATA_OK(pubkey, 0, input, output);
-    }
-}
-
-static void test_not_set_seed(void **state)
-{
-    UNUSED(state);
-
-    api_initialize();
-
-    PUBKEY_INPUT input = {0};
-    EXPECT_API_EXCEPTION(pubkey, 0, input);
-}
-
 int main(void)
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_valid_index_level_one),
         cmocka_unit_test(test_valid_index_level_two),
-        cmocka_unit_test(test_valid_index_level_three),
-        cmocka_unit_test(test_change_security),
-        cmocka_unit_test(test_not_set_seed)};
+        cmocka_unit_test(test_valid_index_level_three)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
