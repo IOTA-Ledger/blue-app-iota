@@ -162,6 +162,20 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
     return 0;
 }
 
+static bool first_tx(uint8_t p1)
+{
+    switch (p1) {
+    case P1_FIRST:
+        return true;
+    case P1_MORE:
+        return false;
+    default:
+        // invalid p1 value
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+    return false; // avoid compiler warnings
+}
+
 static void validate_tx_indices(const TX_INPUT *input)
 {
     if (input->last_index != api.bundle_ctx.last_tx_index) {
@@ -252,13 +266,30 @@ static void io_send_unfinished_bundle(void)
 unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
                     unsigned int len)
 {
-    UNUSED(p1);
-    const unsigned int offset = update_seed(input_data, len);
-    const TX_INPUT *input = GET_INPUT(input_data + offset, len - offset, TX);
+    const bool first = first_tx(p1);
+
+    const TX_INPUT *input;
+    if (first) {
+        // the bundle must not be initialized
+        if (api.state_flags & BUNDLE_INITIALIZED) {
+            THROW(SW_COMMAND_INVALID_STATE);
+        }
+
+        const unsigned int offset = update_seed(input_data, len);
+        input = GET_INPUT(input_data + offset, len - offset, TX);
+    }
+    else {
+        // the bundle must be initialized
+        if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
+            THROW(SW_COMMAND_INVALID_STATE);
+        }
+
+        input = GET_INPUT(input_data, len, TX);
+    }
 
     ui_display_recv();
 
-    if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
+    if (first) {
         if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
             // last index invalid range
             THROW(SW_COMMAND_INVALID_DATA);

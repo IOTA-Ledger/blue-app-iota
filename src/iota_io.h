@@ -26,11 +26,11 @@ unsigned int iota_dispatch(void);
 
 /* ---  P1  --- */
 
-#define P1_RESET_EVERYTHING 0x00
-#define P1_RESET_PARTIAL 0x01
-
 #define P1_PUBKEY_NO_DISPLAY 0x00
 #define P1_PUBKEY_DISPLAY 0x01
+
+#define P1_FIRST 0x00
+#define P1_MORE 0x80
 
 /* ---  IO constants  --- */
 
