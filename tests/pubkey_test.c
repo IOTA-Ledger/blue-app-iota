@@ -113,10 +113,14 @@ static void test_valid_index_level_three(void **state)
 static void test_invalid_p1(void **state)
 {
     UNUSED(state);
+    const SET_SEED_FIXED_INPUT seed_input = {2, BIP32_PATH_LENGTH, BIP32_PATH};
 
     api_initialize();
 
-    unsigned char input[0]; // no input
+    SET_SEED_PUBKEY_INPUT input;
+    memcpy(&input.set_seed, &seed_input, sizeof(seed_input));
+    input.pubkey.address_idx = 0;
+
     EXPECT_API_EXCEPTION(pubkey, 0xFF, input);
 }
 

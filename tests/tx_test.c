@@ -568,6 +568,22 @@ static void test_invalid_value_transaction(void **state)
     }
 }
 
+static void test_bundle_too_large(void **state)
+{
+    UNUSED(state);
+    static const int security = 2;
+
+    api_initialize();
+    {
+        SET_SEED_TX_INPUT input;
+        SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
+        memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+        input.tx.last_index = 8;
+
+        EXPECT_API_EXCEPTION(tx, P1_FIRST, input);
+    }
+}
+
 static void test_bundle_without_seed_tx(void **state)
 {
     UNUSED(state);
@@ -606,11 +622,15 @@ static void test_bundle_with_second_seed_tx(void **state)
 static void test_invalid_p1(void **state)
 {
     UNUSED(state);
+    const SET_SEED_FIXED_INPUT seed_input = {2, BIP32_PATH_LENGTH, BIP32_PATH};
 
     api_initialize();
 
-    unsigned char input[0]; // no input
-    EXPECT_API_EXCEPTION(tx, 0xFF, input);
+    SET_SEED_TX_INPUT input;
+    memcpy(&input.set_seed, &seed_input, sizeof(seed_input));
+    memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+
+    EXPECT_API_EXCEPTION(tx, 0x01, input);
 }
 
 int main(void)
@@ -637,6 +657,7 @@ int main(void)
         cmocka_unit_test(test_output_address_reuses_input),
         cmocka_unit_test(test_change_index_low),
         cmocka_unit_test(test_invalid_value_transaction),
+        cmocka_unit_test(test_bundle_too_large),
         cmocka_unit_test(test_bundle_without_seed_tx),
         cmocka_unit_test(test_bundle_with_second_seed_tx),
         cmocka_unit_test(test_invalid_p1)};
