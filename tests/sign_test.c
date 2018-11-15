@@ -9,8 +9,8 @@
 void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
                             unsigned char *seed_bytes)
 {
-    UNUSED(path);
-    UNUSED(pathLength);
+    check_expected(path);
+    check_expected(pathLength);
 
     chars_to_bytes(mock_ptr_type(char *), seed_bytes, NUM_HASH_TRYTES);
 }
@@ -30,8 +30,7 @@ static void test_valid_signatures(const char *seed, int security,
     const int num_fragments = NUM_SIGNATURE_FRAGMENTS(security);
 
     api_initialize();
-    EXPECT_API_SET_SEED_OK(seed, security);
-    EXPECT_API_SET_BUNDLE_OK(tx, last_index, bundle_hash);
+    EXPECT_API_SET_BUNDLE_OK(seed, security, tx, last_index, bundle_hash);
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < num_fragments; j++) {
@@ -65,20 +64,21 @@ static void test_unfinalized_bundle(void **state)
     UNUSED(state);
 
     api_initialize();
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
     {
-        TX_INPUT input;
-        memcpy(&input, &PETER_VECTOR.bundle[0], sizeof(input));
+        SET_SEED_TX_INPUT input;
+        SET_SEED_IN_INPUT(PETER_VECTOR.seed, 2, &input);
+        memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+
         TX_OUTPUT output = {0};
         output.finalized = false;
 
-        EXPECT_API_DATA_OK(tx, 0, input, output);
+        EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     {
         SIGN_INPUT input;
         input.transaction_idx = 0;
 
-        EXPECT_API_EXCEPTION(sign, 0, input);
+        EXPECT_API_EXCEPTION(sign, P1_MORE, input);
     }
 }
 
@@ -87,8 +87,8 @@ static void test_output_index(void **state)
     UNUSED(state);
 
     api_initialize();
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
-    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.seed, 2, PETER_VECTOR.bundle, 2,
+                             PETER_VECTOR.bundle_hash);
     {
         SIGN_INPUT input;
         input.transaction_idx = 0;
@@ -102,8 +102,8 @@ static void test_meta_index(void **state)
     UNUSED(state);
 
     api_initialize();
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
-    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.seed, 2, PETER_VECTOR.bundle, 2,
+                             PETER_VECTOR.bundle_hash);
     {
         SIGN_INPUT input;
         input.transaction_idx = 2;
@@ -117,8 +117,8 @@ static void test_changing_index(void **state)
     UNUSED(state);
 
     api_initialize();
-    EXPECT_API_SET_SEED_OK(PETER_VECTOR.seed, 2);
-    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.bundle, 2, PETER_VECTOR.bundle_hash);
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.seed, 2, PETER_VECTOR.bundle, 2,
+                             PETER_VECTOR.bundle_hash);
     {
         SIGN_INPUT input;
         input.transaction_idx = 1;
