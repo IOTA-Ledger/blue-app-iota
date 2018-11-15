@@ -110,6 +110,16 @@ static void test_valid_index_level_three(void **state)
     }
 }
 
+static void test_invalid_p1(void **state)
+{
+    UNUSED(state);
+
+    api_initialize();
+
+    unsigned char input[0]; // no input
+    EXPECT_API_EXCEPTION(pubkey, 0xFF, input);
+}
+
 int main(void)
 {
     const struct CMUnitTest tests[] = {
@@ -123,7 +133,8 @@ int main(void)
         // pubkey tests
         cmocka_unit_test(test_valid_index_level_one),
         cmocka_unit_test(test_valid_index_level_two),
-        cmocka_unit_test(test_valid_index_level_three)};
+        cmocka_unit_test(test_valid_index_level_three),
+        cmocka_unit_test(test_invalid_p1)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
