@@ -11,6 +11,7 @@ void test_valid_security_levels(void **state)
     static const unsigned int path[] = BIP32_PATH;
 
     for (unsigned int security = 1; security <= 3; security++) {
+        api_initialize();
 
         expect_memory(seed_derive_from_bip32, path, path, sizeof(path));
         expect_value(seed_derive_from_bip32, pathLength, BIP32_PATH_LENGTH);
@@ -49,9 +50,10 @@ void test_valid_path_lengths(void **state)
 {
     UNUSED(state);
 
-    SET_SEED_FIXED_INPUT input = {1, 0, BIP32_PATH};
+    SET_SEED_FIXED_INPUT input = {2, 0, BIP32_PATH};
 
     for (uint32_t length = 2; length <= 5; length++) {
+        api_initialize();
 
         expect_value(seed_derive_from_bip32, pathLength, length);
         expect_memory(seed_derive_from_bip32, path, input.bip32_path,
