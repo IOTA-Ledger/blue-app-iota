@@ -73,9 +73,23 @@ static unsigned int update_seed(const unsigned char *input_data,
     const unsigned int seed_struct_len =
         sizeof(SET_SEED_INPUT) +
         (bip32_path_length * sizeof(input->bip32_path[0]));
-
     if (len < seed_struct_len) {
         THROW(SW_INCORRECT_LENGTH);
+    }
+
+    uint8_t security;
+    if (!ASSIGN(security, input->security) ||
+        !IN_RANGE(security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
+        // invalid security
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    if (api.security != security) {
+        // security level can be changed independently of the seed
+        api.security = security;
+
+        // if security does get changed, reset bundle
+        api_reset_bundle();
     }
 
     if (bip32_path_changed(input)) {
@@ -92,18 +106,6 @@ static unsigned int update_seed(const unsigned char *input_data,
                                api.seed_bytes);
 
         // if the path was changed, reset bundle
-        api_reset_bundle();
-    }
-
-    if (api.security != input->security) {
-        // security level can be changed independently of the seed
-        if (!ASSIGN(api.security, input->security) ||
-            !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
-            // invalid security
-            THROW(SW_COMMAND_INVALID_DATA);
-        }
-
-        // if security does get changed, reset bundle
         api_reset_bundle();
     }
 
