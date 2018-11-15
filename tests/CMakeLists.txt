@@ -69,7 +69,7 @@ add_executable(set_seed_test set_seed_test.c)
 target_link_libraries(set_seed_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(set_seed_test ${CMAKE_CURRENT_BINARY_DIR}/set_seed_test)
 
-add_executable(pubkey_test pubkey_test.c)
+add_executable(pubkey_test pubkey_test.c test_seed.c)
 target_link_libraries(pubkey_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(pubkey_test ${CMAKE_CURRENT_BINARY_DIR}/pubkey_test)
 
