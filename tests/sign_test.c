@@ -137,7 +137,7 @@ static void test_changing_index(void **state)
     }
 }
 
-static void test_not_EXPECT_API_SET_SEED_OK(void **state)
+static void test_no_bundle(void **state)
 {
     UNUSED(state);
 
@@ -145,6 +145,21 @@ static void test_not_EXPECT_API_SET_SEED_OK(void **state)
     {
         SIGN_INPUT input;
         input.transaction_idx = 0;
+
+        EXPECT_API_EXCEPTION(sign, 0, input);
+    }
+}
+
+static void test_overflow_index(void **state)
+{
+    UNUSED(state);
+
+    api_initialize();
+    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.seed, 2, PETER_VECTOR.bundle, 2,
+                             PETER_VECTOR.bundle_hash);
+    {
+        SIGN_INPUT input;
+        input.transaction_idx = UINT8_MAX + 1;
 
         EXPECT_API_EXCEPTION(sign, 0, input);
     }
@@ -158,7 +173,8 @@ int main(void)
         cmocka_unit_test(test_output_index),
         cmocka_unit_test(test_meta_index),
         cmocka_unit_test(test_changing_index),
-        cmocka_unit_test(test_not_EXPECT_API_SET_SEED_OK)};
+        cmocka_unit_test(test_no_bundle),
+        cmocka_unit_test(test_overflow_index)};
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
