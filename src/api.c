@@ -138,12 +138,12 @@ static void io_send_address(const unsigned char *addr_bytes)
 unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
                         unsigned int len)
 {
-    const unsigned int offset = update_seed(input_data, len);
+    const bool display = display_address(p1);
 
+    const unsigned int offset = update_seed(input_data, len);
     const PUBKEY_INPUT *input =
         GET_INPUT(input_data + offset, len - offset, PUBKEY);
 
-    const bool display = display_address(p1);
 
     ui_display_getting_addr();
 
