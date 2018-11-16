@@ -59,6 +59,11 @@ void EXPECT_COMMAND_OK(const SET_SEED_FIXED_INPUT *seed_input)
 
         EXPECT_API_DATA_OK(tx, P1_MORE, PETER_VECTOR.bundle[2], output);
     }
+    {
+        // reset bundle after finalization
+        unsigned char input[0];
+        EXPECT_API_OK(reset, 0, input);
+    }
 }
 
 void EXPECT_COMMAND_EXCEPTION(const SET_SEED_FIXED_INPUT *seed_input)
