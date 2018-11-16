@@ -47,17 +47,18 @@ static void test_valid_signatures(const char *seed, int security,
     }
 }
 
+static void test_seed(char *seed, int security, TX_INPUT *tx, int last_index,
+                      char *bundle_hash, char signature[][SIGNATURE_LENGTH])
+{
+    test_valid_signatures(seed, security, tx, last_index, bundle_hash,
+                          signature);
+}
+
 static void test_signatures_for_seed_from_file(void **state)
 {
     UNUSED(state);
 
-    void test(char *seed, uint8_t security, TX_INPUT *tx, char *bundle_hash,
-              char signature[][SIGNATURE_LENGTH])
-    {
-        test_valid_signatures(seed, security, tx, 5, bundle_hash, signature);
-    }
-
-    test_for_each_bundle("generateBundlesForSeed", test);
+    test_for_each_bundle("generateBundlesForSeed", test_seed);
 }
 
 static void test_unfinalized_bundle(void **state)

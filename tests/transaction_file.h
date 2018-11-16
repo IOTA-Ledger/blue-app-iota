@@ -6,7 +6,7 @@
 #define SIGNATURE_LENGTH 6561
 
 void test_for_each_bundle(const char *file_name,
-                          void (*test)(char *, uint8_t, TX_INPUT *, char *,
+                          void (*test)(char *, int, TX_INPUT *, int, char *,
                                        char[][SIGNATURE_LENGTH]));
 
 #endif // TRANSACTION_FILE_H
