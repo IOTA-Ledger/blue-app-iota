@@ -75,11 +75,10 @@ void EXPECT_COMMAND_EXCEPTION(const SET_SEED_FIXED_INPUT *seed_input)
     EXPECT_API_EXCEPTION(tx, P1_FIRST, input);
 }
 
-static void test_bundle(char *seed, TX_INPUT *txs, char *bundle_hash,
-                        char signatures[][SIGNATURE_LENGTH])
+static void test_bundle(char *seed, uint8_t security, TX_INPUT *txs,
+                        char *bundle_hash, char signatures[][SIGNATURE_LENGTH])
 {
     UNUSED(signatures);
-    static const int security = 2;
 
     api_initialize();
     EXPECT_API_SET_BUNDLE_OK(seed, security, txs, 5, bundle_hash);

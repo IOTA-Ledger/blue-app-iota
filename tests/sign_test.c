@@ -1,4 +1,5 @@
 #include "test_common.h"
+#include <stdint.h>
 #include <string.h>
 #include "api_tests.h"
 #include "api.h"
@@ -50,10 +51,10 @@ static void test_signatures_for_seed_from_file(void **state)
 {
     UNUSED(state);
 
-    void test(char *seed, TX_INPUT *tx, char *bundle_hash,
+    void test(char *seed, uint8_t security, TX_INPUT *tx, char *bundle_hash,
               char signature[][SIGNATURE_LENGTH])
     {
-        test_valid_signatures(seed, 2, tx, 5, bundle_hash, signature);
+        test_valid_signatures(seed, security, tx, 5, bundle_hash, signature);
     }
 
     test_for_each_bundle("generateBundlesForSeed", test);

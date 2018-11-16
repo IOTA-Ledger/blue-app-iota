@@ -13,7 +13,7 @@
 #define SCNs27 "[NOPQRSTUVWXYZ9ABCDEFGHIJKLM]"
 
 void test_for_each_bundle(const char *file_name,
-                          void (*test)(char *, TX_INPUT *, char *,
+                          void (*test)(char *, uint8_t, TX_INPUT *, char *,
                                        char[][SIGNATURE_LENGTH]))
 {
     char path_name[BUFFER_LEN];
@@ -33,12 +33,13 @@ void test_for_each_bundle(const char *file_name,
         }
 
         char seed[NUM_HASH_TRYTES];
+        uint8_t security;
         TX_INPUT tx[LAST_TX_INDEX + 1];
 
         int offset = 0;
 
         int scanned;
-        sscanf(line, "%81" SCNs27 ",%n", seed, &scanned);
+        sscanf(line, "%81" SCNs27 ",%" SCNu8 ",%n", seed, &security, &scanned);
         offset += scanned;
 
         for (int i = 0; i <= LAST_TX_INDEX; i++) {
@@ -65,6 +66,6 @@ void test_for_each_bundle(const char *file_name,
             offset += scanned;
         }
 
-        test(seed, tx, bundle_hash, signatures);
+        test(seed, security, tx, bundle_hash, signatures);
     }
 }
