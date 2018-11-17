@@ -1,14 +1,13 @@
 #include "ui.h"
 #include <string.h>
 #include "os_io_seproxyhal.h"
-
 #include "ui_types.h"
 #include "ui_misc.h"
 #include "ui_buttons.h"
 #include "ui_display.h"
 #include "ui_elements.h"
+#include "api.h"
 #include "glyphs.h"
-
 #include "iota/addresses.h"
 
 UI_TEXT_CTX ui_text;
@@ -237,7 +236,7 @@ void ui_sign_tx()
     ui_render();
 }
 
-void ui_display_timeout()
+static void ui_display_timeout()
 {
     state_go(STATE_UI_TIMEOUT, 0);
 

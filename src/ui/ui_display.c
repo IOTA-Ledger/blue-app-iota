@@ -1,10 +1,10 @@
 #include "ui_display.h"
 #include <string.h>
-#include "common.h"
 #include "ui.h"
 #include "ui_types.h"
 #include "ui_text.h"
 #include "ui_misc.h"
+#include "api.h"
 
 void display_main_menu()
 {

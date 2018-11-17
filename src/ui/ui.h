@@ -2,8 +2,6 @@
 #define UI_H
 
 #include <stdbool.h>
-#include "iota/bundle.h"
-#include "api.h"
 #include "ui_types.h"
 
 /* To create a new generic UI screen -
@@ -15,7 +13,7 @@
  - #define Size of Menu [ui_types.h]
  - Create msg to display [ui_text.c] */
 
-void ui_init();
+void ui_init(void);
 void ui_display_main_menu(void);
 void ui_display_getting_addr(void);
 void ui_display_validating(void);

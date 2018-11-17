@@ -1,7 +1,6 @@
 #ifndef UI_ELEMENTS_H
 #define UI_ELEMENTS_H
 
-
 // {type, userid, x, y, width, height, stroke, radius, fill,
 // fgcolor, bgcolor, fontid, iconid}, text .....
 

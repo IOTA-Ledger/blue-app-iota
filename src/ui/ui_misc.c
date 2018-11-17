@@ -1,8 +1,8 @@
 #include "ui_misc.h"
 #include <string.h>
-#include "common.h"
-#include "iota/addresses.h"
 #include "ui.h"
+#include "api.h"
+#include "iota/addresses.h"
 
 /// the largest power of 10 that still fits into int32
 #define MAX_INT_DEC INT64_C(1000000000)
@@ -85,15 +85,9 @@ void write_display(const char *string, UI_TEXT_POS pos)
 }
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
-static void clear_text()
-{
-    write_display(NULL, TOP);
-    write_display(NULL, MID);
-    write_display(NULL, BOT);
-}
 
 // Checks for custom glyphs that require their own screen
-void check_special_glyph(UI_GLYPH_TYPES g)
+static void check_special_glyph(UI_GLYPH_TYPES g)
 {
     switch (g) {
     case GLYPH_IOTA:
@@ -116,13 +110,21 @@ void glyph_on(UI_GLYPH_TYPES g)
         check_special_glyph(g);
 }
 
-void glyph_off(UI_GLYPH_TYPES g)
+static void clear_text()
 {
-    if (g < TOTAL_GLYPHS)
-        ui_glyphs.glyph[g] = '.';
+    write_display(NULL, TOP);
+    write_display(NULL, MID);
+    write_display(NULL, BOT);
 }
 
-void clear_glyphs()
+static void glyph_off(UI_GLYPH_TYPES g)
+{
+    if (g < TOTAL_GLYPHS) {
+        ui_glyphs.glyph[g] = '.';
+    }
+}
+
+static void clear_glyphs()
 {
     // turn off all glyphs
     glyph_off(GLYPH_CONFIRM);
@@ -339,13 +341,12 @@ void display_advanced_tx_address()
 
 uint8_t get_tx_arr_sz()
 {
-    uint8_t i = 0, counter = 0;
+    uint8_t counter = 0;
 
-    while (i <= api.bundle_ctx.last_tx_index) {
-        if (api.bundle_ctx.values[i] != 0)
+    for (unsigned int i = 0; i <= api.bundle_ctx.last_tx_index; i++) {
+        if (api.bundle_ctx.values[i] != 0) {
             counter++;
-
-        i++;
+        }
     }
 
     return (counter * 2) + 2;
