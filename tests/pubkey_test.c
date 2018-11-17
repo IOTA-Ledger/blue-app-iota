@@ -5,8 +5,9 @@
 #include "api.h"
 #include "iota/conversion.h"
 
-void EXPECT_COMMAND_OK(const SET_SEED_FIXED_INPUT *seed_input);
-void EXPECT_COMMAND_EXCEPTION(const SET_SEED_FIXED_INPUT *seed_input);
+void expect_command_with_seed_ok(const void *seed_input, size_t seed_size);
+void expect_command_with_seed_exception(const void *seed_input,
+                                        size_t seed_size);
 
 void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
                             unsigned char *seed_bytes)
@@ -24,22 +25,25 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
     check_expected(sw);
 }
 
-void EXPECT_COMMAND_OK(const SET_SEED_FIXED_INPUT *seed_input)
+void expect_command_with_seed_ok(const void *seed_input, size_t seed_size)
 {
+    unsigned char input[seed_size + sizeof(PUBKEY_INPUT)];
+    memcpy(input, seed_input, seed_size);
 
-    SET_SEED_PUBKEY_INPUT input;
-    memcpy(&input.set_seed, seed_input, sizeof(SET_SEED_FIXED_INPUT));
-    input.pubkey.address_idx = 0;
+    const PUBKEY_INPUT pubkey_input = {0};
+    memcpy(input + seed_size, &pubkey_input, sizeof(pubkey_input));
 
     EXPECT_API_OK_ANY_OUTPUT(pubkey, 0, input);
 }
 
-void EXPECT_COMMAND_EXCEPTION(const SET_SEED_FIXED_INPUT *seed_input)
+void expect_command_with_seed_exception(const void *seed_input,
+                                        size_t seed_size)
 {
+    unsigned char input[seed_size + sizeof(PUBKEY_INPUT)];
+    memcpy(input, seed_input, seed_size);
 
-    SET_SEED_PUBKEY_INPUT input;
-    memcpy(&input.set_seed, seed_input, sizeof(SET_SEED_FIXED_INPUT));
-    input.pubkey.address_idx = 0;
+    const PUBKEY_INPUT pubkey_input = {0};
+    memcpy(input + seed_size, &pubkey_input, sizeof(pubkey_input));
 
     EXPECT_API_EXCEPTION(pubkey, 0, input);
 }
@@ -134,6 +138,7 @@ int main(void)
         cmocka_unit_test(test_valid_path_lengths),
         cmocka_unit_test(test_path_length_zero),
         cmocka_unit_test(test_path_length_six),
+        cmocka_unit_test(test_seed_recompute_on_path_change),
         // pubkey tests
         cmocka_unit_test(test_valid_index_level_one),
         cmocka_unit_test(test_valid_index_level_two),

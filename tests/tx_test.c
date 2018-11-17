@@ -9,8 +9,9 @@
 // include the c-file to be able to test static functions
 #include "bundle_ext.c"
 
-void EXPECT_COMMAND_OK(const SET_SEED_FIXED_INPUT *seed_input);
-void EXPECT_COMMAND_EXCEPTION(const SET_SEED_FIXED_INPUT *seed_input);
+void expect_command_with_seed_ok(const void *seed_input, size_t seed_size);
+void expect_command_with_seed_exception(const void *seed_input,
+                                        size_t seed_size);
 
 void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
                             unsigned char *seed_bytes)
@@ -28,18 +29,12 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
     check_expected(sw);
 }
 
-void EXPECT_COMMAND_OK(const SET_SEED_FIXED_INPUT *seed_input)
+void expect_command_with_seed_ok(const void *seed_input, size_t seed_size)
 {
     {
-        unsigned char input[sizeof(SET_SEED_TX_INPUT)];
-
-        const size_t seed_struct_size =
-            seed_input->bip32_path_length * sizeof(uint32_t) +
-            sizeof(SET_SEED_INPUT);
-
-        memcpy(input, seed_input, seed_struct_size);
-        memcpy(input + seed_struct_size, &PETER_VECTOR.bundle[0],
-               sizeof(TX_INPUT));
+        unsigned char input[seed_size + sizeof(TX_INPUT)];
+        memcpy(input, seed_input, seed_size);
+        memcpy(input + seed_size, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
 
         TX_OUTPUT output = {0};
         output.finalized = false;
@@ -66,11 +61,12 @@ void EXPECT_COMMAND_OK(const SET_SEED_FIXED_INPUT *seed_input)
     }
 }
 
-void EXPECT_COMMAND_EXCEPTION(const SET_SEED_FIXED_INPUT *seed_input)
+void expect_command_with_seed_exception(const void *seed_input,
+                                        size_t seed_size)
 {
-    SET_SEED_TX_INPUT input;
-    memcpy(&input.set_seed, seed_input, sizeof(SET_SEED_FIXED_INPUT));
-    memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+    unsigned char input[seed_size + sizeof(TX_INPUT)];
+    memcpy(input, seed_input, seed_size);
+    memcpy(input + seed_size, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
 
     EXPECT_API_EXCEPTION(tx, P1_FIRST, input);
 }
@@ -641,11 +637,10 @@ int main(void)
 {
     const struct CMUnitTest tests[] = {
         // seed tests
-        cmocka_unit_test(test_security_level_zero),
-        cmocka_unit_test(test_security_level_four),
         cmocka_unit_test(test_valid_path_lengths),
         cmocka_unit_test(test_path_length_zero),
         cmocka_unit_test(test_path_length_six),
+        cmocka_unit_test(test_seed_recompute_on_path_change),
         // tx tests
         cmocka_unit_test(test_bundles_for_seed_from_file),
         cmocka_unit_test(test_refinalize_valid_bundle),
