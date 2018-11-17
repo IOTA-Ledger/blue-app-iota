@@ -33,7 +33,7 @@ void api_initialize(void)
 }
 
 /** @brief Clear bundle and signature data and reset state. */
-static void api_reset_bundle(void)
+static void reset_bundle(void)
 {
     MEMCLEAR(api.bundle_ctx);
     MEMCLEAR(api.signing_ctx);
@@ -89,7 +89,7 @@ static unsigned int update_seed(const unsigned char *input_data,
         api.security = security;
 
         // if security does get changed, reset bundle
-        api_reset_bundle();
+        reset_bundle();
     }
 
     if (bip32_path_changed(input)) {
@@ -106,7 +106,7 @@ static unsigned int update_seed(const unsigned char *input_data,
                                api.seed_bytes);
 
         // if the path was changed, reset bundle
-        api_reset_bundle();
+        reset_bundle();
     }
 
     return seed_struct_len;
@@ -462,7 +462,8 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_STATE);
     }
 
-    api_initialize();
+    // as no error occured, it is ok to only reset the bundle and keep the seed
+    reset_bundle();
 
     io_send(NULL, 0, SW_OK);
     return 0;
