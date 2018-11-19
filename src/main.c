@@ -1,4 +1,5 @@
 #include "os_io_seproxyhal.h"
+#include "api.h"
 #include "iota_io.h"
 #include "ui/ui.h"
 
@@ -11,7 +12,6 @@ static void IOTA_main()
     volatile unsigned int flags = 0;
 
     ui_init();
-    // init the API
     io_initialize();
 
     for (;;) {
@@ -23,15 +23,25 @@ static void IOTA_main()
                 const unsigned int rx = io_exchange(CHANNEL_APDU | flags, 0);
 
                 // check header consistency
+                if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
+                    THROW(SW_CLA_NOT_SUPPORTED);
+                }
                 if (rx < OFFSET_P3 ||
                     rx < G_io_apdu_buffer[OFFSET_P3] + OFFSET_P3) {
                     THROW(SW_INCORRECT_LENGTH_P3);
                 }
 
-                if (!os_global_pin_is_validated())
+                // the device must not be locked
+                if (!os_global_pin_is_validated()) {
                     THROW(SW_SECURITY_APP_LOCKED);
+                }
 
+                // handle iota apdu commands
                 flags = iota_dispatch();
+            }
+            CATCH(EXCEPTION_IO_RESET)
+            {
+                THROW(EXCEPTION_IO_RESET);
             }
             CATCH_OTHER(e)
             {
@@ -62,14 +72,6 @@ static void IOTA_main()
         END_TRY;
     }
 }
-
-
-/* ------------------------------------------------
- ---------------------------------------------------
- ---------------------------------------------------
- ------------------- Not Modified ------------------
- --------------------------------------------------- */
-
 
 // seems to be called from io_exchange
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len)
@@ -140,42 +142,59 @@ unsigned char io_event(unsigned char channel)
     return 1;
 }
 
+static void app_exit(void)
+{
+    BEGIN_TRY_L(exit)
+    {
+        TRY_L(exit)
+        {
+            os_sched_exit(-1);
+        }
+        FINALLY_L(exit)
+        {
+        }
+    }
+    END_TRY_L(exit);
+}
+
 __attribute__((section(".boot"))) int main(void)
 {
     // exit critical section
     __asm volatile("cpsie i");
 
-    UX_INIT();
-
     // ensure exception will work as planned
     os_boot();
 
-    BEGIN_TRY
-    {
-        TRY
-        {
-            io_seproxyhal_init();
+    for (;;) {
+        UX_INIT();
 
-#ifdef LISTEN_BLE
-            if (os_seph_features() &
-                SEPROXYHAL_TAG_SESSION_START_EVENT_FEATURE_BLE) {
-                BLE_power(0, NULL);
-                // restart IOs
-                BLE_power(1, NULL);
+        BEGIN_TRY
+        {
+            TRY
+            {
+                io_seproxyhal_init();
+
+                // deactivate usb before activating
+                USB_power(false);
+                USB_power(true);
+
+                IOTA_main();
             }
-#endif
-
-            USB_power(0);
-            USB_power(1);
-
-            IOTA_main();
+            CATCH(EXCEPTION_IO_RESET)
+            {
+                // reset IO and UX
+                continue;
+            }
+            CATCH_ALL
+            {
+                // exit on all other exceptions
+                break;
+            }
+            FINALLY
+            {
+            }
         }
-        CATCH_OTHER(e)
-        {
-        }
-        FINALLY
-        {
-        }
+        END_TRY;
     }
-    END_TRY;
+    app_exit();
 }
