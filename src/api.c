@@ -376,6 +376,8 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
 
     // temporary screen during signing process
     ui_display_signing();
+    // start timer to reset
+    ui_timeout_start();
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
@@ -388,6 +390,7 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
 
+        ui_timeout_stop();
         ui_display_main_menu();
     }
 
@@ -462,8 +465,7 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
         THROW(SW_COMMAND_INVALID_STATE);
     }
 
-    // as no error occured, it is ok to only reset the bundle and keep the seed
-    reset_bundle();
+    api_initialize();
 
     io_send(NULL, 0, SW_OK);
     return 0;

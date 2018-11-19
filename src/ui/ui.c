@@ -141,6 +141,7 @@ void ui_init()
 
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
 
+    ui_timeout_stop();
     ui_display_main_menu();
 }
 
@@ -174,7 +175,6 @@ void ui_display_validating()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
-    ui_state.ui_timer = 0;
 
     ui_render();
     ui_force_draw();
@@ -193,7 +193,6 @@ void ui_display_recv()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
-    ui_state.ui_timer = 0;
 
     ui_render();
     ui_force_draw();
@@ -212,7 +211,6 @@ void ui_display_signing()
     backup_state();
 
     ui_state.state = STATE_IGNORE;
-    ui_state.ui_timer = 0;
 
     ui_render();
     ui_force_draw();
@@ -245,6 +243,15 @@ static void ui_display_timeout()
     ui_force_draw();
 }
 
+static void ui_display_cancelled()
+{
+    state_go(STATE_TX_CANCELLED, 0);
+
+    ui_build_display();
+    ui_render();
+    ui_force_draw();
+}
+
 void ui_reset()
 {
     ui_state.queued_ui_reset = false;
@@ -265,30 +272,45 @@ void ui_restore()
     ui_force_draw();
 }
 
-void ui_queue_reset(bool islocked)
+void ui_timeout_tick()
 {
-    // use a timer on state_ignore to reset if something goes wrong
-    if (ui_state.state == STATE_IGNORE) {
-        ui_state.ui_timer++;
-        if (ui_state.ui_timer > STATE_IGNORE_TIMEOUT * 10) {
-            ui_display_timeout();
+    // timer not started
+    if (ui_state.timer <= 0) {
+        return;
+    }
+
+    ui_state.timer--;
+    if (ui_state.timer == 0) {
+        ui_display_timeout();
+    }
+}
+
+void ui_timeout_start()
+{
+    ui_state.timer = UI_TIMEOUT_SECONDS;
+}
+
+void ui_timeout_stop()
+{
+    ui_state.timer = 0;
+}
+
+void ui_queue_reset_if_locked()
+{
+    // the lock is only relevant, if the tx is currently displayed
+    if (in_tx_state()) {
+        const bool is_locked = !os_global_pin_is_validated();
+        if (is_locked) {
+            ui_state.queued_ui_reset = true;
+        }
+        else if (!is_locked && ui_state.queued_ui_reset) {
+            ui_state.queued_ui_reset = false;
+            ui_display_cancelled();
         }
     }
     else {
-        ui_state.ui_timer = 0;
-    }
-
-    if (islocked && in_tx_state()) {
-        ui_state.queued_ui_reset = true;
-    }
-    else if (!islocked && ui_state.queued_ui_reset) {
+        // make sure that no reset is queued if the tx state was left
         ui_state.queued_ui_reset = false;
-
-        state_go(STATE_TX_CANCELLED, 0);
-
-        ui_build_display();
-        ui_render();
-        ui_force_draw();
     }
 }
 

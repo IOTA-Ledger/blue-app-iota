@@ -127,7 +127,10 @@ unsigned char io_event(unsigned char channel)
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        ui_queue_reset(!os_global_pin_is_validated());
+        ui_timeout_tick();
+        ui_queue_reset_if_locked(); // reset, if locked during tx screen
+        break;
+
     default:
         UX_DEFAULT_EVENT();
         break;

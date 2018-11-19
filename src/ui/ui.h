@@ -23,10 +23,15 @@ void ui_display_address(const unsigned char *addr_bytes);
 void ui_sign_tx(void);
 void ui_reset(void);
 void ui_restore(void);
-void ui_queue_reset(bool islocked);
+
+void ui_queue_reset_if_locked(void);
 
 void ui_set_screen(UI_SCREENS s);
 void ui_render(void);
 void ui_force_draw(void);
+
+void ui_timeout_tick(void);
+void ui_timeout_start(void);
+void ui_timeout_stop(void);
 
 #endif // UI_H

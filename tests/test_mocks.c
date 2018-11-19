@@ -31,6 +31,14 @@ void ui_display_signing()
 {
 }
 
+void ui_timeout_start()
+{
+}
+
+void ui_timeout_stop()
+{
+}
+
 void ui_display_address(const unsigned char *addr_bytes)
 {
     UNUSED(addr_bytes);
