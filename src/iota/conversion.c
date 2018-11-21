@@ -252,14 +252,10 @@ static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
         }
     }
 
-    // convert to balanced ternary using two's complement
-    if (bigint_cmp(bigint, HALF_3) >= 0) {
-        bigint_sub(bigint, bigint, HALF_3);
-    }
-    else {
-        // equivalent to bytes := ~(HALF_3 - bytes) + 1
-        bigint_add(bigint, NEG_HALF_3, bigint);
-    }
+    // substract the middle of the domain to get balanced ternary
+    // as there cannot be any overflows with 242 trits, a simple substraction
+    // yields the correct result in two's complement representation
+    bigint_sub(bigint, bigint, HALF_3);
 }
 
 static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
@@ -269,12 +265,7 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     bigint_set_last_trit_zero(bigint);
 
     // convert to the (positive) number representing non-balanced ternary
-    if (bigint_is_negative(bigint)) {
-        bigint_sub(bigint, bigint, NEG_HALF_3);
-    }
-    else {
-        bigint_add(bigint, bigint, HALF_3);
-    }
+    bigint_add(bigint, bigint, HALF_3);
 
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
     for (unsigned int i = 0; i < 242; i++) {
