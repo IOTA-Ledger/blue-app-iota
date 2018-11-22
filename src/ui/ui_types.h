@@ -9,7 +9,7 @@
 #define TOTAL_GLYPHS GLYPH_NONE
 
 // Seconds until UI timeout if expected inputs are not received
-#define UI_TIMEOUT_SECONDS 10
+#define UI_TIMEOUT_SECONDS 3
 
 #define BUTTON_L 0
 #define BUTTON_R 1
