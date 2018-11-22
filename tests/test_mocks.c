@@ -57,6 +57,10 @@ void ui_restore()
 {
 }
 
+void ui_reset()
+{
+}
+
 __attribute__((weak)) void seed_derive_from_bip32(const unsigned int *path,
                                                   unsigned int pathLength,
                                                   unsigned char *seed_bytes)

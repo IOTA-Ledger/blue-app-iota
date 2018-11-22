@@ -466,6 +466,7 @@ unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
     }
 
     reset_bundle();
+    ui_reset();
 
     io_send(NULL, 0, SW_OK);
     return 0;

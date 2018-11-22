@@ -141,7 +141,6 @@ void ui_init()
 
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
 
-    ui_timeout_stop();
     ui_display_main_menu();
 }
 
@@ -255,6 +254,7 @@ static void ui_display_cancelled()
 void ui_reset()
 {
     ui_state.queued_ui_reset = false;
+    ui_timeout_stop();
 
     state_go(STATE_MAIN_MENU, 0);
 
