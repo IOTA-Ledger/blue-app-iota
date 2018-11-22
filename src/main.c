@@ -130,7 +130,7 @@ unsigned char io_event(unsigned char channel)
     case SEPROXYHAL_TAG_TICKER_EVENT:
         ui_timeout_tick();
         ui_queue_reset_if_locked(); // reset, if locked during tx screen
-        break;
+        // fallthrough
 
     default:
         UX_DEFAULT_EVENT();
