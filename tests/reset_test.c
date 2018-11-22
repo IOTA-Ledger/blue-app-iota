@@ -20,6 +20,13 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
     check_expected(sw);
 }
 
+static void assert_bundle_reset(void)
+{
+    assert_all_zero(&api.bundle_ctx, sizeof(api.bundle_ctx));
+    assert_all_zero(&api.signing_ctx, sizeof(api.signing_ctx));
+    assert_int_equal(api.state_flags, 0);
+}
+
 static void test_reset_initialized(void **state)
 {
     UNUSED(state);
@@ -29,7 +36,7 @@ static void test_reset_initialized(void **state)
     unsigned char input[0]; // no input
     EXPECT_API_OK(reset, 0, input);
 
-    assert_all_zero(&api, sizeof(api));
+    assert_bundle_reset();
 }
 
 static void test_reset_pubkey(void **state)
@@ -54,12 +61,20 @@ static void test_reset_pubkey(void **state)
         EXPECT_API_OK(reset, 0, input);
     }
 
-    assert_all_zero(&api, sizeof(api));
+    assert_bundle_reset();
 
     {
-        SET_SEED_PUBKEY_INPUT input;
-        SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
-        input.pubkey.address_idx = 0;
+        const SET_SEED_PUBKEY_INPUT input = {
+            {security, BIP32_PATH_LENGTH, BIP32_PATH}, {0}};
+
+        // seed_derive_from_bip32 may are may not be called
+        expect_memory_count(
+            seed_derive_from_bip32, path, input.set_seed.bip32_path,
+            sizeof(input.set_seed.bip32_path), WILL_RETURN_ONCE);
+        expect_value_count(seed_derive_from_bip32, pathLength,
+                           input.set_seed.bip32_path_length, WILL_RETURN_ONCE);
+        will_return_maybe(seed_derive_from_bip32,
+                          cast_ptr_to_largest_integral_type(PETER_VECTOR.seed));
 
         PUBKEY_OUTPUT output;
         strncpy(output.address, PETER_VECTOR.addresses[security][0],
@@ -75,7 +90,9 @@ static void test_reset_bundle(void **state)
     static const int security = 2;
 
     api_initialize();
-    { // set first tx of bundle
+
+    // only send first tx of a bundle
+    {
         SET_SEED_TX_INPUT input;
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
@@ -85,15 +102,47 @@ static void test_reset_bundle(void **state)
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
+    // reset
     {
         unsigned char input[0]; // no input
         EXPECT_API_OK(reset, 0, input);
     }
 
-    assert_all_zero(&api, sizeof(api));
+    assert_bundle_reset();
 
-    EXPECT_API_SET_BUNDLE_OK(PETER_VECTOR.seed, security, PETER_VECTOR.bundle,
-                             2, PETER_VECTOR.bundle_hash);
+    // send complete bundle
+    {
+        SET_SEED_TX_INPUT input = {{security, BIP32_PATH_LENGTH, BIP32_PATH},
+                                   {}};
+        memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
+
+        // seed_derive_from_bip32 may are may not be called
+        expect_memory_count(
+            seed_derive_from_bip32, path, input.set_seed.bip32_path,
+            sizeof(input.set_seed.bip32_path), WILL_RETURN_ONCE);
+        expect_value_count(seed_derive_from_bip32, pathLength,
+                           input.set_seed.bip32_path_length, WILL_RETURN_ONCE);
+        will_return_maybe(seed_derive_from_bip32,
+                          cast_ptr_to_largest_integral_type(PETER_VECTOR.seed));
+
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
+    }
+    {
+        TX_OUTPUT output = {0};
+        output.finalized = false;
+
+        EXPECT_API_DATA_OK(tx, P1_MORE, PETER_VECTOR.bundle[1], output);
+    }
+    {
+        TX_OUTPUT output = {0};
+        strncpy(output.bundle_hash, PETER_VECTOR.bundle_hash, 81);
+        output.finalized = true;
+
+        EXPECT_API_DATA_OK(tx, P1_MORE, PETER_VECTOR.bundle[2], output);
+    }
 }
 
 int main(void)
