@@ -64,7 +64,7 @@ void ui_set_screen(UI_SCREENS s)
     current_screen = s;
 }
 
-void ui_render()
+static void ui_render()
 {
     switch (current_screen) {
     case SCREEN_TITLE:
@@ -83,11 +83,11 @@ void ui_render()
         UX_DISPLAY(bagl_ui_back_screen, NULL);
         break;
     default:
-        os_sched_exit(0);
+        THROW(INVALID_PARAMETER);
     }
 }
 
-void ui_force_draw()
+static void ui_force_draw()
 {
     bool ux_done = false;
     while (!ux_done) {
@@ -120,9 +120,9 @@ void ui_force_draw()
 
 static void ctx_initialize()
 {
-    os_memset(&ui_text, 0, sizeof(ui_text));
-    os_memset(&ui_glyphs, 0, sizeof(ui_glyphs));
-    os_memset(&ui_state, 0, sizeof(ui_state));
+    MEMCLEAR(ui_text);
+    MEMCLEAR(ui_glyphs);
+    MEMCLEAR(ui_state);
 }
 
 // Entry points for main to modify display
