@@ -288,6 +288,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     }
 
     ui_display_recv();
+    ui_timeout_start();
 
     if (first) {
         if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
@@ -320,6 +321,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     add_tx(input);
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
         // perfectly valid bundle
+        ui_timeout_stop();
         ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
