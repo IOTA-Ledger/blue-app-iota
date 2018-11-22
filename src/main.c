@@ -60,6 +60,7 @@ static void IOTA_main()
                 // from resetting the app
                 if (sw != SW_CLA_NOT_SUPPORTED) {
                     api_initialize();
+                    ui_reset();
                 }
                 io_send(NULL, 0, sw);
 
