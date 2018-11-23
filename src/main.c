@@ -137,14 +137,12 @@ unsigned char io_event(unsigned char channel)
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
-            ui_timeout_tick();
-            // do not forward the ticker_event when the transaction is shown
-            if (ui_lock_forbidden()) {
-                break;
-            }
-        });
-        break;
+        ui_timeout_tick();
+        // do not forward the ticker_event when the transaction is shown
+        if (ui_lock_forbidden()) {
+            break;
+        }
+        // fallthrough
 
     default:
         UX_DEFAULT_EVENT();

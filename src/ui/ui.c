@@ -10,6 +10,8 @@
 #include "glyphs.h"
 #include "iota/addresses.h"
 
+#define TICKS_PER_SECOND 10
+
 UI_TEXT_CTX ui_text;
 UI_GLYPH_CTX ui_glyphs;
 UI_STATE_CTX ui_state;
@@ -278,17 +280,18 @@ void ui_timeout_tick()
 
     ui_state.timer--;
     if (ui_state.timer == 0) {
-        ui_display_timeout();
+        // throw an exception so that a result is always returned
+        THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
     }
 }
 
 void ui_timeout_start(bool interactive)
 {
     if (interactive) {
-        ui_state.timer = UI_TIMEOUT_INTERACTIVE_SECONDS;
+        ui_state.timer = UI_TIMEOUT_INTERACTIVE_SECONDS * TICKS_PER_SECOND;
     }
     else {
-        ui_state.timer = UI_TIMEOUT_SECONDS;
+        ui_state.timer = UI_TIMEOUT_SECONDS * TICKS_PER_SECOND;
     }
 }
 
