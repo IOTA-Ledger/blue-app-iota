@@ -38,6 +38,7 @@ static void reset_bundle(void)
     MEMCLEAR(api.bundle_ctx);
     MEMCLEAR(api.signing_ctx);
     api.state_flags = 0;
+    ui_timeout_stop();
 }
 
 /** @brief Checks whether the given path differes from the stored path. */
@@ -288,7 +289,8 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     }
 
     ui_display_recv();
-    ui_timeout_start();
+    // reset next transaction timer
+    ui_timeout_start(false);
 
     if (first) {
         if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
@@ -319,9 +321,11 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     }
 
     add_tx(input);
+
+    // perfectly valid bundle
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
-        // perfectly valid bundle
-        ui_timeout_stop();
+        // start interactive timeout
+        ui_timeout_start(true);
         ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
@@ -378,8 +382,7 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
 
     // temporary screen during signing process
     ui_display_signing();
-    // start timer to reset
-    ui_timeout_start();
+    ui_timeout_start(false);
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
@@ -391,8 +394,6 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
-
-        ui_timeout_stop();
         ui_display_main_menu();
     }
 

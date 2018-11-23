@@ -24,12 +24,12 @@ void ui_sign_tx(void);
 void ui_reset(void);
 void ui_restore(void);
 
-void ui_queue_reset_if_locked(void);
-
 void ui_set_screen(UI_SCREENS s);
 
+bool ui_lock_forbidden(void);
+
 void ui_timeout_tick(void);
-void ui_timeout_start(void);
-void ui_timeout_stop(void);
+void ui_timeout_start(bool interactive);
+void ui_timeout_stop();
 
 #endif // UI_H

@@ -10,6 +10,7 @@
 
 // Seconds until UI timeout if expected inputs are not received
 #define UI_TIMEOUT_SECONDS 3
+#define UI_TIMEOUT_INTERACTIVE_SECONDS 80
 
 #define BUTTON_L 0
 #define BUTTON_R 1
@@ -105,7 +106,6 @@ typedef struct UI_STATE_CTX {
     // tx information
     int64_t val;
     bool display_full_value;
-    bool queued_ui_reset;
 
     char addr[90];
 

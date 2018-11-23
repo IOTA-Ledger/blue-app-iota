@@ -137,9 +137,14 @@ unsigned char io_event(unsigned char channel)
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        ui_timeout_tick();
-        ui_queue_reset_if_locked(); // reset, if locked during tx screen
-        // fallthrough
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
+            ui_timeout_tick();
+            // do not forward the ticker_event when the transaction is shown
+            if (ui_lock_forbidden()) {
+                break;
+            }
+        });
+        break;
 
     default:
         UX_DEFAULT_EVENT();

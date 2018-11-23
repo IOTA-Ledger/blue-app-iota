@@ -253,9 +253,6 @@ static void ui_display_cancelled()
 
 void ui_reset()
 {
-    ui_state.queued_ui_reset = false;
-    ui_timeout_stop();
-
     state_go(STATE_MAIN_MENU, 0);
 
     ui_build_display();
@@ -285,9 +282,14 @@ void ui_timeout_tick()
     }
 }
 
-void ui_timeout_start()
+void ui_timeout_start(bool interactive)
 {
-    ui_state.timer = UI_TIMEOUT_SECONDS;
+    if (interactive) {
+        ui_state.timer = UI_TIMEOUT_INTERACTIVE_SECONDS;
+    }
+    else {
+        ui_state.timer = UI_TIMEOUT_SECONDS;
+    }
 }
 
 void ui_timeout_stop()
@@ -295,23 +297,9 @@ void ui_timeout_stop()
     ui_state.timer = 0;
 }
 
-void ui_queue_reset_if_locked()
+bool ui_lock_forbidden(void)
 {
-    // the lock is only relevant, if the tx is currently displayed
-    if (in_tx_state()) {
-        const bool is_locked = !os_global_pin_is_validated();
-        if (is_locked) {
-            ui_state.queued_ui_reset = true;
-        }
-        else if (!is_locked && ui_state.queued_ui_reset) {
-            ui_state.queued_ui_reset = false;
-            ui_display_cancelled();
-        }
-    }
-    else {
-        // make sure that no reset is queued if the tx state was left
-        ui_state.queued_ui_reset = false;
-    }
+    return in_tx_state();
 }
 
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------
