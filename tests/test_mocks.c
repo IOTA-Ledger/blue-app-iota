@@ -31,8 +31,9 @@ void ui_display_signing()
 {
 }
 
-void ui_timeout_start()
+void ui_timeout_start(bool interactive)
 {
+    UNUSED(interactive);
 }
 
 void ui_timeout_stop()
