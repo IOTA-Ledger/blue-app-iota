@@ -16,7 +16,7 @@ int8_t button_main_menu(uint8_t button_mask)
     if (button_mask == BUTTON_B) {
         switch (ui_state.menu_idx) {
 
-        case MENU_MAIN_CONNECT:
+        case MENU_MAIN_IOTA:
             state_go(STATE_EXIT, 0);
             return -1;
 
@@ -207,22 +207,6 @@ void button_prompt_tx(uint8_t button_mask)
                 state_go(STATE_TX_ADDR, 0);
             }
         }
-    }
-}
-
-void button_tx_cancelled(uint8_t button_mask)
-{
-    if (button_mask == BUTTON_B) {
-        user_deny_tx();
-        state_go(STATE_MAIN_MENU, 0);
-    }
-}
-
-void button_ui_timeout(uint8_t button_mask)
-{
-    if (button_mask == BUTTON_B) {
-        api_initialize();
-        ui_reset();
     }
 }
 

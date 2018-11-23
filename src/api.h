@@ -124,9 +124,10 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
                     unsigned int len);
 unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
                       unsigned int len);
-unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
+unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
                                 unsigned int len);
-unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len);
+unsigned int api_reset(uint8_t p1, const unsigned char *input_data,
+                       unsigned int len);
 
 void user_sign_tx(void);
 void user_deny_tx(void);

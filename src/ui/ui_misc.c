@@ -31,21 +31,6 @@ void restore_state()
     ui_state.backup_menu_idx = 0;
 }
 
-bool in_tx_state()
-{
-    switch (ui_state.state) {
-    // BIP Path could be in tx or disp_addr (backup state will tell us which)
-    case STATE_BIP_PATH:
-        if (ui_state.backup_state != STATE_PROMPT_TX)
-            return false;
-    case STATE_PROMPT_TX:
-    case STATE_TX_ADDR:
-        return true;
-    default:
-        return false;
-    }
-}
-
 void abbreviate_addr(char *dest, const char *src)
 {
     // copy the abbreviated address over
@@ -130,7 +115,6 @@ static void clear_glyphs()
     glyph_off(GLYPH_CONFIRM);
     glyph_off(GLYPH_UP);
     glyph_off(GLYPH_DOWN);
-    glyph_off(GLYPH_WARN);
     glyph_off(GLYPH_LOAD);
     glyph_off(GLYPH_DASH);
 }

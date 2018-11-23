@@ -235,24 +235,6 @@ void ui_sign_tx()
     ui_render();
 }
 
-static void ui_display_timeout()
-{
-    state_go(STATE_UI_TIMEOUT, 0);
-
-    ui_build_display();
-    ui_render();
-    ui_force_draw();
-}
-
-static void ui_display_cancelled()
-{
-    state_go(STATE_TX_CANCELLED, 0);
-
-    ui_build_display();
-    ui_render();
-    ui_force_draw();
-}
-
 void ui_reset()
 {
     state_go(STATE_MAIN_MENU, 0);
@@ -281,7 +263,7 @@ void ui_timeout_tick()
     ui_state.timer--;
     if (ui_state.timer == 0) {
         // throw an exception so that a result is always returned
-        THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
+        THROW(SW_SECURITY_APP_TIMEOUT);
     }
 }
 
@@ -302,7 +284,19 @@ void ui_timeout_stop()
 
 bool ui_lock_forbidden(void)
 {
-    return in_tx_state();
+    // forbid app from locking during transaction (rely on tx timeout)
+    switch (ui_state.state) {
+    // BIP Path could be in tx or disp_addr
+    // (backup state will tell us which)
+    case STATE_BIP_PATH:
+        if (ui_state.backup_state != STATE_PROMPT_TX)
+            return false;
+    case STATE_PROMPT_TX:
+    case STATE_TX_ADDR:
+        return true;
+    default:
+        return false;
+    }
 }
 
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------
@@ -375,14 +369,6 @@ static void ui_handle_button(uint8_t button_mask)
     case STATE_PROMPT_TX:
         button_prompt_tx(button_mask);
         return;
-        /* ------------ STATE TX CANCELLED -------------- */
-    case STATE_TX_CANCELLED:
-        button_tx_cancelled(button_mask);
-        return;
-    /* ------------ STATE UI TIMEOUT -------------- */
-    case STATE_UI_TIMEOUT:
-        button_ui_timeout(button_mask);
-        return;
     case STATE_IGNORE:
         return;
         /* ------------ DEFAULT -------------- */
@@ -439,14 +425,6 @@ static void ui_build_display()
         /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
     case STATE_PROMPT_TX:
         display_prompt_tx();
-        break;
-        /* ------------ STATE TX CANCELLED -------------- */
-    case STATE_TX_CANCELLED:
-        display_tx_cancelled();
-        break;
-    /* ------------ STATE UI TIMEOUT -------------- */
-    case STATE_UI_TIMEOUT:
-        display_ui_timeout();
         break;
         /* ------------ IGNORE STATE -------------- */
     case STATE_IGNORE:

@@ -22,7 +22,7 @@ void display_main_menu()
     // special override display states
     switch (ui_state.menu_idx) {
 
-    case MENU_MAIN_CONNECT:
+    case MENU_MAIN_IOTA:
         display_glyphs_confirm(GLYPH_IOTA, GLYPH_DOWN);
 
         write_display("IOTA", MID);
@@ -218,28 +218,6 @@ void display_prompt_tx()
         display_advanced_tx_value();
     else
         display_advanced_tx_address();
-}
-
-void display_tx_cancelled()
-{
-    ui_set_screen(SCREEN_TITLE_BOLD);
-
-    clear_display();
-    write_display("   Transaction", TOP);
-    write_display("   Cancelled", BOT);
-
-    display_glyphs_confirm(GLYPH_WARN, GLYPH_NONE);
-}
-
-void display_ui_timeout()
-{
-    ui_set_screen(SCREEN_TITLE_BOLD);
-
-    clear_display();
-    write_display("   Transaction", TOP);
-    write_display("  Timed Out", BOT);
-
-    display_glyphs_confirm(GLYPH_WARN, GLYPH_NONE);
 }
 
 void display_unknown_state()

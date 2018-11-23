@@ -437,7 +437,7 @@ void user_deny_tx()
 }
 
 // get application configuration (flags and version)
-unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
+unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
                                 unsigned int len)
 {
     UNUSED(p1);
@@ -458,7 +458,8 @@ unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
     return 0;
 }
 
-unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
+unsigned int api_reset(uint8_t p1, const unsigned char *input_data,
+                       unsigned int len)
 {
     UNUSED(p1);
     UNUSED(input_data);
