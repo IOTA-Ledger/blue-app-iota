@@ -56,12 +56,21 @@ static void IOTA_main()
                     sw = SW_UNKNOWN | (e & 0x0FF);
                 }
 
-                // prevent ledger live's background polling
-                // from resetting the app
-                if (sw != SW_CLA_NOT_SUPPORTED) {
+                switch (sw) {
+                case SW_CLA_NOT_SUPPORTED:
+                    // do not reset anything
+                    break;
+                case SW_SECURITY_APP_LOCKED:
+                    // reset all states but keep the UI
+                    api_initialize();
+                    break;
+                default:
+                    // reset states and UI
                     api_initialize();
                     ui_reset();
                 }
+
+                // send the error code
                 io_send(NULL, 0, sw);
 
                 flags = 0;
