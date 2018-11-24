@@ -1,6 +1,6 @@
 #include "test_common.h"
-#include "iota/conversion.h"
 // include the c-file to be able to test static functions
+#include "iota/conversion.c"
 #include "iota/bundle.c"
 
 // Hash relevant content of one transaction

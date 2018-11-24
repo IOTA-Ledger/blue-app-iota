@@ -252,14 +252,10 @@ static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
         }
     }
 
-    // convert to balanced ternary using two's complement
-    if (bigint_cmp(bigint, HALF_3) >= 0) {
-        bigint_sub(bigint, bigint, HALF_3);
-    }
-    else {
-        // equivalent to bytes := ~(HALF_3 - bytes) + 1
-        bigint_add(bigint, NEG_HALF_3, bigint);
-    }
+    // substract the middle of the domain to get balanced ternary
+    // as there cannot be any overflows with 242 trits, a simple substraction
+    // yields the correct result in two's complement representation
+    bigint_sub(bigint, bigint, HALF_3);
 }
 
 static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
@@ -269,12 +265,7 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     bigint_set_last_trit_zero(bigint);
 
     // convert to the (positive) number representing non-balanced ternary
-    if (bigint_is_negative(bigint)) {
-        bigint_sub(bigint, bigint, NEG_HALF_3);
-    }
-    else {
-        bigint_add(bigint, bigint, HALF_3);
-    }
+    bigint_add(bigint, bigint, HALF_3);
 
     // ignore the 243th trit, as it cannot be fully represented in 48 bytes
     for (unsigned int i = 0; i < 242; i++) {
@@ -285,31 +276,43 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     trits[242] = 0;
 }
 
-bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits)
+bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 {
-    const bool is_negative = value < 0;
-    if (is_negative) {
-        value = -value;
-    }
-
     os_memset(trits, 0, num_trits);
 
+    // nothing to compute for zero value
+    if (value == 0) {
+        return false;
+    }
+
+    const bool is_negative = value < 0;
+    uint64_t v_abs;
+    if (value == INT64_MIN) {
+        v_abs = INT64_MAX + UINT64_C(1);
+    }
+    else if (is_negative) {
+        v_abs = -value;
+    }
+    else {
+        v_abs = value;
+    }
+
     for (unsigned int i = 0; i < num_trits; i++) {
-        if (value == 0) {
+        if (v_abs == 0) {
             return false;
         }
 
-        int rem = value % BASE;
-        value = value / BASE;
+        int rem = v_abs % BASE;
+        v_abs = v_abs / BASE;
         if (rem > 1) {
             rem = -1;
-            value += 1;
+            v_abs += 1;
         }
 
         trits[i] = is_negative ? -rem : rem;
     }
 
-    return value != 0;
+    return v_abs != 0;
 }
 /* --------------------- END trits > bigint */
 
@@ -343,6 +346,17 @@ static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
     }
 }
 
+/** @brief Converts a big-endian binary integer into ternary representation.
+ *  @param bytes input big-endian 48-byte integers
+ *  @param trits target trit array
+ */
+static void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
+{
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    bigint_to_trits_mem(bigint, trits);
+}
+
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
 {
     uint32_t bigint[12];
@@ -361,13 +375,6 @@ void chars_to_bytes(const char *chars, unsigned char *bytes,
 
         trits_to_bytes(trits, bytes + i * 48);
     }
-}
-
-void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
-{
-    uint32_t bigint[12];
-    bytes_to_bigint(bytes, bigint);
-    bigint_to_trits_mem(bigint, trits);
 }
 
 void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
