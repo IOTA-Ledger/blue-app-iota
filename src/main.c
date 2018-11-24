@@ -22,6 +22,11 @@ static void IOTA_main()
                 // data is always sent separatly
                 const unsigned int rx = io_exchange(CHANNEL_APDU | flags, 0);
 
+                // the device must not be locked
+                if (!os_global_pin_is_validated()) {
+                    THROW(SW_DEVICE_IS_LOCKED);
+                }
+
                 // check header consistency
                 if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
                     THROW(SW_CLA_NOT_SUPPORTED);
@@ -29,11 +34,6 @@ static void IOTA_main()
                 if (rx < OFFSET_P3 ||
                     rx < G_io_apdu_buffer[OFFSET_P3] + OFFSET_P3) {
                     THROW(SW_INCORRECT_LENGTH_P3);
-                }
-
-                // the device must not be locked
-                if (!os_global_pin_is_validated()) {
-                    THROW(SW_SECURITY_APP_LOCKED);
                 }
 
                 // handle iota apdu commands
@@ -57,12 +57,9 @@ static void IOTA_main()
                 }
 
                 switch (sw) {
+                case SW_DEVICE_IS_LOCKED:
                 case SW_CLA_NOT_SUPPORTED:
                     // do not reset anything
-                    break;
-                case SW_SECURITY_APP_LOCKED:
-                    // reset all states but keep the UI
-                    api_initialize();
                     break;
                 default:
                     // reset states and UI

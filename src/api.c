@@ -17,10 +17,10 @@
 
 #define GET_INPUT(input_data, len, INS)                                        \
     ({                                                                         \
-        if (CHECK_STATE(api.state_flags, INS))                                 \
-            THROW(SW_COMMAND_INVALID_STATE);                                   \
         if (len < sizeof(INS##_INPUT))                                         \
             THROW(SW_INCORRECT_LENGTH);                                        \
+        if (CHECK_STATE(api.state_flags, INS))                                 \
+            THROW(SW_COMMAND_NOT_ALLOWED);                                     \
         (INS##_INPUT *)(input_data);                                           \
     })
 
@@ -122,7 +122,7 @@ static bool display_address(uint8_t p1)
         return true;
     default:
         // invalid p1 value
-        THROW(SW_COMMAND_INVALID_DATA);
+        THROW(SW_INCORRECT_P1P2);
     }
     return false; // avoid compiler warnings
 }
@@ -172,19 +172,9 @@ static bool first_tx(uint8_t p1)
         return false;
     default:
         // invalid p1 value
-        THROW(SW_COMMAND_INVALID_DATA);
+        THROW(SW_INCORRECT_P1P2);
     }
     return false; // avoid compiler warnings
-}
-
-static void validate_tx_indices(const TX_INPUT *input)
-{
-    if (input->last_index != api.bundle_ctx.last_tx_index) {
-        THROW(SW_TX_INVALID_INDEX);
-    }
-    if (input->current_index != api.bundle_ctx.current_tx_index) {
-        THROW(SW_TX_INVALID_INDEX);
-    }
 }
 
 static bool has_reference_transaction(uint8_t current_index)
@@ -201,14 +191,21 @@ static bool has_reference_transaction(uint8_t current_index)
     return false;
 }
 
-static void validate_tx_order(const TX_INPUT *input)
+static bool validate_tx_order(const TX_INPUT *input)
 {
     const uint8_t current_index = api.bundle_ctx.current_tx_index;
 
     // the receiving addresses are only allowed first or last
     if (input->value > 0 && current_index > 0 &&
         current_index < api.bundle_ctx.last_tx_index) {
-        THROW(SW_TX_INVALID_ORDER);
+        PRINTF("tx_order; output_tx_index=%u\n", current_index);
+        return false;
+    }
+
+    // the output address must come first and have positive value
+    if (input->value <= 0 && current_index == 0) {
+        PRINTF("tx_order; no output_tx\n");
+        return false;
     }
 
     // a meta transaction must have a valid reference input transaction
@@ -216,14 +213,12 @@ static void validate_tx_order(const TX_INPUT *input)
         current_index < api.bundle_ctx.last_tx_index) {
         // this must be a meta transaction
         if (!has_reference_transaction(current_index)) {
-            THROW(SW_TX_INVALID_META);
+            PRINTF("tx_order; meta_tx_index=%u\n", current_index);
+            return false;
         }
     }
 
-    // the output address must come first and have positive value
-    if (input->value <= 0 && current_index == 0) {
-        THROW(SW_TX_INVALID_OUTPUT);
-    }
+    return true;
 }
 
 NO_INLINE
@@ -273,7 +268,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     if (first) {
         // the bundle must not be initialized
         if (api.state_flags & BUNDLE_INITIALIZED) {
-            THROW(SW_COMMAND_INVALID_STATE);
+            THROW(SW_COMMAND_NOT_ALLOWED);
         }
 
         const unsigned int offset = update_seed(input_data, len);
@@ -282,7 +277,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     else {
         // the bundle must be initialized
         if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
-            THROW(SW_COMMAND_INVALID_STATE);
+            THROW(SW_COMMAND_NOT_ALLOWED);
         }
 
         input = GET_INPUT(input_data, len, TX);
@@ -300,9 +295,18 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
         bundle_initialize(&api.bundle_ctx, input->last_index);
         api.state_flags |= BUNDLE_INITIALIZED;
     }
+    else if (input->last_index != api.bundle_ctx.last_tx_index) {
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
 
-    validate_tx_indices(input);
-    validate_tx_order(input);
+    if (input->current_index != api.bundle_ctx.current_tx_index) {
+        // current index not as expected
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+    if (!validate_tx_order(input)) {
+        // transactions not in the expected order
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
 
     if (!validate_chars(input->address, 81)) {
         // invalid address
@@ -415,11 +419,12 @@ void user_sign_tx()
 {
     ui_display_validating();
 
-    int retcode = bundle_validating_finalize(
+    const int retcode = bundle_validating_finalize(
         &api.bundle_ctx, get_change_tx_index(&api.bundle_ctx), api.seed_bytes,
         api.security);
     if (retcode != OK) {
-        THROW(SW_BUNDLE_ERROR + retcode);
+        PRINTF("invalidBundle; retcode=%i\n", retcode);
+        THROW(SW_INVALID_BUNDLE + retcode);
     }
     api.state_flags |= BUNDLE_FINALIZED;
 
@@ -433,7 +438,8 @@ void user_deny_tx()
     os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
     api.state_flags &= ~BUNDLE_INITIALIZED;
 
-    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
+    PRINTF("user_deny_tx\n");
+    io_send(NULL, 0, SW_DENIED_BY_USER);
 }
 
 // get application configuration (flags and version)
@@ -445,7 +451,7 @@ unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
     UNUSED(len);
 
     if (CHECK_STATE(api.state_flags, GET_APP_CONFIG)) {
-        THROW(SW_COMMAND_INVALID_STATE);
+        THROW(SW_COMMAND_NOT_ALLOWED);
     }
 
     GET_APP_CONFIG_OUTPUT output;
@@ -466,7 +472,7 @@ unsigned int api_reset(uint8_t p1, const unsigned char *input_data,
     UNUSED(len);
 
     if (CHECK_STATE(api.state_flags, RESET)) {
-        THROW(SW_COMMAND_INVALID_STATE);
+        THROW(SW_COMMAND_NOT_ALLOWED);
     }
 
     reset_bundle();

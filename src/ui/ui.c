@@ -263,7 +263,7 @@ void ui_timeout_tick()
     ui_state.timer--;
     if (ui_state.timer == 0) {
         // throw an exception so that a result is always returned
-        THROW(SW_SECURITY_APP_TIMEOUT);
+        THROW(SW_COMMAND_TIMEOUT);
     }
 }
 

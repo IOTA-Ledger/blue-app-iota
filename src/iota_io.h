@@ -15,7 +15,7 @@ unsigned int iota_dispatch(void);
 /* ---  INS  --- */
 
 #define INS_NONE 0x00
-
+#define INS_SET_SEED 0x01 // *LEGACY
 #define INS_PUBKEY 0x02
 #define INS_TX 0x03
 #define INS_SIGN 0x04
@@ -32,42 +32,55 @@ unsigned int iota_dispatch(void);
 #define P1_FIRST 0x00
 #define P1_MORE 0x80
 
-/* ---  IO constants  --- */
+/* ---  APDU offsets  --- */
 
-#define OFFSET_CLA 0
-#define OFFSET_INS 1
-#define OFFSET_P1 2
-#define OFFSET_P2 3
-#define OFFSET_P3 4
-#define OFFSET_CDATA 5
+enum {
+    OFFSET_CLA = 0,
+    OFFSET_INS,
+    OFFSET_P1,
+    OFFSET_P2,
+    OFFSET_P3,
+    OFFSET_CDATA
+};
 
-#define SW_OK 0x9000
+/* ---  SW return codes  --- */
 
-#define SW_INCORRECT_LENGTH 0x6700
+#define SW_OK 0x9000 ///< success
 
-#define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
-#define SW_CONDITIONS_OF_USE_NOT_SATISFIED 0x6985
-#define SW_SECURITY_APP_LOCKED 0x6983
-#define SW_SECURITY_APP_TIMEOUT 0x6988
+// invalid data
 
-#define SW_INCORRECT_DATA 0x6a80
+#define SW_INCORRECT_LENGTH 0x6700     ///< received length invalid for command
+#define SW_COMMAND_INVALID_DATA 0x6a80 ///< invalid command data
+#define SW_INCORRECT_P1P2 0x6b00       ///< invalid parameter
+#define SW_INCORRECT_LENGTH_P3 0x6c00  ///< received length does not match P3
+#define SW_INS_NOT_SUPPORTED 0x6d00    ///< invalid INS code
+#define SW_CLA_NOT_SUPPORTED 0x6e00    ///< invalid CLA code
 
-#define SW_WRONG_P1P2 0x6b00
-#define SW_INCORRECT_LENGTH_P3 0x6c00
-#define SW_INS_NOT_SUPPORTED 0x6d00
-#define SW_CLA_NOT_SUPPORTED 0x6e00
-#define SW_COMMAND_NOT_ALLOWED 0x6900
-#define SW_COMMAND_INVALID_DATA 0x6984
-#define SW_COMMAND_INVALID_STATE 0x6985
-#define SW_BAD_SEED 0x6987
+// command not allowed or invalid
 
-#define SW_TX_INVALID_INDEX 0x6991
-#define SW_TX_INVALID_ORDER 0x6992
-#define SW_TX_INVALID_META 0x6993
-#define SW_TX_INVALID_OUTPUT 0x6994
+#define SW_COMMAND_NOT_ALLOWED 0x6900             ///< invalid state for command
+#define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982   ///< dongle locked
+#define SW_CONDITIONS_OF_USE_NOT_SATISFIED 0x6985 ///< denied by user
+#define SW_INVALID_BUNDLE 0x69a0 /* +retcode */   ///< invalid bundle received
 
-#define SW_BUNDLE_ERROR 0x69a0
+// command aborted
 
-#define SW_UNKNOWN 0x6f00
+#define SW_COMMAND_NOT_EXECUTED 0x6400 ///< error during excecution
+#define SW_COMMAND_TIMEOUT 0x6401      ///< next command or user input timeout
+#define SW_UNKNOWN 0x6f00              ///< command aborted
+
+// aliases
+
+#define SW_DENIED_BY_USER SW_CONDITIONS_OF_USE_NOT_SATISFIED
+#define SW_DEVICE_IS_LOCKED SW_SECURITY_STATUS_NOT_SATISFIED
+
+/* ---  Legacy errorcodes  --- */
+
+// SW_COMMAND_INVALID_DATA 0x6984
+// SW_APP_NOT_INITIALIZED 0x6986
+// SW_TX_INVALID_INDEX 0x6991
+// SW_TX_INVALID_ORDER 0x6992
+// SW_TX_INVALID_META 0x6993
+// SW_TX_INVALID_OUTPUT 0x6994
 
 #endif // IOTA_IO_H
