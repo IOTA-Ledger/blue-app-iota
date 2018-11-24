@@ -1,15 +1,16 @@
 #include "ui.h"
 #include <string.h>
 #include "os_io_seproxyhal.h"
-
 #include "ui_types.h"
 #include "ui_misc.h"
 #include "ui_buttons.h"
 #include "ui_display.h"
 #include "ui_elements.h"
+#include "api.h"
 #include "glyphs.h"
-
 #include "iota/addresses.h"
+
+#define TICKS_PER_SECOND 10
 
 UI_TEXT_CTX ui_text;
 UI_GLYPH_CTX ui_glyphs;
@@ -65,7 +66,7 @@ void ui_set_screen(UI_SCREENS s)
     current_screen = s;
 }
 
-void ui_render()
+static void ui_render()
 {
     switch (current_screen) {
     case SCREEN_TITLE:
@@ -84,11 +85,11 @@ void ui_render()
         UX_DISPLAY(bagl_ui_back_screen, NULL);
         break;
     default:
-        os_sched_exit(0);
+        THROW(INVALID_PARAMETER);
     }
 }
 
-void ui_force_draw()
+static void ui_force_draw()
 {
     bool ux_done = false;
     while (!ux_done) {
@@ -121,9 +122,9 @@ void ui_force_draw()
 
 static void ctx_initialize()
 {
-    os_memset(&ui_text, 0, sizeof(ui_text));
-    os_memset(&ui_glyphs, 0, sizeof(ui_glyphs));
-    os_memset(&ui_state, 0, sizeof(ui_state));
+    MEMCLEAR(ui_text);
+    MEMCLEAR(ui_glyphs);
+    MEMCLEAR(ui_state);
 }
 
 // Entry points for main to modify display
@@ -236,8 +237,6 @@ void ui_sign_tx()
 
 void ui_reset()
 {
-    ui_state.queued_ui_reset = false;
-
     state_go(STATE_MAIN_MENU, 0);
 
     ui_build_display();
@@ -245,8 +244,6 @@ void ui_reset()
     ui_force_draw();
 }
 
-// external function for main to restore previous state
-// ui_reset generally used instead though
 void ui_restore()
 {
     restore_state();
@@ -256,14 +253,49 @@ void ui_restore()
     ui_force_draw();
 }
 
-void ui_queue_reset(bool islocked)
+void ui_timeout_tick()
 {
-    if (islocked && in_tx_state()) {
-        ui_state.queued_ui_reset = true;
+    // timer not started
+    if (ui_state.timer <= 0) {
+        return;
     }
-    else if (!islocked && ui_state.queued_ui_reset) {
-        // ui_reset();
-        os_sched_exit(0);
+
+    ui_state.timer--;
+    if (ui_state.timer == 0) {
+        // throw an exception so that a result is always returned
+        THROW(SW_COMMAND_TIMEOUT);
+    }
+}
+
+void ui_timeout_start(bool interactive)
+{
+    if (interactive) {
+        ui_state.timer = UI_TIMEOUT_INTERACTIVE_SECONDS * TICKS_PER_SECOND;
+    }
+    else {
+        ui_state.timer = UI_TIMEOUT_SECONDS * TICKS_PER_SECOND;
+    }
+}
+
+void ui_timeout_stop()
+{
+    ui_state.timer = 0;
+}
+
+bool ui_lock_forbidden(void)
+{
+    // forbid app from locking during transaction (rely on tx timeout)
+    switch (ui_state.state) {
+    // BIP Path could be in tx or disp_addr
+    // (backup state will tell us which)
+    case STATE_BIP_PATH:
+        if (ui_state.backup_state != STATE_PROMPT_TX)
+            return false;
+    case STATE_PROMPT_TX:
+    case STATE_TX_ADDR:
+        return true;
+    default:
+        return false;
     }
 }
 

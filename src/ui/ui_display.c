@@ -1,10 +1,10 @@
 #include "ui_display.h"
 #include <string.h>
-#include "common.h"
 #include "ui.h"
 #include "ui_types.h"
 #include "ui_text.h"
 #include "ui_misc.h"
+#include "api.h"
 
 void display_main_menu()
 {
@@ -22,7 +22,7 @@ void display_main_menu()
     // special override display states
     switch (ui_state.menu_idx) {
 
-    case MENU_MAIN_CONNECT:
+    case MENU_MAIN_IOTA:
         display_glyphs_confirm(GLYPH_IOTA, GLYPH_DOWN);
 
         write_display("IOTA", MID);
@@ -222,6 +222,8 @@ void display_prompt_tx()
 
 void display_unknown_state()
 {
+    ui_set_screen(SCREEN_MENU);
+
     clear_display();
     write_display("UI ERROR", MID);
 

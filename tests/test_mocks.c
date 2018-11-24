@@ -31,6 +31,15 @@ void ui_display_signing()
 {
 }
 
+void ui_timeout_start(bool interactive)
+{
+    UNUSED(interactive);
+}
+
+void ui_timeout_stop()
+{
+}
+
 void ui_display_address(const unsigned char *addr_bytes)
 {
     UNUSED(addr_bytes);
@@ -46,6 +55,10 @@ void ui_sign_tx()
 }
 
 void ui_restore()
+{
+}
+
+void ui_reset()
 {
 }
 

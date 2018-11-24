@@ -2,8 +2,6 @@
 #define UI_H
 
 #include <stdbool.h>
-#include "iota/bundle.h"
-#include "api.h"
 #include "ui_types.h"
 
 /* To create a new generic UI screen -
@@ -15,7 +13,7 @@
  - #define Size of Menu [ui_types.h]
  - Create msg to display [ui_text.c] */
 
-void ui_init();
+void ui_init(void);
 void ui_display_main_menu(void);
 void ui_display_getting_addr(void);
 void ui_display_validating(void);
@@ -25,10 +23,13 @@ void ui_display_address(const unsigned char *addr_bytes);
 void ui_sign_tx(void);
 void ui_reset(void);
 void ui_restore(void);
-void ui_queue_reset(bool islocked);
 
 void ui_set_screen(UI_SCREENS s);
-void ui_render(void);
-void ui_force_draw(void);
+
+bool ui_lock_forbidden(void);
+
+void ui_timeout_tick(void);
+void ui_timeout_start(bool interactive);
+void ui_timeout_stop(void);
 
 #endif // UI_H

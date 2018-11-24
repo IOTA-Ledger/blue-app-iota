@@ -33,21 +33,16 @@ def apdu_command(ins, data, p1=0, p2=0):
     return command
 
 
-def pack_set_seed_input(bip44_path):
-    struct = Struct("<BI5I")
-    return struct.pack(
-        SECURITY_LEVEL,
-        BIP44_PATH_LENGTH,
-        bip44_path[0],
-        bip44_path[1],
-        bip44_path[2],
-        bip44_path[3],
-        bip44_path[4])
-
-
-def pack_pub_key_input(address_idx):
-    struct = Struct("<I")
-    return struct.pack(address_idx)
+def pack_pub_key_input(bip44_path, address_idx):
+    struct = Struct("<BI5II")
+    return struct.pack(SECURITY_LEVEL,
+                       BIP44_PATH_LENGTH,
+                       bip44_path[0],
+                       bip44_path[1],
+                       bip44_path[2],
+                       bip44_path[3],
+                       bip44_path[4],
+                       address_idx)
 
 
 def unpack_pubkey_output(data):
@@ -71,17 +66,15 @@ struct = unpack_get_app_config(response)
 print("\nFlags: 0x%02X" % (struct[0]))
 print("\nVersion: %d.%d.%d" % (struct[1], struct[2], struct[3]))
 
-print("\nInitializing IOTA seed for security-level=%d..." % SECURITY_LEVEL)
-dongle.exchange(apdu_command(INS_SET_SEED, pack_set_seed_input(BIP44_PATH)))
-
 print("\nGenerating address for index=%d..." % SRC_INDEX)
 response = dongle.exchange(apdu_command(
-    INS_PUBKEY, pack_pub_key_input(SRC_INDEX)))
+    INS_PUBKEY, pack_pub_key_input(BIP44_PATH, SRC_INDEX)))
 struct = unpack_pubkey_output(response)
 print("  Address: %s" % struct[0].decode("utf-8"))
 
 print("\nDisplaying address on the Ledger Nano...")
-dongle.exchange(apdu_command(INS_PUBKEY, pack_pub_key_input(SRC_INDEX), 1))
+dongle.exchange(apdu_command(
+    INS_PUBKEY, pack_pub_key_input(BIP44_PATH, SRC_INDEX), 1))
 
 elapsed_time = time.time() - start_time
 print("\nTime Elapsed: %ds" % elapsed_time)

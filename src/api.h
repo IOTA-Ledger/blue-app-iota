@@ -6,16 +6,11 @@
 #include "iota/bundle.h"
 
 // state bit flags
-#define SEED_SET (1 << 0)
-#define BUNDLE_INITIALIZED (1 << 1)
-#define BUNDLE_FINALIZED (1 << 2)
-#define SIGNING_STARTED (1 << 3)
+#define BUNDLE_INITIALIZED (1 << 0)
+#define BUNDLE_FINALIZED (1 << 1)
+#define SIGNING_STARTED (1 << 2)
 
 #define IO_STRUCT struct __attribute__((packed, may_alias))
-
-#define SET_SEED_REQUIRED_STATE 0
-#define SET_SEED_FORBIDDEN_STATE 0
-
 typedef struct API_CTX {
     /// BIP32 path used for seed derivation
     unsigned int bip32_path[BIP32_PATH_MAX_LEN];
@@ -34,6 +29,9 @@ typedef struct API_CTX {
 /// global context with everything related to the current api state
 extern API_CTX api;
 
+#define SET_SEED_REQUIRED_STATE 0
+#define SET_SEED_FORBIDDEN_STATE 0
+
 typedef IO_STRUCT SET_SEED_INPUT
 {
     uint8_t security;
@@ -42,10 +40,9 @@ typedef IO_STRUCT SET_SEED_INPUT
 }
 SET_SEED_INPUT;
 
-// no SET_SEED_OUTPUT
-
-#define PUBKEY_REQUIRED_STATE (SEED_SET)
-#define PUBKEY_FORBIDDEN_STATE 0
+#define PUBKEY_REQUIRED_STATE 0
+#define PUBKEY_FORBIDDEN_STATE                                                 \
+    (BUNDLE_INITIALIZED | BUNDLE_FINALIZED | SIGNING_STARTED)
 
 typedef IO_STRUCT PUBKEY_INPUT
 {
@@ -59,7 +56,7 @@ typedef IO_STRUCT PUBKEY_OUTPUT
 }
 PUBKEY_OUTPUT;
 
-#define TX_REQUIRED_STATE (SEED_SET)
+#define TX_REQUIRED_STATE 0
 #define TX_FORBIDDEN_STATE (BUNDLE_FINALIZED)
 
 typedef IO_STRUCT TX_INPUT
@@ -81,7 +78,7 @@ typedef IO_STRUCT TX_OUTPUT
 }
 TX_OUTPUT;
 
-#define SIGN_REQUIRED_STATE (SEED_SET | BUNDLE_FINALIZED)
+#define SIGN_REQUIRED_STATE (BUNDLE_FINALIZED)
 #define SIGN_FORBIDDEN_STATE 0
 
 typedef IO_STRUCT SIGN_INPUT
@@ -121,21 +118,18 @@ GET_APP_CONFIG_OUTPUT;
 /** @brief Clear and initialize the entire API context. */
 void api_initialize(void);
 
-unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
-                          unsigned int len);
 unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
                         unsigned int len);
 unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
                     unsigned int len);
 unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
                       unsigned int len);
-unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
+unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
                                 unsigned int len);
-unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len);
+unsigned int api_reset(uint8_t p1, const unsigned char *input_data,
+                       unsigned int len);
 
+/** @brief Callback function when bundle is accepted. */
 void user_sign_tx(void);
-void user_deny_tx(void);
-void user_approve_seed(void);
-void user_deny_seed(void);
 
 #endif // API_H

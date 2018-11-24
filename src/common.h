@@ -19,6 +19,8 @@ void throw_exception(const char *expression, const char *file, int line);
 
 #define THROW(x) throw_exception(#x, __FILE__, __LINE__)
 
+#define PRINTF printf
+
 #define UNUSED(x) (void)(x)
 
 #define MIN(a, b)                                                              \

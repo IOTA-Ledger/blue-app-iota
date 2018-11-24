@@ -17,70 +17,100 @@
 
 #define GET_INPUT(input_data, len, INS)                                        \
     ({                                                                         \
-        if (CHECK_STATE(api.state_flags, INS))                                 \
-            THROW(SW_COMMAND_INVALID_STATE);                                   \
         if (len < sizeof(INS##_INPUT))                                         \
             THROW(SW_INCORRECT_LENGTH);                                        \
+        if (CHECK_STATE(api.state_flags, INS))                                 \
+            THROW(SW_COMMAND_NOT_ALLOWED);                                     \
         (INS##_INPUT *)(input_data);                                           \
     })
 
 /// global variable storing all data needed across multiple api calls
 API_CTX api;
 
-void api_initialize()
+void api_initialize(void)
 {
     MEMCLEAR(api);
 }
 
 /** @brief Clear bundle and signature data and reset state. */
-static void api_reset_bundle(void)
+static void reset_bundle(void)
 {
     MEMCLEAR(api.bundle_ctx);
     MEMCLEAR(api.signing_ctx);
-
-    // keep the SEED_SET flag, if it was set
-    api.state_flags &= SEED_SET;
+    api.state_flags = 0;
+    ui_timeout_stop();
 }
 
-unsigned int api_set_seed(uint8_t p1, const unsigned char *input_data,
-                          unsigned int len)
+/** @brief Checks whether the given path differes from the stored path. */
+static bool bip32_path_changed(const SET_SEED_INPUT *seed)
 {
-    UNUSED(p1);
-    const SET_SEED_INPUT *input = GET_INPUT(input_data, len, SET_SEED);
-
-    // setting the seed resets everything
-    api_initialize();
-
-    if (!ASSIGN(api.bip32_path_length, input->bip32_path_length) ||
-        !IN_RANGE(api.bip32_path_length, BIP32_PATH_MIN_LEN,
-                  BIP32_PATH_MAX_LEN)) {
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-    if (len < sizeof(SET_SEED_INPUT) +
-                  api.bip32_path_length * sizeof(input->bip32_path[0])) {
-        THROW(SW_INCORRECT_LENGTH);
+    if (api.bip32_path_length != seed->bip32_path_length) {
+        return true;
     }
 
-    for (unsigned int i = 0; i < api.bip32_path_length; i++) {
-        if (!ASSIGN(api.bip32_path[i], input->bip32_path[i])) {
-            // path overflow
-            THROW(SW_COMMAND_INVALID_DATA);
+    for (unsigned int i = 0; i < seed->bip32_path_length; i++) {
+        if (api.bip32_path[i] != seed->bip32_path[i]) {
+            return true;
         }
     }
 
-    if (!ASSIGN(api.security, input->security) ||
-        !IN_RANGE(api.security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
+    return false;
+}
+
+/** @brief Extracts the bip32 info from the input data and computes a new seed
+ *  if the path differs from the previous one.
+ *  @return the number bytes read as part of the bip path input. */
+static unsigned int update_seed(const unsigned char *input_data,
+                                unsigned int len)
+{
+    const SET_SEED_INPUT *input = GET_INPUT(input_data, len, SET_SEED);
+
+    uint8_t bip32_path_length;
+    if (!ASSIGN(bip32_path_length, input->bip32_path_length) ||
+        !IN_RANGE(bip32_path_length, BIP32_PATH_MIN_LEN, BIP32_PATH_MAX_LEN)) {
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+
+    const unsigned int seed_struct_len =
+        sizeof(SET_SEED_INPUT) +
+        (bip32_path_length * sizeof(input->bip32_path[0]));
+    if (len < seed_struct_len) {
+        THROW(SW_INCORRECT_LENGTH);
+    }
+
+    uint8_t security;
+    if (!ASSIGN(security, input->security) ||
+        !IN_RANGE(security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
         // invalid security
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    seed_derive_from_bip32(api.bip32_path, api.bip32_path_length,
-                           api.seed_bytes);
+    if (api.security != security) {
+        // security level can be changed independently of the seed
+        api.security = security;
 
-    api.state_flags |= SEED_SET;
+        // if security does get changed, reset bundle
+        reset_bundle();
+    }
 
-    io_send(NULL, 0, SW_OK);
-    return 0;
+    if (bip32_path_changed(input)) {
+        // only compute the seed if the path was changed
+        api.bip32_path_length = bip32_path_length;
+        for (unsigned int i = 0; i < api.bip32_path_length; i++) {
+            if (!ASSIGN(api.bip32_path[i], input->bip32_path[i])) {
+                // path overflow
+                THROW(SW_COMMAND_INVALID_DATA);
+            }
+        }
+
+        seed_derive_from_bip32(api.bip32_path, api.bip32_path_length,
+                               api.seed_bytes);
+
+        // if the path was changed, reset bundle
+        reset_bundle();
+    }
+
+    return seed_struct_len;
 }
 
 static bool display_address(uint8_t p1)
@@ -92,7 +122,7 @@ static bool display_address(uint8_t p1)
         return true;
     default:
         // invalid p1 value
-        THROW(SW_COMMAND_INVALID_DATA);
+        THROW(SW_INCORRECT_P1P2);
     }
     return false; // avoid compiler warnings
 }
@@ -109,8 +139,12 @@ static void io_send_address(const unsigned char *addr_bytes)
 unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
                         unsigned int len)
 {
-    const PUBKEY_INPUT *input = GET_INPUT(input_data, len, PUBKEY);
     const bool display = display_address(p1);
+
+    const unsigned int offset = update_seed(input_data, len);
+    const PUBKEY_INPUT *input =
+        GET_INPUT(input_data + offset, len - offset, PUBKEY);
+
 
     ui_display_getting_addr();
 
@@ -129,14 +163,18 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
     return 0;
 }
 
-static void validate_tx_indices(const TX_INPUT *input)
+static bool first_tx(uint8_t p1)
 {
-    if (input->last_index != api.bundle_ctx.last_tx_index) {
-        THROW(SW_TX_INVALID_INDEX);
+    switch (p1) {
+    case P1_FIRST:
+        return true;
+    case P1_MORE:
+        return false;
+    default:
+        // invalid p1 value
+        THROW(SW_INCORRECT_P1P2);
     }
-    if (input->current_index != api.bundle_ctx.current_tx_index) {
-        THROW(SW_TX_INVALID_INDEX);
-    }
+    return false; // avoid compiler warnings
 }
 
 static bool has_reference_transaction(uint8_t current_index)
@@ -153,14 +191,21 @@ static bool has_reference_transaction(uint8_t current_index)
     return false;
 }
 
-static void validate_tx_order(const TX_INPUT *input)
+static bool validate_tx_order(const TX_INPUT *input)
 {
     const uint8_t current_index = api.bundle_ctx.current_tx_index;
 
     // the receiving addresses are only allowed first or last
     if (input->value > 0 && current_index > 0 &&
         current_index < api.bundle_ctx.last_tx_index) {
-        THROW(SW_TX_INVALID_ORDER);
+        PRINTF("tx_order; output_tx_index=%u\n", current_index);
+        return false;
+    }
+
+    // the output address must come first and have positive value
+    if (input->value <= 0 && current_index == 0) {
+        PRINTF("tx_order; no output_tx\n");
+        return false;
     }
 
     // a meta transaction must have a valid reference input transaction
@@ -168,14 +213,12 @@ static void validate_tx_order(const TX_INPUT *input)
         current_index < api.bundle_ctx.last_tx_index) {
         // this must be a meta transaction
         if (!has_reference_transaction(current_index)) {
-            THROW(SW_TX_INVALID_META);
+            PRINTF("tx_order; meta_tx_index=%u\n", current_index);
+            return false;
         }
     }
 
-    // the output address must come first and have positive value
-    if (input->value <= 0 && current_index == 0) {
-        THROW(SW_TX_INVALID_OUTPUT);
-    }
+    return true;
 }
 
 NO_INLINE
@@ -219,13 +262,32 @@ static void io_send_unfinished_bundle(void)
 unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
                     unsigned int len)
 {
-    UNUSED(p1);
-    const TX_INPUT *input = GET_INPUT(input_data, len, TX);
+    const bool first = first_tx(p1);
 
-    // TODO handle not receiving complete tx
+    const TX_INPUT *input;
+    if (first) {
+        // the bundle must not be initialized
+        if (api.state_flags & BUNDLE_INITIALIZED) {
+            THROW(SW_COMMAND_NOT_ALLOWED);
+        }
+
+        const unsigned int offset = update_seed(input_data, len);
+        input = GET_INPUT(input_data + offset, len - offset, TX);
+    }
+    else {
+        // the bundle must be initialized
+        if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
+            THROW(SW_COMMAND_NOT_ALLOWED);
+        }
+
+        input = GET_INPUT(input_data, len, TX);
+    }
+
     ui_display_recv();
+    // reset next transaction timer
+    ui_timeout_start(false);
 
-    if ((api.state_flags & BUNDLE_INITIALIZED) == 0) {
+    if (first) {
         if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
             // last index invalid range
             THROW(SW_COMMAND_INVALID_DATA);
@@ -233,9 +295,18 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
         bundle_initialize(&api.bundle_ctx, input->last_index);
         api.state_flags |= BUNDLE_INITIALIZED;
     }
+    else if (input->last_index != api.bundle_ctx.last_tx_index) {
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
 
-    validate_tx_indices(input);
-    validate_tx_order(input);
+    if (input->current_index != api.bundle_ctx.current_tx_index) {
+        // current index not as expected
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
+    if (!validate_tx_order(input)) {
+        // transactions not in the expected order
+        THROW(SW_COMMAND_INVALID_DATA);
+    }
 
     if (!validate_chars(input->address, 81)) {
         // invalid address
@@ -254,8 +325,11 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     }
 
     add_tx(input);
+
+    // perfectly valid bundle
     if (!bundle_has_open_txs(&api.bundle_ctx)) {
-        // perfectly valid bundle
+        // start interactive timeout
+        ui_timeout_start(true);
         ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
@@ -289,10 +363,8 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
+    // initialize signing if necessary
     if ((api.state_flags & SIGNING_STARTED) == 0) {
-        // temporary screen during signing process
-        ui_display_signing();
-
         if (api.bundle_ctx.values[tx_idx] >= 0) {
             // no input transaction
             THROW(SW_COMMAND_INVALID_DATA);
@@ -312,6 +384,10 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
+    // temporary screen during signing process
+    ui_display_signing();
+    ui_timeout_start(false);
+
     SIGN_OUTPUT output;
     output.fragments_remaining =
         next_signature_fragment(&api.signing_ctx, output.signature_fragment);
@@ -322,7 +398,6 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
 
         // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
-
         ui_display_main_menu();
     }
 
@@ -339,34 +414,24 @@ static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
     io_send(&output, sizeof(output), SW_OK);
 }
 
-/** @brief This functions gets called, when bundle is accepted. */
 void user_sign_tx()
 {
     ui_display_validating();
 
-    int retcode = bundle_validating_finalize(
+    const int retcode = bundle_validating_finalize(
         &api.bundle_ctx, get_change_tx_index(&api.bundle_ctx), api.seed_bytes,
         api.security);
     if (retcode != OK) {
-        THROW(SW_BUNDLE_ERROR + retcode);
+        PRINTF("invalidBundle; retcode=%i\n", retcode);
+        THROW(SW_INVALID_BUNDLE + retcode);
     }
     api.state_flags |= BUNDLE_FINALIZED;
 
     io_send_bundle_hash(&api.bundle_ctx);
 }
 
-/** @brief This functions gets called, when bundle is denied. */
-void user_deny_tx()
-{
-    // reset the bundle
-    os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
-    api.state_flags &= ~BUNDLE_INITIALIZED;
-
-    io_send(NULL, 0, SW_SECURITY_STATUS_NOT_SATISFIED);
-}
-
 // get application configuration (flags and version)
-unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
+unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
                                 unsigned int len)
 {
     UNUSED(p1);
@@ -374,7 +439,7 @@ unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
     UNUSED(len);
 
     if (CHECK_STATE(api.state_flags, GET_APP_CONFIG)) {
-        THROW(SW_COMMAND_INVALID_STATE);
+        THROW(SW_COMMAND_NOT_ALLOWED);
     }
 
     GET_APP_CONFIG_OUTPUT output;
@@ -387,39 +452,19 @@ unsigned int api_get_app_config(uint8_t p1, unsigned char *input_data,
     return 0;
 }
 
-static bool reset_partial(uint8_t p1)
+unsigned int api_reset(uint8_t p1, const unsigned char *input_data,
+                       unsigned int len)
 {
-    switch (p1) {
-    case P1_RESET_EVERYTHING:
-        return false;
-    case P1_RESET_PARTIAL:
-        return true;
-    default:
-        // invalid p1 value
-        THROW(SW_COMMAND_INVALID_DATA);
-    }
-    return false; // avoid compiler warnings
-}
-
-unsigned int api_reset(uint8_t p1, unsigned char *input_data, unsigned int len)
-{
-    // no input requried
+    UNUSED(p1);
     UNUSED(input_data);
     UNUSED(len);
 
     if (CHECK_STATE(api.state_flags, RESET)) {
-        THROW(SW_COMMAND_INVALID_STATE);
+        THROW(SW_COMMAND_NOT_ALLOWED);
     }
 
-    if (reset_partial(p1)) {
-        if (!(api.state_flags & SEED_SET)) {
-            THROW(SW_COMMAND_INVALID_STATE);
-        }
-        api_reset_bundle();
-    }
-    else {
-        api_initialize();
-    }
+    reset_bundle();
+    ui_reset();
 
     io_send(NULL, 0, SW_OK);
     return 0;

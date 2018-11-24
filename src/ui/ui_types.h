@@ -8,6 +8,10 @@
 #define TEXT_LEN 21
 #define TOTAL_GLYPHS GLYPH_NONE
 
+// Seconds until UI timeout if expected inputs are not received
+#define UI_TIMEOUT_SECONDS 3
+#define UI_TIMEOUT_INTERACTIVE_SECONDS 80
+
 #define BUTTON_L 0
 #define BUTTON_R 1
 #define BUTTON_B 2
@@ -64,7 +68,7 @@ typedef enum {
 
 // Main menu entries
 typedef enum {
-    MENU_MAIN_CONNECT,
+    MENU_MAIN_IOTA,
     MENU_MAIN_ABOUT,
     MENU_MAIN_EXIT,
     MENU_MAIN_LEN
@@ -99,7 +103,6 @@ typedef struct UI_STATE_CTX {
     // tx information
     int64_t val;
     bool display_full_value;
-    bool queued_ui_reset;
 
     char addr[90];
 
@@ -108,6 +111,8 @@ typedef struct UI_STATE_CTX {
 
     uint8_t backup_state;
     uint8_t backup_menu_idx;
+
+    uint16_t timer;
 
 } UI_STATE_CTX;
 

@@ -16,7 +16,7 @@ int8_t button_main_menu(uint8_t button_mask)
     if (button_mask == BUTTON_B) {
         switch (ui_state.menu_idx) {
 
-        case MENU_MAIN_CONNECT:
+        case MENU_MAIN_IOTA:
             state_go(STATE_EXIT, 0);
             return -1;
 
@@ -185,9 +185,10 @@ void button_prompt_tx(uint8_t button_mask)
 
         // can't use switch statement because array sz isn't known
         if (ui_state.menu_idx == MENU_TX_DENY) {
-            user_deny_tx();
             ui_state.display_full_value = false;
-            state_go(STATE_MAIN_MENU, 0);
+            // let exception handling reset ui/api
+            PRINTF("user_deny_tx\n");
+            THROW(SW_DENIED_BY_USER);
         }
         else if (ui_state.menu_idx == MENU_TX_APPROVE) {
             user_sign_tx();
