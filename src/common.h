@@ -44,7 +44,7 @@ void throw_exception(const char *expression, const char *file, int line);
 
 #define os_memmove memmove
 #define os_memcpy memcpy
-
+#define os_memcmp memcmp
 #define os_memset memset
 
 /* ----------------------------------------------------------------------- */
@@ -112,13 +112,18 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
 // additional supported features
 #define APP_FLAGS 0
 
-#define CEILING(x, y) (((x) + (y)-1) / (y))
+#define CEILING(x, y)                                                          \
+    ({                                                                         \
+        typeof(y) _y = (y);                                                    \
+        (((x) + _y - 1) / _y);                                                 \
+    })
 
 #define ABS(a)                                                                 \
     ({                                                                         \
         typeof(a) _a = (a);                                                    \
         _a < 0 ? -_a : _a;                                                     \
     })
+
 #define ASSIGN(dest, src)                                                      \
     ({                                                                         \
         typeof(src) _x = (src);                                                \

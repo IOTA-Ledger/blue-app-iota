@@ -137,7 +137,7 @@ static bool validate_address(const unsigned char *addr_bytes,
     unsigned char computed_addr[48];
     get_public_addr(seed_bytes, idx, security, computed_addr);
 
-    return (memcmp(addr_bytes, computed_addr, 48) == 0);
+    return (os_memcmp(addr_bytes, computed_addr, 48) == 0);
 }
 
 /** @return Whether all values sum up to zero. */
@@ -165,9 +165,9 @@ static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
                 if (i + j > ctx->last_tx_index || ctx->values[i + j] != 0) {
                     return false;
                 }
-                if (memcmp(input_addr_bytes,
-                           bundle_get_address_bytes(ctx, i + j),
-                           NUM_HASH_BYTES) != 0) {
+                if (os_memcmp(input_addr_bytes,
+                              bundle_get_address_bytes(ctx, i + j),
+                              NUM_HASH_BYTES) != 0) {
                     return false;
                 }
             }
@@ -232,8 +232,8 @@ static bool validate_address_reuse(const BUNDLE_CTX *ctx)
 
         for (uint8_t j = i + 1; j <= ctx->last_tx_index; j++) {
             if (ctx->values[j] != 0 &&
-                memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
-                       NUM_HASH_BYTES) == 0) {
+                os_memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
+                          NUM_HASH_BYTES) == 0) {
                 return false;
             }
         }
