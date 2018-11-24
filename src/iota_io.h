@@ -65,9 +65,8 @@ enum {
 
 // command aborted
 
-#define SW_COMMAND_NOT_EXECUTED 0x6400 ///< error during excecution
-#define SW_COMMAND_TIMEOUT 0x6401      ///< next command or user input timeout
-#define SW_UNKNOWN 0x6f00              ///< command aborted
+#define SW_COMMAND_TIMEOUT 0x6401 ///< next command or user input timeout
+#define SW_UNKNOWN 0x6f00         ///< command aborted
 
 // aliases
 
