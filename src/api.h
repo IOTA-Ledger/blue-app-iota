@@ -129,9 +129,7 @@ unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
 unsigned int api_reset(uint8_t p1, const unsigned char *input_data,
                        unsigned int len);
 
+/** @brief Callback function when bundle is accepted. */
 void user_sign_tx(void);
-void user_deny_tx(void);
-void user_approve_seed(void);
-void user_deny_seed(void);
 
 #endif // API_H

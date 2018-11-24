@@ -414,7 +414,6 @@ static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
     io_send(&output, sizeof(output), SW_OK);
 }
 
-/** @brief This functions gets called, when bundle is accepted. */
 void user_sign_tx()
 {
     ui_display_validating();
@@ -429,17 +428,6 @@ void user_sign_tx()
     api.state_flags |= BUNDLE_FINALIZED;
 
     io_send_bundle_hash(&api.bundle_ctx);
-}
-
-/** @brief This functions gets called, when bundle is denied. */
-void user_deny_tx()
-{
-    // reset the bundle
-    os_memset(&api.bundle_ctx, 0, sizeof(BUNDLE_CTX));
-    api.state_flags &= ~BUNDLE_INITIALIZED;
-
-    PRINTF("user_deny_tx\n");
-    io_send(NULL, 0, SW_DENIED_BY_USER);
 }
 
 // get application configuration (flags and version)
