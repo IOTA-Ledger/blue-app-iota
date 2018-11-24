@@ -30,6 +30,6 @@ bool ui_lock_forbidden(void);
 
 void ui_timeout_tick(void);
 void ui_timeout_start(bool interactive);
-void ui_timeout_stop();
+void ui_timeout_stop(void);
 
 #endif // UI_H
