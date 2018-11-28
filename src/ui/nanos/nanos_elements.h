@@ -200,7 +200,7 @@
     static unsigned int bagl_ui_##name##_screen_button(                        \
         unsigned int button_mask, unsigned int button_mask_counter)            \
     {                                                                          \
-        nanos_transition_state(button_mask);                                      \
+        nanos_transition_state(button_mask);                                   \
                                                                                \
         return 0;                                                              \
     }

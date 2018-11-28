@@ -12,12 +12,12 @@ void restore_state(void);
 void abbreviate_addr(char *dest, const char *src);
 void write_display(const char *string, UI_TEXT_POS pos);
 
-void glyph_on(UI_GLYPH_TYPES g);
+void glyph_on(UI_GLYPH_TYPES_NANOS g);
 
 void clear_display(void);
 
-void display_glyphs(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2);
-void display_glyphs_confirm(UI_GLYPH_TYPES g1, UI_GLYPH_TYPES g2);
+void display_glyphs(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2);
+void display_glyphs_confirm(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2);
 
 void write_text_array(const char *array, uint8_t len);
 

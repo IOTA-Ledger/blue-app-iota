@@ -4,8 +4,6 @@
 #include "os.h"
 #include "os_io_seproxyhal.h"
 
-const bagl_element_t *io_seproxyhal_touch_exit(const bagl_element_t *e);
-
 const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e);
 const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e);
 const bagl_element_t *bagl_ui_LEFT_blue_button(const bagl_element_t *e);

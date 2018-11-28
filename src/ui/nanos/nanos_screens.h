@@ -5,13 +5,6 @@
 #include "nanos_core.h"
 #include "glyphs.h"
 
-// macros for button functions
-BUTTON_FUNCTION(title)
-BUTTON_FUNCTION(title_bold)
-BUTTON_FUNCTION(menu)
-BUTTON_FUNCTION(iota)
-BUTTON_FUNCTION(back)
-
 // screen for title on top, info on bottom
 static const bagl_element_t bagl_ui_title_screen[] = {
     SCREEN_CLEAR, SCREEN_MSG_TOP, SCREEN_MSG_BOT, SCREEN_GLYPHS_ALL};
