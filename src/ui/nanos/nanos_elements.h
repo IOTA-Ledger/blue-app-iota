@@ -1,5 +1,11 @@
-#ifndef UI_ELEMENTS_H
-#define UI_ELEMENTS_H
+#ifndef NANOS_ELEMENTS_H
+#define NANOS_ELEMENTS_H
+
+#define DEFAULT_FONT                                                           \
+    BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER
+
+#define DEFAULT_FONT_BOLD                                                      \
+    BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER
 
 // {type, userid, x, y, width, height, stroke, radius, fill,
 // fgcolor, bgcolor, fontid, iconid}, text .....
@@ -15,133 +21,56 @@
 // -- Title screen top message
 #define SCREEN_MSG_TOP                                                         \
     {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x01,                                                                 \
-         0,                                                                    \
-         13,                                                                   \
-         128,                                                                  \
-         32,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER,        \
-         0},                                                                   \
+        {BAGL_LABELINE, 0x01,         0, 13, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+         0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Title screen top message
 #define SCREEN_MSG_TOP_BOLD                                                    \
     {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x01,                                                                 \
-         0,                                                                    \
-         13,                                                                   \
-         128,                                                                  \
-         32,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,      \
-         0},                                                                   \
+        {BAGL_LABELINE,     0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
+         DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Title screen bottom message
 #define SCREEN_MSG_BOT                                                         \
     {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x01,                                                                 \
-         0,                                                                    \
-         25,                                                                   \
-         128,                                                                  \
-         32,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER,        \
-         0},                                                                   \
+        {BAGL_LABELINE, 0x01,         0, 25, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+         0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Title screen bottom message
 #define SCREEN_MSG_BOT_BOLD                                                    \
     {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x01,                                                                 \
-         0,                                                                    \
-         25,                                                                   \
-         128,                                                                  \
-         32,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,      \
-         0},                                                                   \
+        {BAGL_LABELINE,     0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
+         DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen top message half off screen
 #define SCREEN_MSG_TOP_HALF                                                    \
     {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x01,                                                                 \
-         0,                                                                    \
-         3,                                                                    \
-         128,                                                                  \
-         32,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER,        \
-         0},                                                                   \
+        {BAGL_LABELINE, 0x01,         0, 3, 128, 32, 0, 0, 0, 0xFFFFFF,        \
+         0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen middle message
 #define SCREEN_MSG_MID                                                         \
     {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x01,                                                                 \
-         0,                                                                    \
-         19,                                                                   \
-         128,                                                                  \
-         32,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,      \
-         0},                                                                   \
+        {BAGL_LABELINE,     0x01, 0, 19, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
+         DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen bot message half off screen
 #define SCREEN_MSG_BOT_HALF                                                    \
     {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x01,                                                                 \
-         0,                                                                    \
-         36,                                                                   \
-         128,                                                                  \
-         32,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER,        \
-         0},                                                                   \
+        {BAGL_LABELINE, 0x01,         0, 36, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+         0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
@@ -271,9 +200,9 @@
     static unsigned int bagl_ui_##name##_screen_button(                        \
         unsigned int button_mask, unsigned int button_mask_counter)            \
     {                                                                          \
-        ui_transition_state(button_mask);                                      \
+        nanos_transition_state(button_mask);                                      \
                                                                                \
         return 0;                                                              \
     }
 
-#endif // UI_ELEMENTS_H
+#endif // NANOS_ELEMENTS_H

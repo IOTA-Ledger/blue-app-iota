@@ -1,9 +1,9 @@
-#ifndef UI_MISC_H
-#define UI_MISC_H
+#ifndef NANOS_MISC_H
+#define NANOS_MISC_H
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "ui_types.h"
+#include "nanos_types.h"
 
 void state_go(uint8_t state, uint8_t idx);
 void backup_state(void);
@@ -28,4 +28,4 @@ uint8_t menu_to_tx_idx(void);
 void display_advanced_tx_value(void);
 void display_advanced_tx_address(void);
 
-#endif // UI_MISC_H
+#endif // NANOS_MISC_H

@@ -1,5 +1,5 @@
-#ifndef UI_TYPES_H
-#define UI_TYPES_H
+#ifndef NANOS_TYPES_H
+#define NANOS_TYPES_H
 
 #include <stdint.h>
 #include "iota/bundle.h"
@@ -112,12 +112,10 @@ typedef struct UI_STATE_CTX {
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
-    uint16_t timer;
-
 } UI_STATE_CTX;
 
 extern UI_TEXT_CTX ui_text;
 extern UI_GLYPH_CTX ui_glyphs;
 extern UI_STATE_CTX ui_state;
 
-#endif // UI_TYPES_H
+#endif // NANOS_TYPES_H

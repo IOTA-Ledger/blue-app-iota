@@ -1,7 +1,8 @@
-#include "ui_misc.h"
+#include "nanos_misc.h"
 #include <string.h>
 #include "ui.h"
 #include "api.h"
+#include "nanos_core.h"
 #include "iota/addresses.h"
 
 /// the largest power of 10 that still fits into int32
@@ -76,10 +77,10 @@ static void check_special_glyph(UI_GLYPH_TYPES g)
 {
     switch (g) {
     case GLYPH_IOTA:
-        ui_set_screen(SCREEN_IOTA);
+        nanos_set_screen(SCREEN_IOTA);
         break;
     case GLYPH_BACK:
-        ui_set_screen(SCREEN_BACK);
+        nanos_set_screen(SCREEN_BACK);
         break;
     default:
         return;

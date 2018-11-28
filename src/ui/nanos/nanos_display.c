@@ -1,14 +1,15 @@
-#include "ui_display.h"
+#include "nanos_display.h"
 #include <string.h>
 #include "ui.h"
-#include "ui_types.h"
-#include "ui_text.h"
-#include "ui_misc.h"
+#include "nanos_types.h"
+#include "nanos_text.h"
+#include "nanos_misc.h"
+#include "nanos_core.h"
 #include "api.h"
 
 void display_main_menu()
 {
-    ui_set_screen(SCREEN_MENU);
+    nanos_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_MAIN_LEN * TEXT_LEN];
@@ -36,7 +37,7 @@ void display_main_menu()
 
 void display_about()
 {
-    ui_set_screen(SCREEN_MENU);
+    nanos_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_ABOUT_LEN * TEXT_LEN];
@@ -60,7 +61,7 @@ void display_about()
 
 void display_version()
 {
-    ui_set_screen(SCREEN_MENU);
+    nanos_set_screen(SCREEN_MENU);
 
     clear_display();
     write_display(APPVERSION, MID);
@@ -70,7 +71,7 @@ void display_version()
 
 void display_more_info()
 {
-    ui_set_screen(SCREEN_MENU);
+    nanos_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_MORE_INFO_LEN * TEXT_LEN];
@@ -83,7 +84,7 @@ void display_more_info()
 void display_bip_path()
 {
     if (ui_state.menu_idx == 0) {
-        ui_set_screen(SCREEN_MENU);
+        nanos_set_screen(SCREEN_MENU);
 
         clear_display();
 
@@ -91,7 +92,7 @@ void display_bip_path()
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
     }
     else {
-        ui_set_screen(SCREEN_TITLE);
+        nanos_set_screen(SCREEN_TITLE);
 
         clear_display();
 
@@ -140,7 +141,7 @@ void display_bip_path()
 
 void display_addr()
 {
-    ui_set_screen(SCREEN_MENU);
+    nanos_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_ADDR_LEN * TEXT_LEN];
@@ -166,7 +167,7 @@ void display_addr()
 
 void display_addr_chk()
 {
-    ui_set_screen(SCREEN_TITLE);
+    nanos_set_screen(SCREEN_TITLE);
 
     clear_display();
 
@@ -191,7 +192,7 @@ void display_tx_addr()
 void display_prompt_tx()
 {
     // for approve/deny
-    ui_set_screen(SCREEN_MENU);
+    nanos_set_screen(SCREEN_MENU);
 
     clear_display();
 
@@ -210,7 +211,7 @@ void display_prompt_tx()
     }
 
     // if not approve/deny, it will be a title screen (top/bottom)
-    ui_set_screen(SCREEN_TITLE);
+    nanos_set_screen(SCREEN_TITLE);
 
     // even indices (not include approve/deny)
     // will be amounts, odd will be addr
@@ -222,7 +223,7 @@ void display_prompt_tx()
 
 void display_unknown_state()
 {
-    ui_set_screen(SCREEN_MENU);
+    nanos_set_screen(SCREEN_MENU);
 
     clear_display();
     write_display("UI ERROR", MID);

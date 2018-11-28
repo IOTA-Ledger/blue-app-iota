@@ -1,5 +1,5 @@
-#ifndef UI_BUTTONS_H
-#define UI_BUTTONS_H
+#ifndef NANOS_BUTTONS_H
+#define NANOS_BUTTONS_H
 
 #include <stdint.h>
 
@@ -14,4 +14,4 @@ int8_t button_tx_addr(uint8_t button_mask);
 void button_prompt_tx(uint8_t button_mask);
 void button_handle_menu_idx(uint8_t button_mask, uint8_t array_sz);
 
-#endif // UI_BUTTONS_H
+#endif // NANOS_BUTTONS_H
