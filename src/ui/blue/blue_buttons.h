@@ -16,6 +16,7 @@ const bagl_element_t *button_approve(const bagl_element_t *e);
 
 unsigned int bagl_ui_main_button(unsigned int, unsigned int);
 unsigned int bagl_ui_settings_button(unsigned int, unsigned int);
+unsigned int bagl_ui_disp_addr_button(unsigned int, unsigned int);
 unsigned int bagl_ui_transaction_first_button(unsigned int, unsigned int);
 unsigned int bagl_ui_transaction_button(unsigned int, unsigned int);
 unsigned int bagl_ui_transaction_last_button(unsigned int, unsigned int);

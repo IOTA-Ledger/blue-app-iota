@@ -7,14 +7,15 @@
 #include "api.h"
 #include "glyphs.h"
 
-static const bagl_element_t bagl_ui_main[] = {BG_FILL,
-                                              HEADER_TEXT("IOTA"),
-                                              HEADER_BUTTON_L(SETTINGS),
-                                              HEADER_BUTTON_R(DASHBOARD),
-                                              BODY_IOTA_ICON,
-                                              BODY_TITLE(OPEN_TITLE),
-                                              TEXT_CENTERED(310, OPEN_MSG1),
-                                              TEXT_CENTERED(332, OPEN_MSG2)};
+static const bagl_element_t bagl_ui_main[] = {
+    BG_FILL,
+    HEADER_TEXT("IOTA"),
+    HEADER_BUTTON_L(SETTINGS),
+    HEADER_BUTTON_R(DASHBOARD),
+    BODY_IOTA_ICON,
+    BODY_TITLE(OPEN_TITLE),
+    TEXT_CENTERED(310, OPEN_MESSAGE1),
+    TEXT_CENTERED(332, OPEN_MESSAGE2)};
 
 static const bagl_element_t bagl_ui_settings[] = {
     BG_FILL,
@@ -23,15 +24,21 @@ static const bagl_element_t bagl_ui_settings[] = {
     TEXT_LEFT_TITLE(105, "Version"),
     TEXT_LEFT(125, APPVERSION),
     TEXT_LEFT_TITLE(180, "More Info"),
-    TEXT_LEFT(200, MORE_INFO_TXT),
-    BLUE_UI_BUTTON(COLOUR_RED, "Temp", 30, 240, button_tmp),
-    BLUE_UI_BUTTON(COLOUR_GREEN, "Transaction", 170, 240, button_tx)};
+    TEXT_LEFT(200, MORE_INFO_TXT)};
+
+static const bagl_element_t bagl_ui_disp_addr[] = {
+    BG_FILL,
+    HEADER_TEXT("Confirm Address"),
+    HEADER_BUTTON_L(LEFT),
+    TEXT_LEFT_TITLE_LG(160, "Address:"),
+    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
+    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
+    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
+    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK])};
 
 static const bagl_element_t bagl_ui_transaction_first[] = {
     BG_FILL,
     HEADER_TEXT("Transaction"),
-    HEADER_BUTTON_L(LEFT),
-    HEADER_BUTTON_R(DASHBOARD),
     TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
     TEXT_RIGHT(105, blue_ui_state.abbrv_val),
     TEXT_CENTERED(125, blue_ui_state.full_val),
@@ -45,8 +52,6 @@ static const bagl_element_t bagl_ui_transaction_first[] = {
 static const bagl_element_t bagl_ui_transaction[] = {
     BG_FILL,
     HEADER_TEXT("Transaction"),
-    HEADER_BUTTON_L(LEFT),
-    HEADER_BUTTON_R(DASHBOARD),
     TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
     TEXT_RIGHT(105, blue_ui_state.abbrv_val),
     TEXT_CENTERED(125, blue_ui_state.full_val),
@@ -63,8 +68,6 @@ static const bagl_element_t bagl_ui_transaction[] = {
 static const bagl_element_t bagl_ui_transaction_last[] = {
     BG_FILL,
     HEADER_TEXT("Transaction"),
-    HEADER_BUTTON_L(LEFT),
-    HEADER_BUTTON_R(DASHBOARD),
     TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
     TEXT_RIGHT(105, blue_ui_state.abbrv_val),
     TEXT_CENTERED(125, blue_ui_state.full_val),
@@ -80,19 +83,18 @@ static const bagl_element_t bagl_ui_transaction_last[] = {
     BLUE_UI_BUTTON(COLOUR_GREEN, "Approve", 170, 410, button_approve)};
 
 static const bagl_element_t bagl_ui_generating_addr[] = {
-    BG_FILL, HEADER_TEXT("Generating Address"), HEADER_BUTTON_L(LEFT),
+    BG_FILL, HEADER_TEXT("Generating Address"),
     BODY_TITLE("Generating Address...")};
 
 static const bagl_element_t bagl_ui_validating[] = {
-    BG_FILL, HEADER_TEXT("Validating"), HEADER_BUTTON_L(LEFT),
-    BODY_TITLE("Validating...")};
+    BG_FILL, HEADER_TEXT("Validating"), BODY_TITLE("Validating...")};
 
 static const bagl_element_t bagl_ui_receiving_tx[] = {
-    BG_FILL, HEADER_TEXT("Receiving Transaction"), HEADER_BUTTON_L(LEFT),
+    BG_FILL, HEADER_TEXT("Receiving Transaction"),
     BODY_TITLE("Receiving Transaction...")};
 
 static const bagl_element_t bagl_ui_signing_tx[] = {
-    BG_FILL, HEADER_TEXT("Signing Transaction"), HEADER_BUTTON_L(LEFT),
+    BG_FILL, HEADER_TEXT("Signing Transaction"),
     BODY_TITLE("Signing Transaction...")};
 
 #endif // BLUE_SCREENS_H

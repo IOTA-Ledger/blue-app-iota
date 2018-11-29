@@ -18,13 +18,25 @@ void break_address()
     blue_ui_state.addr[93] = '\0';
 }
 
+// 0 out - 1 in, 2 meta, 3 in, 4 meta, 5 change
+bool second_last_tx()
+{
+    // increment menu_idx and check if it == change tx
+    blue_ui_state.menu_idx++;
+    bool retval = (menu_to_tx_idx() == api.bundle_ctx.last_tx_index);
+    // set menu_idx back
+    blue_ui_state.menu_idx--;
+
+    return retval;
+}
+
 void update_tx_type()
 {
     blue_ui_state.val = api.bundle_ctx.values[menu_to_tx_idx()];
 
     // first tx is output
     if (blue_ui_state.menu_idx == 0) {
-        os_memcpy(blue_ui_state.tx_type, "Output:", 7);
+        os_memcpy(blue_ui_state.tx_type, "Output:\0", 8);
     }
     else {
         // Negative val is input, positive is change

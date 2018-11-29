@@ -30,8 +30,8 @@
 
 #define OPEN_TITLE "Open IOTA Wallet"
 
-#define OPEN_MSG1 "Connect the Ledger Blue and open your"
-#define OPEN_MSG2 "preferred wallet to view your accounts."
+#define OPEN_MESSAGE1 "Connect the Ledger Blue and open your"
+#define OPEN_MESSAGE2 "preferred wallet to view your accounts."
 
 #define MORE_INFO_TXT "Please visit iota.org/sec for more info."
 

@@ -9,6 +9,7 @@
 #define FULL_VAL_TEXT_LEN 24
 #define BIP_TEXT_LEN 34
 
+// Address chunks after being broken up
 #define CHUNK1 0
 #define CHUNK2 31
 #define CHUNK3 62

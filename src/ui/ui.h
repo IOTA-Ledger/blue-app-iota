@@ -2,7 +2,6 @@
 #define UI_H
 
 #include <stdbool.h>
-#include "nanos/nanos_types.h"
 
 /* To create a new generic UI screen -
  - #define new STATE_ [ui_types.h]

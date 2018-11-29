@@ -63,11 +63,11 @@ void blue_display_signing()
     }
 }
 
-// TODO CREATE DISP ADDR
 void blue_display_address(const unsigned char *addr_bytes)
 {
     get_address_with_checksum(addr_bytes, blue_ui_state.addr);
-
+    break_address();
+    UX_DISPLAY(bagl_ui_disp_addr, NULL);
     ui_force_draw();
 }
 
@@ -90,6 +90,7 @@ void blue_ui_reset()
 
 void blue_ui_restore()
 {
+    // ui gets reset on seed_seed (if seed has changed)
     switch (blue_ui_state.state) {
     // if they were in settings, take them there
     // everything else go to main menu
