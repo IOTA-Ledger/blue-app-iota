@@ -52,7 +52,7 @@ void update_tx_type()
     }
 }
 
-void update_tx_val()
+static void update_tx_val()
 {
     write_readable_val(blue_ui_state.val, blue_ui_state.abbrv_val,
                        ABBRV_VAL_TEXT_LEN);
@@ -60,7 +60,7 @@ void update_tx_val()
                    FULL_VAL_TEXT_LEN);
 }
 
-void update_tx_addr()
+static void update_tx_addr()
 {
     const unsigned char *addr_bytes =
         bundle_get_address_bytes(&api.bundle_ctx, menu_to_tx_idx());

@@ -12,7 +12,7 @@
 
 UI_STATE_CTX_BLUE blue_ui_state;
 
-void blue_ctx_initialize()
+static void blue_ctx_initialize()
 {
     MEMCLEAR(blue_ui_state);
 }

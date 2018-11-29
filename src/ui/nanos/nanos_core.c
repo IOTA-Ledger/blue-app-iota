@@ -15,6 +15,9 @@ UI_TEXT_CTX_NANOS ui_text;
 UI_GLYPH_CTX_NANOS ui_glyphs;
 UI_STATE_CTX_NANOS ui_state;
 
+static void nanos_transition_state(unsigned int button_mask);
+static void nanos_build_display();
+
 // macros for button functions
 BUTTON_FUNCTION(title)
 BUTTON_FUNCTION(title_bold)
@@ -27,7 +30,7 @@ void nanos_set_screen(UI_SCREENS_NANOS s)
     current_screen = s;
 }
 
-void nanos_render()
+static void nanos_render()
 {
     switch (current_screen) {
     case SCREEN_TITLE:
@@ -50,7 +53,7 @@ void nanos_render()
     }
 }
 
-void nanos_ctx_initialize()
+static void nanos_ctx_initialize()
 {
     MEMCLEAR(ui_text);
     MEMCLEAR(ui_glyphs);
@@ -203,7 +206,7 @@ bool nanos_ui_lock_forbidden(void)
 /* -------------------- SCREEN BUTTON FUNCTIONS ---------------
  ---------------------------------------------------------------
  --------------------------------------------------------------- */
-uint8_t nanos_translate_mask(unsigned int button_mask)
+static uint8_t nanos_translate_mask(unsigned int button_mask)
 {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT:
@@ -217,7 +220,7 @@ uint8_t nanos_translate_mask(unsigned int button_mask)
     }
 }
 
-void nanos_handle_button(uint8_t button_mask)
+static void nanos_handle_button(uint8_t button_mask)
 {
     int8_t array_sz;
 
@@ -276,7 +279,7 @@ void nanos_handle_button(uint8_t button_mask)
  Default display options per state
  ------------------------------------------------------
  --------------------------------------------------- */
-void nanos_build_display()
+static void nanos_build_display()
 {
     switch (ui_state.state) {
         /* ------------ MAIN MENU -------------- */
@@ -331,7 +334,7 @@ void nanos_build_display()
  Every button press calls transition_state
  ------------------------------------------------------
  --------------------------------------------------- */
-void nanos_transition_state(unsigned int button_mask)
+static void nanos_transition_state(unsigned int button_mask)
 {
     uint8_t translated_mask = nanos_translate_mask(button_mask);
 

@@ -22,9 +22,10 @@ void display_glyphs_confirm(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2);
 void write_text_array(const char *array, uint8_t len);
 
 void value_convert_readability(void);
-uint8_t get_tx_arr_sz(void);
 
 void display_advanced_tx_value(void);
 void display_advanced_tx_address(void);
+
+uint8_t get_tx_arr_sz(void);
 
 #endif // NANOS_MISC_H

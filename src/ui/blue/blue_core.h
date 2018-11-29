@@ -4,7 +4,6 @@
 #include "os.h"
 #include "os_io_seproxyhal.h"
 
-void blue_ctx_initialize(void);
 void blue_display_main_menu(void);
 void blue_ui_init(void);
 void blue_display_getting_addr(void);
