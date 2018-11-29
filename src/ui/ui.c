@@ -53,6 +53,7 @@ void ui_force_draw()
 
 void ui_init()
 {
+    ui_timeout_stop();
 #ifdef TARGET_BLUE
     blue_ui_init();
 #else
