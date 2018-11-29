@@ -35,11 +35,6 @@
 
 #define MORE_INFO_TXT "Please visit iota.org/sec for more info."
 
-#define ADDR1 "ADLJXS9SKYQKMVQFXR9JDUUJHJWGDN"
-#define ADDR2 "WHQZMDGJFGZOX9BZEKDSXBSPZTTWEY"
-#define ADDR3 "PTNM9OZMYDQWZXFHRTXRC"
-#define ADDR_CHK "OITXAGCJZ"
-
 #define HEADER_BG_FILL                                                         \
     {                                                                          \
         {BAGL_RECTANGLE, 0x00,         0, 20, 320, 48, 0, 0, BAGL_FILL,        \

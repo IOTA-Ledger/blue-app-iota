@@ -3,13 +3,8 @@
 #include "ui.h"
 #include "api.h"
 #include "nanos_core.h"
+#include "ui_common.h"
 #include "iota/addresses.h"
-
-/// the largest power of 10 that still fits into int32
-#define MAX_INT_DEC INT64_C(1000000000)
-
-/// the different IOTA units
-static const char IOTA_UNITS[][3] = {"i", "Ki", "Mi", "Gi", "Ti", "Pi"};
 
 // go to state with menu index
 void state_go(uint8_t state, uint8_t idx)
@@ -167,97 +162,14 @@ void write_text_array(const char *array, uint8_t len)
 
 /* --------- FUNCTIONS FOR DISPLAYING BALANCE ----------- */
 
-static size_t snprint_int64(char *s, size_t n, int64_t val)
-{
-    // we cannot display the full range of int64 with this function
-    if (ABS(val) >= MAX_INT_DEC * MAX_INT_DEC) {
-        THROW(INVALID_PARAMETER);
-    }
-
-    if (ABS(val) < MAX_INT_DEC) {
-        snprintf(s, n, "%d", (int)val);
-    }
-    else {
-        // emulate printing of integers larger than 32 bit
-        snprintf(s, n, "%d%09d", (int)(val / MAX_INT_DEC),
-                 (int)(ABS(val) % MAX_INT_DEC));
-    }
-    return strnlen(s, n);
-}
-
-/// groups the string by adding a comma every 3 chars from the right
-static size_t str_add_commas(char *dst, const char *src, size_t num_len)
-{
-    char *p_dst = dst;
-    const char *p_src = src;
-
-    // ignore leading minus
-    if (*p_src == '-') {
-        *p_dst++ = *p_src++;
-        num_len--;
-    }
-    for (int commas = 2 - num_len % 3; *p_src; commas = (commas + 1) % 3) {
-        *p_dst++ = *p_src++;
-        if (commas == 1) {
-            *p_dst++ = ',';
-        }
-    }
-    // remove the last comma and zero-terminate
-    *--p_dst = '\0';
-
-    return (p_dst - dst);
-}
-
-// display full amount in base iotas without commas Ex. 3040981551 i
-static void write_full_val(int64_t val, UI_TEXT_POS pos)
-{
-    char buffer[TEXT_LEN];
-    char *msg = get_str_buffer(pos);
-
-    const size_t num_len = snprint_int64(buffer, sizeof buffer, val);
-
-    // numbers shorter will have at most 3 commas and fit the text length
-    if (num_len > 13) {
-        snprintf(msg, TEXT_LEN, "%s %s", buffer, IOTA_UNITS[0]);
-    }
-    else {
-        const size_t chars_written = str_add_commas(msg, buffer, num_len);
-        snprintf(msg + chars_written, TEXT_LEN - chars_written, " %s",
-                 IOTA_UNITS[0]);
-    }
-}
-
-// displays brief amount with units Ex. 3.040 Gi
-static void write_readable_val(int64_t val, UI_TEXT_POS pos)
-{
-    char *msg = get_str_buffer(pos);
-
-    if (ABS(val) < 1000) {
-        snprintf(msg, TEXT_LEN, "%d %s", (int)(val), IOTA_UNITS[0]);
-        return;
-    }
-
-    unsigned int base = 1;
-    while (ABS(val) >= 1000 * 1000) {
-        val /= 1000;
-        base++;
-    }
-    if (base >= sizeof(IOTA_UNITS) / sizeof(IOTA_UNITS[0])) {
-        THROW(INVALID_PARAMETER);
-    }
-
-    snprintf(msg, TEXT_LEN, "%d.%03d %s", (int)(val / 1000),
-             (int)(ABS(val) % 1000), IOTA_UNITS[base]);
-}
-
 // displays full/readable value based on the ui_state
 static bool display_value(int64_t val, UI_TEXT_POS pos)
 {
     if (ui_state.display_full_value || ABS(val) < 1000) {
-        write_full_val(val, pos);
+        write_full_val(val, get_str_buffer(pos), TEXT_LEN);
     }
     else {
-        write_readable_val(val, pos);
+        write_readable_val(val, get_str_buffer(pos), TEXT_LEN);
     }
 
     // return whether a shortened version is possible
@@ -335,24 +247,4 @@ uint8_t get_tx_arr_sz()
     }
 
     return (counter * 2) + 2;
-}
-
-uint8_t menu_to_tx_idx()
-{
-    // each non-meta tx prompt will have 2 screens
-    // i counts number of non-meta tx's, j just iterates
-    uint8_t i = 0, j = 0;
-
-    while (j <= api.bundle_ctx.last_tx_index && i <= ui_state.menu_idx / 2) {
-        if (api.bundle_ctx.values[j] != 0) {
-            i++;
-        }
-        j++;
-    }
-
-    // j cannot be 0, because <=, so even if last_idx and menu_idx are 0,
-    // it will still execute once (incrementing j in the process).
-
-    // j will be incremented one beyond our desired index
-    return j - 1;
 }

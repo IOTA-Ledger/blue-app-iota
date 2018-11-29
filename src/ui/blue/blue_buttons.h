@@ -11,6 +11,8 @@ const bagl_element_t *button_tx(const bagl_element_t *e);
 const bagl_element_t *button_tx_next(const bagl_element_t *e);
 const bagl_element_t *button_tx_prev(const bagl_element_t *e);
 const bagl_element_t *button_tmp(const bagl_element_t *e);
+const bagl_element_t *button_deny(const bagl_element_t *e);
+const bagl_element_t *button_approve(const bagl_element_t *e);
 
 unsigned int bagl_ui_main_button(unsigned int, unsigned int);
 unsigned int bagl_ui_settings_button(unsigned int, unsigned int);

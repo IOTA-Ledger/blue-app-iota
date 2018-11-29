@@ -1,6 +1,7 @@
 #include "blue_core.h"
 #include "blue_screens.h"
 #include "blue_types.h"
+#include "blue_misc.h"
 #include "glyphs.h"
 #include "os.h"
 #include "ui.h"
@@ -46,16 +47,23 @@ void blue_display_validating()
 
 void blue_display_recv()
 {
-    UX_DISPLAY(bagl_ui_receiving_tx, NULL);
-    ui_force_draw();
+    if (blue_ui_state.state != STATE_RECV) {
+        blue_ui_state.state = STATE_RECV;
+        UX_DISPLAY(bagl_ui_receiving_tx, NULL);
+        ui_force_draw();
+    }
 }
 
 void blue_display_signing()
 {
-    UX_DISPLAY(bagl_ui_signing_tx, NULL);
-    ui_force_draw();
+    if (blue_ui_state.state != STATE_SIGN) {
+        blue_ui_state.state = STATE_SIGN;
+        UX_DISPLAY(bagl_ui_signing_tx, NULL);
+        ui_force_draw();
+    }
 }
 
+// TODO CREATE DISP ADDR
 void blue_display_address(const unsigned char *addr_bytes)
 {
     get_address_with_checksum(addr_bytes, blue_ui_state.addr);
@@ -65,7 +73,11 @@ void blue_display_address(const unsigned char *addr_bytes)
 
 void blue_sign_tx()
 {
+    write_bip_path();
+    update_tx_info();
+
     UX_DISPLAY(bagl_ui_transaction_first, NULL);
+
     blue_ui_state.state = STATE_TX;
     blue_ui_state.menu_idx = 0;
 }
@@ -93,7 +105,8 @@ void blue_ui_restore()
 
 bool blue_ui_lock_forbidden()
 {
-    if(blue_ui_state.state == STATE_TX)
+    if (blue_ui_state.state == STATE_TX)
         return true;
-    else return false;
+    else
+        return false;
 }

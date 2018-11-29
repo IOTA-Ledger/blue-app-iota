@@ -100,7 +100,7 @@ void ui_display_recv()
 void ui_display_signing()
 {
 #ifdef TARGET_BLUE
-    blue_display_recv();
+    blue_display_signing();
 #else
     nanos_display_signing();
 #endif

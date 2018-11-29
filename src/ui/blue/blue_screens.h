@@ -3,7 +3,9 @@
 
 #include "blue_elements.h"
 #include "blue_buttons.h"
-#include "../../glyphs.h"
+#include "blue_types.h"
+#include "api.h"
+#include "glyphs.h"
 
 static const bagl_element_t bagl_ui_main[] = {BG_FILL,
                                               HEADER_TEXT("IOTA"),
@@ -30,14 +32,14 @@ static const bagl_element_t bagl_ui_transaction_first[] = {
     HEADER_TEXT("Transaction"),
     HEADER_BUTTON_L(LEFT),
     HEADER_BUTTON_R(DASHBOARD),
-    TEXT_LEFT_TITLE_LG(105, "Output:"),
-    TEXT_RIGHT(105, "1.566 Gi"),
-    TEXT_CENTERED(125, "1,566,091,655 i"),
+    TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
+    TEXT_RIGHT(105, blue_ui_state.abbrv_val),
+    TEXT_CENTERED(125, blue_ui_state.full_val),
     TEXT_LEFT_TITLE_LG(160, "Address:"),
-    TEXT_LEFT(180, ADDR1),
-    TEXT_LEFT(200, ADDR2),
-    TEXT_LEFT(220, ADDR3),
-    TEXT_CHK(240, ADDR_CHK),
+    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
+    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
+    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
+    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK]),
     BLUE_UI_BUTTON(COLOUR_GREY, "Next", 170, 360, button_tx_next)};
 
 static const bagl_element_t bagl_ui_transaction[] = {
@@ -45,16 +47,16 @@ static const bagl_element_t bagl_ui_transaction[] = {
     HEADER_TEXT("Transaction"),
     HEADER_BUTTON_L(LEFT),
     HEADER_BUTTON_R(DASHBOARD),
-    TEXT_LEFT_TITLE_LG(105, "Output:"),
-    TEXT_RIGHT(105, "1.566 Gi"),
-    TEXT_CENTERED(125, "1,566,091,655 i"),
+    TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
+    TEXT_RIGHT(105, blue_ui_state.abbrv_val),
+    TEXT_CENTERED(125, blue_ui_state.full_val),
     TEXT_LEFT_TITLE_LG(160, "Address:"),
-    TEXT_LEFT(180, ADDR1),
-    TEXT_LEFT(200, ADDR2),
-    TEXT_LEFT(220, ADDR3),
-    TEXT_CHK(240, ADDR_CHK),
+    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
+    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
+    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
+    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK]),
     TEXT_LEFT_TITLE(275, "BIP32 Path:"),
-    TEXT_LEFT(295, "44'|107a'|0'|14'"),
+    TEXT_LEFT(295, blue_ui_state.bip32_path),
     BLUE_UI_BUTTON(COLOUR_DARK_GREY, "Previous", 30, 360, button_tx_prev),
     BLUE_UI_BUTTON(COLOUR_GREY, "Next", 170, 360, button_tx_next)};
 
@@ -63,19 +65,19 @@ static const bagl_element_t bagl_ui_transaction_last[] = {
     HEADER_TEXT("Transaction"),
     HEADER_BUTTON_L(LEFT),
     HEADER_BUTTON_R(DASHBOARD),
-    TEXT_LEFT_TITLE_LG(105, "Output:"),
-    TEXT_RIGHT(105, "1.566 Gi"),
-    TEXT_CENTERED(125, "1,566,091,655 i"),
+    TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
+    TEXT_RIGHT(105, blue_ui_state.abbrv_val),
+    TEXT_CENTERED(125, blue_ui_state.full_val),
     TEXT_LEFT_TITLE_LG(160, "Address:"),
-    TEXT_LEFT(180, ADDR1),
-    TEXT_LEFT(200, ADDR2),
-    TEXT_LEFT(220, ADDR3),
-    TEXT_CHK(240, ADDR_CHK),
+    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
+    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
+    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
+    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK]),
     TEXT_LEFT_TITLE(275, "BIP32 Path:"),
-    TEXT_LEFT(295, "44'|107a'|0'|14'"),
+    TEXT_LEFT(295, blue_ui_state.bip32_path),
     BLUE_UI_BUTTON(COLOUR_DARK_GREY, "Previous", 30, 360, button_tx_prev),
-    BLUE_UI_BUTTON(COLOUR_RED, "Deny", 30, 410, NULL),
-    BLUE_UI_BUTTON(COLOUR_GREEN, "Approve", 170, 410, NULL)};
+    BLUE_UI_BUTTON(COLOUR_RED, "Deny", 30, 410, button_deny),
+    BLUE_UI_BUTTON(COLOUR_GREEN, "Approve", 170, 410, button_approve)};
 
 static const bagl_element_t bagl_ui_generating_addr[] = {
     BG_FILL, HEADER_TEXT("Generating Address"), HEADER_BUTTON_L(LEFT),

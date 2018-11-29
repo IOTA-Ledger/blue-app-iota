@@ -4,15 +4,38 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
+#define TX_TYPE_TEXT_LEN 21
+#define ABBRV_VAL_TEXT_LEN 9
+#define FULL_VAL_TEXT_LEN 24
+#define BIP_TEXT_LEN 34
+
+#define CHUNK1 0
+#define CHUNK2 31
+#define CHUNK3 62
+#define CHUNK_CHK 84
+
 // UI STATES
-typedef enum { STATE_MAIN, STATE_SETTINGS, STATE_TX } UI_STATES_BLUE;
+typedef enum {
+    STATE_MAIN,
+    STATE_SETTINGS,
+    STATE_TX,
+    STATE_RECV,
+    STATE_SIGN
+} UI_STATES_BLUE;
 
 typedef struct UI_STATE_CTX_BLUE {
 
     // tx information
     int64_t val;
 
-    char addr[90];
+    char tx_type[TX_TYPE_TEXT_LEN]; // Output/Input[]/Change[]:
+
+    char abbrv_val[ABBRV_VAL_TEXT_LEN]; // 1.566 Ki
+    char full_val[FULL_VAL_TEXT_LEN];   // 1,566,091 i
+
+    char addr[94];
+
+    char bip32_path[BIP_TEXT_LEN];
 
     uint8_t state;
     uint8_t menu_idx;

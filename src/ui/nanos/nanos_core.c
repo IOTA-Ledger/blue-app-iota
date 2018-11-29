@@ -187,16 +187,16 @@ bool nanos_ui_lock_forbidden(void)
 {
     // forbid app from locking during transaction (rely on tx timeout)
     switch (ui_state.state) {
-            // BIP Path could be in tx or disp_addr
-            // (backup state will tell us which)
-        case STATE_BIP_PATH:
-            if (ui_state.backup_state != STATE_PROMPT_TX)
-                return false;
-        case STATE_PROMPT_TX:
-        case STATE_TX_ADDR:
-            return true;
-        default:
+        // BIP Path could be in tx or disp_addr
+        // (backup state will tell us which)
+    case STATE_BIP_PATH:
+        if (ui_state.backup_state != STATE_PROMPT_TX)
             return false;
+    case STATE_PROMPT_TX:
+    case STATE_TX_ADDR:
+        return true;
+    default:
+        return false;
     }
 }
 

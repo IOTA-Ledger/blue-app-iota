@@ -5,6 +5,7 @@
 #include "ui.h"
 #include "nanos_types.h"
 #include "nanos_misc.h"
+#include "ui_common.h"
 
 #include "api.h"
 #include "iota/addresses.h"
