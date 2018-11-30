@@ -6,7 +6,7 @@
 //   text, touch_area_brim, overfgcolor, overbgcolor, tap, out, over }
 
 #define COLOUR_GREEN 0x005653
-#define COLOUR_RED 0x6d0202
+#define COLOUR_RED 0x570000
 #define COLOUR_WHITE 0xf9f9f9
 #define COLOUR_BLACK 0x000000
 #define COLOUR_GREY 0x888888
