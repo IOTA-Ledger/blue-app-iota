@@ -12,89 +12,116 @@ static const bagl_element_t bagl_ui_main[] = {
     HEADER_TEXT("IOTA"),
     HEADER_BUTTON_L(SETTINGS),
     HEADER_BUTTON_R(DASHBOARD),
+
     BODY_IOTA_ICON,
-    BODY_TITLE(OPEN_TITLE),
-    TEXT_CENTERED(310, OPEN_MESSAGE1),
-    TEXT_CENTERED(332, OPEN_MESSAGE2)};
+    TEXT_CENTER(OPEN_TITLE, _Y(270), COLOUR_BLACK, FONT_L),
+    TEXT_CENTER(OPEN_MESSAGE1, _Y(310), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(OPEN_MESSAGE2, _Y(330), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(OPEN_MESSAGE3, _Y(450), COLOUR_GREY, FONT_XS)};
 
 static const bagl_element_t bagl_ui_settings[] = {
     BG_FILL,
     HEADER_TEXT("Settings"),
     HEADER_BUTTON_L(LEFT),
-    TEXT_LEFT_TITLE(105, "Version"),
-    TEXT_LEFT(125, APPVERSION),
-    TEXT_LEFT_TITLE(180, "More Info"),
-    TEXT_LEFT(200, MORE_INFO_TXT)};
+
+    TEXT_LEFT("Version", _Y(335), COLOUR_BLACK, FONT_M),
+    TEXT_LEFT_TAB(APPVERSION, _Y(355), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT("More Info", _Y(390), COLOUR_BLACK, FONT_M),
+    TEXT_LEFT_TAB(MORE_INFO_TXT, _Y(410), COLOUR_BLACK, FONT_S),
+
+    TEXT_CENTER(SETTINGS_FOOTER1, _Y(442), COLOUR_GREY, FONT_XS),
+    TEXT_CENTER(SETTINGS_FOOTER2, _Y(458), COLOUR_GREY, FONT_XS)};
 
 static const bagl_element_t bagl_ui_disp_addr[] = {
     BG_FILL,
     HEADER_TEXT("Confirm Address"),
     HEADER_BUTTON_L(LEFT),
-    TEXT_LEFT_TITLE_LG(160, "Address:"),
-    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
-    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
-    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
-    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK])};
+
+    TEXT_LEFT("Address:", _Y(160), COLOUR_BLACK, FONT_L),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK1], _Y(180), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK2], _Y(200), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK3], _Y(220), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(&blue_ui_state.addr[CHUNK_CHK], _Y(240), COLOUR_SKYBLUE,
+                FONT_S)};
 
 static const bagl_element_t bagl_ui_transaction_first[] = {
     BG_FILL,
     HEADER_TEXT("Transaction"),
-    TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
-    TEXT_RIGHT(105, blue_ui_state.abbrv_val),
-    TEXT_CENTERED(125, blue_ui_state.full_val),
-    TEXT_LEFT_TITLE_LG(160, "Address:"),
-    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
-    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
-    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
-    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK]),
-    BLUE_UI_BUTTON(COLOUR_GREY, "Next", 170, 360, button_tx_next)};
+
+    TEXT_LEFT(blue_ui_state.tx_type, _Y(105), COLOUR_BLACK, FONT_L),
+    TEXT_RIGHT(blue_ui_state.abbrv_val, _Y(105), COLOUR_BLACK, FONT_L),
+    TEXT_RIGHT(blue_ui_state.full_val, _Y(125), COLOUR_BLACK, FONT_S),
+
+    TEXT_LEFT("Address:", _Y(160), COLOUR_BLACK, FONT_L),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK1], _Y(180), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK2], _Y(200), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK3], _Y(220), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(&blue_ui_state.addr[CHUNK_CHK], _Y(240), COLOUR_SKYBLUE,
+                FONT_S),
+
+    BODY_BUTTON("Next", _X(170), _Y(360), COLOUR_GREY, button_tx_next)};
 
 static const bagl_element_t bagl_ui_transaction[] = {
     BG_FILL,
     HEADER_TEXT("Transaction"),
-    TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
-    TEXT_RIGHT(105, blue_ui_state.abbrv_val),
-    TEXT_CENTERED(125, blue_ui_state.full_val),
-    TEXT_LEFT_TITLE_LG(160, "Address:"),
-    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
-    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
-    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
-    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK]),
-    TEXT_LEFT_TITLE(275, "BIP32 Path:"),
-    TEXT_LEFT(295, blue_ui_state.bip32_path),
-    BLUE_UI_BUTTON(COLOUR_DARK_GREY, "Previous", 30, 360, button_tx_prev),
-    BLUE_UI_BUTTON(COLOUR_GREY, "Next", 170, 360, button_tx_next)};
+
+    TEXT_LEFT(blue_ui_state.tx_type, _Y(105), COLOUR_BLACK, FONT_L),
+    TEXT_RIGHT(blue_ui_state.abbrv_val, _Y(105), COLOUR_BLACK, FONT_L),
+    TEXT_LEFT_TAB(&blue_ui_state.tx_type[TX_TYPE_SPLIT], _Y(125), COLOUR_BLACK,
+                  FONT_S),
+    TEXT_RIGHT(blue_ui_state.full_val, _Y(125), COLOUR_BLACK, FONT_S),
+
+    TEXT_LEFT("Address:", _Y(160), COLOUR_BLACK, FONT_L),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK1], _Y(180), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK2], _Y(200), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK3], _Y(220), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(&blue_ui_state.addr[CHUNK_CHK], _Y(240), COLOUR_SKYBLUE,
+                FONT_S),
+
+    TEXT_LEFT("BIP32 Path:", _Y(275), COLOUR_BLACK, FONT_M),
+    TEXT_LEFT_TAB(blue_ui_state.bip32_path, _Y(295), COLOUR_BLACK, FONT_S),
+
+    BODY_BUTTON("Previous", _X(30), _Y(360), COLOUR_DARKGREY, button_tx_prev),
+    BODY_BUTTON("Next", _X(170), _Y(360), COLOUR_GREY, button_tx_next)};
 
 static const bagl_element_t bagl_ui_transaction_last[] = {
     BG_FILL,
     HEADER_TEXT("Transaction"),
-    TEXT_LEFT_TITLE_LG(105, blue_ui_state.tx_type),
-    TEXT_RIGHT(105, blue_ui_state.abbrv_val),
-    TEXT_CENTERED(125, blue_ui_state.full_val),
-    TEXT_LEFT_TITLE_LG(160, "Address:"),
-    TEXT_LEFT(180, &blue_ui_state.addr[CHUNK1]),
-    TEXT_LEFT(200, &blue_ui_state.addr[CHUNK2]),
-    TEXT_LEFT(220, &blue_ui_state.addr[CHUNK3]),
-    TEXT_CHK(240, &blue_ui_state.addr[CHUNK_CHK]),
-    TEXT_LEFT_TITLE(275, "BIP32 Path:"),
-    TEXT_LEFT(295, blue_ui_state.bip32_path),
-    BLUE_UI_BUTTON(COLOUR_DARK_GREY, "Previous", 30, 360, button_tx_prev),
-    BLUE_UI_BUTTON(COLOUR_RED, "Deny", 30, 410, button_deny),
-    BLUE_UI_BUTTON(COLOUR_GREEN, "Approve", 170, 410, button_approve)};
+
+    TEXT_LEFT(blue_ui_state.tx_type, _Y(105), COLOUR_BLACK, FONT_L),
+    TEXT_RIGHT(blue_ui_state.abbrv_val, _Y(105), COLOUR_BLACK, FONT_L),
+    TEXT_LEFT_TAB(&blue_ui_state.tx_type[TX_TYPE_SPLIT], _Y(125), COLOUR_BLACK,
+                  FONT_S),
+    TEXT_RIGHT(blue_ui_state.full_val, _Y(125), COLOUR_BLACK, FONT_S),
+
+    TEXT_LEFT("Address:", _Y(160), COLOUR_BLACK, FONT_L),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK1], _Y(180), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK2], _Y(200), COLOUR_BLACK, FONT_S),
+    TEXT_LEFT_TAB(&blue_ui_state.addr[CHUNK3], _Y(220), COLOUR_BLACK, FONT_S),
+    TEXT_CENTER(&blue_ui_state.addr[CHUNK_CHK], _Y(240), COLOUR_SKYBLUE,
+                FONT_S),
+
+    TEXT_LEFT("BIP32 Path:", _Y(275), COLOUR_BLACK, FONT_M),
+    TEXT_LEFT_TAB(blue_ui_state.bip32_path, _Y(295), COLOUR_BLACK, FONT_S),
+
+    BODY_BUTTON("Previous", _X(30), _Y(360), COLOUR_DARKGREY, button_tx_prev),
+    BODY_BUTTON("Deny", _X(30), _Y(410), COLOUR_RED, button_deny),
+    BODY_BUTTON("Approve", _X(170), _Y(410), COLOUR_GREEN, button_approve)};
 
 static const bagl_element_t bagl_ui_generating_addr[] = {
     BG_FILL, HEADER_TEXT("Generating Address"),
-    BODY_TITLE("Generating Address...")};
+    TEXT_CENTER("Generating Address...", _Y(270), COLOUR_BLACK, FONT_L)};
 
 static const bagl_element_t bagl_ui_validating[] = {
-    BG_FILL, HEADER_TEXT("Validating"), BODY_TITLE("Validating...")};
+    BG_FILL, HEADER_TEXT("Validating"),
+    TEXT_CENTER("Validating...", _Y(270), COLOUR_BLACK, FONT_L)};
 
 static const bagl_element_t bagl_ui_receiving_tx[] = {
     BG_FILL, HEADER_TEXT("Receiving Transaction"),
-    BODY_TITLE("Receiving Transaction...")};
+    TEXT_CENTER("Receiving Transaction...", _Y(270), COLOUR_BLACK, FONT_L)};
 
 static const bagl_element_t bagl_ui_signing_tx[] = {
     BG_FILL, HEADER_TEXT("Signing Transaction"),
-    BODY_TITLE("Signing Transaction...")};
+    TEXT_CENTER("Signing Transaction...", _Y(270), COLOUR_BLACK, FONT_L)};
 
 #endif // BLUE_SCREENS_H

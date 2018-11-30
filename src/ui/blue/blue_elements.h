@@ -10,12 +10,13 @@
 #define COLOUR_WHITE 0xf9f9f9
 #define COLOUR_BLACK 0x000000
 #define COLOUR_GREY 0x888888
-#define COLOUR_DARK_GREY 0x666666
-#define COLOUR_CHK 0x3c9fe0
+#define COLOUR_DARKGREY 0x666666
+#define COLOUR_SKYBLUE 0x3c9fe0
 
 #define COLOUR_LIGHT(colour) colour + 0x333333
 
 #define _TOUCHABLE | BAGL_FLAG_TOUCHABLE
+#define _LEFT | BAGL_FONT_ALIGNMENT_LEFT
 #define _CENTERED | BAGL_FONT_ALIGNMENT_CENTER
 #define _RIGHT | BAGL_FONT_ALIGNMENT_RIGHT
 #define _MIDDLE | BAGL_FONT_ALIGNMENT_MIDDLE
@@ -24,23 +25,38 @@
 #define BUTTON(name) bagl_ui_##name##_blue_button
 
 #define HEADER_FONT BAGL_FONT_OPEN_SANS_SEMIBOLD_11_16PX
-#define DEFAULT_FONT_LG BAGL_FONT_OPEN_SANS_LIGHT_16_22PX
-#define DEFAULT_FONT_MED BAGL_FONT_OPEN_SANS_REGULAR_11_14PX
-#define DEFAULT_FONT_SM BAGL_FONT_OPEN_SANS_REGULAR_10_13PX
+#define FONT_L BAGL_FONT_OPEN_SANS_LIGHT_16_22PX
+#define FONT_M BAGL_FONT_OPEN_SANS_REGULAR_11_14PX
+#define FONT_S BAGL_FONT_OPEN_SANS_REGULAR_10_13PX
+#define FONT_XS BAGL_FONT_OPEN_SANS_REGULAR_8_11PX
+
+#define _Y(y) y
+#define _X(x) x
+
+#define _TAB 8
 
 #define OPEN_TITLE "Open IOTA Wallet"
 
 #define OPEN_MESSAGE1 "Connect the Ledger Blue and open your"
 #define OPEN_MESSAGE2 "preferred wallet to view your accounts."
+#define OPEN_MESSAGE3 "Validation requests will show automatically."
 
 #define MORE_INFO_TXT "Please visit iota.org/sec for more info."
 
-#define HEADER_BG_FILL                                                         \
+#define SETTINGS_FOOTER1 "Visit the official IOTA discord"
+#define SETTINGS_FOOTER2 "if you have questions or suggestions."
+
+#define FILL_AREA(x, y, w, h, colour_fg, colour_bg)                            \
     {                                                                          \
-        {BAGL_RECTANGLE, 0x00,         0, 20, 320, 48, 0, 0, BAGL_FILL,        \
-         COLOUR_GREEN,   COLOUR_GREEN, 0, 0},                                  \
+        {BAGL_RECTANGLE, 0x00,      x,         y, w, h, 0, 0,                  \
+         BAGL_FILL,      colour_fg, colour_bg, 0, 0},                          \
             NULL, 0, 0, 0, NULL, NULL, NULL,                                   \
     }
+
+#define HEADER_BG_FILL FILL_AREA(0, 20, 320, 48, COLOUR_GREEN, COLOUR_GREEN)
+#define BODY_BG_FILL FILL_AREA(0, 68, 320, 412, COLOUR_WHITE, COLOUR_WHITE)
+
+#define BG_FILL HEADER_BG_FILL, BODY_BG_FILL
 
 #define HEADER_BUTTON(x, sym, callback)                                        \
     {                                                                          \
@@ -60,30 +76,8 @@
             sym, 0, COLOUR_GREEN, COLOUR_GREY, callback, NULL, NULL,           \
     }
 
-#define HEADER_TEXT(txt)                                                       \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         0,                                                                    \
-         48,                                                                   \
-         320,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_WHITE,                                                         \
-         COLOUR_GREEN,                                                         \
-         HEADER_FONT _CENTERED,                                                \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define BODY_BG_FILL                                                           \
-    {                                                                          \
-        {BAGL_RECTANGLE, 0x00,         0, 68, 320, 412, 0, 0, BAGL_FILL,       \
-         COLOUR_WHITE,   COLOUR_WHITE, 0, 0},                                  \
-            NULL, 0, 0, 0, NULL, NULL, NULL,                                   \
-    }
+#define HEADER_BUTTON_L(l_b) HEADER_BUTTON(0, SYM(l_b), BUTTON(l_b))
+#define HEADER_BUTTON_R(r_b) HEADER_BUTTON(264, SYM(r_b), BUTTON(r_b))
 
 #define BODY_IOTA_ICON                                                         \
     {                                                                          \
@@ -92,133 +86,7 @@
             (const char *)&C_blue_badge_iota, 0, 0, 0, NULL, NULL, NULL,       \
     }
 
-#define BODY_TITLE(txt)                                                        \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         0,                                                                    \
-         270,                                                                  \
-         320,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_BLACK,                                                         \
-         COLOUR_WHITE,                                                         \
-         DEFAULT_FONT_LG _CENTERED,                                            \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define TEXT_CENTERED(y, txt)                                                  \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         0,                                                                    \
-         y,                                                                    \
-         320,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_BLACK,                                                         \
-         COLOUR_WHITE,                                                         \
-         DEFAULT_FONT_SM _CENTERED,                                            \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define TEXT_LEFT_TITLE(y, txt)                                                \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         30,                                                                   \
-         y,                                                                    \
-         290,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_BLACK,                                                         \
-         COLOUR_WHITE,                                                         \
-         DEFAULT_FONT_MED,                                                     \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define TEXT_LEFT_TITLE_LG(y, txt)                                             \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         30,                                                                   \
-         y,                                                                    \
-         290,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_BLACK,                                                         \
-         COLOUR_WHITE,                                                         \
-         DEFAULT_FONT_LG,                                                      \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define TEXT_LEFT(y, txt)                                                      \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         38,                                                                   \
-         y,                                                                    \
-         282,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_BLACK,                                                         \
-         COLOUR_WHITE,                                                         \
-         DEFAULT_FONT_SM,                                                      \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define TEXT_RIGHT(y, txt)                                                     \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         38,                                                                   \
-         y,                                                                    \
-         244,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_BLACK,                                                         \
-         COLOUR_WHITE,                                                         \
-         DEFAULT_FONT_MED _RIGHT,                                              \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define TEXT_CHK(y, txt)                                                       \
-    {                                                                          \
-        {BAGL_LABELINE,                                                        \
-         0x00,                                                                 \
-         38,                                                                   \
-         y,                                                                    \
-         244,                                                                  \
-         30,                                                                   \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         COLOUR_CHK,                                                           \
-         COLOUR_WHITE,                                                         \
-         DEFAULT_FONT_SM _CENTERED,                                            \
-         0},                                                                   \
-            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
-    }
-
-#define BLUE_UI_BUTTON(colour, txt, x, y, callback)                            \
+#define BODY_BUTTON(txt, x, y, colour, callback)                               \
     {                                                                          \
         {BAGL_BUTTON _TOUCHABLE,                                               \
          0x00,                                                                 \
@@ -231,14 +99,32 @@
          BAGL_FILL,                                                            \
          COLOUR_LIGHT(colour),                                                 \
          COLOUR_WHITE,                                                         \
-         BAGL_FONT_OPEN_SANS_LIGHT_14px _CENTERED _MIDDLE,                     \
+         FONT_M _CENTERED _MIDDLE,                                             \
          0},                                                                   \
             txt, 0, colour, COLOUR_WHITE, callback, NULL, NULL,                \
     }
 
-#define HEADER_BUTTON_L(l_b) HEADER_BUTTON(0, SYM(l_b), BUTTON(l_b))
-#define HEADER_BUTTON_R(r_b) HEADER_BUTTON(264, SYM(r_b), BUTTON(r_b))
+#define TEXT_EL(txt, x, y, w, h, colour_fg, colour_bg, font, pos)              \
+    {                                                                          \
+        {BAGL_LABELINE, 0x00,      x,        y, w, h, 0, 0, 0,                 \
+         colour_fg,     colour_bg, font pos, 0},                               \
+            txt, 0, 0, 0, NULL, NULL, NULL,                                    \
+    }
 
-#define BG_FILL HEADER_BG_FILL, BODY_BG_FILL
+#define HEADER_TEXT(txt)                                                       \
+    TEXT_EL(txt, 0, 48, 320, 20, COLOUR_WHITE, COLOUR_GREEN, HEADER_FONT,      \
+            _CENTERED)
+
+#define TEXT_CENTER(txt, y, colour, font)                                      \
+    TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _CENTERED)
+
+#define TEXT_LEFT(txt, y, colour, font)                                        \
+    TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _LEFT)
+
+#define TEXT_LEFT_TAB(txt, y, colour, font)                                    \
+    TEXT_EL(txt, 30 + _TAB, y, 260, 20, colour, COLOUR_WHITE, font, _LEFT)
+
+#define TEXT_RIGHT(txt, y, colour, font)                                       \
+    TEXT_EL(txt, 30, y, 260, 20, colour, COLOUR_WHITE, font, _RIGHT)
 
 #endif // BLUE_ELEMENTS_H

@@ -36,18 +36,21 @@ void update_tx_type()
 
     // first tx is output
     if (blue_ui_state.menu_idx == 0) {
-        os_memcpy(blue_ui_state.tx_type, "Output:\0", 8);
+        os_memcpy(blue_ui_state.tx_type, "Output:\0", TX_TYPE_SPLIT);
     }
     else {
         // Negative val is input, positive is change
         if (blue_ui_state.val < 0) {
-            snprintf(blue_ui_state.tx_type, TX_TYPE_TEXT_LEN, "Input: [%u]",
+            os_memcpy(blue_ui_state.tx_type, "Input: \0", TX_TYPE_SPLIT);
+            snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
+                     TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
                      (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
         }
         else {
-            snprintf(blue_ui_state.tx_type, TX_TYPE_TEXT_LEN, "Change: [%u]",
-                     (unsigned int)
-                         api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
+            os_memcpy(blue_ui_state.tx_type, "Change:\0", TX_TYPE_SPLIT);
+            snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
+                     TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
+                     (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
         }
     }
 }

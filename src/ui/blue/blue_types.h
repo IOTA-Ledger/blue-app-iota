@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
-#define TX_TYPE_TEXT_LEN 21
+#define TX_TYPE_TEXT_LEN 23
 #define ABBRV_VAL_TEXT_LEN 9
 #define FULL_VAL_TEXT_LEN 24
 #define BIP_TEXT_LEN 34
@@ -14,6 +14,8 @@
 #define CHUNK2 31
 #define CHUNK3 62
 #define CHUNK_CHK 84
+
+#define TX_TYPE_SPLIT 8
 
 // UI STATES
 typedef enum {
