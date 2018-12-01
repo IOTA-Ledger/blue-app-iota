@@ -64,6 +64,7 @@ static void nanos_ctx_initialize()
 void ui_init()
 {
     nanos_ctx_initialize();
+    ui_timeout_stop();
 
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
 

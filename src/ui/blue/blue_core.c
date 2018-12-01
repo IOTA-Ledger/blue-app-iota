@@ -19,6 +19,7 @@ static void blue_ctx_initialize()
 void ui_init()
 {
     blue_ctx_initialize();
+    ui_timeout_stop();
 
     UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_GREEN);
     ui_display_main_menu();
@@ -97,7 +98,7 @@ void ui_restore()
         UX_DISPLAY(bagl_ui_settings, NULL);
         break;
     default:
-        blue_display_main_menu();
+        ui_display_main_menu();
         break;
     }
     ui_force_draw();
