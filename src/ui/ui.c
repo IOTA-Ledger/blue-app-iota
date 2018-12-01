@@ -4,14 +4,6 @@
 #include "api.h"
 #include "iota/addresses.h"
 
-#ifdef TARGET_BLUE
-#include "blue/blue_types.h"
-#include "blue/blue_core.h"
-#else
-#include "nanos/nanos_types.h"
-#include "nanos/nanos_core.h"
-#endif // TARGET_BLUE
-
 #define TICKS_PER_SECOND 10
 
 // Seconds until UI timeout if expected inputs are not received
@@ -51,98 +43,6 @@ void ui_force_draw()
                            sizeof(G_io_seproxyhal_spi_buffer), 0);
 }
 
-void ui_init()
-{
-    ui_timeout_stop();
-#ifdef TARGET_BLUE
-    blue_ui_init();
-#else
-    nanos_ui_init();
-#endif
-}
-
-// Entry points for main to modify display
-void ui_display_main_menu()
-{
-#ifdef TARGET_BLUE
-    blue_display_main_menu();
-#else
-    nanos_display_main_menu();
-#endif
-}
-
-void ui_display_getting_addr()
-{
-#ifdef TARGET_BLUE
-    blue_display_getting_addr();
-#else
-    nanos_display_getting_addr();
-#endif
-}
-
-void ui_display_validating()
-{
-#ifdef TARGET_BLUE
-    blue_display_validating();
-#else
-    nanos_display_validating();
-#endif
-}
-
-void ui_display_recv()
-{
-#ifdef TARGET_BLUE
-    blue_display_recv();
-#else
-    nanos_display_recv();
-#endif
-}
-
-void ui_display_signing()
-{
-#ifdef TARGET_BLUE
-    blue_display_signing();
-#else
-    nanos_display_signing();
-#endif
-}
-
-void ui_display_address(const unsigned char *addr_bytes)
-{
-#ifdef TARGET_BLUE
-    blue_display_address(addr_bytes);
-#else
-    nanos_display_address(addr_bytes);
-#endif
-}
-
-void ui_sign_tx()
-{
-#ifdef TARGET_BLUE
-    blue_sign_tx();
-#else
-    nanos_sign_tx();
-#endif
-}
-
-void ui_reset()
-{
-#ifdef TARGET_BLUE
-    blue_ui_reset();
-#else
-    nanos_ui_reset();
-#endif
-}
-
-void ui_restore()
-{
-#ifdef TARGET_BLUE
-    blue_ui_restore();
-#else
-    nanos_ui_restore();
-#endif
-}
-
 void ui_timeout_tick()
 {
     // timer not started
@@ -170,13 +70,4 @@ void ui_timeout_start(bool interactive)
 void ui_timeout_stop()
 {
     timer = 0;
-}
-
-bool ui_lock_forbidden(void)
-{
-#ifdef TARGET_BLUE
-    return blue_ui_lock_forbidden();
-#else
-    return nanos_ui_lock_forbidden();
-#endif
 }
