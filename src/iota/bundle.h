@@ -4,10 +4,8 @@
 #include <stdbool.h>
 #include "iota_types.h"
 
-#define MAX_NUM_INPUT_TX 2
-
-// one output, input plus remainder txs
-#define MAX_BUNDLE_INDEX_SZ (1 + MAX_NUM_INPUT_TX * MAX_SECURITY_LEVEL + 1)
+// the largest bundle size due to memory limitations
+#define MAX_BUNDLE_INDEX_SZ 8
 
 typedef struct BUNDLE_CTX {
     // bundle_bytes holds all of the bundle information in byte encoding

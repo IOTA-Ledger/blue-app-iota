@@ -33,7 +33,8 @@ static void test_valid_signatures(const char *seed, int security,
     api_initialize();
     EXPECT_API_SET_BUNDLE_OK(seed, security, tx, last_index, bundle_hash);
 
-    for (int i = 0; i < 2; i++) {
+    const int num_inputs = (last_index - 1) / security;
+    for (int i = 0; i < num_inputs; i++) {
         for (int j = 0; j < num_fragments; j++) {
             SIGN_INPUT input;
             input.transaction_idx = 1 + i * security;

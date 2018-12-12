@@ -2,7 +2,8 @@ const fs = require("fs");
 const { composeAPI } = require("@iota/core");
 const { asTransactionObject } = require("@iota/transaction-converter");
 
-const NUM_BUNDLES = 200;
+const NUM_BUNDLES = 100;
+const MAX_BUNDLE_SIZE = 8;
 
 const iota = composeAPI({
   provider: "https://field.deviota.com:443"
@@ -38,20 +39,30 @@ async function getAddress(seed, index, security) {
   return addresses[0];
 }
 
+async function addAddresses(inputs, seed, security) {
+  const addresses = await Promise.all(
+    inputs.map(async input => await getAddress(seed, input.keyIndex, security))
+  );
+  return inputs.map((input, i) => {
+    return {
+      address: addresses[i],
+      keyIndex: input.keyIndex,
+      security,
+      balance: input.balance
+    };
+  });
+}
+
 async function getTxInputs(
   seed,
   security,
   output_address,
   output_value,
   output_tag,
-  input_idx_1,
-  input_balance_1,
-  input_idx_2,
-  input_balance_2,
+  inputs,
   change_idx
 ) {
-  const input_address_1 = await getAddress(seed, input_idx_1, security);
-  const input_address_2 = await getAddress(seed, input_idx_2, security);
+  inputs = await addAddresses(inputs, seed, security);
   const change_address = await getAddress(seed, change_idx, security);
 
   const transfers = [
@@ -63,33 +74,20 @@ async function getTxInputs(
     }
   ];
 
-  const inputs = [
-    {
-      address: input_address_1,
-      keyIndex: input_idx_1,
-      security,
-      balance: input_balance_1
-    },
-    {
-      address: input_address_2,
-      keyIndex: input_idx_2,
-      security,
-      balance: input_balance_2
-    }
-  ];
-
   const txs = (await iota.prepareTransfers(seed, transfers, {
-    inputs,
+    inputs: inputs,
     address: change_address,
     security
   })).map(t => asTransactionObject(t));
   txs.reverse();
 
-  let signature_1 = "";
-  let signature_2 = "";
-  for (let i = 0; i < security; i++) {
-    signature_1 += txs[1 + i].signatureMessageFragment;
-    signature_2 += txs[1 + security + i].signatureMessageFragment;
+  const signatures = [];
+  for (let i = 1; i < txs.length - 1; ) {
+    let signature = "";
+    for (let j = 0; j < security; j++) {
+      signature += txs[i++].signatureMessageFragment;
+    }
+    signatures.push(signature);
   }
 
   let tx_inputs = txs.map(tx => {
@@ -103,59 +101,77 @@ async function getTxInputs(
   });
 
   for (let i = 0; i < security; i++) {
-    tx_inputs[1 + i].index = input_idx_1;
-    tx_inputs[1 + security + i].index = input_idx_2;
+    inputs.forEach(
+      (input, j) => (tx_inputs[1 + j * security + i].index = input.keyIndex)
+    );
   }
-  tx_inputs[1 + 2 * security].index = change_idx;
+  tx_inputs[1 + inputs.length * security].index = change_idx;
 
-  tx_inputs = tx_inputs
-    .map(o => Object.values(o))
-    .reduce((acc, val) => acc.concat(val), []);
-
-  return [seed, security]
-    .concat(tx_inputs)
-    .concat([txs[0].bundle, signature_1, signature_2]);
+  return [seed, security, txs[0].lastIndex]
+    .concat(
+      tx_inputs.reduce(
+        (acc, tx) =>
+          acc.concat([tx.address, tx.index, tx.value, tx.tag, tx.timestamp]),
+        []
+      )
+    )
+    .concat([txs[0].bundle])
+    .concat(signatures);
 }
 
 (async () => {
   const stream = fs.createWriteStream("test.csv");
 
   for (let security = 1; security <= 3; security++) {
-    for (let i = 0; i < NUM_BUNDLES; i++) {
-      const seed = randomTrytes(81);
-      const output_address = randomTrytes(81);
-      const tag = randomTrytes(27);
+    for (
+      let num_inputs = 1;
+      num_inputs <= (MAX_BUNDLE_SIZE - 2) / security;
+      num_inputs++
+    ) {
+      for (let i = 0; i < NUM_BUNDLES; i++) {
+        const seed = randomTrytes(81);
+        const output_address = randomTrytes(81);
+        const tag = randomTrytes(27);
 
-      // change index must be greater than the inputs
-      const input_idx_1 = randomInt(0, 254, []);
-      const input_idx_2 = randomInt(0, 254, [input_idx_1]);
-      const change_idx = randomInt(Math.max(input_idx_1, input_idx_2), 255, [
-        input_idx_1,
-        input_idx_2
-      ]);
+        // total funds up to 1Ti
+        const total = Math.floor(Math.random() * 1e12) + 1;
+        const output_value = Math.floor(total * Math.random());
 
-      // total funds up to 1Ti
-      const total = Math.floor(Math.random() * 1e12) + 1;
+        let rem = total;
+        const inputs = [];
+        for (let j = num_inputs - 1; j >= 0; j--) {
+          const keyIndex = randomInt(
+            0,
+            254,
+            inputs.map(input => input.keyIndex)
+          );
+          const balance =
+            j == 0 ? rem : Math.floor(Math.random() * (rem - num_inputs)) + 1;
+          rem -= balance;
 
-      const input_balance_1 = Math.floor(total * Math.random());
-      const input_balance_2 = total - input_balance_1;
+          inputs.push({ keyIndex, balance });
+        }
 
-      const output_value = Math.floor(total * Math.random());
+        // change index must be greater than the inputs
+        const indices = inputs.map(input => input.keyIndex);
+        const change_idx = randomInt(
+          Math.max.apply(Math, indices),
+          255,
+          indices
+        );
 
-      const tx_inputs = await getTxInputs(
-        seed,
-        security,
-        output_address,
-        output_value,
-        tag,
-        input_idx_1,
-        input_balance_1,
-        input_idx_2,
-        input_balance_2,
-        change_idx
-      );
+        const tx_inputs = await getTxInputs(
+          seed,
+          security,
+          output_address,
+          output_value,
+          tag,
+          inputs,
+          change_idx
+        );
 
-      stream.write(tx_inputs.join(",") + "\n");
+        stream.write(tx_inputs.join(",") + "\n");
+      }
     }
   }
 

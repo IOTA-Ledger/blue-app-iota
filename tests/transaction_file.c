@@ -8,7 +8,6 @@
 
 #define BUFFER_LEN 20000
 #define MAX_TX_INDEX 7
-#define NUM_INPUTS 2
 
 #define SCNs27 "[NOPQRSTUVWXYZ9ABCDEFGHIJKLM]"
 
@@ -27,16 +26,21 @@ void test_for_each_bundle(const char *file_name,
     char line[BUFFER_LEN];
     while (fgets(line, sizeof(line), file) != NULL) {
         char seed[NUM_HASH_TRYTES];
-        uint8_t security;
+        unsigned int security;
+        unsigned int last_index;
         TX_INPUT tx[MAX_TX_INDEX + 1];
 
         int offset = 0;
 
         int scanned;
-        sscanf(line, "%81" SCNs27 ",%" SCNu8 ",%n", seed, &security, &scanned);
+        sscanf(line, "%81" SCNs27 ",%u,%u,%n", seed, &security, &last_index,
+               &scanned);
         offset += scanned;
 
-        const uint32_t last_index = 1 + security * 2;
+        if (last_index >= MAX_BUNDLE_INDEX_SZ) {
+            fail_msg("Max bundle index violated.");
+        }
+
         for (unsigned int i = 0; i <= last_index; i++) {
             sscanf(line + offset,
                    "%81" SCNs27 ",%" SCNu32 ",%" SCNd64 ",%27" SCNs27
@@ -54,8 +58,9 @@ void test_for_each_bundle(const char *file_name,
         sscanf(line + offset, "%81" SCNs27 ",%n", bundle_hash, &scanned);
         offset += scanned;
 
-        char signatures[NUM_INPUTS][SIGNATURE_LENGTH];
-        for (int i = 0; i < NUM_INPUTS; i++) {
+        const int num_inputs = (last_index - 1) / security;
+        char signatures[num_inputs][SIGNATURE_LENGTH];
+        for (int i = 0; i < num_inputs; i++) {
             sscanf(line + offset, "%6561" SCNs27 ",%n", signatures[i],
                    &scanned);
             offset += scanned;
