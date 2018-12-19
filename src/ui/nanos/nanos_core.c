@@ -7,7 +7,8 @@
 #include "nanos_elements.h"
 #include "ui.h"
 #include "iota/addresses.h"
-#include "iota_io.h"
+
+#ifdef TARGET_NANOS
 
 UI_SCREENS_NANOS current_screen;
 
@@ -60,8 +61,18 @@ static void nanos_ctx_initialize()
     MEMCLEAR(ui_state);
 }
 
+void ui_init()
+{
+    nanos_ctx_initialize();
+    ui_timeout_stop();
+
+    ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
+
+    ui_display_main_menu();
+}
+
 // Entry points for main to modify display
-void nanos_display_main_menu()
+void ui_display_main_menu()
 {
     state_go(STATE_MAIN_MENU, 0);
     backup_state();
@@ -70,16 +81,7 @@ void nanos_display_main_menu()
     nanos_render();
 }
 
-void nanos_ui_init()
-{
-    nanos_ctx_initialize();
-
-    ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
-
-    nanos_display_main_menu();
-}
-
-void nanos_display_getting_addr()
+void ui_display_getting_addr()
 {
     nanos_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
@@ -97,7 +99,7 @@ void nanos_display_getting_addr()
     ui_force_draw();
 }
 
-void nanos_display_validating()
+void ui_display_validating()
 {
     nanos_set_screen(SCREEN_MENU);
     clear_display();
@@ -114,7 +116,7 @@ void nanos_display_validating()
     ui_force_draw();
 }
 
-void nanos_display_recv()
+void ui_display_recv()
 {
     nanos_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
@@ -132,7 +134,7 @@ void nanos_display_recv()
     ui_force_draw();
 }
 
-void nanos_display_signing()
+void ui_display_signing()
 {
     nanos_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
@@ -150,7 +152,7 @@ void nanos_display_signing()
     ui_force_draw();
 }
 
-void nanos_display_address(const unsigned char *addr_bytes)
+void ui_display_address(const unsigned char *addr_bytes)
 {
     get_address_with_checksum(addr_bytes, ui_state.addr);
     state_go(STATE_DISP_ADDR_CHK, 0);
@@ -160,7 +162,7 @@ void nanos_display_address(const unsigned char *addr_bytes)
     ui_force_draw();
 }
 
-void nanos_sign_tx()
+void ui_sign_tx()
 {
     state_go(STATE_PROMPT_TX, 0);
 
@@ -168,7 +170,7 @@ void nanos_sign_tx()
     nanos_render();
 }
 
-void nanos_ui_reset()
+void ui_reset()
 {
     state_go(STATE_MAIN_MENU, 0);
 
@@ -177,7 +179,7 @@ void nanos_ui_reset()
     ui_force_draw();
 }
 
-void nanos_ui_restore()
+void ui_restore()
 {
     restore_state();
 
@@ -186,7 +188,7 @@ void nanos_ui_restore()
     ui_force_draw();
 }
 
-bool nanos_ui_lock_forbidden(void)
+bool ui_lock_forbidden(void)
 {
     // forbid app from locking during transaction (rely on tx timeout)
     switch (ui_state.state) {
@@ -353,3 +355,5 @@ static void nanos_transition_state(unsigned int button_mask)
     // render new display
     nanos_render();
 }
+
+#endif // TARGET_NANOS

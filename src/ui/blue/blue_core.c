@@ -1,14 +1,13 @@
-#include "blue_core.h"
+#include "os.h"
+#include "os_io_seproxyhal.h"
 #include "blue_screens.h"
 #include "blue_types.h"
 #include "blue_misc.h"
 #include "glyphs.h"
-#include "os.h"
 #include "ui.h"
-
 #include "iota/addresses.h"
 
-#include "os_io_seproxyhal.h"
+#ifdef TARGET_BLUE
 
 UI_STATE_CTX_BLUE blue_ui_state;
 
@@ -17,35 +16,36 @@ static void blue_ctx_initialize()
     MEMCLEAR(blue_ui_state);
 }
 
+void ui_init()
+{
+    blue_ctx_initialize();
+    ui_timeout_stop();
+
+    UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_GREEN);
+    ui_display_main_menu();
+}
+
 // Entry points for main to modify display
-void blue_display_main_menu()
+void ui_display_main_menu()
 {
     UX_DISPLAY(bagl_ui_main, NULL);
     blue_ui_state.state = STATE_MAIN;
     blue_ui_state.menu_idx = 0;
 }
 
-void blue_ui_init()
-{
-    blue_ctx_initialize();
-
-    UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_GREEN);
-    blue_display_main_menu();
-}
-
-void blue_display_getting_addr()
+void ui_display_getting_addr()
 {
     UX_DISPLAY(bagl_ui_generating_addr, NULL);
     ui_force_draw();
 }
 
-void blue_display_validating()
+void ui_display_validating()
 {
     UX_DISPLAY(bagl_ui_validating, NULL);
     ui_force_draw();
 }
 
-void blue_display_recv()
+void ui_display_recv()
 {
     if (blue_ui_state.state != STATE_RECV) {
         blue_ui_state.state = STATE_RECV;
@@ -54,7 +54,7 @@ void blue_display_recv()
     }
 }
 
-void blue_display_signing()
+void ui_display_signing()
 {
     if (blue_ui_state.state != STATE_SIGN) {
         blue_ui_state.state = STATE_SIGN;
@@ -63,7 +63,7 @@ void blue_display_signing()
     }
 }
 
-void blue_display_address(const unsigned char *addr_bytes)
+void ui_display_address(const unsigned char *addr_bytes)
 {
     get_address_with_checksum(addr_bytes, blue_ui_state.addr);
     break_address();
@@ -71,7 +71,7 @@ void blue_display_address(const unsigned char *addr_bytes)
     ui_force_draw();
 }
 
-void blue_sign_tx()
+void ui_sign_tx()
 {
     write_bip_path();
     update_tx_info();
@@ -82,13 +82,13 @@ void blue_sign_tx()
     blue_ui_state.menu_idx = 0;
 }
 
-void blue_ui_reset()
+void ui_reset()
 {
-    blue_display_main_menu();
+    ui_display_main_menu();
     ui_force_draw();
 }
 
-void blue_ui_restore()
+void ui_restore()
 {
     // ui gets reset on seed_seed (if seed has changed)
     switch (blue_ui_state.state) {
@@ -98,16 +98,18 @@ void blue_ui_restore()
         UX_DISPLAY(bagl_ui_settings, NULL);
         break;
     default:
-        blue_display_main_menu();
+        ui_display_main_menu();
         break;
     }
     ui_force_draw();
 }
 
-bool blue_ui_lock_forbidden()
+bool ui_lock_forbidden()
 {
     if (blue_ui_state.state == STATE_TX)
         return true;
     else
         return false;
 }
+
+#endif // TARGET_BLUE

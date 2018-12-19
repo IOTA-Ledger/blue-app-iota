@@ -1,12 +1,11 @@
 #include "blue_buttons.h"
+#include "os.h"
+#include "os_io_seproxyhal.h"
 #include "blue_screens.h"
 #include "blue_types.h"
-#include "blue_core.h"
 #include "blue_misc.h"
 #include "glyphs.h"
-#include "os.h"
-
-#include "os_io_seproxyhal.h"
+#include "ui.h"
 
 const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e)
 {
@@ -23,7 +22,7 @@ const bagl_element_t *bagl_ui_DASHBOARD_blue_button(const bagl_element_t *e)
 
 const bagl_element_t *bagl_ui_LEFT_blue_button(const bagl_element_t *e)
 {
-    blue_display_main_menu();
+    ui_display_main_menu();
     return NULL;
 }
 
