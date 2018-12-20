@@ -39,6 +39,7 @@ export BOLOS_SDK=${DIR_NANOS_SDK}
 mkdir -p bin/
 make clean && make
 mv bin/ nanos-bin/
+chmod -R 777 nanos-bin/
 
 echo "Downloading blue-secure-sdk"
 git clone --depth=1 -b ${BLUE_SDK_VERSION} https://github.com/LedgerHQ/blue-secure-sdk.git ${DIR_BLUE_SDK}
@@ -48,3 +49,4 @@ export BOLOS_SDK=${DIR_BLUE_SDK}
 mkdir -p bin/
 make clean && make
 mv bin/ blue-bin/
+chmod -R 777 blue-bin/
