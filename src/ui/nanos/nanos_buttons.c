@@ -1,10 +1,11 @@
-#include "ui_buttons.h"
+#include "nanos_buttons.h"
 #include <string.h>
 #include "common.h"
 
 #include "ui.h"
-#include "ui_types.h"
-#include "ui_misc.h"
+#include "nanos_types.h"
+#include "nanos_misc.h"
+#include "ui_common.h"
 
 #include "api.h"
 #include "iota/addresses.h"

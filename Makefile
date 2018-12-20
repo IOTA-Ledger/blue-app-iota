@@ -29,7 +29,11 @@ APPVERSION_PATCH = 0
 APPVERSION = $(APPVERSION_MAJOR).$(APPVERSION_MINOR).$(APPVERSION_PATCH)
 APP_LOAD_PARAMS = --path "44'/4218'" --appFlags 0x40 $(COMMON_LOAD_PARAMS)
 
+ifeq ($(TARGET_NAME),TARGET_BLUE)
+ICONNAME = blue_app_iota.gif
+else
 ICONNAME = nanos_app_iota.gif
+endif
 
 # Build configuration
 

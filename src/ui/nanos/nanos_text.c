@@ -1,5 +1,5 @@
-#include "ui_text.h"
-#include "ui_types.h"
+#include "nanos_text.h"
+#include "nanos_types.h"
 #include "iota/addresses.h"
 #include <string.h>
 

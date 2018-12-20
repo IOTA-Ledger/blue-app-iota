@@ -1,5 +1,5 @@
-#ifndef UI_TYPES_H
-#define UI_TYPES_H
+#ifndef NANOS_TYPES_H
+#define NANOS_TYPES_H
 
 #include <stdint.h>
 #include "iota/bundle.h"
@@ -7,10 +7,6 @@
 /// length of one text line
 #define TEXT_LEN 21
 #define TOTAL_GLYPHS GLYPH_NONE
-
-// Seconds until UI timeout if expected inputs are not received
-#define UI_TIMEOUT_SECONDS 3
-#define UI_TIMEOUT_INTERACTIVE_SECONDS 80
 
 #define BUTTON_L 0
 #define BUTTON_R 1
@@ -28,7 +24,7 @@ typedef enum {
     SCREEN_MENU,
     SCREEN_IOTA,
     SCREEN_BACK
-} UI_SCREENS;
+} UI_SCREENS_NANOS;
 
 // UI STATES
 typedef enum {
@@ -43,7 +39,7 @@ typedef enum {
     STATE_PROMPT_TX,
     STATE_BIP_PATH,
     STATE_EXIT = 255
-} UI_STATES;
+} UI_STATES_NANOS;
 
 // GLYPH TYPES
 typedef enum {
@@ -55,7 +51,7 @@ typedef enum {
     GLYPH_NONE, // glyphs after none require special screens
     GLYPH_IOTA,
     GLYPH_BACK
-} UI_GLYPH_TYPES;
+} UI_GLYPH_TYPES_NANOS;
 
 // Size of Menu
 #define MENU_ADDR_LEN 8
@@ -83,22 +79,22 @@ typedef enum {
 } MENU_ABOUT_ENTRIES;
 
 
-typedef struct UI_TEXT_CTX {
+typedef struct UI_TEXT_CTX_NANOS {
 
     char top_str[TEXT_LEN];
     char mid_str[TEXT_LEN];
     char bot_str[TEXT_LEN];
 
-} UI_TEXT_CTX;
+} UI_TEXT_CTX_NANOS;
 
-typedef struct UI_GLYPH_CTX {
+typedef struct UI_GLYPH_CTX_NANOS {
 
     // flags for turning on/off certain glyphs
     char glyph[TOTAL_GLYPHS + 1];
 
-} UI_GLYPH_CTX;
+} UI_GLYPH_CTX_NANOS;
 
-typedef struct UI_STATE_CTX {
+typedef struct UI_STATE_CTX_NANOS {
 
     // tx information
     int64_t val;
@@ -112,12 +108,10 @@ typedef struct UI_STATE_CTX {
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
-    uint16_t timer;
+} UI_STATE_CTX_NANOS;
 
-} UI_STATE_CTX;
+extern UI_TEXT_CTX_NANOS ui_text;
+extern UI_GLYPH_CTX_NANOS ui_glyphs;
+extern UI_STATE_CTX_NANOS ui_state;
 
-extern UI_TEXT_CTX ui_text;
-extern UI_GLYPH_CTX ui_glyphs;
-extern UI_STATE_CTX ui_state;
-
-#endif // UI_TYPES_H
+#endif // NANOS_TYPES_H
