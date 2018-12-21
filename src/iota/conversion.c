@@ -5,6 +5,8 @@
 #define INT_LENGTH 12
 // base of the ternary system
 #define BASE 3
+// base of the ternary system represented in bytes
+#define TRYTE_BASE 27
 
 // the middle of the domain described by 242 trits, i.e. \sum_{k=0}^{241} 3^k
 static const uint32_t HALF_3[12] = {
@@ -16,10 +18,13 @@ static const uint32_t NEG_HALF_3[12] = {
     0x5a31769c, 0x60ff8996, 0xeb7bafb0, 0xc521ff26, 0xf3dbb791, 0xaf6862a8,
     0x865b38fd, 0xb74451c9, 0x56097f74, 0x55f957fa, 0x57805420, 0xa1961410};
 
-// representing the value of the highes trit in the feasible domain, i.e 3^242
+// the value of the highest trit in the feasible domain, i.e 3^242
 static const uint32_t TRIT_243[12] = {
     0x4b9d12c9, 0x3e00ecd3, 0x2908a09f, 0x75bc01b2, 0x184890dc, 0xa12f3aae,
     0xf3498e04, 0x91775c6c, 0x53ed0116, 0x540d500b, 0x50ff57bf, 0xbcd3d7df};
+
+// the value of the highest trit in one tryte, i.e 3^3
+#define TRIT_4 9
 
 static const trit_t trits_mapping[27][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
@@ -45,15 +50,6 @@ static int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
     return 0;
 }
 
-static int trits_to_trytes(const trit_t trits_in[], tryte_t trytes_out[],
-                           unsigned int trit_len)
-{
-    for (unsigned int i = 0; i < trit_len / 3; i++) {
-        trytes_out[i] = trits_in[i * 3 + 0] + trits_in[i * 3 + 1] * 3 +
-                        trits_in[i * 3 + 2] * 9;
-    }
-    return 0;
-}
 /* --------------------- END trits > trytes */
 
 /* --------------------- trytes > chars and back */
@@ -90,6 +86,20 @@ void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
     tryte_t trytes[chars_len];
     chars_to_trytes(chars, trytes, chars_len);
     trytes_to_trits(trytes, trits, chars_len);
+}
+
+/** @brief Sets the last (3rd) trit in a single tryte to set to zero.
+ *  @return value of the tryte without the last trit.
+ */
+static tryte_t tryte_set_last_trit_zero(tryte_t tryte)
+{
+    if (tryte > MAX_TRYTE_VALUE - TRIT_4) {
+        return tryte - TRIT_4;
+    }
+    if (tryte < MIN_TRYTE_VALUE + TRIT_4) {
+        return tryte + TRIT_4;
+    }
+    return tryte;
 }
 
 /** @brief Returns true, if the long little-endian integer represents a negative
@@ -258,7 +268,7 @@ static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
     bigint_sub(bigint, bigint, HALF_3);
 }
 
-static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
+static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
 {
     // the two's complement represention is only correct, if the number fits
     // into 48 bytes, i.e. has the 243th trit set to 0
@@ -267,13 +277,13 @@ static void bigint_to_trits_mem(uint32_t *bigint, trit_t *trits)
     // convert to the (positive) number representing non-balanced ternary
     bigint_add(bigint, bigint, HALF_3);
 
-    // ignore the 243th trit, as it cannot be fully represented in 48 bytes
-    for (unsigned int i = 0; i < 242; i++) {
-        const uint32_t rem = bigint_div_byte_mem(bigint, BASE);
-        trits[i] = rem - 1; // convert back to balanced
+    for (unsigned int i = 0; i < 80; i++) {
+        const uint32_t rem = bigint_div_byte_mem(bigint, TRYTE_BASE);
+        trytes[i] = rem - (TRYTE_BASE / 2); // convert back to balanced
     }
-    // set the last trit to zero for consistency
-    trits[242] = 0;
+
+    // special case for the last tryte, where no further division is necessary
+    trytes[80] = tryte_set_last_trit_zero(bigint[0] - (TRYTE_BASE / 2));
 }
 
 bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
@@ -346,17 +356,6 @@ static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
     }
 }
 
-/** @brief Converts a big-endian binary integer into ternary representation.
- *  @param bytes input big-endian 48-byte integers
- *  @param trits target trit array
- */
-static void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
-{
-    uint32_t bigint[12];
-    bytes_to_bigint(bytes, bigint);
-    bigint_to_trits_mem(bigint, trits);
-}
-
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
 {
     uint32_t bigint[12];
@@ -379,9 +378,9 @@ void chars_to_bytes(const char *chars, unsigned char *bytes,
 
 void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
 {
-    trit_t trits[243];
-    bytes_to_trits(bytes, trits);
-    trits_to_trytes(trits, trytes, 243);
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    bigint_to_trytes_mem(bigint, trytes);
 }
 
 void bytes_to_chars(const unsigned char *bytes, char *chars,

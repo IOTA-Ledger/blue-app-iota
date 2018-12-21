@@ -11,6 +11,13 @@ typedef struct TX_ENTRY {
     uint32_t timestamp;
 } TX_ENTRY;
 
+static void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
+{
+    tryte_t trytes[NUM_HASH_TRYTES];
+    bytes_to_trytes(bytes, trytes);
+    trytes_to_trits(trytes, trits, NUM_HASH_TRYTES);
+}
+
 static void increment_trit_aera(trit_t *trits, unsigned int start_trit,
                                 unsigned int num_trits)
 {
