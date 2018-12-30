@@ -53,17 +53,6 @@ void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes);
 void chars_to_bytes(const char *chars, unsigned char *bytes,
                     unsigned int chars_len);
 
-/** @brief Converts an array of chars into a balanced ternary number
- *         in tryte (3-trit) representation.
- *  The input must consist of multiples of 81-char chunks, each chunk is
- *  converted into a big-endian 48-byte integer
- *  @param chars_in base-27 encoded ternary number
- *  @param trytes_out target tryte array
- *  @param len length of the input
- */
-int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
-                    unsigned int len);
-
 /** @brief Converts a big-endian binary integer into a balanced ternary number
  *         in base-27 encoding.
  *  The input must consist of one or more big-endian 48-byte integers, each

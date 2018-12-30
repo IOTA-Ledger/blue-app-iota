@@ -26,59 +26,69 @@ static const uint32_t TRIT_243[12] = {
 // the value of the highest trit in one tryte, i.e 3^3
 #define TRIT_4 9
 
-static const trit_t trits_mapping[27][3] = {
+// lookup table to convert a single tryte into the corresponding three trits
+static const trit_t TRITS_TABLE[27][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
     {-1, 1, -1},  {0, 1, -1},  {1, 1, -1},  {-1, -1, 0}, {0, -1, 0}, {1, -1, 0},
     {-1, 0, 0},   {0, 0, 0},   {1, 0, 0},   {-1, 1, 0},  {0, 1, 0},  {1, 1, 0},
     {-1, -1, 1},  {0, -1, 1},  {1, -1, 1},  {-1, 0, 1},  {0, 0, 1},  {1, 0, 1},
     {-1, 1, 1},   {0, 1, 1},   {1, 1, 1}};
 
-// available tryte chars in the correct order
-static const char tryte_to_char_mapping[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
+// lookup table to convert a single tryte into its char in base-27 encoding
+static const char CHARS_TABLE[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
 
 /* --------------------- trits > trytes and back */
 // used for bytes to chars and back
-static int trytes_to_trits(const tryte_t trytes_in[], trit_t trits_out[],
-                           unsigned int tryte_len)
+static void trytes_to_trits(const tryte_t *trytes_in, trit_t *trits_out,
+                            unsigned int trytes_len)
 {
-    for (unsigned int i = 0; i < tryte_len; i++) {
-        int8_t idx = (int8_t)trytes_in[i] + 13;
-        trits_out[i * 3 + 0] = trits_mapping[idx][0];
-        trits_out[i * 3 + 1] = trits_mapping[idx][1];
-        trits_out[i * 3 + 2] = trits_mapping[idx][2];
+    for (unsigned int i = 0; i < trytes_len; i++) {
+        const unsigned int idx = *trytes_in++ - MIN_TRYTE_VALUE;
+        const trit_t *trits_mapping = TRITS_TABLE[idx];
+
+        *trits_out++ = trits_mapping[0];
+        *trits_out++ = trits_mapping[1];
+        *trits_out++ = trits_mapping[2];
     }
-    return 0;
+}
+
+static void trits_to_trytes(const trit_t *trits_in, tryte_t *trytes_out)
+{
+    for (unsigned int i = 0; i < 81; i++) {
+        trytes_out[i] = *trits_in++;
+        trytes_out[i] += *trits_in++ * 3;
+        trytes_out[i] += *trits_in++ * 9;
+    }
 }
 
 /* --------------------- END trits > trytes */
 
 /* --------------------- trytes > chars and back */
-// used for bytes to chars and back
-int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
-                    unsigned int len)
+
+static void chars_to_trytes(const char *chars_in, tryte_t *trytes_out,
+                            unsigned int len)
 {
     for (unsigned int i = 0; i < len; i++) {
         if (chars_in[i] == '9') {
             trytes_out[i] = 0;
         }
-        else if ((int8_t)chars_in[i] >= 'N') {
-            trytes_out[i] = (int8_t)(chars_in[i]) - 64 - 27;
+        else if (chars_in[i] >= 'N') {
+            trytes_out[i] = chars_in[i] - 'A' - 26;
         }
         else {
-            trytes_out[i] = (int8_t)(chars_in[i]) - 64;
+            trytes_out[i] = chars_in[i] - 'A' + 1;
         }
     }
-    return 0;
 }
 
-static int trytes_to_chars(const tryte_t trytes_in[], char chars_out[],
-                           unsigned int len)
+static void trytes_to_chars(const tryte_t *trytes_in, char *chars_out,
+                            unsigned int len)
 {
     for (unsigned int i = 0; i < len; i++) {
-        chars_out[i] = tryte_to_char_mapping[trytes_in[i] + 13];
+        chars_out[i] = CHARS_TABLE[trytes_in[i] - MIN_TRYTE_VALUE];
     }
-    return 0;
 }
+
 /* --------------------- END trytes > chars */
 
 void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
