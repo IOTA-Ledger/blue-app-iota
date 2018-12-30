@@ -244,29 +244,33 @@ static bool bigint_set_last_trit_zero(uint32_t *bigint)
 }
 
 /* --------------------- trits > bigint and back */
-static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
+
+static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
 {
     unsigned int ms_index = 0; // initialy there is no most significant word >0
     os_memset(bigint, 0, 12 * sizeof(bigint[0]));
 
-    // ignore the 243th trit, as it cannot be fully represented in 48 bytes
-    for (unsigned int i = 242; i-- > 0;) {
-        // convert to non-balanced ternary
-        const uint8_t trit = trits[i] + 1;
+    // special case for the last tryte only holding two trits of value
+    bigint[0] = tryte_set_last_trit_zero(trytes[80]) + 4;
 
-        const uint32_t carry = bigint_mult_byte_mem(bigint, BASE, ms_index);
-        if (carry > 0) {
+    for (unsigned int i = 80; i-- > 0;) {
+        // convert to non-balanced ternary
+        const uint8_t tryte = trytes[i] + (TRYTE_BASE / 2);
+
+        const uint32_t carry =
+            bigint_mult_byte_mem(bigint, TRYTE_BASE, ms_index);
+        if (carry > 0 && ms_index < 11) {
             // if there is carry we need to use the next higher byte
             bigint[++ms_index] = carry;
         }
 
-        if (trit == 0) {
+        if (tryte == 0) {
             // nothing to add
             continue;
         }
 
         const unsigned int last_changed_index =
-            bigint_add_u32_mem(bigint, trit);
+            bigint_add_u32_mem(bigint, tryte);
         if (last_changed_index > ms_index) {
             ms_index = last_changed_index;
         }
@@ -276,6 +280,13 @@ static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
     // as there cannot be any overflows with 242 trits, a simple substraction
     // yields the correct result in two's complement representation
     bigint_sub(bigint, bigint, HALF_3);
+}
+
+static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
+{
+    tryte_t trytes[81];
+    trits_to_trytes(trits, trytes);
+    trytes_to_bigint(trytes, bigint);
 }
 
 static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
@@ -373,16 +384,20 @@ void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
     bigint_to_bytes(bigint, bytes);
 }
 
+static void trytes_to_bytes(const tryte_t *trytes, unsigned char *bytes)
+{
+    uint32_t bigint[12];
+    trytes_to_bigint(trytes, bigint);
+    bigint_to_bytes(bigint, bytes);
+}
+
 void chars_to_bytes(const char *chars, unsigned char *bytes,
                     unsigned int chars_len)
 {
     for (unsigned int i = 0; i < chars_len / 81; i++) {
-        trit_t trits[243];
-        chars_to_trits(chars + i * 81, trits, 81);
-        // bigint can only handle 242 trits
-        trits[242] = 0;
-
-        trits_to_bytes(trits, bytes + i * 48);
+        tryte_t trytes[81];
+        chars_to_trytes(chars + i * 81, trytes, 81);
+        trytes_to_bytes(trytes, bytes + i * 48);
     }
 }
 
