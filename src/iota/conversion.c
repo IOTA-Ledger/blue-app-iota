@@ -37,8 +37,6 @@ static const trit_t TRITS_TABLE[27][3] = {
 // lookup table to convert a single tryte into its char in base-27 encoding
 static const char CHARS_TABLE[] = "NOPQRSTUVWXYZ9ABCDEFGHIJKLM";
 
-/* --------------------- trits > trytes and back */
-// used for bytes to chars and back
 static void trytes_to_trits(const tryte_t *trytes_in, trit_t *trits_out,
                             unsigned int trytes_len)
 {
@@ -60,10 +58,6 @@ static void trits_to_trytes(const trit_t *trits_in, tryte_t *trytes_out)
         trytes_out[i] += *trits_in++ * 9;
     }
 }
-
-/* --------------------- END trits > trytes */
-
-/* --------------------- trytes > chars and back */
 
 static void chars_to_trytes(const char *chars_in, tryte_t *trytes_out,
                             unsigned int len)
@@ -89,17 +83,8 @@ static void trytes_to_chars(const tryte_t *trytes_in, char *chars_out,
     }
 }
 
-/* --------------------- END trytes > chars */
-
-void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
-{
-    tryte_t trytes[chars_len];
-    chars_to_trytes(chars, trytes, chars_len);
-    trytes_to_trits(trytes, trits, chars_len);
-}
-
 /** @brief Sets the last (3rd) trit in a single tryte to set to zero.
- *  @return value of the tryte without the last trit.
+ *  @return value of the tryte without the last trit
  */
 static tryte_t tryte_set_last_trit_zero(tryte_t tryte)
 {
@@ -121,6 +106,9 @@ static inline bool bigint_is_negative(const uint32_t *bigint)
     return (bigint[12 - 1] >> (sizeof(bigint[0]) * 8 - 1) != 0);
 }
 
+/** @brief Compares to long little-endian integers.
+ *  @return -1 if a < b, 1 if a > b; or 0 if they are equal
+ */
 static int bigint_cmp(const uint32_t *a, const uint32_t *b)
 {
     for (unsigned int i = 12; i-- > 0;) {
@@ -243,8 +231,6 @@ static bool bigint_set_last_trit_zero(uint32_t *bigint)
     return false;
 }
 
-/* --------------------- trits > bigint and back */
-
 static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
 {
     unsigned int ms_index = 0; // initialy there is no most significant word >0
@@ -305,6 +291,43 @@ static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
 
     // special case for the last tryte, where no further division is necessary
     trytes[80] = tryte_set_last_trit_zero(bigint[0] - (TRYTE_BASE / 2));
+}
+
+/** @brief Converts bigint consisting of 12 words into an array of bytes.
+ *  It is represented using 48bytes in big-endiean, by reversing the order of
+ *  the words. The endianness of the host machine is taken into account.
+ */
+static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
+{
+    // reverse word order
+    for (unsigned int i = 12; i-- > 0; bytes += 4) {
+        const uint32_t num = bigint[i];
+
+        bytes[0] = (num >> 24) & 0xFF;
+        bytes[1] = (num >> 16) & 0xFF;
+        bytes[2] = (num >> 8) & 0xFF;
+        bytes[3] = (num >> 0) & 0xFF;
+    }
+}
+
+/** @brief Converts an array of 48 bytes into a bigint consisting of 12 words.
+ *  The bigint is represented using 48bytes in big-endiean. The endianness of
+ * the host machine is taken into account.
+ */
+static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
+{
+    // reverse word order
+    for (unsigned int i = 12; i-- > 0; bytes += 4) {
+        bigint[i] = (uint32_t)bytes[0] << 24 | (uint32_t)bytes[1] << 16 |
+                    (uint32_t)bytes[2] << 8 | (uint32_t)bytes[3] << 0;
+    }
+}
+
+void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
+{
+    tryte_t trytes[chars_len];
+    chars_to_trytes(chars, trytes, chars_len);
+    trytes_to_trits(trytes, trits, chars_len);
 }
 
 bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
@@ -371,38 +394,6 @@ bool u32_to_trits(const uint32_t value, trit_t *trits, unsigned int num_trits)
     return v != 0;
 }
 
-/* --------------------- END trits > bigint */
-
-/** @brief Converts bigint consisting of 12 words into an array of bytes.
- *  It is represented using 48bytes in big-endiean, by reversing the order of
- *  the words. The endianness of the host machine is taken into account.
- */
-static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
-{
-    // reverse word order
-    for (unsigned int i = 12; i-- > 0; bytes += 4) {
-        const uint32_t num = bigint[i];
-
-        bytes[0] = (num >> 24) & 0xFF;
-        bytes[1] = (num >> 16) & 0xFF;
-        bytes[2] = (num >> 8) & 0xFF;
-        bytes[3] = (num >> 0) & 0xFF;
-    }
-}
-
-/** @brief Converts an array of 48 bytes into a bigint consisting of 12 words.
- *  The bigint is represented using 48bytes in big-endiean. The endianness of
- * the host machine is taken into account.
- */
-static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
-{
-    // reverse word order
-    for (unsigned int i = 12; i-- > 0; bytes += 4) {
-        bigint[i] = (uint32_t)bytes[0] << 24 | (uint32_t)bytes[1] << 16 |
-                    (uint32_t)bytes[2] << 8 | (uint32_t)bytes[3] << 0;
-    }
-}
-
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes)
 {
     uint32_t bigint[12];
@@ -417,6 +408,13 @@ static void trytes_to_bytes(const tryte_t *trytes, unsigned char *bytes)
     bigint_to_bytes(bigint, bytes);
 }
 
+void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
+{
+    uint32_t bigint[12];
+    bytes_to_bigint(bytes, bigint);
+    bigint_to_trytes_mem(bigint, trytes);
+}
+
 void chars_to_bytes(const char *chars, unsigned char *bytes,
                     unsigned int chars_len)
 {
@@ -425,13 +423,6 @@ void chars_to_bytes(const char *chars, unsigned char *bytes,
         chars_to_trytes(chars + i * 81, trytes, 81);
         trytes_to_bytes(trytes, bytes + i * 48);
     }
-}
-
-void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
-{
-    uint32_t bigint[12];
-    bytes_to_bigint(bytes, bigint);
-    bigint_to_trytes_mem(bigint, trytes);
 }
 
 void bytes_to_chars(const unsigned char *bytes, char *chars,
