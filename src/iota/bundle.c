@@ -41,11 +41,11 @@ static void create_bundle_bytes(int64_t value, const char *tag,
 {
     trit_t bundle_essence_trits[243] = {0};
 
-    int64_to_trits(value, bundle_essence_trits, 81);
+    s64_to_trits(value, bundle_essence_trits, 81);
     chars_to_trits(tag, bundle_essence_trits + 81, 27);
-    int64_to_trits(timestamp, bundle_essence_trits + 162, 27);
-    int64_to_trits(current_tx_index, bundle_essence_trits + 189, 27);
-    int64_to_trits(last_tx_index, bundle_essence_trits + 216, 27);
+    u32_to_trits(timestamp, bundle_essence_trits + 162, 27);
+    u32_to_trits(current_tx_index, bundle_essence_trits + 189, 27);
+    u32_to_trits(last_tx_index, bundle_essence_trits + 216, 27);
 
     // now we have exactly one chunk of 243 trits
     trits_to_bytes(bundle_essence_trits, bytes);

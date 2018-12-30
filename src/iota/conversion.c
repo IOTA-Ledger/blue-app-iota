@@ -307,7 +307,7 @@ static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
     trytes[80] = tryte_set_last_trit_zero(bigint[0] - (TRYTE_BASE / 2));
 }
 
-bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
+bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 {
     os_memset(trits, 0, num_trits);
 
@@ -335,9 +335,10 @@ bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 
         int rem = v_abs % BASE;
         v_abs = v_abs / BASE;
-        if (rem > 1) {
-            rem = -1;
+        if (rem > BASE / 2) {
+            // lend one from the next highest digit
             v_abs += 1;
+            rem -= BASE;
         }
 
         trits[i] = is_negative ? -rem : rem;
@@ -345,6 +346,31 @@ bool int64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 
     return v_abs != 0;
 }
+
+bool u32_to_trits(const uint32_t value, trit_t *trits, unsigned int num_trits)
+{
+    uint32_t v = value;
+    os_memset(trits, 0, num_trits);
+
+    for (unsigned int i = 0; i < num_trits; i++) {
+        if (v == 0) {
+            return false;
+        }
+
+        int rem = v % BASE;
+        v = v / BASE;
+        if (rem > BASE / 2) {
+            // lend one from the next highest digit
+            v += 1;
+            rem -= BASE;
+        }
+
+        trits[i] = rem;
+    }
+
+    return v != 0;
+}
+
 /* --------------------- END trits > bigint */
 
 /** @brief Converts bigint consisting of 12 words into an array of bytes.
