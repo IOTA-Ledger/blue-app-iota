@@ -78,6 +78,47 @@ static void test_s64_to_trits_int_min(void **state)
     assert_memory_equal(trits_out, expected_trits, 41);
 }
 
+static void test_u32_to_trits_zero(void **state)
+{
+    UNUSED(state);
+
+    static const uint32_t input_value = 0;
+    static const trit_t expected_trits[21] = {0};
+
+    trit_t trits_out[21];
+    bool result = u32_to_trits(input_value, trits_out, 21);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 21);
+}
+
+static void test_u32_to_trits_one(void **state)
+{
+    UNUSED(state);
+
+    static const uint32_t input_value = 1743392200; // \sum_{i=0}^{19} 3^i
+    trit_t expected_trits[20];
+    memset(expected_trits, 1, 20);
+
+    trit_t trits_out[20];
+    bool result = u32_to_trits(input_value, trits_out, 20);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 20);
+}
+
+static void test_u32_to_trits_overflow(void **state)
+{
+    UNUSED(state);
+
+    static const uint32_t input_value = 1743392201;
+
+    trit_t trits_out[20];
+    bool result = u32_to_trits(input_value, trits_out, 20);
+
+    assert_true(result);
+}
+
 static void random_bytes(unsigned char *bytes)
 {
     for (int i = 0; i < NUM_HASH_BYTES; i++) {
@@ -211,6 +252,9 @@ int main(void)
         cmocka_unit_test(test_s64_to_trits_neg_one),
         cmocka_unit_test(test_s64_to_trits_overflow),
         cmocka_unit_test(test_s64_to_trits_int_min),
+        cmocka_unit_test(test_u32_to_trits_zero),
+        cmocka_unit_test(test_u32_to_trits_one),
+        cmocka_unit_test(test_u32_to_trits_overflow),
         cmocka_unit_test(test_all_zero),
         cmocka_unit_test(test_all_one),
         cmocka_unit_test(test_all_neg_one),
