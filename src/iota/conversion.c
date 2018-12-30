@@ -182,14 +182,14 @@ static unsigned int bigint_add_u32_mem(uint32_t *a, uint32_t summand)
     return BIGINT_LENGTH;
 }
 
-/** @brief multiplies a single 8-bit integer with a bigint.
+/** @brief multiplies a single 32-bit integer with a bigint.
  *  @param ms_index the index of the most significant non-zero word of the
  *                  input integer. Words after this are not considered.
  *  @return the carry (one word) of the multiplication up to the byte which has
             the index specified in msb_index.
  */
-static uint32_t bigint_mult_byte_mem(uint32_t *a, uint8_t factor,
-                                     unsigned int ms_index)
+static uint32_t bigint_mult_u32_mem(uint32_t *a, uint32_t factor,
+                                    unsigned int ms_index)
 {
     uint32_t carry = 0;
 
@@ -203,17 +203,17 @@ static uint32_t bigint_mult_byte_mem(uint32_t *a, uint8_t factor,
     return carry;
 }
 
-/** @brief devides a bigint by a single 8-bit integer.
+/** @brief devides a bigint by a single 32-bit integer.
  *  @return remainder of the integer division.
  */
-static uint32_t bigint_div_byte_mem(uint32_t *a, uint8_t divisor)
+static uint32_t bigint_div_u32_mem(uint32_t *a, uint32_t divisor)
 {
     uint32_t remainder = 0;
 
     for (unsigned int i = BIGINT_LENGTH; i-- > 0;) {
         const uint64_t v = (UINT64_C(1) + UINT32_MAX) * remainder + a[i];
 
-        remainder = v % divisor;
+        remainder = (v % divisor) & UINT32_MAX;
         a[i] = (v / divisor) & UINT32_MAX;
     }
 
@@ -254,7 +254,7 @@ static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
         const uint8_t tryte = trytes[i] + (TRYTE_BASE / 2);
 
         const uint32_t carry =
-            bigint_mult_byte_mem(bigint, TRYTE_BASE, ms_index);
+            bigint_mult_u32_mem(bigint, TRYTE_BASE, ms_index);
         if (carry > 0 && ms_index < BIGINT_LENGTH - 1) {
             // if there is carry we need to use the next higher byte
             bigint[++ms_index] = carry;
@@ -295,7 +295,7 @@ static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
     bigint_add(bigint, bigint, HALF_3);
 
     for (unsigned int i = 0; i < NUM_CHUNK_TRYTES - 1; i++) {
-        const uint32_t rem = bigint_div_byte_mem(bigint, TRYTE_BASE);
+        const uint32_t rem = bigint_div_u32_mem(bigint, TRYTE_BASE);
         trytes[i] = rem - (TRYTE_BASE / 2); // convert back to balanced
     }
 
