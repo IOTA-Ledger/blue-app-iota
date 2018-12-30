@@ -2,8 +2,15 @@
 #include <stdint.h>
 #include "common.h"
 
+#define UINT32_WIDTH 32
+#define NUM_TRYTE_VALUES (MAX_TRYTE_VALUE - MIN_TRYTE_VALUE + 1)
+
 // numer of u32 elements in one bigint array
 #define BIGINT_LENGTH 12
+
+// chunk sizes
+#define NUM_CHUNK_TRYTES (NUM_HASH_TRYTES)
+#define NUM_CHUNK_BYTES (NUM_HASH_BYTES)
 
 // base of the ternary system
 #define BASE 3
@@ -30,7 +37,7 @@ static const uint32_t TRIT_243[BIGINT_LENGTH] = {
 #define TRIT_4 9
 
 // lookup table to convert a single tryte into the corresponding three trits
-static const trit_t TRITS_TABLE[27][3] = {
+static const trit_t TRITS_TABLE[NUM_TRYTE_VALUES][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
     {-1, 1, -1},  {0, 1, -1},  {1, 1, -1},  {-1, -1, 0}, {0, -1, 0}, {1, -1, 0},
     {-1, 0, 0},   {0, 0, 0},   {1, 0, 0},   {-1, 1, 0},  {0, 1, 0},  {1, 1, 0},
@@ -55,7 +62,7 @@ static void trytes_to_trits(const tryte_t *trytes_in, trit_t *trits_out,
 
 static void trits_to_trytes(const trit_t *trits_in, tryte_t *trytes_out)
 {
-    for (unsigned int i = 0; i < 81; i++) {
+    for (unsigned int i = 0; i < NUM_CHUNK_TRYTES; i++) {
         trytes_out[i] = *trits_in++;
         trytes_out[i] += *trits_in++ * 3;
         trytes_out[i] += *trits_in++ * 9;
@@ -63,14 +70,14 @@ static void trits_to_trytes(const trit_t *trits_in, tryte_t *trytes_out)
 }
 
 static void chars_to_trytes(const char *chars_in, tryte_t *trytes_out,
-                            unsigned int len)
+                            unsigned int chars_len)
 {
-    for (unsigned int i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < chars_len; i++) {
         if (chars_in[i] == '9') {
             trytes_out[i] = 0;
         }
         else if (chars_in[i] >= 'N') {
-            trytes_out[i] = chars_in[i] - 'A' - 26;
+            trytes_out[i] = chars_in[i] - 'N' + MIN_TRYTE_VALUE;
         }
         else {
             trytes_out[i] = chars_in[i] - 'A' + 1;
@@ -79,9 +86,9 @@ static void chars_to_trytes(const char *chars_in, tryte_t *trytes_out,
 }
 
 static void trytes_to_chars(const tryte_t *trytes_in, char *chars_out,
-                            unsigned int len)
+                            unsigned int trytes_len)
 {
-    for (unsigned int i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < trytes_len; i++) {
         chars_out[i] = CHARS_TABLE[trytes_in[i] - MIN_TRYTE_VALUE];
     }
 }
@@ -189,8 +196,8 @@ static uint32_t bigint_mult_byte_mem(uint32_t *a, uint8_t factor,
     for (unsigned int i = 0; i <= ms_index; i++) {
         const uint64_t v = (uint64_t)factor * a[i] + carry;
 
-        carry = v >> 32;
-        a[i] = v & 0xFFFFFFFF;
+        carry = v >> UINT32_WIDTH;
+        a[i] = v & UINT32_MAX;
     }
 
     return carry;
@@ -204,10 +211,10 @@ static uint32_t bigint_div_byte_mem(uint32_t *a, uint8_t divisor)
     uint32_t remainder = 0;
 
     for (unsigned int i = BIGINT_LENGTH; i-- > 0;) {
-        const uint64_t v = UINT64_C(0x100000000) * remainder + a[i];
+        const uint64_t v = (UINT64_C(1) + UINT32_MAX) * remainder + a[i];
 
         remainder = v % divisor;
-        a[i] = (v / divisor) & 0xFFFFFFFF;
+        a[i] = (v / divisor) & UINT32_MAX;
     }
 
     return remainder;
@@ -240,15 +247,15 @@ static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
     os_memset(bigint, 0, BIGINT_LENGTH * sizeof(bigint[0]));
 
     // special case for the last tryte only holding two trits of value
-    bigint[0] = tryte_set_last_trit_zero(trytes[80]) + 4;
+    bigint[0] = tryte_set_last_trit_zero(trytes[NUM_CHUNK_TRYTES - 1]) + 4;
 
-    for (unsigned int i = 80; i-- > 0;) {
+    for (unsigned int i = NUM_CHUNK_TRYTES - 1; i-- > 0;) {
         // convert to non-balanced ternary
         const uint8_t tryte = trytes[i] + (TRYTE_BASE / 2);
 
         const uint32_t carry =
             bigint_mult_byte_mem(bigint, TRYTE_BASE, ms_index);
-        if (carry > 0 && ms_index < 11) {
+        if (carry > 0 && ms_index < BIGINT_LENGTH - 1) {
             // if there is carry we need to use the next higher byte
             bigint[++ms_index] = carry;
         }
@@ -273,7 +280,7 @@ static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
 
 static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
 {
-    tryte_t trytes[81];
+    tryte_t trytes[NUM_HASH_TRYTES];
     trits_to_trytes(trits, trytes);
     trytes_to_bigint(trytes, bigint);
 }
@@ -287,13 +294,14 @@ static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
     // convert to the (positive) number representing non-balanced ternary
     bigint_add(bigint, bigint, HALF_3);
 
-    for (unsigned int i = 0; i < 80; i++) {
+    for (unsigned int i = 0; i < NUM_CHUNK_TRYTES - 1; i++) {
         const uint32_t rem = bigint_div_byte_mem(bigint, TRYTE_BASE);
         trytes[i] = rem - (TRYTE_BASE / 2); // convert back to balanced
     }
 
     // special case for the last tryte, where no further division is necessary
-    trytes[80] = tryte_set_last_trit_zero(bigint[0] - (TRYTE_BASE / 2));
+    trytes[NUM_CHUNK_TRYTES - 1] =
+        tryte_set_last_trit_zero(bigint[0] - (TRYTE_BASE / 2));
 }
 
 /** @brief Converts bigint consisting of 12 words into an array of bytes.
@@ -421,20 +429,20 @@ void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes)
 void chars_to_bytes(const char *chars, unsigned char *bytes,
                     unsigned int chars_len)
 {
-    for (unsigned int i = 0; i < chars_len / 81; i++) {
-        tryte_t trytes[81];
-        chars_to_trytes(chars + i * 81, trytes, 81);
-        trytes_to_bytes(trytes, bytes + i * 48);
+    for (unsigned int i = 0; i < chars_len / NUM_CHUNK_TRYTES; i++) {
+        tryte_t trytes[NUM_CHUNK_TRYTES];
+        chars_to_trytes(chars + i * NUM_CHUNK_TRYTES, trytes, NUM_CHUNK_TRYTES);
+        trytes_to_bytes(trytes, bytes + i * NUM_CHUNK_BYTES);
     }
 }
 
 void bytes_to_chars(const unsigned char *bytes, char *chars,
                     unsigned int bytes_len)
 {
-    for (unsigned int i = 0; i < bytes_len / 48; i++) {
-        tryte_t trytes[81];
-        bytes_to_trytes(bytes + i * 48, trytes);
-        trytes_to_chars(trytes, chars + i * 81, 81);
+    for (unsigned int i = 0; i < bytes_len / NUM_CHUNK_BYTES; i++) {
+        tryte_t trytes[NUM_CHUNK_TRYTES];
+        bytes_to_trytes(bytes + i * NUM_CHUNK_BYTES, trytes);
+        trytes_to_chars(trytes, chars + i * NUM_CHUNK_TRYTES, NUM_CHUNK_TRYTES);
     }
 }
 
