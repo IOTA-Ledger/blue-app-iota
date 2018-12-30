@@ -8,7 +8,7 @@
 
 // Seconds until UI timeout if expected inputs are not received
 #define UI_TIMEOUT_SECONDS 3
-#define UI_TIMEOUT_INTERACTIVE_SECONDS 80
+#define UI_TIMEOUT_INTERACTIVE_SECONDS 100
 
 static uint16_t timer;
 
