@@ -204,13 +204,16 @@ static uint32_t bigint_mult_u32_mem(uint32_t *a, uint32_t factor,
 }
 
 /** @brief devides a bigint by a single 32-bit integer.
+ *  @param ms_index the index of the most significant non-zero word of the
+ *                  input integer. Words after this are not considered.
  *  @return remainder of the integer division.
  */
-static uint32_t bigint_div_u32_mem(uint32_t *a, uint32_t divisor)
+static uint32_t bigint_div_u32_mem(uint32_t *a, uint32_t divisor,
+                                   unsigned int ms_index)
 {
     uint32_t remainder = 0;
 
-    for (unsigned int i = BIGINT_LENGTH; i-- > 0;) {
+    for (unsigned int i = ms_index + 1; i-- > 0;) {
         const uint64_t v = (UINT64_C(1) + UINT32_MAX) * remainder + a[i];
 
         remainder = (v % divisor) & UINT32_MAX;
@@ -243,7 +246,8 @@ static bool bigint_set_last_trit_zero(uint32_t *bigint)
 
 static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
 {
-    unsigned int ms_index = 0; // initialy there is no most significant word >0
+    // initialy there is no non-zero word
+    unsigned int ms_index = 0;
     os_memset(bigint, 0, BIGINT_LENGTH * sizeof(bigint[0]));
 
     // special case for the last tryte only holding two trits of value
@@ -256,7 +260,7 @@ static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
         const uint32_t carry =
             bigint_mult_u32_mem(bigint, TRYTE_BASE, ms_index);
         if (carry > 0 && ms_index < BIGINT_LENGTH - 1) {
-            // if there is carry we need to use the next higher byte
+            // if there is a carry, we need to use the next higher word
             bigint[++ms_index] = carry;
         }
 
@@ -294,9 +298,16 @@ static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
     // convert to the (positive) number representing non-balanced ternary
     bigint_add(bigint, bigint, HALF_3);
 
+    // it is safe to assume that initially each word is non-zero
+    unsigned int ms_index = BIGINT_LENGTH - 1;
     for (unsigned int i = 0; i < NUM_CHUNK_TRYTES - 1; i++) {
-        const uint32_t rem = bigint_div_u32_mem(bigint, TRYTE_BASE);
+        const uint32_t rem = bigint_div_u32_mem(bigint, TRYTE_BASE, ms_index);
         trytes[i] = rem - (TRYTE_BASE / 2); // convert back to balanced
+
+        // decrement index, if most significant word turned zero
+        if (ms_index > 0 && bigint[ms_index] == 0) {
+            ms_index--;
+        }
     }
 
     // special case for the last tryte, where no further division is necessary
