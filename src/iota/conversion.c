@@ -1,4 +1,5 @@
 #include "conversion.h"
+#include <limits.h>
 #include <stdint.h>
 #include "common.h"
 
@@ -60,9 +61,10 @@ static void trytes_to_trits(const tryte_t *trytes_in, trit_t *trits_out,
     }
 }
 
-static void trits_to_trytes(const trit_t *trits_in, tryte_t *trytes_out)
+static void trits_to_trytes(const trit_t *trits_in, tryte_t *trytes_out,
+                            unsigned int trits_len)
 {
-    for (unsigned int i = 0; i < NUM_CHUNK_TRYTES; i++) {
+    for (unsigned int i = 0; i < trits_len / TRITS_PER_TRYTE; i++) {
         trytes_out[i] = *trits_in++;
         trytes_out[i] += *trits_in++ * 3;
         trytes_out[i] += *trits_in++ * 9;
@@ -96,7 +98,7 @@ static void trytes_to_chars(const tryte_t *trytes_in, char *chars_out,
 /** @brief Sets the last (3rd) trit in a single tryte to set to zero.
  *  @return value of the tryte without the last trit
  */
-static tryte_t tryte_set_last_trit_zero(tryte_t tryte)
+static inline tryte_t tryte_set_last_trit_zero(tryte_t tryte)
 {
     if (tryte > MAX_TRYTE_VALUE - TRIT_4) {
         return tryte - TRIT_4;
@@ -113,7 +115,7 @@ static tryte_t tryte_set_last_trit_zero(tryte_t tryte)
 static inline bool bigint_is_negative(const uint32_t *bigint)
 {
     // whether the most significant bit of the most significant byte is set
-    return (bigint[BIGINT_LENGTH - 1] >> (sizeof(bigint[0]) * 8 - 1) != 0);
+    return (bigint[BIGINT_LENGTH - 1] >> (UINT32_WIDTH - 1) != 0);
 }
 
 /** @brief Compares to bigints.
@@ -285,7 +287,7 @@ static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
 static void trits_to_bigint(const trit_t *trits, uint32_t *bigint)
 {
     tryte_t trytes[NUM_HASH_TRYTES];
-    trits_to_trytes(trits, trytes);
+    trits_to_trytes(trits, trytes, NUM_HASH_TRITS);
     trytes_to_bigint(trytes, bigint);
 }
 
@@ -364,6 +366,7 @@ bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
     const bool is_negative = value < 0;
     uint64_t v_abs;
     if (value == INT64_MIN) {
+        // inverting INT64_MIN might lead to undefined behavior
         v_abs = INT64_MAX + UINT64_C(1);
     }
     else if (is_negative) {
@@ -378,7 +381,7 @@ bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
             return false;
         }
 
-        int rem = v_abs % BASE;
+        int rem = (v_abs % BASE) & INT_MAX;
         v_abs = v_abs / BASE;
         if (rem > BASE / 2) {
             // lend one from the next highest digit
@@ -402,7 +405,7 @@ bool u32_to_trits(const uint32_t value, trit_t *trits, unsigned int num_trits)
             return false;
         }
 
-        int rem = v % BASE;
+        int rem = (v % BASE) & INT_MAX;
         v = v / BASE;
         if (rem > BASE / 2) {
             // lend one from the next highest digit
