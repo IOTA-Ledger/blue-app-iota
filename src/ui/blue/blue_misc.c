@@ -18,7 +18,7 @@ void break_address()
     blue_ui_state.addr[93] = '\0';
 }
 
-uint8_t last_non_meta_tx_idx()
+static uint8_t last_non_meta_tx_idx()
 {
     uint8_t tx_idx = api.bundle_ctx.last_tx_index;
     // there will always be 2+ non-metas (required output + input)
