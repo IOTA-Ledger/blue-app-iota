@@ -18,12 +18,24 @@ void break_address()
     blue_ui_state.addr[93] = '\0';
 }
 
+uint8_t last_non_meta_tx_idx()
+{
+    uint8_t tx_idx = api.bundle_ctx.last_tx_index;
+    // there will always be 2+ non-metas (required output + input)
+    while (api.bundle_ctx.values[tx_idx] == 0) {
+        tx_idx--;
+    }
+
+    return tx_idx;
+}
+
 // 0 out - 1 in, 2 meta, 3 in, 4 meta, 5 change
 bool second_last_tx()
 {
     // increment menu_idx and check if it == change tx
     blue_ui_state.menu_idx++;
-    bool retval = (menu_to_tx_idx() == api.bundle_ctx.last_tx_index);
+
+    bool retval = (menu_to_tx_idx() == last_non_meta_tx_idx());
     // set menu_idx back
     blue_ui_state.menu_idx--;
 
