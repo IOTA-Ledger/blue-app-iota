@@ -288,7 +288,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     ui_timeout_start(false);
 
     if (first) {
-        if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
+        if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_SIZE - 1)) {
             // last index invalid range
             THROW(SW_COMMAND_INVALID_DATA);
         }

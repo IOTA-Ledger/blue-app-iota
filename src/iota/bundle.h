@@ -6,17 +6,17 @@
 
 // the largest bundle size due to memory limitations
 #ifdef TARGET_BLUE
-#define MAX_BUNDLE_INDEX_SZ 27
+#define MAX_BUNDLE_SIZE 27
 #else
-#define MAX_BUNDLE_INDEX_SZ 8
+#define MAX_BUNDLE_SIZE 8
 #endif // TARGET_BLUE
 
 typedef struct BUNDLE_CTX {
     // bundle_bytes holds all of the bundle information in byte encoding
-    unsigned char bytes[MAX_BUNDLE_INDEX_SZ * 2 * NUM_HASH_BYTES];
+    unsigned char bytes[MAX_BUNDLE_SIZE * 2 * NUM_HASH_BYTES];
 
-    int64_t values[MAX_BUNDLE_INDEX_SZ];
-    uint32_t indices[MAX_BUNDLE_INDEX_SZ];
+    int64_t values[MAX_BUNDLE_SIZE];
+    uint32_t indices[MAX_BUNDLE_SIZE];
 
     uint8_t current_tx_index;
     uint8_t last_tx_index;

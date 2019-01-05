@@ -37,7 +37,7 @@ void test_for_each_bundle(const char *file_name,
                &scanned);
         offset += scanned;
 
-        if (last_index >= MAX_BUNDLE_INDEX_SZ) {
+        if (last_index >= MAX_BUNDLE_SIZE) {
             fail_msg("Max bundle index violated.");
         }
 
