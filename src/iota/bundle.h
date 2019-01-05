@@ -5,7 +5,11 @@
 #include "iota_types.h"
 
 // the largest bundle size due to memory limitations
+#ifdef TARGET_BLUE
+#define MAX_BUNDLE_INDEX_SZ 27
+#else
 #define MAX_BUNDLE_INDEX_SZ 8
+#endif // TARGET_BLUE
 
 typedef struct BUNDLE_CTX {
     // bundle_bytes holds all of the bundle information in byte encoding
