@@ -3,11 +3,9 @@ from struct import Struct
 import time
 
 BIP44_PATH = [0x8000002C,
-              0x8000107A,
-              0x80000000,
-              0x00000000,
-              0x00000000]
-BIP44_PATH_LENGTH = 5
+              0x80000001,
+              0x80000000]
+BIP44_PATH_LENGTH = 3
 SECURITY_LEVEL = 2
 SRC_INDEX = 0
 
@@ -34,14 +32,12 @@ def apdu_command(ins, data, p1=0, p2=0):
 
 
 def pack_pub_key_input(bip44_path, address_idx):
-    struct = Struct("<BI5II")
+    struct = Struct("<BI3II")
     return struct.pack(SECURITY_LEVEL,
                        BIP44_PATH_LENGTH,
                        bip44_path[0],
                        bip44_path[1],
                        bip44_path[2],
-                       bip44_path[3],
-                       bip44_path[4],
                        address_idx)
 
 
@@ -52,7 +48,7 @@ def unpack_pubkey_output(data):
 
 def unpack_get_app_config(data):
     print(len(data))
-    struct = Struct("<5B")
+    struct = Struct("<3BBB")
     return struct.unpack(data)
 
 
@@ -63,9 +59,9 @@ start_time = time.time()
 print("\nReading AppConfig...")
 response = dongle.exchange(apdu_command(INS_GET_APP_CONFIG, []))
 struct = unpack_get_app_config(response)
-print("\nMax bundle size: %d" % (struct[0]))
-print("Flags: 0x%02X" % (struct[1]))
-print("Version: %d.%d.%d" % (struct[3], struct[2], struct[1]))
+print("Version: %d.%d.%d" % (struct[2], struct[1], struct[0]))
+print("\nMax bundle size: %d" % (struct[3]))
+print("Flags: 0x%02X" % (struct[4]))
 
 print("\nGenerating address for index=%d..." % SRC_INDEX)
 response = dongle.exchange(apdu_command(
