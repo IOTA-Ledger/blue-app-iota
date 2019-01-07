@@ -46,7 +46,7 @@ The execution time of `PUBKEY` is about 2s for security level 2.
 ### Output
 
 | Field | Type | Content |
-| ----- | ----- | ------- |
+| ----- | ---- | ------- |
 | address | 81 char string (81) | Base-27 encoding of public address |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
@@ -58,8 +58,8 @@ Sets the next transaction of a bundle. Each transaction must only be transferred
 The first call of this function for a new bundle must include the security level as well as the BIP32 path that is used for the entire bundle. This is indicated by a P1 value of `0x00`, while all successive transactions only contain the actual transaction data and have a P1 value of `0x80`.
 
 After the last transaction of the bundle has been transferred the Ledger Nano S performs check, to assure the validity of the bundle. A bundle is valid, if all the following conditions are fulfilled:
-- The bundle contains at least 2 transactions and at least 1 input transaction.
-- The transactions are in the following order: output tx (at most 1), input txs (at most 2 plus meta), change tx (at most 1)
+- The bundle contains at least 2 transactions.
+- The transactions are in the following order: output tx (exactly 1), input txs (at least 1 plus meta), change tx (at most 1)
 - Meta transactions have to be included and must follow their respective input transaction (similar to a finalized bundle in iota.lib.js)
 - The last index is identical for all transactions and corresponds to the index of the last transaction.
 - The provided indices must match the addresses.
@@ -116,7 +116,7 @@ After a bundle has been set, the state needs to be reset in order to set a new b
 ### Output
 
 | Field | Type | Content |
-| ----- | ----- | ------- |
+| ----- | ---- | ------- |
 | finalized | bool (1) | Whether the bundle was finalized, i.e. the last transaction has been transmitted |
 | hash | 81 char string (81) | Base-27 encoding of the bundle hash; undefined if bundle was not finalized |
 | SW1-SW2 | byte (2) | `0x9000` for success |
@@ -143,7 +143,7 @@ Called multiple times for the same index, to query all signature fragments. The 
 ### Output
 
 | Field | Type | Content |
-| ----- | ----- | ------- |
+| ----- | ---- | ------- |
 | signature_fragment | 243 char string (243) | Base-27 encoding of the signature fragment |
 | fragments_remaining | bool (1) | `true` if more fragments need to be queried |
 | SW1-SW2 | byte (2) | `0x9000` for success |
@@ -166,12 +166,13 @@ The application version uses [Semantic Versioning](https://semver.org/).
 
 ### Output
 
-| Field | Type | Content |
-| ----- | ----- | ------- |
+| Field | Type | Content | Range |
+| ----- | ---- | ------- | ----- |
+| app_version_major | byte (1) | Major version | [0, 255] |
+| app_version_minor | byte (1) | Minor version | [0, 255] |
+| app_version_patch | byte (1) | Patch version | [0, 255] |
+| app_max_bundle_size | byte (1) | Max supported number of transactions in one bundle | [0, 255] |
 | app_flags | byte (1) | Bit flags for supported features |
-| app_version_major | byte (1) | Major version |
-| app_version_minor | byte (1) | Minor version |
-| app_version_patch | byte (1) | Patch version |
 
 ## Reset state &mdash; `RESET`
 
@@ -192,7 +193,7 @@ Must be called after all signatures have been queried before a new bundle can be
 ### Output
 
 | Field | Type | Content |
-| ----- | ----- | ------- |
+| ----- | ---- | ------- |
 | SW1-SW2 | byte (2) | `0x9000` for success |
 
 ## Response codes
