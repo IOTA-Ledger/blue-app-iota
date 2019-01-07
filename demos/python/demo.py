@@ -52,7 +52,7 @@ def unpack_pubkey_output(data):
 
 def unpack_get_app_config(data):
     print(len(data))
-    struct = Struct("<4B")
+    struct = Struct("<5B")
     return struct.unpack(data)
 
 
@@ -63,8 +63,9 @@ start_time = time.time()
 print("\nReading AppConfig...")
 response = dongle.exchange(apdu_command(INS_GET_APP_CONFIG, []))
 struct = unpack_get_app_config(response)
-print("\nFlags: 0x%02X" % (struct[0]))
-print("\nVersion: %d.%d.%d" % (struct[1], struct[2], struct[3]))
+print("\nMax bundle size: %d" % (struct[0]))
+print("Flags: 0x%02X" % (struct[1]))
+print("Version: %d.%d.%d" % (struct[3], struct[2], struct[1]))
 
 print("\nGenerating address for index=%d..." % SRC_INDEX)
 response = dongle.exchange(apdu_command(
