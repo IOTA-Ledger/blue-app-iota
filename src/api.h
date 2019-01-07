@@ -101,11 +101,11 @@ SIGN_OUTPUT;
 
 typedef IO_STRUCT GET_APP_CONFIG_OUTPUT
 {
-    uint8_t app_max_bundle_size;
-    uint8_t app_flags;
     uint8_t app_version_major;
     uint8_t app_version_minor;
     uint8_t app_version_patch;
+    uint8_t app_max_bundle_size;
+    uint8_t app_flags;
 }
 GET_APP_CONFIG_OUTPUT;
 
