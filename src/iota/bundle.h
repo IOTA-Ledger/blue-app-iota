@@ -6,7 +6,8 @@
 
 // the largest bundle size due to memory limitations
 #ifdef TARGET_BLUE
-#define MAX_BUNDLE_SIZE 27
+// the Blue has more internal memory to store transactions
+#define MAX_BUNDLE_SIZE 20
 #else
 #define MAX_BUNDLE_SIZE 8
 #endif // TARGET_BLUE
