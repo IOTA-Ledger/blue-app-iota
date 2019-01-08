@@ -224,9 +224,9 @@ make load
 python demos/python/demo.py
 ```
 
-## Documentation
+## Specification
 
-See: [APDU API Documentation](/APDU_API.md)
+See: [APDU API Specification](/docs/specification.md)
 
 ## Contributing
 
