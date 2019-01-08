@@ -13,14 +13,14 @@ Here we try to use natively available crypto logic to create IOTA seeds and sign
   + [Address Reuse](#address-reuse)
   + [IOTA Bundle](#iota-bundle)
   + [Parts of an IOTA Transaction](#parts-of-an-iota-transaction)
-* [How Ledger Nano S Works](#how-ledger-nano-s-works)
-* [IOTA Specific Considerations on the Ledger Nano S](#iota-specific-considerations-on-the-ledger-nano-s)
+* [How the Ledger Hardware Works](#how-the-ledger-hardware-wallet-works)
+* [IOTA Specific Considerations on the Ledger Hardware Wallet](#iota-specific-considerations-on-the-ledger-hardware-wallet)
   + [IOTA User-Facing App Functions](#iota-user-facing-app-functions)
     - [Functions](#functions)
     - [Display](#display)
   + [Recovery Phrase Entropy](#recovery-phrase-entropy)
-  + [IOTA Security Concerns on Ledger Nano S](#iota-security-concerns-on-ledger-nano-s)
-  + [Limitations of the Ledger Nano S](#limitations-of-the-ledger-nano-s)
+  + [IOTA Security Concerns on Ledger Hardware Wallets](#iota-security-concerns-on-ledger-hardware-wallets)
+  + [Limitations of Ledger Devices](#limitations-of-ledger-devices)
 * [FAQ](#faq)
     - [I lost my ledger, what should I do now?](#i-lost-my-ledger--what-should-i-do-now-)
 * [Development](#development)
@@ -86,21 +86,21 @@ The Ledger Nano S is **only** responsible for generating signatures for a specif
 
 **Promoting an unconfirmed transaction does not require re-signing on the Ledger.**
 
-## How Ledger Nano S Works
+## How the Ledger Hardware Wallet Works
 
-The Ledger Nano S is a hardware wallet which deterministically generates an IOTA seed based on your 24 word mnemonic (created when setting up the Ledger Nano S).
+The Ledger Hardware Wallet works by deterministically generating an IOTA seed based on your 24 word mnemonic (created when setting up the device).
 
-Instead of storing the seed on your computer (which could be stolen by an attacker), the seed is stored on the Ledger Nano S, and is never broadcast to the host machine it is connected to.
+Instead of storing the seed on your computer (which could be stolen by an attacker), the seed is stored on the Ledger device, and is never broadcast to the host machine it is connected to.
 
-Instead, the host machine must ask the Ledger to provide the information (such as public keys or signatures). When creating transactions the host will generate the necessary information for the transaction bundle, and then will send it to the Ledger Nano S to be signed. The Ledger will then use the private keys associated with the input transactions to generate unique signatures, and will then transfer **only the signatures** back to the host machine.
+Instead, the host machine must ask the Ledger to provide the information (such as public keys or signatures). When creating transactions the host will generate the necessary information for the transaction bundle, and then will send it to the Ledger device to be signed. The Ledger will then use the private keys associated with the input transactions to generate unique signatures, and will then transfer **only the signatures** back to the host machine.
 
 The host can then use these signatures (which are only valid for that specific transaction bundle) to broadcast the transaction to the network. However as you can see, neither the IOTA seed, nor any of the private keys ever leave the device.
 
 *However keep in mind that in IOTA the signature contains **some** information about the private key for one specific address.*
 
-See [Ledger's documentation](http://ledger.readthedocs.io) to get more info about the inner workings of the Ledger Nano S.
+See [Ledger's documentation](http://ledger.readthedocs.io) to get more info about the inner workings of the Ledger Hardware Wallets.
 
-## IOTA Specific Considerations on the Ledger Nano S
+## IOTA Specific Considerations on the Ledger Hardware Wallet
 
 ### IOTA User-Facing App Functions
 
@@ -114,9 +114,13 @@ See [Ledger's documentation](http://ledger.readthedocs.io) to get more info abou
 
 #### Display
 
+For the Ledger Nano S:
 - The sides of the display will have an up or down arrow indicating that you can scroll to a new screen.
 
 - Two bars along the top (just below the buttons) indicates that there is a double press function available (generally confirm/toggle or back). We will be working to ensure this function is always intuitive.
+
+For the Ledger Blue:
+- The Ledger Blue uses a touchscreen, thus all you need to do is tap the buttons on the screen.
 
 ### Recovery Phrase Entropy
 
@@ -126,13 +130,17 @@ See [Ledger's documentation](http://ledger.readthedocs.io) to get more info abou
 
 While having (only) 256 bits of entropy does not pose a security problem, it does not support the full potential of the IOTA seed. Thus, to use the full entropy supported by IOTA, an additional sufficiently long passphrase is needed! On the other hand, there are other factors that might have a higher security impact, like choosing proper random mnemonics (the Ledger Nano uses a TRNG for that matter) or selecting a higher security level.
 
-### IOTA Security Concerns on Ledger Nano S
+### IOTA Security Concerns on Ledger Hardware Wallets
 
 All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** and refer to this document if there is any confusion.
 
 - **Don't rush through signing a transaction.**
 
-    When generating a transaction for the Ledger to sign, you will scroll through each transaction before signing off on the bundle. The transaction information will come up in order (while scrolling from left to right). The first screen will display the tx type (output, input, or change), as well as the amount. The next screen will display the corresponding address for said transaction. This will repeat until all transactions have been displayed, then you can select "Approve" or "Deny".
+    When generating a transaction for the Ledger to sign, you will scroll through each transaction before signing off on the bundle. The transaction information will come up in order (while scrolling from left to right). 
+    
+    On the Ledger Nano S, the first screen will display the tx type (output, input, or change), as well as the amount. The next screen will display the corresponding address for said transaction. This will repeat until all transactions have been displayed, then you can select "Approve" or "Deny".
+    
+    On the Ledger Blue each transaction entry in a bundle will fit on the screen, use the next button until you've confirmed all transactions and then select approve if everything is correct.
 
     - All output transactions to 3rd party addresses will say "Output:" and below that "1.56 Mi" (for example). "Output" being the key word here.
 
@@ -154,10 +162,13 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
 
         If this situation should arise you should consider going to a more trusted machine before re-signing a transaction.
 
-### Limitations of the Ledger Nano S
+### Limitations of Ledger Hardware Wallets
 
-Due to the memory limitations of the Ledger Nano S the transaction bundles have certain restrictions. The ledger can only store transactions with at most 1 output, 2 inputs, and 1 change transaction. If you need to use funds from more than 2 input addresses, first you must consolidate funds onto fewer addresses before finally sending to the receiving address.
+Due to the memory limitations of both the Ledger Nano S and the Ledger Blue, the transaction bundles have certain restrictions. The Ledger Nano S can only accept a transaction with a maximum bundle size of 8 and the Ledger Blue is limited to a maximum bundle size of 27.
 
+An output and a change transaction each only require 1 bundle entry, however every input transaction requires the same number of bundle entries as the security level being used on the seed. Thus if using a Ledger Nano S you could have 1 output + 3 inputs (security level 2) + 1 change transaction and this would take up all 8 bundle entries. For security level 3 you could only have 1 output + 2 inputs + 1 change transaction.
+
+*Security level 2 is the default security level.*
 
 ## FAQ
 
