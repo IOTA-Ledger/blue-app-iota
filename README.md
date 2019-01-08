@@ -13,14 +13,14 @@ Here we try to use natively available crypto logic to create IOTA seeds and sign
   + [Address Reuse](#address-reuse)
   + [IOTA Bundle](#iota-bundle)
   + [Parts of an IOTA Transaction](#parts-of-an-iota-transaction)
-* [How the Ledger Hardware Works](#how-the-ledger-hardware-wallet-works)
-* [IOTA Specific Considerations on the Ledger Hardware Wallet](#iota-specific-considerations-on-the-ledger-hardware-wallet)
+* [How Ledger Hardware Wallets Work](#how-ledger-hardware-wallets-work)
+* [IOTA Specific Considerations for Ledger Hardware Wallets](#iota-specific-considerations-for-ledger-hardware-wallets)
   + [IOTA User-Facing App Functions](#iota-user-facing-app-functions)
     - [Functions](#functions)
     - [Display](#display)
   + [Recovery Phrase Entropy](#recovery-phrase-entropy)
-  + [IOTA Security Concerns on Ledger Hardware Wallets](#iota-security-concerns-on-ledger-hardware-wallets)
-  + [Limitations of Ledger Devices](#limitations-of-ledger-devices)
+  + [IOTA Security Concerns Relating to Ledger Hardware Wallets](#iota-security-concerns-relating-to-ledger-hardware-wallets)
+  + [Limitations of Ledger Hardware Wallets](#limitations-of-ledger-hardware-wallets)
 * [FAQ](#faq)
     - [I lost my ledger, what should I do now?](#i-lost-my-ledger--what-should-i-do-now-)
 * [Development](#development)
@@ -86,7 +86,7 @@ The Ledger Nano S is **only** responsible for generating signatures for a specif
 
 **Promoting an unconfirmed transaction does not require re-signing on the Ledger.**
 
-## How the Ledger Hardware Wallet Works
+## How Ledger Hardware Wallets Work
 
 The Ledger Hardware Wallet works by deterministically generating an IOTA seed based on your 24 word mnemonic (created when setting up the device).
 
@@ -100,7 +100,7 @@ The host can then use these signatures (which are only valid for that specific t
 
 See [Ledger's documentation](http://ledger.readthedocs.io) to get more info about the inner workings of the Ledger Hardware Wallets.
 
-## IOTA Specific Considerations on the Ledger Hardware Wallet
+## IOTA Specific Considerations for Ledger Hardware Wallets
 
 ### IOTA User-Facing App Functions
 
@@ -130,7 +130,7 @@ For the Ledger Blue:
 
 While having (only) 256 bits of entropy does not pose a security problem, it does not support the full potential of the IOTA seed. Thus, to use the full entropy supported by IOTA, an additional sufficiently long passphrase is needed! On the other hand, there are other factors that might have a higher security impact, like choosing proper random mnemonics (the Ledger Nano uses a TRNG for that matter) or selecting a higher security level.
 
-### IOTA Security Concerns on Ledger Hardware Wallets
+### IOTA Security Concerns Relating to Ledger Hardware Wallets
 
 All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** and refer to this document if there is any confusion.
 
@@ -164,7 +164,7 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
 
 ### Limitations of Ledger Hardware Wallets
 
-Due to the memory limitations of both the Ledger Nano S and the Ledger Blue, the transaction bundles have certain restrictions. The Ledger Nano S can only accept a transaction with a maximum bundle size of 8 and the Ledger Blue is limited to a maximum bundle size of 27.
+Due to the memory limitations of both the Ledger Nano S and the Ledger Blue, the transaction bundles have certain restrictions. The Ledger Nano S can only accept a transaction with a maximum bundle size of 8 and the Ledger Blue is limited to a maximum bundle size of 20.
 
 An output and a change transaction each only require 1 bundle entry, however every input transaction requires the same number of bundle entries as the security level being used on the seed. Thus if using a Ledger Nano S you could have 1 output + 3 inputs (security level 2) + 1 change transaction and this would take up all 8 bundle entries. For security level 3 you could only have 1 output + 2 inputs + 1 change transaction.
 
