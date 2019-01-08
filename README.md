@@ -1,10 +1,10 @@
-# IOTA App for Ledger Nano S
+# IOTA App for Ledger Hardware Wallets
 
 [![Build Status](https://travis-ci.org/IOTA-Ledger/blue-app-iota.svg?branch=master)](https://travis-ci.org/IOTA-Ledger/blue-app-iota)
 
 Here we try to use natively available crypto logic to create IOTA seeds and sign transactions on the fly.<br>
 
-***It is strongly recommended to take a few minutes to read this document to make sure you fully understand how IOTA and the Ledger Nano S work, and how they interact together.***
+***It is strongly recommended to take a few minutes to read this document to make sure you fully understand how IOTA and the Ledger Hardware Wallet works, and how they interact together.***
 
 ## Table of contents
 
@@ -22,7 +22,7 @@ Here we try to use natively available crypto logic to create IOTA seeds and sign
   + [IOTA Security Concerns Relating to Ledger Hardware Wallets](#iota-security-concerns-relating-to-ledger-hardware-wallets)
   + [Limitations of Ledger Hardware Wallets](#limitations-of-ledger-hardware-wallets)
 * [FAQ](#faq)
-    - [I lost my ledger, what should I do now?](#i-lost-my-ledger--what-should-i-do-now-)
+    - [I lost my ledger, what should I do now?](#i-lost-my-ledger-what-should-i-do-now)
 * [Development](#development)
   + [Preparing development environment under Ubuntu 17.10](#preparing-development-environment-under-ubuntu-1710)
   + [Preparing development environment in other distributions](#preparing-development-environment-in-other-distributions)
@@ -38,7 +38,7 @@ Here we try to use natively available crypto logic to create IOTA seeds and sign
 
 ## Introduction
 
-IOTA is a unique cryptocurrency with specific design considerations that must be taken into account. This document will attempt to go over how the Ledger Nano S functions, and how to stay safe when using the Ledger Nano S for IOTA.
+IOTA is a unique cryptocurrency with specific design considerations that must be taken into account. This document will attempt to go over how the Ledger hardware wallet functions, and how to stay safe when using a Ledger to store IOTA.
 
 ### Terminology
 
@@ -82,7 +82,7 @@ An IOTA transaction is broken up into 2 halves. The first half is generating a t
 
 The second half is selecting 2 other transactions to confirm, and performing the proof of work.
 
-The Ledger Nano S is **only** responsible for generating signatures for a specific transaction. After that the host machine (or anybody else for that matter), can take the signatures and broadcast it to the network (however the signatures are only valid for the specific transaction bundle).
+The Ledger is **only** responsible for generating signatures for a specific transaction. After that the host machine (or anybody else for that matter), can take the signatures and broadcast it to the network (however the signatures are only valid for the specific transaction bundle).
 
 **Promoting an unconfirmed transaction does not require re-signing on the Ledger.**
 
@@ -124,11 +124,11 @@ For the Ledger Blue:
 
 ### Recovery Phrase Entropy
 
-- The 24 word BIP39 recovery phrase (mnemonic) of the Ledger Nano S represents less information (256 bits of entropy) than a 27 tryte IOTA seed (384 bits of entropy).
-- An additional function is used to convert this mnemonic seed and the optional passphrase (not your pin number) of your choosing into a 512 bit binary seed. This happens according to the BIP39 standard on the Ledger Nano using system calls.
+- The 24 word BIP39 recovery phrase (mnemonic) of the hardware wallet represents less information (256 bits of entropy) than a 27 tryte IOTA seed (384 bits of entropy).
+- An additional function is used to convert this mnemonic seed and the optional passphrase (not your pin number) of your choosing into a 512 bit binary seed. This happens according to the BIP39 standard on the Ledger using system calls.
 - The extended child key (512 bits) of a corresponding BIP32 path is then hashed (using Kerl) to derive the final 243 trit seed for IOTA.
 
-While having (only) 256 bits of entropy does not pose a security problem, it does not support the full potential of the IOTA seed. Thus, to use the full entropy supported by IOTA, an additional sufficiently long passphrase is needed! On the other hand, there are other factors that might have a higher security impact, like choosing proper random mnemonics (the Ledger Nano uses a TRNG for that matter) or selecting a higher security level.
+While having (only) 256 bits of entropy does not pose a security problem, it does not support the full potential of the IOTA seed. Thus, to use the full entropy supported by IOTA, an additional sufficiently long passphrase is needed! On the other hand, there are other factors that might have a higher security impact, like choosing proper random mnemonics (the Ledger uses a TRNG for that matter) or selecting a higher security level.
 
 ### IOTA Security Concerns Relating to Ledger Hardware Wallets
 
@@ -176,11 +176,11 @@ An output and a change transaction each only require 1 bundle entry, however eve
 
 Hopefully you wrote down your 24 recovery words and your optional passphrase in a safe place. If not, all your funds are lost.
 
-If you did, the best solution is to buy a new Ledger Nano S and enter your 24 recovery words and your optional passphrase in the new device.<br>
+If you did, the best solution is to buy a new Ledger and enter your 24 recovery words and your optional passphrase in the new device.<br>
 After installation of the IOTA Ledger app, all your funds are restored. Take care to reinitialize your seed index correctly.
 
 Another approach is to use our seed recovery tool which can be found here: https://github.com/IOTA-Ledger/recover-iota-seed-from-ledger-mnemonics.<br>
-**WARNING: Only use this tool in emergencies**, as exposing your seed defeats the primary purpose of the Ledger Nano S.
+**WARNING: Only use this tool in emergencies**, as exposing your seed defeats the primary purpose of using a hardware wallet.
 
 ## Development
 
