@@ -6,11 +6,11 @@
 #include "kerl.h"
 
 // pointer to the first byte of the current transaction
-#define TX_BYTES(C) ((C)->bytes + (C)->current_tx_index * 96)
+#define TX_BYTES(C) ((C)->bytes + (C)->current_tx_index * (2 * NUM_HASH_BYTES))
 
 void bundle_initialize(BUNDLE_CTX *ctx, uint8_t last_tx_index)
 {
-    if (last_tx_index < 1 || last_tx_index >= MAX_BUNDLE_INDEX_SZ) {
+    if (last_tx_index < 1 || last_tx_index >= MAX_BUNDLE_SIZE) {
         THROW(INVALID_PARAMETER);
     }
 

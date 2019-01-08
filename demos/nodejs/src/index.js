@@ -31,7 +31,8 @@ function validateBundleTrytes(bundleTrytes) {
     const transport = await Transport.create();
     const ledger = new IOTALedger(transport);
 
-    console.log('Running on version: ' + await ledger.getAppVersion());
+    console.log('App version: ' + await ledger.getAppVersion());
+    console.log('App max bundle size: ' + await ledger.getAppMaxBundleSize());
 
     // initialize
     console.log('Setting path: ' + BIP32_PATH);
@@ -61,7 +62,7 @@ function validateBundleTrytes(bundleTrytes) {
         change: remainder
     });
 
-    var trytes = await ledger.signTransaction(transfers, inputs, remainder);
+    var trytes = await ledger.prepareTransfers(transfers, inputs, remainder);
     validateBundleTrytes(trytes);
 
     await ledger.getAddress(KEY_INDEX + 3, { display: true })

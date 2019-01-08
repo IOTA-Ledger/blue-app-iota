@@ -33,11 +33,11 @@ static void generate_signature_fragment(unsigned char *state,
                                         unsigned char *signature_bytes)
 {
     cx_sha3_t sha;
-    kerl_reinitialize(&sha, state);
 
     for (unsigned int j = 0; j < SIGNATURE_FRAGMENT_SIZE; j++) {
         unsigned char *signature_f = signature_bytes + j * NUM_HASH_BYTES;
 
+        kerl_reinitialize(&sha, state);
         // the output of the squeeze is exactly the private key
         kerl_state_squeeze_chunk(&sha, state, signature_f);
 
@@ -45,11 +45,6 @@ static void generate_signature_fragment(unsigned char *state,
             kerl_initialize(&sha);
             kerl_absorb_chunk(&sha, signature_f);
             kerl_squeeze_final_chunk(&sha, signature_f);
-        }
-
-        // if we are not the the final iteration reinitialize to get next key_f
-        if (j < SIGNATURE_FRAGMENT_SIZE - 1) {
-            kerl_reinitialize(&sha, state);
         }
     }
 }

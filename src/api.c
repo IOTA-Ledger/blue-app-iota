@@ -288,7 +288,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     ui_timeout_start(false);
 
     if (first) {
-        if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_INDEX_SZ - 1)) {
+        if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_SIZE - 1)) {
             // last index invalid range
             THROW(SW_COMMAND_INVALID_DATA);
         }
@@ -443,6 +443,7 @@ unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
     }
 
     GET_APP_CONFIG_OUTPUT output;
+    output.app_max_bundle_size = MAX_BUNDLE_SIZE;
     output.app_flags = APP_FLAGS;
     output.app_version_major = APPVERSION_MAJOR;
     output.app_version_minor = APPVERSION_MINOR;
