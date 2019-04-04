@@ -41,7 +41,7 @@ add_library(iota-ledger SHARED
     "../src/iota/signing.c"
     "../src/keccak/sha3.c"
     "../src/api.c"
-    "../src/aux.c"
+    "../src/misc.c"
     "test_mocks.c"
 )
 

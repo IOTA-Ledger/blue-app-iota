@@ -4,7 +4,7 @@
 #include "test_seed.h"
 #include "transaction_file.h"
 #include "api.h"
-#include "aux.h"
+#include "misc.h"
 #include "iota/conversion.h"
 // include the c-file to be able to test static functions
 #include "bundle_ext.c"

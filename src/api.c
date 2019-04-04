@@ -1,6 +1,6 @@
 #include "api.h"
 #include "common.h"
-#include "aux.h"
+#include "misc.h"
 #include "iota_io.h"
 #include "ui/ui.h"
 #include <string.h>
