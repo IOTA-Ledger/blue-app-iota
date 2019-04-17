@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
+#define TEXT_LEN 21
+
 #define TX_TYPE_TEXT_LEN 23
 #define ABBRV_VAL_TEXT_LEN 9
 #define FULL_VAL_TEXT_LEN 24
@@ -23,8 +25,17 @@ typedef enum {
     STATE_SETTINGS,
     STATE_TX,
     STATE_RECV,
-    STATE_SIGN
+    STATE_SIGN,
+    STATE_GETTING_ADDR
 } UI_STATES_NANOX;
+
+typedef struct UI_TEXT_CTX_NANOX {
+
+    char top_str[TEXT_LEN];
+    char mid_str[TEXT_LEN];
+    char bot_str[TEXT_LEN];
+
+} UI_TEXT_CTX_NANOX;
 
 typedef struct UI_STATE_CTX_NANOX {
 
@@ -46,5 +57,6 @@ typedef struct UI_STATE_CTX_NANOX {
 } UI_STATE_CTX_NANOX;
 
 extern UI_STATE_CTX_NANOX nanox_ui_state;
+extern UI_TEXT_CTX_NANOX nanox_ui_text;
 
 #endif // NANOX_TYPES_H
