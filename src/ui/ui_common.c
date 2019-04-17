@@ -2,9 +2,12 @@
 #include "api.h"
 #include <string.h>
 
-#ifdef TARGET_BLUE
+#if defined TARGET_BLUE
 #include "blue/blue_types.h"
 #define MENU_IDX_BREAK blue_ui_state.menu_idx
+#elif defined TARGET_NANOX
+#include "nanox/nanox_types.h"
+#define MENU_IDX_BREAK nanox_ui_state.menu_idx
 #else
 #include "nanos/nanos_types.h"
 #define MENU_IDX_BREAK ui_state.menu_idx / 2
