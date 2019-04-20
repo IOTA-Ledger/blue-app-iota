@@ -1,14 +1,13 @@
-#include "nanos_buttons.h"
 #include <string.h>
 #include "common.h"
-
-#include "ui.h"
-#include "s_types.h"
-#include "nanos_misc.h"
-#include "ui_common.h"
-
 #include "api.h"
 #include "iota/addresses.h"
+#include "ui.h"
+#include "ui_common.h"
+#include "shared_buttons.h"
+#include "shared_misc.h"
+#include "s_types.h"
+
 
 int8_t button_main_menu(uint8_t button_mask)
 {

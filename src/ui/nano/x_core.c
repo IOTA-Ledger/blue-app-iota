@@ -1,12 +1,12 @@
-#include "x_core.h"
+#include "iota/addresses.h"
+#include "ui.h"
+#include "shared_misc.h"
+#include "shared_display.h"
+#include "shared_buttons.h"
 #include "s_types.h"
 #include "s_screens.h"
-#include "nanos_misc.h"
-#include "nanos_display.h"
-#include "nanos_buttons.h"
 #include "x_elements.h"
-#include "ui.h"
-#include "iota/addresses.h"
+#include "x_core.h"
 
 #ifdef TARGET_NANOX
 

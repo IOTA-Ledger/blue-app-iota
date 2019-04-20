@@ -1,10 +1,10 @@
-#include "nanos_misc.h"
 #include <string.h>
-#include "ui.h"
-#include "api.h"
-#include "s_core.h"
-#include "ui_common.h"
 #include "iota/addresses.h"
+#include "api.h"
+#include "ui.h"
+#include "ui_common.h"
+#include "shared_misc.h"
+#include "s_core.h"
 
 // go to state with menu index
 void state_go(uint8_t state, uint8_t idx)

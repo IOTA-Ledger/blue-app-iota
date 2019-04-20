@@ -1,11 +1,11 @@
-#include "nanos_display.h"
 #include <string.h>
+#include "api.h"
 #include "ui.h"
+#include "shared_display.h"
+#include "shared_text.h"
+#include "shared_misc.h"
 #include "s_types.h"
 #include "s_core.h"
-#include "nanos_text.h"
-#include "nanos_misc.h"
-#include "api.h"
 
 void display_main_menu()
 {
