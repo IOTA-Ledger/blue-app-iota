@@ -3,7 +3,7 @@
 #include "common.h"
 
 #include "ui.h"
-#include "nanos_types.h"
+#include "s_types.h"
 #include "nanos_misc.h"
 #include "ui_common.h"
 

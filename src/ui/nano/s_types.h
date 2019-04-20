@@ -1,5 +1,5 @@
-#ifndef NANOS_TYPES_H
-#define NANOS_TYPES_H
+#ifndef S_TYPES_H
+#define S_TYPES_H
 
 #include <stdint.h>
 #include "iota/bundle.h"
@@ -114,4 +114,4 @@ extern UI_TEXT_CTX_NANOS ui_text;
 extern UI_GLYPH_CTX_NANOS ui_glyphs;
 extern UI_STATE_CTX_NANOS ui_state;
 
-#endif // NANOS_TYPES_H
+#endif // S_TYPES_H

@@ -1,10 +1,10 @@
 #include "nanos_display.h"
 #include <string.h>
 #include "ui.h"
-#include "nanos_types.h"
+#include "s_types.h"
+#include "s_core.h"
 #include "nanos_text.h"
 #include "nanos_misc.h"
-#include "nanos_core.h"
 #include "api.h"
 
 void display_main_menu()

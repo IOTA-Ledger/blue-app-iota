@@ -1,5 +1,5 @@
-#ifndef NANOS_ELEMENTS_H
-#define NANOS_ELEMENTS_H
+#ifndef S_ELEMENTS_H
+#define S_ELEMENTS_H
 
 #ifdef TARGET_NANOS
 
@@ -209,4 +209,4 @@
 
 #endif // TARGET_NANOS
 
-#endif // NANOS_ELEMENTS_H
+#endif // S_ELEMENTS_H

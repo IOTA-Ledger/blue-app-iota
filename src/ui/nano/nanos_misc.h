@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "nanos_types.h"
+#include "s_types.h"
 
 void state_go(uint8_t state, uint8_t idx);
 void backup_state(void);

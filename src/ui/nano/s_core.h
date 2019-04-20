@@ -1,8 +1,8 @@
-#ifndef NANOS_CORE_H
-#define NANOS_CORE_H
+#ifndef S_CORE_H
+#define S_CORE_H
 
 #include <stdint.h>
-#include "nanos_types.h"
+#include "s_types.h"
 
 void nanos_set_screen(UI_SCREENS_NANOS s);
 void nanos_ui_init(void);
@@ -18,4 +18,4 @@ void nanos_ui_restore(void);
 
 bool nanos_ui_lock_forbidden(void);
 
-#endif // NANOS_CORE_H
+#endif // S_CORE_H

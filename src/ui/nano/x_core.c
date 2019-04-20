@@ -1,6 +1,6 @@
 #include "x_core.h"
-#include "nanos_types.h"
-#include "nanos_screens.h"
+#include "s_types.h"
+#include "s_screens.h"
 #include "nanos_misc.h"
 #include "nanos_display.h"
 #include "nanos_buttons.h"

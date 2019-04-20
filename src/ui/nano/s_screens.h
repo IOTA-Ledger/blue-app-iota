@@ -1,9 +1,9 @@
-#ifndef NANOS_SCREENS_H
-#define NANOS_SCREENS_H
+#ifndef S_SCREENS_H
+#define S_SCREENS_H
 
-#include "nanos_elements.h"
+#include "s_elements.h"
 #include "x_elements.h"
-#include "nanos_core.h"
+#include "s_core.h"
 #include "x_core.h"
 #include "glyphs.h"
 
@@ -31,4 +31,4 @@ static const bagl_element_t bagl_ui_back_screen[] = {
     SCREEN_CLEAR,      SCREEN_MSG_TOP_HALF,  SCREEN_MSG_MID,
     SCREEN_GLYPH_BACK, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP};
 
-#endif // NANOS_SCREENS_H
+#endif // S_SCREENS_H

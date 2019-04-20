@@ -2,7 +2,7 @@
 #include <string.h>
 #include "ui.h"
 #include "api.h"
-#include "nanos_core.h"
+#include "s_core.h"
 #include "ui_common.h"
 #include "iota/addresses.h"
 
