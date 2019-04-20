@@ -55,7 +55,7 @@
 // -- Menu screen top message half off screen
 #define SCREEN_MSG_TOP_HALF                                                    \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 26, 128, 64, 0, 0, 0, 0xFFFFFF,        \
+        {BAGL_LABELINE, 0x01,         0, 26, 128, 64, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -63,7 +63,7 @@
 // -- Menu screen middle message
 #define SCREEN_MSG_MID                                                         \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 38, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
+        {BAGL_LABELINE,     0x01, 0, 36, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -86,9 +86,8 @@
 
 // -- Confirm bars along top
 #define SCREEN_GLYPH_CONFIRM                                                   \
-    {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,            \
-      BAGL_GLYPH_ICON_LESS},                                                   \
-     &ui_glyphs.glyph[GLYPH_CONFIRM],                                          \
+    {{BAGL_ICON, 0x00, 3, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},         \
+     (const char *)&C_x_icon_less,                                             \
      0,                                                                        \
      0,                                                                        \
      0,                                                                        \
@@ -97,26 +96,14 @@
      NULL},                                                                    \
                                                                                \
     {                                                                          \
-        {BAGL_ICON,                                                            \
-         0x00,                                                                 \
-         117,                                                                  \
-         -3,                                                                   \
-         8,                                                                    \
-         6,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         0,                                                                    \
-         BAGL_GLYPH_ICON_LESS},                                                \
-            &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL         \
+        {BAGL_ICON, 0x00, 117, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_less, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Up arrow on left
 #define SCREEN_GLYPH_UP                                                        \
     {                                                                          \
-        {BAGL_ICON,         0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0, \
+        {BAGL_ICON,         0x00, 3, 28, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, \
          BAGL_GLYPH_ICON_UP},                                                  \
             &ui_glyphs.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL              \
     }
@@ -124,20 +111,8 @@
 // -- Down arrow on right
 #define SCREEN_GLYPH_DOWN                                                      \
     {                                                                          \
-        {BAGL_ICON,                                                            \
-         0x00,                                                                 \
-         117,                                                                  \
-         13,                                                                   \
-         8,                                                                    \
-         6,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         0,                                                                    \
-         BAGL_GLYPH_ICON_DOWN},                                                \
-            &ui_glyphs.glyph[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL            \
+        {BAGL_ICON, 0x00, 117, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},   \
+            (const char *)&C_x_icon_down, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Loading icon on left
@@ -162,34 +137,22 @@
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_DASH                                                      \
     {                                                                          \
-        {BAGL_ICON,                                                            \
-         0x00,                                                                 \
-         24,                                                                   \
-         12,                                                                   \
-         8,                                                                    \
-         6,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0,                                                                    \
-         0xFFFFFF,                                                             \
-         0x000000,                                                             \
-         0,                                                                    \
-         BAGL_GLYPH_ICON_DASHBOARD_BADGE},                                     \
-            &ui_glyphs.glyph[GLYPH_DASH], 0, 0, 0, NULL, NULL, NULL            \
+        {BAGL_ICON, 0x00, 24, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_dash, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 18, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_nanox_icon_iota, 0, 0, 0, NULL, NULL, NULL              \
+        {BAGL_ICON, 0x00, 18, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_iota, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 24, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_icon_back_x, 0, 0, 0, NULL, NULL, NULL              \
+        {BAGL_ICON, 0x00, 24, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_back, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Define all screen glyphs

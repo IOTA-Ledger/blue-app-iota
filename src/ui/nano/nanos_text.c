@@ -10,7 +10,7 @@ void get_main_menu(char *msg)
 
     uint8_t i = 0;
 
-    strcpy(msg + (i++ * TEXT_LEN), "Connect");
+    strcpy(msg + (i++ * TEXT_LEN), "IOTA");
     strcpy(msg + (i++ * TEXT_LEN), "About");
     strcpy(msg + (i++ * TEXT_LEN), "Exit App");
 }

@@ -77,6 +77,12 @@ static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
     case GLYPH_BACK:
         nanos_set_screen(SCREEN_BACK);
         break;
+#ifdef TARGET_NANOX
+        // TODO REORG
+    case GLYPH_DASH:
+        nanos_set_screen(SCREEN_DASH);
+        break;
+#endif
     default:
         return;
     }
