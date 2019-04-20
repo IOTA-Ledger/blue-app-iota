@@ -1,6 +1,8 @@
 #ifndef NANOS_ELEMENTS_H
 #define NANOS_ELEMENTS_H
 
+#ifdef TARGET_NANOS
+
 #define DEFAULT_FONT                                                           \
     BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER
 
@@ -23,7 +25,7 @@
     {                                                                          \
         {BAGL_LABELINE, 0x01,         0, 13, 128, 32, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
-            nanox_ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                   \
+            ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Title screen top message
@@ -31,7 +33,7 @@
     {                                                                          \
         {BAGL_LABELINE,     0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
-            nanox_ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                   \
+            ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Title screen bottom message
@@ -39,7 +41,7 @@
     {                                                                          \
         {BAGL_LABELINE, 0x01,         0, 25, 128, 32, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
-            nanox_ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                   \
+            ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Title screen bottom message
@@ -47,7 +49,7 @@
     {                                                                          \
         {BAGL_LABELINE,     0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
-            nanox_ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                   \
+            ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen top message half off screen
@@ -55,7 +57,7 @@
     {                                                                          \
         {BAGL_LABELINE, 0x01,         0, 3, 128, 32, 0, 0, 0, 0xFFFFFF,        \
          0x000000,      DEFAULT_FONT, 0},                                      \
-            nanox_ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                   \
+            ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen middle message
@@ -63,7 +65,7 @@
     {                                                                          \
         {BAGL_LABELINE,     0x01, 0, 19, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
-            nanox_ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                   \
+            ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen bot message half off screen
@@ -71,7 +73,7 @@
     {                                                                          \
         {BAGL_LABELINE, 0x01,         0, 36, 128, 32, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
-            nanox_ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                   \
+            ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Underline for "IOTA"
@@ -200,9 +202,11 @@
     static unsigned int bagl_ui_##name##_screen_button(                        \
         unsigned int button_mask, unsigned int button_mask_counter)            \
     {                                                                          \
-        nanox_transition_state(button_mask);                                   \
+        nanos_transition_state(button_mask);                                   \
                                                                                \
         return 0;                                                              \
     }
+
+#endif // TARGET_NANOS
 
 #endif // NANOS_ELEMENTS_H

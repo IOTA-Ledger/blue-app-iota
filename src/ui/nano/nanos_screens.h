@@ -2,7 +2,9 @@
 #define NANOS_SCREENS_H
 
 #include "nanos_elements.h"
+#include "x_elements.h"
 #include "nanos_core.h"
+#include "x_core.h"
 #include "glyphs.h"
 
 // screen for title on top, info on bottom

@@ -1,5 +1,7 @@
-#ifndef NANOS_ELEMENTS_H
-#define NANOS_ELEMENTS_H
+#ifndef X_ELEMENTS_H
+#define X_ELEMENTS_H
+
+#ifdef TARGET_NANOX
 
 #define DEFAULT_FONT                                                           \
     BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER
@@ -13,7 +15,7 @@
 // -- Clear screen
 #define SCREEN_CLEAR                                                           \
     {                                                                          \
-        {BAGL_RECTANGLE, 0x00,     0,        0, 128, 32, 0, 0,                 \
+        {BAGL_RECTANGLE, 0x00,     0,        0, 128, 64, 0, 0,                 \
          BAGL_FILL,      0x000000, 0xFFFFFF, 0, 0},                            \
             NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
@@ -21,7 +23,7 @@
 // -- Title screen top message
 #define SCREEN_MSG_TOP                                                         \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 13, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+        {BAGL_LABELINE, 0x01,         0, 26, 128, 64, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -29,7 +31,7 @@
 // -- Title screen top message
 #define SCREEN_MSG_TOP_BOLD                                                    \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
+        {BAGL_LABELINE,     0x01, 0, 26, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -37,7 +39,7 @@
 // -- Title screen bottom message
 #define SCREEN_MSG_BOT                                                         \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 25, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+        {BAGL_LABELINE, 0x01,         0, 50, 128, 64, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -45,7 +47,7 @@
 // -- Title screen bottom message
 #define SCREEN_MSG_BOT_BOLD                                                    \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
+        {BAGL_LABELINE,     0x01, 0, 50, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -53,7 +55,7 @@
 // -- Menu screen top message half off screen
 #define SCREEN_MSG_TOP_HALF                                                    \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 3, 128, 32, 0, 0, 0, 0xFFFFFF,        \
+        {BAGL_LABELINE, 0x01,         0, 26, 128, 64, 0, 0, 0, 0xFFFFFF,        \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -61,7 +63,7 @@
 // -- Menu screen middle message
 #define SCREEN_MSG_MID                                                         \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 19, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
+        {BAGL_LABELINE,     0x01, 0, 38, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -69,7 +71,7 @@
 // -- Menu screen bot message half off screen
 #define SCREEN_MSG_BOT_HALF                                                    \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 36, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+        {BAGL_LABELINE, 0x01,         0, 50, 128, 64, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -77,7 +79,7 @@
 // -- Underline for "IOTA"
 #define SCREEN_UNDERLINE                                                       \
     {                                                                          \
-        {BAGL_RECTANGLE, 0x00,     48,       22, 33, 1, 0, 0,                  \
+        {BAGL_RECTANGLE, 0x00,     48,       44, 33, 1, 0, 0,                  \
          BAGL_FILL,      0xFFFFFF, 0x000000, 0,  0},                           \
             NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
@@ -179,15 +181,15 @@
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 18, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_icon_iota, 0, 0, 0, NULL, NULL, NULL              \
+        {BAGL_ICON, 0x00, 18, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
+            (const char *)&C_nanox_icon_iota, 0, 0, 0, NULL, NULL, NULL              \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 24, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_icon_back, 0, 0, 0, NULL, NULL, NULL              \
+        {BAGL_ICON, 0x00, 24, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
+            (const char *)&C_icon_back_x, 0, 0, 0, NULL, NULL, NULL              \
     }
 
 // -- Define all screen glyphs
@@ -205,4 +207,6 @@
         return 0;                                                              \
     }
 
-#endif // NANOS_ELEMENTS_H
+#endif // TARGET_NANOX
+
+#endif // X_ELEMENTS_H
