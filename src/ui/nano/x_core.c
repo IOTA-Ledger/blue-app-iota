@@ -1,20 +1,19 @@
 #include "x_core.h"
 #include "nanos_types.h"
-#include "x_screens.h"
-#include "x_elements.h"
+#include "nanos_screens.h"
 #include "nanos_misc.h"
 #include "nanos_display.h"
 #include "nanos_buttons.h"
+#include "x_elements.h"
 #include "ui.h"
 #include "iota/addresses.h"
 
 #ifdef TARGET_NANOX
 
-// TODO rename all functions
-
 UI_SCREENS_NANOS current_screen;
 
 UI_TEXT_CTX_NANOS ui_text;
+UI_GLYPH_CTX_NANOS ui_glyphs;
 UI_STATE_CTX_NANOS ui_state;
 
 static void nanos_transition_state(unsigned int button_mask);
@@ -26,10 +25,6 @@ BUTTON_FUNCTION(title_bold)
 BUTTON_FUNCTION(menu)
 BUTTON_FUNCTION(iota)
 BUTTON_FUNCTION(back)
-BUTTON_FUNCTION(dash)
-BUTTON_FUNCTION(up)
-BUTTON_FUNCTION(dn)
-BUTTON_FUNCTION(updn)
 
 void nanos_set_screen(UI_SCREENS_NANOS s)
 {
@@ -54,16 +49,9 @@ static void nanos_render()
     case SCREEN_BACK:
         UX_DISPLAY(bagl_ui_back_screen, NULL);
         break;
-    case SCREEN_DASH:
-        UX_DISPLAY(bagl_ui_dash_screen, NULL);
-        break;
     default:
         THROW(INVALID_PARAMETER);
     }
-}
-
-static void x_get_screen()
-{
 }
 
 static void nanos_ctx_initialize()
@@ -365,7 +353,6 @@ static void nanos_transition_state(unsigned int button_mask)
         // Go back to the dashboard
         os_sched_exit(0);
 
-    x_get_screen();
     // render new display
     nanos_render();
 }

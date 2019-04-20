@@ -13,34 +13,34 @@
 static uint16_t timer;
 
 void ui_force_draw()
-{ /* TODO -- re-enable ui_force_draw
-     bool ux_done = false;
-     while (!ux_done) {
-         io_seproxyhal_general_status();
-         io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
-                                sizeof(G_io_seproxyhal_spi_buffer), 0);
+{/* TODO -- re-enable ui_force_draw
+    bool ux_done = false;
+    while (!ux_done) {
+        io_seproxyhal_general_status();
+        io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
+                               sizeof(G_io_seproxyhal_spi_buffer), 0);
 
-         // manually handle events
-         switch (G_io_seproxyhal_spi_buffer[0]) {
-         case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-             if (UX_DISPLAYED()) {
-                 ux_done = true;
-                 break;
-             }
-             else {
-                 UX_DISPLAYED_EVENT();
-             }
-             break;
-         default:
-             // ignore any other event
-             break;
-         }
-     }
+        // manually handle events
+        switch (G_io_seproxyhal_spi_buffer[0]) {
+        case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
+            if (UX_DISPLAYED()) {
+                ux_done = true;
+                break;
+            }
+            else {
+                UX_DISPLAYED_EVENT();
+            }
+            break;
+        default:
+            // ignore any other event
+            break;
+        }
+    }
 
-     // now everything is in the buffer, the next general status renders it
-     io_seproxyhal_general_status();
-     io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
-                            sizeof(G_io_seproxyhal_spi_buffer), 0);*/
+    // now everything is in the buffer, the next general status renders it
+    io_seproxyhal_general_status();
+    io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
+                           sizeof(G_io_seproxyhal_spi_buffer), 0);*/
 }
 
 void ui_timeout_tick()
