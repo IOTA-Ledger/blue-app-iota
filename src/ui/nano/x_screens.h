@@ -1,8 +1,8 @@
-#ifndef S_SCREENS_H
-#define S_SCREENS_H
+#ifndef X_SCREENS_H
+#define X_SCREENS_H
 
-#include "s_elements.h"
-#include "s_core.h"
+#include "x_elements.h"
+#include "x_core.h"
 #include "glyphs.h"
 
 // screen for title on top, info on bottom
@@ -29,4 +29,4 @@ static const bagl_element_t bagl_ui_back_screen[] = {
     SCREEN_CLEAR,      SCREEN_MSG_TOP_HALF,  SCREEN_MSG_MID,
     SCREEN_GLYPH_BACK, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP};
 
-#endif // S_SCREENS_H
+#endif // X_SCREENS_H

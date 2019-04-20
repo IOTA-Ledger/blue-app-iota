@@ -6,7 +6,12 @@
 #include "ui_common.h"
 #include "shared_buttons.h"
 #include "shared_misc.h"
+
+#if defined(TARGET_NANOS)
 #include "s_types.h"
+#elif defined(TARGET_NANOX)
+#include "x_types.h"
+#endif
 
 
 int8_t button_main_menu(uint8_t button_mask)

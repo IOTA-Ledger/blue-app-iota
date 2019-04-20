@@ -4,7 +4,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined(TARGET_NANOS)
 #include "s_types.h"
+#elif defined(TARGET_NANOX)
+#include "x_types.h"
+#endif
 
 void state_go(uint8_t state, uint8_t idx);
 void backup_state(void);

@@ -3,12 +3,13 @@
 #include "shared_misc.h"
 #include "shared_display.h"
 #include "shared_buttons.h"
-#include "s_types.h"
-#include "s_screens.h"
-#include "x_elements.h"
-#include "x_core.h"
 
 #ifdef TARGET_NANOX
+
+#include "x_types.h"
+#include "x_screens.h"
+#include "x_elements.h"
+#include "x_core.h"
 
 UI_SCREENS_NANOS current_screen;
 

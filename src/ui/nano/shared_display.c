@@ -4,8 +4,14 @@
 #include "shared_display.h"
 #include "shared_text.h"
 #include "shared_misc.h"
-#include "s_types.h"
+
+#if defined(TARGET_NANOS)
 #include "s_core.h"
+#include "s_types.h"
+#elif defined(TARGET_NANOX)
+#include "x_core.h"
+#include "x_types.h"
+#endif
 
 void display_main_menu()
 {

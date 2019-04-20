@@ -1,14 +1,15 @@
-#include "s_core.h"
-#include "s_types.h"
-#include "s_screens.h"
+#include "iota/addresses.h"
+#include "ui.h"
 #include "shared_misc.h"
 #include "shared_display.h"
 #include "shared_buttons.h"
-#include "s_elements.h"
-#include "ui.h"
-#include "iota/addresses.h"
 
 #ifdef TARGET_NANOS
+
+#include "s_core.h"
+#include "s_types.h"
+#include "s_screens.h"
+#include "s_elements.h"
 
 UI_SCREENS_NANOS current_screen;
 
