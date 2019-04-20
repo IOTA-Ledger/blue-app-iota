@@ -72,7 +72,11 @@ void display_version()
     clear_display();
     write_display(APPVERSION, MID);
 
+#ifdef TARGET_NANOS
     display_glyphs_confirm(GLYPH_BACK, GLYPH_NONE);
+#else
+    display_glyphs_confirm(GLYPH_NONE, GLYPH_NONE);
+#endif
 }
 
 void display_more_info()

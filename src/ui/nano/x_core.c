@@ -26,6 +26,14 @@ BUTTON_FUNCTION(title_bold)
 BUTTON_FUNCTION(menu)
 BUTTON_FUNCTION(iota)
 BUTTON_FUNCTION(back)
+BUTTON_FUNCTION(dash)
+BUTTON_FUNCTION(up)
+BUTTON_FUNCTION(dn)
+BUTTON_FUNCTION(conf)
+BUTTON_FUNCTION(updn)
+BUTTON_FUNCTION(upconf)
+BUTTON_FUNCTION(dnconf)
+BUTTON_FUNCTION(updnconf)
 
 void nanos_set_screen(UI_SCREENS_NANOS s)
 {
@@ -34,24 +42,43 @@ void nanos_set_screen(UI_SCREENS_NANOS s)
 
 static void nanos_render()
 {
-    switch (current_screen) {
-    case SCREEN_TITLE:
-        UX_DISPLAY(bagl_ui_title_screen, NULL);
-        break;
-    case SCREEN_TITLE_BOLD:
-        UX_DISPLAY(bagl_ui_title_bold_screen, NULL);
-        break;
-    case SCREEN_MENU:
-        UX_DISPLAY(bagl_ui_menu_screen, NULL);
-        break;
-    case SCREEN_IOTA:
+    // Ignore the GLYPH_NONE flag
+    switch (ui_state.glyphs & GLYPH_NONE_FLAG_OFF) {
+    case GLYPH_IOTA_FLAG:
         UX_DISPLAY(bagl_ui_iota_screen, NULL);
         break;
-    case SCREEN_BACK:
+    case GLYPH_BACK_FLAG:
         UX_DISPLAY(bagl_ui_back_screen, NULL);
         break;
+    case GLYPH_DASH_FLAG:
+        UX_DISPLAY(bagl_ui_dash_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG:
+        UX_DISPLAY(bagl_ui_up_screen, NULL);
+        break;
+    case GLYPH_DOWN_FLAG:
+        UX_DISPLAY(bagl_ui_dn_screen, NULL);
+        break;
+    //case GLYPH_CONFIRM_FLAG | GLYPH_NONE_FLAG:
+    case GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_conf_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG | GLYPH_DOWN_FLAG:
+        UX_DISPLAY(bagl_ui_updn_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_upconf_screen, NULL);
+        break;
+    case GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_dnconf_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG | GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_updnconf_screen, NULL);
+        break;
+
     default:
-        THROW(INVALID_PARAMETER);
+        UX_DISPLAY(bagl_ui_menu_screen, NULL);
+        // THROW(INVALID_PARAMETER);
     }
 }
 

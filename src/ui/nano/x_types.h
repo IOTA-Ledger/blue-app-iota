@@ -23,7 +23,16 @@ typedef enum {
     SCREEN_TITLE_BOLD,
     SCREEN_MENU,
     SCREEN_IOTA,
-    SCREEN_BACK
+    SCREEN_BACK,
+    SCREEN_DASH,
+    SCREEN_LOAD,
+    SCREEN_UP,
+    SCREEN_DN,
+    SCREEN_UPDN,
+    SCREEN_CONF,
+    SCREEN_UPCONF,
+    SCREEN_DNCONF,
+    SCREEN_UPDNCONF
 } UI_SCREENS_NANOS;
 
 // UI STATES
@@ -41,16 +50,25 @@ typedef enum {
     STATE_EXIT = 255
 } UI_STATES_NANOS;
 
+#define GLYPH_IOTA_FLAG 1 << GLYPH_IOTA | GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG
+#define GLYPH_BACK_FLAG 1 << GLYPH_BACK | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
+#define GLYPH_DASH_FLAG 1 << GLYPH_DASH | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
+#define GLYPH_LOAD_FLAG 1 << GLYPH_LOAD
+#define GLYPH_UP_FLAG 1 << GLYPH_UP
+#define GLYPH_DOWN_FLAG 1 << GLYPH_DOWN
+#define GLYPH_CONFIRM_FLAG 1 << GLYPH_CONFIRM
+#define GLYPH_NONE_FLAG_OFF 0x7F
+
 // GLYPH TYPES
 typedef enum {
-    GLYPH_CONFIRM,
-    GLYPH_UP,
-    GLYPH_DOWN,
+    GLYPH_IOTA,
+    GLYPH_BACK,
     GLYPH_DASH,
     GLYPH_LOAD,
-    GLYPH_NONE, // glyphs after none require special screens
-    GLYPH_IOTA,
-    GLYPH_BACK
+    GLYPH_UP,
+    GLYPH_DOWN,
+    GLYPH_CONFIRM,
+    GLYPH_NONE
 } UI_GLYPH_TYPES_NANOS;
 
 // Size of Menu
@@ -107,6 +125,9 @@ typedef struct UI_STATE_CTX_NANOS {
 
     uint8_t backup_state;
     uint8_t backup_menu_idx;
+
+    // flag for which glyphs are shown
+    unsigned char glyphs;
 
 } UI_STATE_CTX_NANOS;
 

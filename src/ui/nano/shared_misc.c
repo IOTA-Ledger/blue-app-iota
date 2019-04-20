@@ -90,10 +90,14 @@ static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
 // Turns a single glyph on or off
 void glyph_on(UI_GLYPH_TYPES_NANOS g)
 {
+#ifdef TARGET_NANOS
     if (g < TOTAL_GLYPHS)
         ui_glyphs.glyph[g] = '\0';
     else
         check_special_glyph(g);
+#else
+    ui_state.glyphs |= 1 << g;
+#endif
 }
 
 static void clear_text()
@@ -112,12 +116,16 @@ static void glyph_off(UI_GLYPH_TYPES_NANOS g)
 
 static void clear_glyphs()
 {
+#ifdef TARGET_NANOS
     // turn off all glyphs
     glyph_off(GLYPH_CONFIRM);
     glyph_off(GLYPH_UP);
     glyph_off(GLYPH_DOWN);
     glyph_off(GLYPH_LOAD);
     glyph_off(GLYPH_DASH);
+#else
+    ui_state.glyphs = 0;
+#endif
 }
 
 void clear_display()
