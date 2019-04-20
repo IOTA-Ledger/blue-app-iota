@@ -116,7 +116,7 @@
 // -- Up arrow on left
 #define SCREEN_GLYPH_UP                                                        \
     {                                                                          \
-        {BAGL_ICON,         0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0, \
+        {BAGL_ICON,         0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, \
          BAGL_GLYPH_ICON_UP},                                                  \
             &ui_glyphs.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL              \
     }
@@ -182,14 +182,14 @@
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 18, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_nanox_icon_iota, 0, 0, 0, NULL, NULL, NULL              \
+            (const char *)&C_x_icon_iota, 0, 0, 0, NULL, NULL, NULL              \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 24, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_icon_back_x, 0, 0, 0, NULL, NULL, NULL              \
+            (const char *)&C_x_icon_back, 0, 0, 0, NULL, NULL, NULL              \
     }
 
 // -- Define all screen glyphs
