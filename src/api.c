@@ -152,7 +152,7 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
     get_public_addr(api.seed_bytes, input->address_idx, api.security,
                     addr_bytes);
 
-    if (!display) { // TODO remove ! (after testing)
+    if (!display) {
         ui_display_address(addr_bytes);
     }
     else {
