@@ -211,12 +211,20 @@ void display_prompt_tx()
     // can't use switch statement because array sz isn't known
     if (ui_state.menu_idx == MENU_TX_APPROVE) {
         write_display("Approve", MID);
+#ifdef TARGET_NANOX
+        glyph_on(GLYPH_APPROVE);
+#else
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
+#endif
         return;
     }
     else if (ui_state.menu_idx == MENU_TX_DENY) {
         write_display("Deny", MID);
+#ifdef TARGET_NANOX
+        glyph_on(GLYPH_DENY);
+#else
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
+#endif
         return;
     }
 

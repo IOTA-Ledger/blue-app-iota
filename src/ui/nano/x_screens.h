@@ -21,18 +21,32 @@ static const bagl_element_t bagl_ui_menu_screen[] = {
 
 // screen for displaying IOTA icon
 static const bagl_element_t bagl_ui_iota_screen[] = {
-    SCREEN_CLEAR,         SCREEN_MSG_MID,    SCREEN_UNDERLINE,
-    SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_IOTA, SCREEN_GLYPH_DOWN};
+    SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_IOTA,
+    SCREEN_GLYPH_DOWN};
 
 // screen for displaying back icon
 static const bagl_element_t bagl_ui_back_screen[] = {
-    SCREEN_CLEAR,      SCREEN_MSG_TOP_HALF,  SCREEN_MSG_MID,
-    SCREEN_GLYPH_BACK, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP};
+    SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_GLYPH_BACK, SCREEN_GLYPH_CONFIRM,
+    SCREEN_GLYPH_UP};
 
 // screen for displaying dash icon
 static const bagl_element_t bagl_ui_dash_screen[] = {
-    SCREEN_CLEAR,      SCREEN_MSG_TOP_HALF,  SCREEN_MSG_MID,
-    SCREEN_GLYPH_DASH, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP};
+    SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_GLYPH_DASH, SCREEN_GLYPH_CONFIRM,
+    SCREEN_GLYPH_UP};
+
+// screen for displaying load icon
+static const bagl_element_t bagl_ui_load_screen[] = {
+    SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_GLYPH_LOAD};
+
+// screen for displaying approve icon
+static const bagl_element_t bagl_ui_approve_screen[] = {
+    SCREEN_CLEAR,         SCREEN_MSG_ICON, SCREEN_GLYPH_CHECK,
+    SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN};
+
+// screen for displaying deny icon
+static const bagl_element_t bagl_ui_deny_screen[] = {
+    SCREEN_CLEAR,         SCREEN_MSG_ICON, SCREEN_GLYPH_CROSS,
+    SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN};
 
 // screen for displaying up icon
 static const bagl_element_t bagl_ui_up_screen[] = {

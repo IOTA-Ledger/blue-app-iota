@@ -54,10 +54,12 @@ typedef enum {
 #define GLYPH_BACK_FLAG 1 << GLYPH_BACK | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
 #define GLYPH_DASH_FLAG 1 << GLYPH_DASH | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
 #define GLYPH_LOAD_FLAG 1 << GLYPH_LOAD
+#define GLYPH_APPROVE_FLAG 1 << GLYPH_APPROVE
+#define GLYPH_DENY_FLAG 1 << GLYPH_DENY
 #define GLYPH_UP_FLAG 1 << GLYPH_UP
 #define GLYPH_DOWN_FLAG 1 << GLYPH_DOWN
 #define GLYPH_CONFIRM_FLAG 1 << GLYPH_CONFIRM
-#define GLYPH_NONE_FLAG_OFF 0x7F
+#define GLYPH_NONE_FLAG_OFF 0x1FF
 
 // GLYPH TYPES
 typedef enum {
@@ -65,6 +67,8 @@ typedef enum {
     GLYPH_BACK,
     GLYPH_DASH,
     GLYPH_LOAD,
+    GLYPH_APPROVE,
+    GLYPH_DENY,
     GLYPH_UP,
     GLYPH_DOWN,
     GLYPH_CONFIRM,
@@ -127,7 +131,7 @@ typedef struct UI_STATE_CTX_NANOS {
     uint8_t backup_menu_idx;
 
     // flag for which glyphs are shown
-    unsigned char glyphs;
+    unsigned int glyphs;
 
 } UI_STATE_CTX_NANOS;
 

@@ -27,6 +27,9 @@ BUTTON_FUNCTION(menu)
 BUTTON_FUNCTION(iota)
 BUTTON_FUNCTION(back)
 BUTTON_FUNCTION(dash)
+BUTTON_FUNCTION(load)
+BUTTON_FUNCTION(approve)
+BUTTON_FUNCTION(deny)
 BUTTON_FUNCTION(up)
 BUTTON_FUNCTION(dn)
 BUTTON_FUNCTION(conf)
@@ -53,13 +56,21 @@ static void nanos_render()
     case GLYPH_DASH_FLAG:
         UX_DISPLAY(bagl_ui_dash_screen, NULL);
         break;
+    case GLYPH_LOAD_FLAG:
+        UX_DISPLAY(bagl_ui_load_screen, NULL);
+        break;
+    case GLYPH_APPROVE_FLAG:
+        UX_DISPLAY(bagl_ui_approve_screen, NULL);
+        break;
+    case GLYPH_DENY_FLAG:
+        UX_DISPLAY(bagl_ui_deny_screen, NULL);
+        break;
     case GLYPH_UP_FLAG:
         UX_DISPLAY(bagl_ui_up_screen, NULL);
         break;
     case GLYPH_DOWN_FLAG:
         UX_DISPLAY(bagl_ui_dn_screen, NULL);
         break;
-    //case GLYPH_CONFIRM_FLAG | GLYPH_NONE_FLAG:
     case GLYPH_CONFIRM_FLAG:
         UX_DISPLAY(bagl_ui_conf_screen, NULL);
         break;

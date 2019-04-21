@@ -63,7 +63,16 @@
 // -- Menu screen middle message
 #define SCREEN_MSG_MID                                                         \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 38, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
+        {BAGL_LABELINE,     0x01, 0, 36, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
+         DEFAULT_FONT_BOLD, 0},                                                \
+            ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
+    }
+
+// TODO - MULTILINE MSG ICON/TEXT for LOADING
+// -- Message under an icon
+#define SCREEN_MSG_ICON                                                        \
+    {                                                                          \
+        {BAGL_LABELINE,     0x01, 0, 46, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
          DEFAULT_FONT_BOLD, 0},                                                \
             ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -79,14 +88,15 @@
 // -- Underline for "IOTA"
 #define SCREEN_UNDERLINE                                                       \
     {                                                                          \
-        {BAGL_RECTANGLE, 0x00,     48,       44, 33, 1, 0, 0,                  \
+        {BAGL_RECTANGLE, 0x00,     48,       48, 33, 1, 0, 0,                  \
          BAGL_FILL,      0xFFFFFF, 0x000000, 0,  0},                           \
             NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
+// TODO REMOVE
 // -- Confirm bars along top
 #define SCREEN_GLYPH_CONFIRM                                                   \
-    {{BAGL_RECTANGLE, 0x00, 13, 6, 8, 1, 0, 0, BAGL_FILL, 0xFFFFFF, 0x000000,   \
+    {{BAGL_RECTANGLE, 0x00, 13, 6, 8, 1, 0, 0, BAGL_FILL, 0x000000, 0x000000,  \
       0, 0},                                                                   \
      NULL,                                                                     \
      0,                                                                        \
@@ -98,7 +108,7 @@
                                                                                \
     {                                                                          \
         {BAGL_RECTANGLE, 0x00,     107,      6, 8, 1, 0, 0,                    \
-         BAGL_FILL,      0xFFFFFF, 0x000000, 0, 0},                            \
+         BAGL_FILL,      0x000000, 0x000000, 0, 0},                            \
             NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
@@ -119,29 +129,43 @@
 // -- Loading icon on left
 #define SCREEN_GLYPH_LOAD                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 9, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
+        {BAGL_ICON, 0x00, 57, 16, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
             (const char *)&C_x_icon_load, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_DASH                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 24, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+        {BAGL_ICON, 0x00, 57, 16, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
             (const char *)&C_x_icon_dash, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 18, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+        {BAGL_ICON, 0x00, 57, 16, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
             (const char *)&C_x_icon_iota, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 24, 27, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+        {BAGL_ICON, 0x00, 57, 16, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
             (const char *)&C_x_icon_back, 0, 0, 0, NULL, NULL, NULL            \
+    }
+
+// -- Dashboard icon on left
+#define SCREEN_GLYPH_CHECK                                                     \
+    {                                                                          \
+        {BAGL_ICON, 0x00, 57, 16, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_check, 0, 0, 0, NULL, NULL, NULL           \
+    }
+
+// -- Dashboard icon on left
+#define SCREEN_GLYPH_CROSS                                                     \
+    {                                                                          \
+        {BAGL_ICON, 0x00, 57, 16, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_cross, 0, 0, 0, NULL, NULL, NULL           \
     }
 
 // -- Define all screen glyphs
