@@ -1,17 +1,11 @@
 #include <string.h>
 #include "api.h"
 #include "ui.h"
-#include "shared_display.h"
-#include "shared_text.h"
-#include "shared_misc.h"
-
-#if defined(TARGET_NANOS)
-#include "s_core.h"
-#include "s_types.h"
-#elif defined(TARGET_NANOX)
-#include "x_core.h"
-#include "x_types.h"
-#endif
+#include "nano_display.h"
+#include "nano_text.h"
+#include "nano_misc.h"
+#include "nano_core.h"
+#include "nano_types.h"
 
 void display_main_menu()
 {

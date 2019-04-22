@@ -13,7 +13,8 @@
 static uint16_t timer;
 
 void ui_force_draw()
-{ /* TODO -- re-enable ui_force_draw
+{
+#ifdef TARGET_NANOS
      bool ux_done = false;
      while (!ux_done) {
          io_seproxyhal_general_status();
@@ -40,7 +41,8 @@ void ui_force_draw()
      // now everything is in the buffer, the next general status renders it
      io_seproxyhal_general_status();
      io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
-                            sizeof(G_io_seproxyhal_spi_buffer), 0);*/
+                            sizeof(G_io_seproxyhal_spi_buffer), 0);
+#endif
 }
 
 void ui_timeout_tick()

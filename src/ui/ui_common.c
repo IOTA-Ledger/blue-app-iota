@@ -5,11 +5,8 @@
 #if defined TARGET_BLUE
 #include "blue/blue_types.h"
 #define MENU_IDX_BREAK blue_ui_state.menu_idx
-#elif defined TARGET_NANOX
-#include "nano/s_types.h"
-#define MENU_IDX_BREAK ui_state.menu_idx / 2
 #else
-#include "nano/s_types.h"
+#include "nano/nano_types.h"
 #define MENU_IDX_BREAK ui_state.menu_idx / 2
 #endif // TARGET_BLUE
 

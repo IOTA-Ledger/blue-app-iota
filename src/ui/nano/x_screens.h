@@ -1,8 +1,8 @@
 #ifndef X_SCREENS_H
 #define X_SCREENS_H
 
+#include "nano_core.h"
 #include "x_elements.h"
-#include "x_core.h"
 #include "glyphs.h"
 
 // screen for title on top, info on bottom

@@ -1,8 +1,8 @@
 #ifndef S_SCREENS_H
 #define S_SCREENS_H
 
+#include "nano_core.h"
 #include "s_elements.h"
-#include "s_core.h"
 #include "glyphs.h"
 
 // screen for title on top, info on bottom

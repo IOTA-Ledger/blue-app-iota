@@ -4,14 +4,9 @@
 #include "iota/addresses.h"
 #include "ui.h"
 #include "ui_common.h"
-#include "shared_buttons.h"
-#include "shared_misc.h"
-
-#if defined(TARGET_NANOS)
-#include "s_types.h"
-#elif defined(TARGET_NANOX)
-#include "x_types.h"
-#endif
+#include "nano_buttons.h"
+#include "nano_misc.h"
+#include "nano_types.h"
 
 
 int8_t button_main_menu(uint8_t button_mask)
@@ -44,7 +39,7 @@ int8_t button_about(uint8_t button_mask)
 
     if (button_mask == BUTTON_B) {
         switch (ui_state.menu_idx) {
-
+#ifdef TARGET_NANOS
         case MENU_ABOUT_VERSION:
             state_go(STATE_VERSION, 0);
             return -1;
@@ -52,7 +47,7 @@ int8_t button_about(uint8_t button_mask)
         case MENU_ABOUT_MORE_INFO:
             state_go(STATE_MORE_INFO, 0);
             return -1;
-
+#endif
         case MENU_ABOUT_BACK:
             state_go(STATE_MAIN_MENU, MENU_MAIN_ABOUT);
             return -1;

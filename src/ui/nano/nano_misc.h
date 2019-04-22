@@ -1,14 +1,9 @@
-#ifndef NANOS_MISC_H
-#define NANOS_MISC_H
+#ifndef NANO_MISC_H
+#define NANO_MISC_H
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#if defined(TARGET_NANOS)
-#include "s_types.h"
-#elif defined(TARGET_NANOX)
-#include "x_types.h"
-#endif
+#include "nano_types.h"
 
 void state_go(uint8_t state, uint8_t idx);
 void backup_state(void);
@@ -33,4 +28,4 @@ void display_advanced_tx_address(void);
 
 uint8_t get_tx_arr_sz(void);
 
-#endif // NANOS_MISC_H
+#endif // NANO_MISC_H

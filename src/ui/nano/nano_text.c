@@ -1,12 +1,7 @@
 #include <string.h>
 #include "iota/addresses.h"
-#include "shared_text.h"
-
-#if defined(TARGET_NANOS)
-#include "s_types.h"
-#elif defined(TARGET_NANOX)
-#include "x_types.h"
-#endif
+#include "nano_text.h"
+#include "nano_types.h"
 
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
 void get_main_menu(char *msg)

@@ -1,8 +1,6 @@
 #ifndef S_ELEMENTS_H
 #define S_ELEMENTS_H
 
-#ifdef TARGET_NANOS
-
 #define DEFAULT_FONT                                                           \
     BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER
 
@@ -202,11 +200,9 @@
     static unsigned int bagl_ui_##name##_screen_button(                        \
         unsigned int button_mask, unsigned int button_mask_counter)            \
     {                                                                          \
-        nanos_transition_state(button_mask);                                   \
+        nano_transition_state(button_mask);                                   \
                                                                                \
         return 0;                                                              \
     }
-
-#endif // TARGET_NANOS
 
 #endif // S_ELEMENTS_H

@@ -3,13 +3,8 @@
 #include "api.h"
 #include "ui.h"
 #include "ui_common.h"
-#include "shared_misc.h"
-
-#if defined(TARGET_NANOS)
-#include "s_core.h"
-#elif defined(TARGET_NANOX)
-#include "x_core.h"
-#endif
+#include "nano_misc.h"
+#include "nano_core.h"
 
 // go to state with menu index
 void state_go(uint8_t state, uint8_t idx)

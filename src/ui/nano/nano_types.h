@@ -1,5 +1,5 @@
-#ifndef X_TYPES_H
-#define X_TYPES_H
+#ifndef NANO_TYPES_H
+#define NANO_TYPES_H
 
 #include <stdint.h>
 #include "iota/bundle.h"
@@ -18,6 +18,50 @@
 // Different positions a text can have
 typedef enum { TOP_H, TOP, MID, BOT, BOT_H, POS_X } UI_TEXT_POS;
 
+#ifdef TARGET_NANOS
+
+#define UI_SCREENS_NANO UI_SCREENS_NANOS
+
+// UI SCREENS
+typedef enum {
+    SCREEN_TITLE,
+    SCREEN_TITLE_BOLD,
+    SCREEN_MENU,
+    SCREEN_IOTA,
+    SCREEN_BACK
+} UI_SCREENS_NANOS;
+
+// UI STATES
+typedef enum {
+    STATE_MAIN_MENU,
+    STATE_IGNORE,
+    STATE_ABOUT,
+    STATE_VERSION,
+    STATE_MORE_INFO,
+    STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
+    STATE_DISP_ADDR,     // Host displays pubkey on ledger
+    STATE_TX_ADDR,       // Display full address in TX
+    STATE_PROMPT_TX,
+    STATE_BIP_PATH,
+    STATE_EXIT = 255
+} UI_STATES_NANOS;
+
+// GLYPH TYPES
+typedef enum {
+    GLYPH_CONFIRM,
+    GLYPH_UP,
+    GLYPH_DOWN,
+    GLYPH_DASH,
+    GLYPH_LOAD,
+    GLYPH_NONE, // glyphs after none require special screens
+    GLYPH_IOTA,
+    GLYPH_BACK
+} UI_GLYPH_TYPES_NANOS;
+
+#else // TARGET_NANOS/X
+
+#define UI_SCREENS_NANO UI_SCREENS_NANOX
+
 // UI SCREENS
 typedef enum {
     SCREEN_TITLE,
@@ -34,15 +78,13 @@ typedef enum {
     SCREEN_UPCONF,
     SCREEN_DNCONF,
     SCREEN_UPDNCONF
-} UI_SCREENS_NANO;
+} UI_SCREENS_NANOX;
 
 // UI STATES
 typedef enum {
     STATE_MAIN_MENU,
     STATE_IGNORE,
     STATE_ABOUT,
-    STATE_VERSION,
-    STATE_MORE_INFO,
     STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
     STATE_DISP_ADDR,     // Host displays pubkey on ledger
     STATE_TX_ADDR,       // Display full address in TX
@@ -84,6 +126,8 @@ typedef enum {
     GLYPH_NONE
 } UI_GLYPH_TYPES_NANOX;
 
+#endif // TARGET_NANOS/X
+
 // Size of Menu
 #define MENU_ADDR_LEN 8
 #define MENU_MORE_INFO_LEN 3
@@ -109,16 +153,25 @@ typedef enum {
     MENU_ABOUT_LEN
 } MENU_ABOUT_ENTRIES;
 
-typedef struct UI_TEXT_CTX_NANOX {
+typedef struct UI_TEXT_CTX_NANO {
 
     char top_str[TEXT_LEN];
     char mid_str[TEXT_LEN];
     char bot_str[TEXT_LEN];
+#ifdef TARGET_NANOX
     char x_str[TEXT_LEN];
+#endif
 
-} UI_TEXT_CTX_NANOX;
+} UI_TEXT_CTX_NANO;
 
-typedef struct UI_STATE_CTX_NANOX {
+typedef struct UI_GLYPH_CTX_NANO {
+    
+    // flags for turning on/off certain glyphs
+    char glyph[TOTAL_GLYPHS + 1];
+    
+} UI_GLYPH_CTX_NANO;
+
+typedef struct UI_STATE_CTX_NANO {
 
     // tx information
     int64_t val;
@@ -132,12 +185,18 @@ typedef struct UI_STATE_CTX_NANOX {
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
+#ifdef TARGET_NANOX
     // flag for which glyphs are shown
     unsigned int glyphs;
+#endif
 
-} UI_STATE_CTX_NANOX;
+} UI_STATE_CTX_NANO;
 
-extern UI_TEXT_CTX_NANOX ui_text;
-extern UI_STATE_CTX_NANOX ui_state;
+extern UI_TEXT_CTX_NANO ui_text;
+extern UI_STATE_CTX_NANO ui_state;
 
-#endif // X_TYPES_H
+#ifdef TARGET_NANOS
+extern UI_GLYPH_CTX_NANO ui_glyphs;
+#endif
+
+#endif // NANO_TYPES_H
