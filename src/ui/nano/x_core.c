@@ -11,11 +11,8 @@
 #include "x_elements.h"
 #include "x_core.h"
 
-UI_SCREENS_NANOS current_screen;
-
-UI_TEXT_CTX_NANOS ui_text;
-UI_GLYPH_CTX_NANOS ui_glyphs;
-UI_STATE_CTX_NANOS ui_state;
+UI_TEXT_CTX_NANOX ui_text;
+UI_STATE_CTX_NANOX ui_state;
 
 static void nanos_transition_state(unsigned int button_mask);
 static void nanos_build_display();
@@ -38,11 +35,6 @@ BUTTON_FUNCTION(upconf)
 BUTTON_FUNCTION(dnconf)
 BUTTON_FUNCTION(updnconf)
 
-void nanos_set_screen(UI_SCREENS_NANOS s)
-{
-    current_screen = s;
-}
-
 static void nanos_render()
 {
     // Ignore the GLYPH_NONE flag
@@ -59,10 +51,10 @@ static void nanos_render()
     case GLYPH_LOAD_FLAG:
         UX_DISPLAY(bagl_ui_load_screen, NULL);
         break;
-    case GLYPH_APPROVE_FLAG:
+    case GLYPH_CHECK_FLAG:
         UX_DISPLAY(bagl_ui_approve_screen, NULL);
         break;
-    case GLYPH_DENY_FLAG:
+    case GLYPH_CROSS_FLAG:
         UX_DISPLAY(bagl_ui_deny_screen, NULL);
         break;
     case GLYPH_UP_FLAG:
@@ -96,7 +88,6 @@ static void nanos_render()
 static void nanos_ctx_initialize()
 {
     MEMCLEAR(ui_text);
-    MEMCLEAR(ui_glyphs);
     MEMCLEAR(ui_state);
 }
 
@@ -104,8 +95,6 @@ void ui_init()
 {
     nanos_ctx_initialize();
     ui_timeout_stop();
-
-    ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
 
     ui_display_main_menu();
 }

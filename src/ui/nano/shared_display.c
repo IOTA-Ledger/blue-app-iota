@@ -70,11 +70,13 @@ void display_version()
     nanos_set_screen(SCREEN_MENU);
 
     clear_display();
-    write_display(APPVERSION, MID);
 
 #ifdef TARGET_NANOS
+    write_display(APPVERSION, MID);
     display_glyphs_confirm(GLYPH_BACK, GLYPH_NONE);
 #else
+    write_display("Version", TOP);
+    write_display(APPVERSION, BOT);
     display_glyphs_confirm(GLYPH_NONE, GLYPH_NONE);
 #endif
 }
@@ -212,7 +214,7 @@ void display_prompt_tx()
     if (ui_state.menu_idx == MENU_TX_APPROVE) {
         write_display("Approve", MID);
 #ifdef TARGET_NANOX
-        glyph_on(GLYPH_APPROVE);
+        glyph_on(GLYPH_CHECK);
 #else
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 #endif
@@ -221,7 +223,7 @@ void display_prompt_tx()
     else if (ui_state.menu_idx == MENU_TX_DENY) {
         write_display("Deny", MID);
 #ifdef TARGET_NANOX
-        glyph_on(GLYPH_DENY);
+        glyph_on(GLYPH_CROSS);
 #else
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 #endif

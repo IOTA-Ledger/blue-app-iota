@@ -14,8 +14,9 @@
 
 #define BUTTON_BAD 255
 
+// TODO rename something better?
 // Different positions a text can have
-typedef enum { TOP_H, TOP, MID, BOT, BOT_H } UI_TEXT_POS;
+typedef enum { TOP_H, TOP, MID, BOT, BOT_H, POS_X } UI_TEXT_POS;
 
 // UI SCREENS
 typedef enum {
@@ -33,7 +34,7 @@ typedef enum {
     SCREEN_UPCONF,
     SCREEN_DNCONF,
     SCREEN_UPDNCONF
-} UI_SCREENS_NANOS;
+} UI_SCREENS_NANOX;
 
 // UI STATES
 typedef enum {
@@ -48,18 +49,23 @@ typedef enum {
     STATE_PROMPT_TX,
     STATE_BIP_PATH,
     STATE_EXIT = 255
-} UI_STATES_NANOS;
+} UI_STATES_NANOX;
 
 #define GLYPH_IOTA_FLAG 1 << GLYPH_IOTA | GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG
 #define GLYPH_BACK_FLAG 1 << GLYPH_BACK | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
 #define GLYPH_DASH_FLAG 1 << GLYPH_DASH | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
 #define GLYPH_LOAD_FLAG 1 << GLYPH_LOAD
-#define GLYPH_APPROVE_FLAG 1 << GLYPH_APPROVE
-#define GLYPH_DENY_FLAG 1 << GLYPH_DENY
+#define GLYPH_CHECK_FLAG 1 << GLYPH_CHECK
+#define GLYPH_CROSS_FLAG 1 << GLYPH_CROSS
 #define GLYPH_UP_FLAG 1 << GLYPH_UP
 #define GLYPH_DOWN_FLAG 1 << GLYPH_DOWN
 #define GLYPH_CONFIRM_FLAG 1 << GLYPH_CONFIRM
 #define GLYPH_NONE_FLAG_OFF 0x1FF
+
+// cover warnings from other files that don't pertain to NANOX
+// TODO leave/fix?
+#define UI_GLYPH_TYPES_NANOS UI_GLYPH_TYPES_NANOX
+#define nanos_set_screen(x)
 
 // GLYPH TYPES
 typedef enum {
@@ -67,13 +73,13 @@ typedef enum {
     GLYPH_BACK,
     GLYPH_DASH,
     GLYPH_LOAD,
-    GLYPH_APPROVE,
-    GLYPH_DENY,
+    GLYPH_CHECK,
+    GLYPH_CROSS,
     GLYPH_UP,
     GLYPH_DOWN,
     GLYPH_CONFIRM,
     GLYPH_NONE
-} UI_GLYPH_TYPES_NANOS;
+} UI_GLYPH_TYPES_NANOX;
 
 // Size of Menu
 #define MENU_ADDR_LEN 8
@@ -100,23 +106,16 @@ typedef enum {
     MENU_ABOUT_LEN
 } MENU_ABOUT_ENTRIES;
 
-
-typedef struct UI_TEXT_CTX_NANOS {
+typedef struct UI_TEXT_CTX_NANOX {
 
     char top_str[TEXT_LEN];
     char mid_str[TEXT_LEN];
     char bot_str[TEXT_LEN];
+    char x_str[TEXT_LEN];
 
-} UI_TEXT_CTX_NANOS;
+} UI_TEXT_CTX_NANOX;
 
-typedef struct UI_GLYPH_CTX_NANOS {
-
-    // flags for turning on/off certain glyphs
-    char glyph[TOTAL_GLYPHS + 1];
-
-} UI_GLYPH_CTX_NANOS;
-
-typedef struct UI_STATE_CTX_NANOS {
+typedef struct UI_STATE_CTX_NANOX {
 
     // tx information
     int64_t val;
@@ -133,10 +132,9 @@ typedef struct UI_STATE_CTX_NANOS {
     // flag for which glyphs are shown
     unsigned int glyphs;
 
-} UI_STATE_CTX_NANOS;
+} UI_STATE_CTX_NANOX;
 
-extern UI_TEXT_CTX_NANOS ui_text;
-extern UI_GLYPH_CTX_NANOS ui_glyphs;
-extern UI_STATE_CTX_NANOS ui_state;
+extern UI_TEXT_CTX_NANOX ui_text;
+extern UI_STATE_CTX_NANOX ui_state;
 
 #endif // X_TYPES_H

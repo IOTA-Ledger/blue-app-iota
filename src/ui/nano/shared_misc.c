@@ -53,6 +53,10 @@ static char *get_str_buffer(UI_TEXT_POS pos)
         return ui_text.bot_str;
     case MID:
         return ui_text.mid_str;
+#ifdef TARGET_NANOX
+    case POS_X:
+        return ui_text.x_str;
+#endif
     default:
         THROW(INVALID_PARAMETER);
     }
@@ -107,12 +111,14 @@ static void clear_text()
     write_display(NULL, BOT);
 }
 
+#ifdef TARGET_NANOS
 static void glyph_off(UI_GLYPH_TYPES_NANOS g)
 {
     if (g < TOTAL_GLYPHS) {
         ui_glyphs.glyph[g] = '.';
     }
 }
+#endif
 
 static void clear_glyphs()
 {
@@ -160,6 +166,7 @@ void write_text_array(const char *array, uint8_t len)
     clear_display();
     clear_glyphs();
 
+#ifdef TARGET_NANOS
     if (ui_state.menu_idx > 0) {
         write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
         glyph_on(GLYPH_UP);
@@ -171,6 +178,23 @@ void write_text_array(const char *array, uint8_t len)
         write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
         glyph_on(GLYPH_DOWN);
     }
+#else
+    if (ui_state.menu_idx > 0) {
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
+        glyph_on(GLYPH_UP);
+    }
+
+    write_display(array + (TEXT_LEN * ui_state.menu_idx), MID);
+
+    if (ui_state.menu_idx < len - 2) {
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
+        glyph_on(GLYPH_DOWN);
+    }
+    if (ui_state.menu_idx < len - 1) {
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 2)), POS_X);
+        glyph_on(GLYPH_DOWN);
+    }
+#endif
 }
 
 /* --------- FUNCTIONS FOR DISPLAYING BALANCE ----------- */
