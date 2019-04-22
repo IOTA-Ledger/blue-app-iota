@@ -165,10 +165,10 @@ typedef struct UI_TEXT_CTX_NANO {
 } UI_TEXT_CTX_NANO;
 
 typedef struct UI_GLYPH_CTX_NANO {
-    
+
     // flags for turning on/off certain glyphs
     char glyph[TOTAL_GLYPHS + 1];
-    
+
 } UI_GLYPH_CTX_NANO;
 
 typedef struct UI_STATE_CTX_NANO {
@@ -188,6 +188,8 @@ typedef struct UI_STATE_CTX_NANO {
 #ifdef TARGET_NANOX
     // flag for which glyphs are shown
     unsigned int glyphs;
+
+    char icon[GLYPH_NONE][20];
 #endif
 
 } UI_STATE_CTX_NANO;

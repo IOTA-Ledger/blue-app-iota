@@ -1,9 +1,11 @@
 #include "iota/addresses.h"
+#include "glyphs.h"
 #include "ui.h"
 #include "nano_misc.h"
 #include "nano_display.h"
 #include "nano_buttons.h"
 #include "nano_types.h"
+
 
 static void nano_transition_state(unsigned int button_mask);
 static void nano_build_display();
@@ -29,23 +31,23 @@ BUTTON_FUNCTION(back)
 static void nano_render()
 {
     switch (current_screen) {
-        case SCREEN_TITLE:
-            UX_DISPLAY(bagl_ui_title_screen, NULL);
-            break;
-        case SCREEN_TITLE_BOLD:
-            UX_DISPLAY(bagl_ui_title_bold_screen, NULL);
-            break;
-        case SCREEN_MENU:
-            UX_DISPLAY(bagl_ui_menu_screen, NULL);
-            break;
-        case SCREEN_IOTA:
-            UX_DISPLAY(bagl_ui_iota_screen, NULL);
-            break;
-        case SCREEN_BACK:
-            UX_DISPLAY(bagl_ui_back_screen, NULL);
-            break;
-        default:
-            THROW(INVALID_PARAMETER);
+    case SCREEN_TITLE:
+        UX_DISPLAY(bagl_ui_title_screen, NULL);
+        break;
+    case SCREEN_TITLE_BOLD:
+        UX_DISPLAY(bagl_ui_title_bold_screen, NULL);
+        break;
+    case SCREEN_MENU:
+        UX_DISPLAY(bagl_ui_menu_screen, NULL);
+        break;
+    case SCREEN_IOTA:
+        UX_DISPLAY(bagl_ui_iota_screen, NULL);
+        break;
+    case SCREEN_BACK:
+        UX_DISPLAY(bagl_ui_back_screen, NULL);
+        break;
+    default:
+        THROW(INVALID_PARAMETER);
     }
 }
 
@@ -80,7 +82,7 @@ static void nano_render()
         UX_DISPLAY(bagl_ui_iota_screen, NULL);
         return;
     }
-    
+
     if (ui_state.state == STATE_ABOUT) {
         if (ui_state.menu_idx == 0) {
             UX_DISPLAY(bagl_ui_title_screen, NULL);
@@ -91,72 +93,72 @@ static void nano_render()
             return;
         }
     }
-    
+
     if (ui_state.state == STATE_DISP_ADDR || ui_state.state == STATE_TX_ADDR) {
         UX_DISPLAY(bagl_ui_addr_screen, NULL);
         return;
     }
-    
+
     if (ui_state.state == STATE_BIP_PATH) {
         UX_DISPLAY(bagl_ui_bip_screen, NULL);
         return;
     }
-    
+
     if (ui_state.state == STATE_PROMPT_TX &&
         ((ui_state.glyphs & GLYPH_NONE_FLAG_OFF) != GLYPH_CHECK_FLAG) &&
         ((ui_state.glyphs & GLYPH_NONE_FLAG_OFF) != GLYPH_CROSS_FLAG)) {
         UX_DISPLAY(bagl_ui_title_screen, NULL);
         return;
     }
-    
+
     // Ignore the GLYPH_NONE flag
     switch (ui_state.glyphs & GLYPH_NONE_FLAG_OFF) {
-        case GLYPH_IOTA_FLAG:
-            UX_DISPLAY(bagl_ui_iota_screen, NULL);
-            break;
-        case GLYPH_BACK_FLAG:
-            UX_DISPLAY(bagl_ui_back_screen, NULL);
-            break;
-        case GLYPH_DASH_FLAG:
-            UX_DISPLAY(bagl_ui_dash_screen, NULL);
-            break;
-        case GLYPH_INFO_FLAG:
-            UX_DISPLAY(bagl_ui_info_screen, NULL);
-            break;
-        case GLYPH_LOAD_FLAG:
-            UX_DISPLAY(bagl_ui_load_screen, NULL);
-            break;
-        case GLYPH_CHECK_FLAG:
-            UX_DISPLAY(bagl_ui_approve_screen, NULL);
-            break;
-        case GLYPH_CROSS_FLAG:
-            UX_DISPLAY(bagl_ui_deny_screen, NULL);
-            break;
-        case GLYPH_UP_FLAG:
-            UX_DISPLAY(bagl_ui_up_screen, NULL);
-            break;
-        case GLYPH_DOWN_FLAG:
-            UX_DISPLAY(bagl_ui_dn_screen, NULL);
-            break;
-        case GLYPH_CONFIRM_FLAG:
-            UX_DISPLAY(bagl_ui_conf_screen, NULL);
-            break;
-        case GLYPH_UP_FLAG | GLYPH_DOWN_FLAG:
-            UX_DISPLAY(bagl_ui_updn_screen, NULL);
-            break;
-        case GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG:
-            UX_DISPLAY(bagl_ui_upconf_screen, NULL);
-            break;
-        case GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG:
-            UX_DISPLAY(bagl_ui_dnconf_screen, NULL);
-            break;
-        case GLYPH_UP_FLAG | GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG:
-            UX_DISPLAY(bagl_ui_updnconf_screen, NULL);
-            break;
-            
-        default:
-            UX_DISPLAY(bagl_ui_menu_screen, NULL);
-            // THROW(INVALID_PARAMETER);
+    case GLYPH_IOTA_FLAG:
+        UX_DISPLAY(bagl_ui_iota_screen, NULL);
+        break;
+    case GLYPH_BACK_FLAG:
+        UX_DISPLAY(bagl_ui_back_screen, NULL);
+        break;
+    case GLYPH_DASH_FLAG:
+        UX_DISPLAY(bagl_ui_dash_screen, NULL);
+        break;
+    case GLYPH_INFO_FLAG:
+        UX_DISPLAY(bagl_ui_info_screen, NULL);
+        break;
+    case GLYPH_LOAD_FLAG:
+        UX_DISPLAY(bagl_ui_load_screen, NULL);
+        break;
+    case GLYPH_CHECK_FLAG:
+        UX_DISPLAY(bagl_ui_approve_screen, NULL);
+        break;
+    case GLYPH_CROSS_FLAG:
+        UX_DISPLAY(bagl_ui_deny_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG:
+        UX_DISPLAY(bagl_ui_up_screen, NULL);
+        break;
+    case GLYPH_DOWN_FLAG:
+        UX_DISPLAY(bagl_ui_dn_screen, NULL);
+        break;
+    case GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_conf_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG | GLYPH_DOWN_FLAG:
+        UX_DISPLAY(bagl_ui_updn_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_upconf_screen, NULL);
+        break;
+    case GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_dnconf_screen, NULL);
+        break;
+    case GLYPH_UP_FLAG | GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG:
+        UX_DISPLAY(bagl_ui_updnconf_screen, NULL);
+        break;
+
+    default:
+        UX_DISPLAY(bagl_ui_menu_screen, NULL);
+        // THROW(INVALID_PARAMETER);
     }
 }
 
@@ -180,9 +182,20 @@ void ui_init()
 {
     nano_ctx_initialize();
     ui_timeout_stop();
-    
+
 #ifdef TARGET_NANOS
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
+#else // Initialize all of the glyphs into memory
+    memcpy(ui_state.icon[GLYPH_IOTA], &C_x_iota_main_logo, 20);
+    memcpy(ui_state.icon[GLYPH_LOAD], &C_x_icon_load, 20);
+    memcpy(ui_state.icon[GLYPH_DASH], &C_x_icon_dash, 20);
+    memcpy(ui_state.icon[GLYPH_BACK], &C_x_icon_back, 20);
+    memcpy(ui_state.icon[GLYPH_INFO], &C_x_icon_info, 20);
+    memcpy(ui_state.icon[GLYPH_CHECK], &C_x_icon_check, 20);
+    memcpy(ui_state.icon[GLYPH_CROSS], &C_x_icon_cross, 20);
+    memcpy(ui_state.icon[GLYPH_UP], &C_x_icon_up, 20);
+    memcpy(ui_state.icon[GLYPH_DOWN], &C_x_icon_down, 20);
+    memcpy(ui_state.icon[GLYPH_CONFIRM], &C_x_icon_less, 20);
 #endif
 
     ui_display_main_menu();
@@ -191,6 +204,7 @@ void ui_init()
 // Entry points for main to modify display
 void ui_display_main_menu()
 {
+    clear_display();
     state_go(STATE_MAIN_MENU, 0);
     backup_state();
 

@@ -1,5 +1,6 @@
 #include <string.h>
 #include "iota/addresses.h"
+#include "glyphs.h"
 #include "api.h"
 #include "ui.h"
 #include "ui_common.h"
@@ -96,6 +97,44 @@ void glyph_on(UI_GLYPH_TYPES_NANOS g)
         check_special_glyph(g);
 #else
     ui_state.glyphs |= 1 << g;
+    // To hide glyphs we only overwrite the first byte
+    // each glyph is already pre-initialized, so we only
+    // need to copy back in the first byte of each glyph
+    // to toggle it on
+    switch (g) {
+    case GLYPH_IOTA:
+        memcpy(ui_state.icon[GLYPH_IOTA], &C_x_iota_main_logo, 1);
+        break;
+    case GLYPH_LOAD:
+        memcpy(ui_state.icon[GLYPH_LOAD], &C_x_icon_load, 1);
+        break;
+    case GLYPH_DASH:
+        memcpy(ui_state.icon[GLYPH_DASH], &C_x_icon_dash, 1);
+        break;
+    case GLYPH_BACK:
+        memcpy(ui_state.icon[GLYPH_BACK], &C_x_icon_back, 1);
+        break;
+    case GLYPH_INFO:
+        memcpy(ui_state.icon[GLYPH_INFO], &C_x_icon_info, 1);
+        break;
+    case GLYPH_CHECK:
+        memcpy(ui_state.icon[GLYPH_CHECK], &C_x_icon_check, 1);
+        break;
+    case GLYPH_CROSS:
+        memcpy(ui_state.icon[GLYPH_CROSS], &C_x_icon_cross, 1);
+        break;
+    case GLYPH_UP:
+        memcpy(ui_state.icon[GLYPH_UP], &C_x_icon_up, 1);
+        break;
+    case GLYPH_DOWN:
+        memcpy(ui_state.icon[GLYPH_DOWN], &C_x_icon_down, 1);
+        break;
+    case GLYPH_CONFIRM:
+        memcpy(ui_state.icon[GLYPH_CONFIRM], &C_x_icon_less, 1);
+        break;
+    default:
+        return;
+    }
 #endif
 }
 
@@ -129,6 +168,18 @@ static void clear_glyphs()
     glyph_off(GLYPH_DASH);
 #else
     ui_state.glyphs = 0;
+
+    // Hide glyphs by just tweaking the first byte
+    ui_state.icon[GLYPH_IOTA][0] = 0;
+    ui_state.icon[GLYPH_LOAD][0] = 0;
+    ui_state.icon[GLYPH_DASH][0] = 0;
+    ui_state.icon[GLYPH_BACK][0] = 0;
+    ui_state.icon[GLYPH_INFO][0] = 0;
+    ui_state.icon[GLYPH_CHECK][0] = 0;
+    ui_state.icon[GLYPH_CROSS][0] = 0;
+    ui_state.icon[GLYPH_UP][0] = 0;
+    ui_state.icon[GLYPH_DOWN][0] = 0;
+    ui_state.icon[GLYPH_CONFIRM][0] = 0;
 #endif
 }
 
