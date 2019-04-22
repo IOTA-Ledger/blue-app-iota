@@ -42,6 +42,7 @@ void get_more_info_menu(char *msg)
     strcpy(msg + (i++ * TEXT_LEN), "for more info.");
 }
 
+// TODO make address more readable (split checksum off tail)
 void get_address_menu(char *msg)
 {
     // address is 81 characters long + 9 char checksum

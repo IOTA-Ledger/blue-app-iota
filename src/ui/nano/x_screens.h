@@ -9,13 +9,18 @@
 static const bagl_element_t bagl_ui_title_screen[] = {
     SCREEN_CLEAR, SCREEN_TITLE_TOP, SCREEN_TITLE_BOT, SCREEN_GLYPH_DOWN};
 
-// screen for title on top info on bottom BOLD
-static const bagl_element_t bagl_ui_3info_screen[] = {
-    SCREEN_CLEAR,    SCREEN_INFO_TOP, SCREEN_INFO_MID,
-    SCREEN_INFO_BOT, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN};
+// TODO remove unused screens
+// screen for 4 lines for address
+static const bagl_element_t bagl_ui_addr_screen[] = {
+    SCREEN_CLEAR,     SCREEN_ADDRESS_1, SCREEN_ADDRESS_2, SCREEN_ADDRESS_3,
+    SCREEN_ADDRESS_4, SCREEN_GLYPH_UP,  SCREEN_GLYPH_DOWN};
 
-// screen for info in the middle, and half text elements above and below (menu
-// effect)
+// screen for BIP Path title and bip path below
+static const bagl_element_t bagl_ui_bip_screen[] = {
+    SCREEN_CLEAR, SCREEN_BIP_TITLE, SCREEN_BIP_1,
+    SCREEN_BIP_2, SCREEN_GLYPH_UP,  SCREEN_GLYPH_DOWN};
+
+// TODO remove - this won't exist
 static const bagl_element_t bagl_ui_menu_screen[] = {
     SCREEN_CLEAR, SCREEN_BOLD_LINE, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN};
 
@@ -40,7 +45,8 @@ static const bagl_element_t bagl_ui_info_screen[] = {
 
 // screen for displaying load icon
 static const bagl_element_t bagl_ui_load_screen[] = {
-    SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_GLYPH_LOAD};
+    SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_MSG_ICON_MULTILINE_1,
+    SCREEN_MSG_ICON_MULTILINE_2, SCREEN_GLYPH_LOAD};
 
 // screen for displaying approve icon
 static const bagl_element_t bagl_ui_approve_screen[] = {

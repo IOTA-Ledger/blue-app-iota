@@ -121,8 +121,15 @@ void display_bip_path()
 
         clear_display();
 
+#ifdef TARGET_NANOX
+        write_display("BIP32 Path:", TOP);
+        // TODO FIX BIP PATH
+        write_display("2c'|107a'|0'", MID);
+        write_display("0'|1'", BOT);
+#else
         write_display("BIP32 Path:", MID);
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
+#endif
     }
     else {
         nano_set_screen(SCREEN_TITLE);
@@ -179,7 +186,22 @@ void display_addr()
     // write the actual menu
     char msg[MENU_ADDR_LEN * TEXT_LEN];
     get_address_menu(msg);
+#ifdef TARGET_NANOS
     write_text_array(msg, MENU_ADDR_LEN);
+#else
+    if (ui_state.menu_idx == 0) {
+        write_display(msg, TOP);
+        write_display(msg + 21, MID);
+        write_display(msg + 42, BOT);
+        write_display(msg + 63, POS_X);
+    }
+    else {
+        write_display(msg + 84, TOP);
+        write_display(msg + 105, MID);
+        write_display(msg + 126, BOT);
+        write_display(msg + 147, POS_X);
+    }
+#endif
 
     glyph_on(GLYPH_CONFIRM);
 

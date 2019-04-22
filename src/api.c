@@ -153,7 +153,7 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
                     addr_bytes);
 
     // TODO revisit and fix
-    if (!display) {
+    if (display) {
         ui_display_address(addr_bytes);
     }
     else {

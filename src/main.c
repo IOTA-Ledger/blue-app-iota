@@ -198,6 +198,11 @@ __attribute__((section(".boot"))) int main(void)
                 USB_power(false);
                 USB_power(true);
 
+#ifdef HAVE_BLE
+                BLE_power(false, NULL);
+                BLE_power(true, "Nano X");
+#endif // HAVE_BLE
+
                 IOTA_main();
             }
             CATCH(EXCEPTION_IO_RESET)

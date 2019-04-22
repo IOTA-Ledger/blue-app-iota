@@ -109,6 +109,9 @@ static void clear_text()
     write_display(NULL, TOP);
     write_display(NULL, MID);
     write_display(NULL, BOT);
+#ifdef TARGET_NANOX
+    write_display(NULL, POS_X);
+#endif
 }
 
 #ifdef TARGET_NANOS

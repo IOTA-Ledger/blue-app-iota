@@ -9,7 +9,7 @@
 #define DEFAULT_FONT_BOLD                                                      \
     BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER
 
-#define TITLE_FONT_BOLD                                                        \
+#define TITLE_FONT_LG                                                          \
     BAGL_FONT_OPEN_SANS_LIGHT_16px | BAGL_FONT_ALIGNMENT_CENTER
 
 // {type, userid, x, y, width, height, stroke, radius, fill,
@@ -31,25 +31,30 @@
     }
 
 // Basic Title on top, 1 line below - version
-#define SCREEN_TITLE_TOP SCREEN_MSG_Y(28, ui_text.top_str, TITLE_FONT_BOLD)
+#define SCREEN_TITLE_TOP SCREEN_MSG_Y(28, ui_text.top_str, TITLE_FONT_LG)
 #define SCREEN_TITLE_BOT SCREEN_MSG_Y(48, ui_text.bot_str, DEFAULT_FONT)
 
 // 3 info lines (no title) - more info
-#define SCREEN_INFO_TOP SCREEN_MSG_Y(22, ui_text.top_str, DEFAULT_FONT)
-#define SCREEN_INFO_MID SCREEN_MSG_Y(36, ui_text.mid_str, DEFAULT_FONT)
-#define SCREEN_INFO_BOT SCREEN_MSG_Y(50, ui_text.bot_str, DEFAULT_FONT)
+#define SCREEN_BIP_TITLE SCREEN_MSG_Y(22, ui_text.top_str, TITLE_FONT_LG)
+#define SCREEN_BIP_1 SCREEN_MSG_Y(36, ui_text.mid_str, DEFAULT_FONT)
+#define SCREEN_BIP_2 SCREEN_MSG_Y(50, ui_text.bot_str, DEFAULT_FONT)
 
 // 4 info lines (no title) - address
 #define SCREEN_ADDRESS_1 SCREEN_MSG_Y(14, ui_text.top_str, DEFAULT_FONT)
-#define SCREEN_ADDRESS_2 SCREEN_MSG_Y(28, ui_text.top_str, DEFAULT_FONT)
-#define SCREEN_ADDRESS_3 SCREEN_MSG_Y(42, ui_text.top_str, DEFAULT_FONT)
-#define SCREEN_ADDRESS_4 SCREEN_MSG_Y(56, ui_text.top_str, DEFAULT_FONT)
+#define SCREEN_ADDRESS_2 SCREEN_MSG_Y(28, ui_text.mid_str, DEFAULT_FONT)
+#define SCREEN_ADDRESS_3 SCREEN_MSG_Y(42, ui_text.bot_str, DEFAULT_FONT)
+#define SCREEN_ADDRESS_4 SCREEN_MSG_Y(56, ui_text.x_str, DEFAULT_FONT)
 
 // TODO - MULTILINE MSG ICON/TEXT for LOADING
 // Text under icon (home/back)
-#define SCREEN_MSG_ICON SCREEN_MSG_Y(46, ui_text.mid_str, TITLE_FONT_BOLD)
+#define SCREEN_MSG_ICON SCREEN_MSG_Y(46, ui_text.mid_str, TITLE_FONT_LG)
 
-#define SCREEN_BOLD_LINE SCREEN_MSG_Y(38, ui_text.mid_str, TITLE_FONT_BOLD)
+#define SCREEN_MSG_ICON_MULTILINE_1                                            \
+    SCREEN_MSG_Y(38, ui_text.top_str, TITLE_FONT_LG)
+#define SCREEN_MSG_ICON_MULTILINE_2                                            \
+    SCREEN_MSG_Y(56, ui_text.bot_str, TITLE_FONT_LG)
+
+#define SCREEN_BOLD_LINE SCREEN_MSG_Y(38, ui_text.mid_str, TITLE_FONT_LG)
 
 // -- Title screen top message
 #define SCREEN_MSG_TOP                                                         \
@@ -107,6 +112,7 @@
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
+// TODO remove
 // -- Underline for "IOTA"
 #define SCREEN_UNDERLINE                                                       \
     {                                                                          \
@@ -151,14 +157,14 @@
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 5, 16, 118, 46, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
+        {BAGL_ICON, 0x00, 5, 13, 118, 46, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
             (const char *)&C_x_iota_main_logo, 0, 0, 0, NULL, NULL, NULL       \
     }
 
 // -- Loading icon on left
 #define SCREEN_GLYPH_LOAD                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+        {BAGL_ICON, 0x00, 57, 6, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
             (const char *)&C_x_icon_load, 0, 0, 0, NULL, NULL, NULL            \
     }
 

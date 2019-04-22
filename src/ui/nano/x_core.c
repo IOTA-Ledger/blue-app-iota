@@ -21,7 +21,8 @@ static void nanos_build_display();
 
 // macros for button functions
 BUTTON_FUNCTION(title)
-BUTTON_FUNCTION(3info)
+BUTTON_FUNCTION(addr)
+BUTTON_FUNCTION(bip)
 BUTTON_FUNCTION(menu)
 BUTTON_FUNCTION(iota)
 BUTTON_FUNCTION(back)
@@ -45,11 +46,11 @@ void nano_set_screen(UI_SCREENS_NANO s)
 
 static void nanos_render()
 {
-    if(ui_state.state == STATE_MAIN_MENU && ui_state.menu_idx == 0) {
+    if (ui_state.state == STATE_MAIN_MENU && ui_state.menu_idx == 0) {
         UX_DISPLAY(bagl_ui_iota_screen, NULL);
         return;
     }
-    
+
     if (ui_state.state == STATE_ABOUT) {
         if (ui_state.menu_idx == 0) {
             UX_DISPLAY(bagl_ui_title_screen, NULL);
@@ -59,6 +60,23 @@ static void nanos_render()
             UX_DISPLAY(bagl_ui_title_screen, NULL);
             return;
         }
+    }
+
+    if (ui_state.state == STATE_DISP_ADDR || ui_state.state == STATE_TX_ADDR) {
+        UX_DISPLAY(bagl_ui_addr_screen, NULL);
+        return;
+    }
+
+    if (ui_state.state == STATE_BIP_PATH) {
+        UX_DISPLAY(bagl_ui_bip_screen, NULL);
+        return;
+    }
+
+    if (ui_state.state == STATE_PROMPT_TX &&
+        ((ui_state.glyphs & GLYPH_NONE_FLAG_OFF) != GLYPH_CHECK_FLAG) &&
+        ((ui_state.glyphs & GLYPH_NONE_FLAG_OFF) != GLYPH_CROSS_FLAG)) {
+        UX_DISPLAY(bagl_ui_title_screen, NULL);
+        return;
     }
 
     // Ignore the GLYPH_NONE flag
@@ -142,8 +160,8 @@ void ui_display_getting_addr()
     nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
-    write_display("    Generating", TOP);
-    write_display("     Address...", BOT);
+    write_display("Generating", TOP);
+    write_display("Address...", BOT);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
@@ -160,7 +178,7 @@ void ui_display_validating()
     nano_set_screen(SCREEN_MENU);
     clear_display();
 
-    write_display("    Validating...", MID);
+    write_display("Validating...", MID);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
@@ -177,8 +195,8 @@ void ui_display_recv()
     nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
-    write_display("    Receiving", TOP);
-    write_display("      Transaction...", BOT);
+    write_display("Receiving", TOP);
+    write_display("Transaction...", BOT);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
@@ -195,8 +213,8 @@ void ui_display_signing()
     nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
-    write_display("    Signing", TOP);
-    write_display("      Transaction...", BOT);
+    write_display("Signing", TOP);
+    write_display("Transaction...", BOT);
 
     display_glyphs(GLYPH_LOAD, GLYPH_NONE);
 
