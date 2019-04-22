@@ -11,7 +11,7 @@
 #include "s_screens.h"
 #include "s_elements.h"
 
-UI_SCREENS_NANOS current_screen;
+UI_SCREENS_NANO current_screen;
 
 UI_TEXT_CTX_NANOS ui_text;
 UI_GLYPH_CTX_NANOS ui_glyphs;
@@ -27,7 +27,7 @@ BUTTON_FUNCTION(menu)
 BUTTON_FUNCTION(iota)
 BUTTON_FUNCTION(back)
 
-void nanos_set_screen(UI_SCREENS_NANOS s)
+void nano_set_screen(UI_SCREENS_NANO s)
 {
     current_screen = s;
 }
@@ -84,7 +84,7 @@ void ui_display_main_menu()
 
 void ui_display_getting_addr()
 {
-    nanos_set_screen(SCREEN_TITLE_BOLD);
+    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
     write_display("    Generating", TOP);
@@ -102,7 +102,7 @@ void ui_display_getting_addr()
 
 void ui_display_validating()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
     clear_display();
 
     write_display("    Validating...", MID);
@@ -119,7 +119,7 @@ void ui_display_validating()
 
 void ui_display_recv()
 {
-    nanos_set_screen(SCREEN_TITLE_BOLD);
+    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
     write_display("    Receiving", TOP);
@@ -137,7 +137,7 @@ void ui_display_recv()
 
 void ui_display_signing()
 {
-    nanos_set_screen(SCREEN_TITLE_BOLD);
+    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
     write_display("    Signing", TOP);

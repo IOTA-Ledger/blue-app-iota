@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "s_types.h"
 
-void nanos_set_screen(UI_SCREENS_NANOS s);
+void nano_set_screen(UI_SCREENS_NANO s);
 void nanos_ui_init(void);
 void nanos_display_main_menu(void);
 void nanos_display_getting_addr(void);

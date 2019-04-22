@@ -24,7 +24,7 @@ typedef enum {
     SCREEN_MENU,
     SCREEN_IOTA,
     SCREEN_BACK
-} UI_SCREENS_NANOS;
+} UI_SCREENS_NANO;
 
 // UI STATES
 typedef enum {

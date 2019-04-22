@@ -15,7 +15,7 @@
 
 void display_main_menu()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_MAIN_LEN * TEXT_LEN];
@@ -35,6 +35,12 @@ void display_main_menu()
         write_display("IOTA", MID);
         break;
 
+#ifdef TARGET_NANOX
+    case MENU_MAIN_ABOUT:
+        display_glyphs(GLYPH_INFO, GLYPH_NONE);
+        break;
+#endif
+
     case MENU_MAIN_EXIT:
         display_glyphs_confirm(GLYPH_UP, GLYPH_DASH);
         break;
@@ -43,7 +49,7 @@ void display_main_menu()
 
 void display_about()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_ABOUT_LEN * TEXT_LEN];
@@ -52,22 +58,37 @@ void display_about()
 
     // special override display states
     switch (ui_state.menu_idx) {
-
+#ifdef TARGET_NANOS
     case MENU_ABOUT_MORE_INFO:
         // turn off BOT_H
         write_display(NULL, BOT_H);
         break;
-
+#endif
     case MENU_ABOUT_BACK:
         // turn off TOP_H
         write_display(NULL, TOP_H);
         display_glyphs_confirm(GLYPH_UP, GLYPH_BACK);
+        break;
+#ifdef TARGET_NANOX // TODO disable buttons for X
+    case MENU_ABOUT_VERSION:
+        write_display("Version", TOP);
+        write_display(APPVERSION, BOT);
+        display_glyphs_confirm(GLYPH_NONE, GLYPH_NONE);
+        // TODO - remove display_glyphs_confirm?
+        break;
+
+    case MENU_ABOUT_MORE_INFO:
+        write_display("More Info:", TOP);
+        write_display("iota.org/sec", BOT);
+        break;
+#endif
     }
 }
 
+// TODO remove on NANOX
 void display_version()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
 
     clear_display();
 
@@ -83,7 +104,7 @@ void display_version()
 
 void display_more_info()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_MORE_INFO_LEN * TEXT_LEN];
@@ -96,7 +117,7 @@ void display_more_info()
 void display_bip_path()
 {
     if (ui_state.menu_idx == 0) {
-        nanos_set_screen(SCREEN_MENU);
+        nano_set_screen(SCREEN_MENU);
 
         clear_display();
 
@@ -104,7 +125,7 @@ void display_bip_path()
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
     }
     else {
-        nanos_set_screen(SCREEN_TITLE);
+        nano_set_screen(SCREEN_TITLE);
 
         clear_display();
 
@@ -153,7 +174,7 @@ void display_bip_path()
 
 void display_addr()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
 
     // write the actual menu
     char msg[MENU_ADDR_LEN * TEXT_LEN];
@@ -179,7 +200,7 @@ void display_addr()
 
 void display_addr_chk()
 {
-    nanos_set_screen(SCREEN_TITLE);
+    nano_set_screen(SCREEN_TITLE);
 
     clear_display();
 
@@ -204,7 +225,7 @@ void display_tx_addr()
 void display_prompt_tx()
 {
     // for approve/deny
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
 
     clear_display();
 
@@ -231,7 +252,7 @@ void display_prompt_tx()
     }
 
     // if not approve/deny, it will be a title screen (top/bottom)
-    nanos_set_screen(SCREEN_TITLE);
+    nano_set_screen(SCREEN_TITLE);
 
     // even indices (not include approve/deny)
     // will be amounts, odd will be addr
@@ -243,7 +264,7 @@ void display_prompt_tx()
 
 void display_unknown_state()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
 
     clear_display();
     write_display("UI ERROR", MID);

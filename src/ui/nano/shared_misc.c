@@ -81,10 +81,10 @@ static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
 {
     switch (g) {
     case GLYPH_IOTA:
-        nanos_set_screen(SCREEN_IOTA);
+        nano_set_screen(SCREEN_IOTA);
         break;
     case GLYPH_BACK:
-        nanos_set_screen(SCREEN_BACK);
+        nano_set_screen(SCREEN_BACK);
         break;
     default:
         return;

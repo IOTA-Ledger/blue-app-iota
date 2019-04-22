@@ -7,17 +7,17 @@
 
 // screen for title on top, info on bottom
 static const bagl_element_t bagl_ui_title_screen[] = {
-    SCREEN_CLEAR, SCREEN_MSG_TOP, SCREEN_MSG_BOT, SCREEN_GLYPHS_ALL};
+    SCREEN_CLEAR, SCREEN_TITLE_TOP, SCREEN_TITLE_BOT, SCREEN_GLYPH_DOWN};
 
 // screen for title on top info on bottom BOLD
-static const bagl_element_t bagl_ui_title_bold_screen[] = {
-    SCREEN_CLEAR, SCREEN_MSG_TOP_BOLD, SCREEN_MSG_BOT_BOLD, SCREEN_GLYPHS_ALL};
+static const bagl_element_t bagl_ui_3info_screen[] = {
+    SCREEN_CLEAR,    SCREEN_INFO_TOP, SCREEN_INFO_MID,
+    SCREEN_INFO_BOT, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN};
 
 // screen for info in the middle, and half text elements above and below (menu
 // effect)
 static const bagl_element_t bagl_ui_menu_screen[] = {
-    SCREEN_CLEAR, SCREEN_MSG_TOP_HALF, SCREEN_MSG_MID, SCREEN_MSG_BOT_HALF,
-    SCREEN_GLYPHS_ALL};
+    SCREEN_CLEAR, SCREEN_BOLD_LINE, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN};
 
 // screen for displaying IOTA icon
 static const bagl_element_t bagl_ui_iota_screen[] = {
@@ -31,6 +31,11 @@ static const bagl_element_t bagl_ui_back_screen[] = {
 // screen for displaying dash icon
 static const bagl_element_t bagl_ui_dash_screen[] = {
     SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_GLYPH_DASH, SCREEN_GLYPH_CONFIRM,
+    SCREEN_GLYPH_UP};
+
+// screen for displaying info icon
+static const bagl_element_t bagl_ui_info_screen[] = {
+    SCREEN_CLEAR, SCREEN_MSG_ICON, SCREEN_GLYPH_INFO, SCREEN_GLYPH_CONFIRM,
     SCREEN_GLYPH_UP};
 
 // screen for displaying load icon

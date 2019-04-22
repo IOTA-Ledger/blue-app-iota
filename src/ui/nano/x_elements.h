@@ -49,6 +49,8 @@
 // Text under icon (home/back)
 #define SCREEN_MSG_ICON SCREEN_MSG_Y(46, ui_text.mid_str, TITLE_FONT_BOLD)
 
+#define SCREEN_BOLD_LINE SCREEN_MSG_Y(38, ui_text.mid_str, TITLE_FONT_BOLD)
+
 // -- Title screen top message
 #define SCREEN_MSG_TOP                                                         \
     {                                                                          \
@@ -172,6 +174,13 @@
     {                                                                          \
         {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
             (const char *)&C_x_icon_back, 0, 0, 0, NULL, NULL, NULL            \
+    }
+
+// -- Back icon on left
+#define SCREEN_GLYPH_INFO                                                      \
+    {                                                                          \
+        {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_info, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Dashboard icon on left

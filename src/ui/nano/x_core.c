@@ -14,16 +14,19 @@
 UI_TEXT_CTX_NANOX ui_text;
 UI_STATE_CTX_NANOX ui_state;
 
+UI_SCREENS_NANO current_screen;
+
 static void nanos_transition_state(unsigned int button_mask);
 static void nanos_build_display();
 
 // macros for button functions
 BUTTON_FUNCTION(title)
-BUTTON_FUNCTION(title_bold)
+BUTTON_FUNCTION(3info)
 BUTTON_FUNCTION(menu)
 BUTTON_FUNCTION(iota)
 BUTTON_FUNCTION(back)
 BUTTON_FUNCTION(dash)
+BUTTON_FUNCTION(info)
 BUTTON_FUNCTION(load)
 BUTTON_FUNCTION(approve)
 BUTTON_FUNCTION(deny)
@@ -35,8 +38,29 @@ BUTTON_FUNCTION(upconf)
 BUTTON_FUNCTION(dnconf)
 BUTTON_FUNCTION(updnconf)
 
+void nano_set_screen(UI_SCREENS_NANO s)
+{
+    current_screen = s;
+}
+
 static void nanos_render()
 {
+    if(ui_state.state == STATE_MAIN_MENU && ui_state.menu_idx == 0) {
+        UX_DISPLAY(bagl_ui_iota_screen, NULL);
+        return;
+    }
+    
+    if (ui_state.state == STATE_ABOUT) {
+        if (ui_state.menu_idx == 0) {
+            UX_DISPLAY(bagl_ui_title_screen, NULL);
+            return;
+        }
+        else if (ui_state.menu_idx == 1) {
+            UX_DISPLAY(bagl_ui_title_screen, NULL);
+            return;
+        }
+    }
+
     // Ignore the GLYPH_NONE flag
     switch (ui_state.glyphs & GLYPH_NONE_FLAG_OFF) {
     case GLYPH_IOTA_FLAG:
@@ -47,6 +71,9 @@ static void nanos_render()
         break;
     case GLYPH_DASH_FLAG:
         UX_DISPLAY(bagl_ui_dash_screen, NULL);
+        break;
+    case GLYPH_INFO_FLAG:
+        UX_DISPLAY(bagl_ui_info_screen, NULL);
         break;
     case GLYPH_LOAD_FLAG:
         UX_DISPLAY(bagl_ui_load_screen, NULL);
@@ -112,7 +139,7 @@ void ui_display_main_menu()
 
 void ui_display_getting_addr()
 {
-    nanos_set_screen(SCREEN_TITLE_BOLD);
+    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
     write_display("    Generating", TOP);
@@ -130,7 +157,7 @@ void ui_display_getting_addr()
 
 void ui_display_validating()
 {
-    nanos_set_screen(SCREEN_MENU);
+    nano_set_screen(SCREEN_MENU);
     clear_display();
 
     write_display("    Validating...", MID);
@@ -147,7 +174,7 @@ void ui_display_validating()
 
 void ui_display_recv()
 {
-    nanos_set_screen(SCREEN_TITLE_BOLD);
+    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
     write_display("    Receiving", TOP);
@@ -165,7 +192,7 @@ void ui_display_recv()
 
 void ui_display_signing()
 {
-    nanos_set_screen(SCREEN_TITLE_BOLD);
+    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
     write_display("    Signing", TOP);
