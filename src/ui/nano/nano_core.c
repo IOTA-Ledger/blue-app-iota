@@ -215,13 +215,14 @@ void ui_display_main_menu()
 
 void ui_display_getting_addr()
 {
-    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
 #ifdef TARGET_NANOS
+    nano_set_screen(SCREEN_TITLE_BOLD);
     write_display("    Generating", TOP);
     write_display("     Address...", BOT);
 #else
+    nano_set_screen(SCREEN_ICON_MULTI);
     write_display("Generating", TOP);
     write_display("Address...", BOT);
 #endif
@@ -238,10 +239,10 @@ void ui_display_getting_addr()
 
 void ui_display_validating()
 {
-    nano_set_screen(SCREEN_MENU);
     clear_display();
 
 #ifdef TARGET_NANOS
+    nano_set_screen(SCREEN_MENU);
     write_display("    Validating...", MID);
 #else
     write_display("Validating...", MID);
@@ -259,13 +260,14 @@ void ui_display_validating()
 
 void ui_display_recv()
 {
-    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
 #ifdef TARGET_NANOS
+    nano_set_screen(SCREEN_TITLE_BOLD);
     write_display("    Receiving", TOP);
     write_display("      Transaction...", BOT);
 #else
+    nano_set_screen(SCREEN_ICON_MULTI);
     write_display("Receiving", TOP);
     write_display("Transaction...", BOT);
 #endif
@@ -282,13 +284,14 @@ void ui_display_recv()
 
 void ui_display_signing()
 {
-    nano_set_screen(SCREEN_TITLE_BOLD);
     clear_display();
 
 #ifdef TARGET_NANOS
+    nano_set_screen(SCREEN_TITLE_BOLD);
     write_display("    Signing", TOP);
     write_display("      Transaction...", BOT);
 #else
+    nano_set_screen(SCREEN_ICON_MULTI);
     write_display("Signing", TOP);
     write_display("Transaction...", BOT);
 #endif

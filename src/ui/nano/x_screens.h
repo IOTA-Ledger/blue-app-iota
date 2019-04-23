@@ -26,7 +26,7 @@ static const bagl_element_t bagl_ui_menu_screen[] = {
 
 // screen for displaying IOTA icon
 static const bagl_element_t bagl_ui_iota_screen[] = {
-    SCREEN_CLEAR, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_IOTA};
+    SCREEN_CLEAR, SCREEN_GLYPH_CONFIRM, SCREEN_GLYPHS_ALL};
 
 // screen for displaying back icon
 static const bagl_element_t bagl_ui_back_screen[] = {

@@ -9,7 +9,11 @@
 
 void display_main_menu()
 {
+#ifdef TARGET_NANOS
     nano_set_screen(SCREEN_MENU);
+#else
+    nano_set_screen(SCREEN_ICON);
+#endif
 
     // write the actual menu
     char msg[MENU_MAIN_LEN * TEXT_LEN];
@@ -43,7 +47,11 @@ void display_main_menu()
 
 void display_about()
 {
+#ifdef TARGET_NANOS
     nano_set_screen(SCREEN_MENU);
+#else
+    nano_set_screen(SCREEN_TITLE);
+#endif
 
     // write the actual menu
     char msg[MENU_ABOUT_LEN * TEXT_LEN];
@@ -57,13 +65,13 @@ void display_about()
         // turn off BOT_H
         write_display(NULL, BOT_H);
         break;
-#endif
+
     case MENU_ABOUT_BACK:
         // turn off TOP_H
         write_display(NULL, TOP_H);
         display_glyphs_confirm(GLYPH_UP, GLYPH_BACK);
         break;
-#ifdef TARGET_NANOX // TODO disable buttons for X
+#else  // NANOX
     case MENU_ABOUT_VERSION:
         write_display("Version", TOP);
         write_display(APPVERSION, BOT);
@@ -75,29 +83,30 @@ void display_about()
         write_display("More Info:", TOP);
         write_display("iota.org/sec", BOT);
         break;
-#endif
+
+    case MENU_ABOUT_BACK:
+        nano_set_screen(SCREEN_ICON);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_BACK);
+        break;
+#endif // TARGET_NANOS/X
     }
 }
 
-// TODO remove on NANOX
 void display_version()
 {
+#ifdef TARGET_NANOS
     nano_set_screen(SCREEN_MENU);
 
     clear_display();
 
-#ifdef TARGET_NANOS
     write_display(APPVERSION, MID);
     display_glyphs_confirm(GLYPH_BACK, GLYPH_NONE);
-#else
-    write_display("Version", TOP);
-    write_display(APPVERSION, BOT);
-    display_glyphs_confirm(GLYPH_NONE, GLYPH_NONE);
-#endif
+#endif // TARGET_NANOS
 }
 
 void display_more_info()
 {
+#ifdef TARGET_NANOS
     nano_set_screen(SCREEN_MENU);
 
     // write the actual menu
@@ -106,21 +115,23 @@ void display_more_info()
     write_text_array(msg, MENU_MORE_INFO_LEN);
 
     glyph_on(GLYPH_CONFIRM);
+#endif // TARGET_NANOS
 }
 
 void display_bip_path()
 {
     if (ui_state.menu_idx == 0) {
-        nano_set_screen(SCREEN_MENU);
-
         clear_display();
 
 #ifdef TARGET_NANOX
+        nano_set_screen(SCREEN_BIP);
         write_display("BIP32 Path:", TOP);
         // TODO FIX BIP PATH
         write_display("2c'|107a'|0'", MID);
         write_display("0'|1'", BOT);
 #else
+        nano_set_screen(SCREEN_MENU);
+
         write_display("BIP32 Path:", MID);
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 #endif
@@ -175,14 +186,15 @@ void display_bip_path()
 
 void display_addr()
 {
-    nano_set_screen(SCREEN_MENU);
-
     // write the actual menu
     char msg[MENU_ADDR_LEN * TEXT_LEN];
     get_address_menu(msg);
 #ifdef TARGET_NANOS
+    nano_set_screen(SCREEN_MENU);
     write_text_array(msg, MENU_ADDR_LEN);
 #else
+    nano_set_screen(SCREEN_ADDR);
+    // Write whole addr on 2 screens
     if (ui_state.menu_idx == 0) {
         write_display(msg, TOP);
         write_display(msg + 21, MID);
@@ -216,6 +228,7 @@ void display_addr()
 
 void display_addr_chk()
 {
+    // both X and S use SCREEN_TITLE here
     nano_set_screen(SCREEN_TITLE);
 
     clear_display();
@@ -240,8 +253,12 @@ void display_tx_addr()
 
 void display_prompt_tx()
 {
-    // for approve/deny
+    // for approve/deny, rest get set to title
+#ifdef TARGET_NANOS
     nano_set_screen(SCREEN_MENU);
+#else
+    nano_set_screen(SCREEN_ICON);
+#endif
 
     clear_display();
 
@@ -252,18 +269,16 @@ void display_prompt_tx()
         write_display("Approve", MID);
 #ifdef TARGET_NANOX
         glyph_on(GLYPH_CHECK);
-#else
-        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 #endif
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
     else if (ui_state.menu_idx == MENU_TX_DENY) {
         write_display("Deny", MID);
 #ifdef TARGET_NANOX
         glyph_on(GLYPH_CROSS);
-#else
-        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 #endif
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
 
@@ -280,7 +295,11 @@ void display_prompt_tx()
 
 void display_unknown_state()
 {
+#ifdef TARGET_NANOS
     nano_set_screen(SCREEN_MENU);
+#else
+    nano_set_screen(SCREEN_ICON);
+#endif
 
     clear_display();
     write_display("UI ERROR", MID);
