@@ -98,41 +98,41 @@ void glyph_on(UI_GLYPH_TYPES_NANOS g)
     else
         check_special_glyph(g);
 #else
-    ui_state.glyphs |= 1 << g;
     // To hide glyphs we only overwrite the first byte
     // each glyph is already pre-initialized, so we only
     // need to copy back in the first byte of each glyph
     // to toggle it on
     switch (g) {
     case GLYPH_IOTA:
-        memcpy(ui_state.glyph[GLYPH_IOTA], &C_x_iota_main_logo, 1);
+        memcpy(ui_state.glyphX[GLYPH_IOTA], &C_x_iota_main_logo, 1);
         break;
     case GLYPH_LOAD:
-        memcpy(ui_state.glyph[GLYPH_LOAD], &C_x_icon_load, 1);
+        memcpy(ui_state.glyphX[GLYPH_LOAD], &C_x_icon_load, 1);
         break;
     case GLYPH_DASH:
-        memcpy(ui_state.glyph[GLYPH_DASH], &C_x_icon_dash, 1);
+        memcpy(ui_state.glyphX[GLYPH_DASH], &C_x_icon_dash, 1);
         break;
     case GLYPH_BACK:
-        memcpy(ui_state.glyph[GLYPH_BACK], &C_x_icon_back, 1);
+        memcpy(ui_state.glyphX[GLYPH_BACK], &C_x_icon_back, 1);
         break;
     case GLYPH_INFO:
-        memcpy(ui_state.glyph[GLYPH_INFO], &C_x_icon_info, 1);
+        memcpy(ui_state.glyphX[GLYPH_INFO], &C_x_icon_info, 1);
         break;
     case GLYPH_CHECK:
-        memcpy(ui_state.glyph[GLYPH_CHECK], &C_x_icon_check, 1);
+        memcpy(ui_state.glyphX[GLYPH_CHECK], &C_x_icon_check, 1);
         break;
     case GLYPH_CROSS:
-        memcpy(ui_state.glyph[GLYPH_CROSS], &C_x_icon_cross, 1);
+        memcpy(ui_state.glyphX[GLYPH_CROSS], &C_x_icon_cross, 1);
         break;
+    // UI on X is more intuitive to use L/R instead of U/D
     case GLYPH_UP:
-        memcpy(ui_state.glyph[GLYPH_UP], &C_x_icon_up, 1);
+        memcpy(ui_state.glyphX[GLYPH_UP], &C_x_icon_left, 1);
         break;
     case GLYPH_DOWN:
-        memcpy(ui_state.glyph[GLYPH_DOWN], &C_x_icon_down, 1);
+        memcpy(ui_state.glyphX[GLYPH_DOWN], &C_x_icon_right, 1);
         break;
     case GLYPH_CONFIRM:
-        memcpy(ui_state.glyph[GLYPH_CONFIRM], &C_x_icon_less, 1);
+        memcpy(ui_state.glyphX[GLYPH_CONFIRM], &C_x_icon_less, 1);
         break;
     default:
         return;
@@ -150,38 +150,34 @@ static void clear_text()
 #endif
 }
 
-#ifdef TARGET_NANOS
+
 static void glyph_off(UI_GLYPH_TYPES_NANOS g)
 {
+#ifdef TARGET_NANOS
     if (g < TOTAL_GLYPHS) {
         ui_glyphs.glyph[g] = '.';
     }
-}
+#else
+    ui_state.glyphX[g][0] = 0;
 #endif
+}
+
 
 static void clear_glyphs()
 {
-#ifdef TARGET_NANOS
     // turn off all glyphs
     glyph_off(GLYPH_CONFIRM);
     glyph_off(GLYPH_UP);
     glyph_off(GLYPH_DOWN);
     glyph_off(GLYPH_LOAD);
     glyph_off(GLYPH_DASH);
-#else
-    ui_state.glyphs = 0;
-
-    // Hide glyphs by just tweaking the first byte
-    ui_state.glyph[GLYPH_IOTA][0] = 0;
-    ui_state.glyph[GLYPH_LOAD][0] = 0;
-    ui_state.glyph[GLYPH_DASH][0] = 0;
-    ui_state.glyph[GLYPH_BACK][0] = 0;
-    ui_state.glyph[GLYPH_INFO][0] = 0;
-    ui_state.glyph[GLYPH_CHECK][0] = 0;
-    ui_state.glyph[GLYPH_CROSS][0] = 0;
-    ui_state.glyph[GLYPH_UP][0] = 0;
-    ui_state.glyph[GLYPH_DOWN][0] = 0;
-    ui_state.glyph[GLYPH_CONFIRM][0] = 0;
+#ifdef TARGET_NANOX
+    // X specific glyphs to turn off
+    glyph_off(GLYPH_IOTA);
+    glyph_off(GLYPH_BACK);
+    glyph_off(GLYPH_INFO);
+    glyph_off(GLYPH_CHECK);
+    glyph_off(GLYPH_CROSS);
 #endif
 }
 

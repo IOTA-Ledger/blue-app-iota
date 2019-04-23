@@ -80,7 +80,7 @@ int8_t button_more_info(uint8_t button_mask)
 
 int8_t button_bip_path(uint8_t button_mask)
 {
-    uint8_t array_sz = 1;
+    uint8_t array_sz = MENU_BIP_LAST;
 
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         // we came from tx
@@ -103,7 +103,7 @@ int8_t button_bip_path(uint8_t button_mask)
 
 int8_t button_disp_addr(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_ADDR_LEN - 1;
+    uint8_t array_sz = MENU_ADDR_LAST;
 
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         state_go(STATE_DISP_ADDR_CHK, 0);
@@ -131,7 +131,7 @@ void button_disp_addr_chk(uint8_t button_mask)
 
 int8_t button_tx_addr(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_ADDR_LEN - 1;
+    uint8_t array_sz = MENU_ADDR_LAST;
 
     // If the backup menu idx is 1, it's the output addr so don't go to bip path
     if (button_mask == BUTTON_R && ui_state.menu_idx == MENU_ADDR_LAST &&

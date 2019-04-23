@@ -28,14 +28,20 @@ void display_main_menu()
     switch (ui_state.menu_idx) {
 
     case MENU_MAIN_IOTA:
+#ifdef TARGET_NANOS
         display_glyphs_confirm(GLYPH_IOTA, GLYPH_DOWN);
+#else
+        display_glyphs_confirm(GLYPH_IOTA, GLYPH_NONE);
+#endif
+
 
         write_display("IOTA", MID);
         break;
 
 #ifdef TARGET_NANOX
     case MENU_MAIN_ABOUT:
-        display_glyphs(GLYPH_INFO, GLYPH_NONE);
+        display_glyphs(GLYPH_INFO, GLYPH_UP);
+        glyph_on(GLYPH_DOWN);
         break;
 #endif
 
@@ -75,7 +81,7 @@ void display_about()
     case MENU_ABOUT_VERSION:
         write_display("Version", TOP);
         write_display(APPVERSION, BOT);
-        display_glyphs_confirm(GLYPH_NONE, GLYPH_NONE);
+        display_glyphs_confirm(GLYPH_DOWN, GLYPH_NONE);
         // TODO - remove display_glyphs_confirm?
         break;
 
@@ -129,6 +135,7 @@ void display_bip_path()
         // TODO FIX BIP PATH
         write_display("2c'|107a'|0'", MID);
         write_display("0'|1'", BOT);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
 #else
         nano_set_screen(SCREEN_MENU);
 
@@ -196,12 +203,14 @@ void display_addr()
     nano_set_screen(SCREEN_ADDR);
     // Write whole addr on 2 screens
     if (ui_state.menu_idx == 0) {
+        display_glyphs_confirm(GLYPH_NONE, GLYPH_DOWN);
         write_display(msg, TOP);
         write_display(msg + 21, MID);
         write_display(msg + 42, BOT);
         write_display(msg + 63, POS_X);
     }
     else {
+        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
         write_display(msg + 84, TOP);
         write_display(msg + 105, MID);
         write_display(msg + 126, BOT);
@@ -209,6 +218,7 @@ void display_addr()
     }
 #endif
 
+    // glyph on to avoid overwriting write_text_array
     glyph_on(GLYPH_CONFIRM);
 
     // special overrides
@@ -267,18 +277,18 @@ void display_prompt_tx()
     // can't use switch statement because array sz isn't known
     if (ui_state.menu_idx == MENU_TX_APPROVE) {
         write_display("Approve", MID);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 #ifdef TARGET_NANOX
         glyph_on(GLYPH_CHECK);
 #endif
-        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
     else if (ui_state.menu_idx == MENU_TX_DENY) {
         write_display("Deny", MID);
+        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
 #ifdef TARGET_NANOX
         glyph_on(GLYPH_CROSS);
 #endif
-        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
         return;
     }
 

@@ -44,7 +44,7 @@ typedef enum {
 } UI_GLYPH_TYPES_NANOS;
 
 #else // TARGET_NANOS/X
-
+// TODO rename NANOS to NANO (separated into #defines)
 #define UI_SCREENS_NANO UI_SCREENS_NANOX
 
 // UI SCREENS
@@ -69,8 +69,8 @@ typedef enum {
     GLYPH_LOAD,
     GLYPH_CHECK,
     GLYPH_CROSS,
-    GLYPH_UP,
-    GLYPH_DOWN,
+    GLYPH_UP,   // maps to left
+    GLYPH_DOWN, // maps to right
     GLYPH_CONFIRM,
     GLYPH_NONE
 } UI_GLYPH_TYPES_NANOX;
@@ -81,7 +81,13 @@ typedef enum {
 #define MENU_ADDR_LEN 8
 #define MENU_MORE_INFO_LEN 3
 
+#ifdef TARGET_NANOS
 #define MENU_ADDR_LAST MENU_ADDR_LEN - 1
+#define MENU_BIP_LAST 1
+#else
+#define MENU_ADDR_LAST 1 // X screen addr broken up into 2
+#define MENU_BIP_LAST 0
+#endif
 
 #define MENU_TX_APPROVE tx_array_sz - 2
 #define MENU_TX_DENY tx_array_sz - 1
@@ -132,7 +138,7 @@ typedef struct UI_GLYPH_CTX_NANO {
 
     // flags for turning on/off certain glyphs
     char glyph[TOTAL_GLYPHS + 1];
-    
+
 } UI_GLYPH_CTX_NANO;
 
 typedef struct UI_STATE_CTX_NANO {
@@ -149,20 +155,18 @@ typedef struct UI_STATE_CTX_NANO {
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
+    // TODO figure out why I can't remove glyphs, or move glyphX into glyph
 #ifdef TARGET_NANOX
     // flag for which glyphs are shown
     unsigned int glyphs;
-    
-    char glyph[GLYPH_NONE][20];
+
+    char glyphX[GLYPH_NONE][20];
 #endif
 
 } UI_STATE_CTX_NANO;
 
 extern UI_TEXT_CTX_NANO ui_text;
-extern UI_STATE_CTX_NANO ui_state;
-
-#ifdef TARGET_NANOS
 extern UI_GLYPH_CTX_NANO ui_glyphs;
-#endif
+extern UI_STATE_CTX_NANO ui_state;
 
 #endif // NANO_TYPES_H
