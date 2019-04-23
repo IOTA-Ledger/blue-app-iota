@@ -126,27 +126,22 @@ void display_bip_path()
 {
     if (ui_state.menu_idx == 0) {
         clear_display();
-
-#ifdef TARGET_NANOX
-        nano_set_screen(SCREEN_BIP);
-        write_display("BIP32 Path:", TOP);
-        // TODO FIX BIP PATH
-        write_display("2c'|107a'|0'", MID);
-        write_display("0'|1'", BOT);
-        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
-#else
+#ifdef TARGET_NANOS
         nano_set_screen(SCREEN_MENU);
 
         write_display("BIP32 Path:", MID);
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
-#endif
     }
     else {
-        nano_set_screen(SCREEN_TITLE);
-
         clear_display();
+        nano_set_screen(SCREEN_TITLE);
+        char *msg = ui_text.top_str;
+#else
+        nano_set_screen(SCREEN_BIP);
+        write_display("BIP32 Path:", TOP);
+        char *msg = ui_text.mid_str;
+#endif
 
-        char *msg[] = {ui_text.top_str, ui_text.bot_str};
 
         int row = 0;
         size_t chars_written = 0;
@@ -159,30 +154,32 @@ void display_bip_path()
                 THROW(INVALID_STATE);
             }
 
-            snprintf(msg[row] + chars_written, TEXT_LEN - chars_written, "%x",
+            snprintf(msg + chars_written, TEXT_LEN - chars_written, "%x",
                      api.bip32_path[i] & 0x7fffffff);
-            chars_written = strnlen(msg[row], TEXT_LEN);
+            chars_written = strnlen(msg, TEXT_LEN);
 
             // write apostroph if hardnend
             if (api.bip32_path[i] & (1u << 31)) {
-                msg[row][chars_written++] = '\'';
+                msg[chars_written++] = '\'';
             }
 
             // write the separator only if not last element
             if (i < api.bip32_path_length - 1) {
-                msg[row][chars_written++] = '|';
+                msg[chars_written++] = '|';
             }
 
             // inc row, if there might be not enough space for the next level
             if (chars_written > TEXT_LEN - 11) {
-                msg[row++][chars_written] = '\0';
+                msg[chars_written] = '\0';
+                row++;
+                msg = ui_text.bot_str;
                 chars_written = 0;
             }
         }
 
         // make sure that the current row is terminated
         if (row <= 1) {
-            msg[row][chars_written] = '\0';
+            msg[chars_written] = '\0';
         }
 
         display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);

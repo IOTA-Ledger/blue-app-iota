@@ -19,13 +19,13 @@
 #define FLAG_ON(var, pos) var |= 1 << pos
 #define FLAG_OFF(var, pos) var &= ~(1 << pos)
 
-// TODO rename something better?
-// Different positions a text can have
+// Different positions text can appear at -
+// TOP_H and BOT_H are "half off the screen" elements on the S
+// to give a scrollable menu effect. POS_X is a fourth
+// text position for displaying addresses on the NANO X
 typedef enum { TOP_H, TOP, MID, BOT, BOT_H, POS_X } UI_TEXT_POS;
 
 #ifdef TARGET_NANOS
-
-#define UI_SCREENS_NANO UI_SCREENS_NANOS
 
 // UI SCREENS
 typedef enum {
@@ -34,7 +34,7 @@ typedef enum {
     SCREEN_MENU,
     SCREEN_IOTA,
     SCREEN_BACK
-} UI_SCREENS_NANOS;
+} UI_SCREENS_NANO;
 
 // GLYPH TYPES
 typedef enum {
@@ -46,11 +46,9 @@ typedef enum {
     GLYPH_NONE, // glyphs after none require special screens
     GLYPH_IOTA,
     GLYPH_BACK
-} UI_GLYPH_TYPES_NANOS;
+} UI_GLYPH_TYPES_NANO;
 
 #else // TARGET_NANOS/X
-// TODO rename NANOS to NANO (separated into #defines)
-#define UI_SCREENS_NANO UI_SCREENS_NANOX
 
 // UI SCREEN TYPES - these map onto omega screen elements
 typedef enum {
@@ -59,11 +57,7 @@ typedef enum {
     SCREEN_ICON_MULTI,
     SCREEN_BIP,
     SCREEN_ADDR
-} UI_SCREENS_NANOX;
-
-// cover warnings from other files that don't pertain to NANOX
-// TODO leave/fix?
-#define UI_GLYPH_TYPES_NANOS UI_GLYPH_TYPES_NANOX
+} UI_SCREENS_NANO;
 
 // GLYPH TYPES
 typedef enum {
@@ -78,7 +72,7 @@ typedef enum {
     GLYPH_DOWN, // maps to right
     GLYPH_CONFIRM,
     GLYPH_NONE
-} UI_GLYPH_TYPES_NANOX;
+} UI_GLYPH_TYPES_NANO;
 
 // Element ID's
 typedef enum {

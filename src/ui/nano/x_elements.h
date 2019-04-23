@@ -49,7 +49,6 @@
     SCREEN_MSG_Y(42, ui_text.bot_str, DEFAULT_FONT, EL_ADDR)
 #define SCREEN_ADDRESS_4 SCREEN_MSG_Y(56, ui_text.x_str, DEFAULT_FONT, EL_ADDR)
 
-// TODO - MULTILINE MSG ICON/TEXT for LOADING
 // Text under icon (home/back)
 #define SCREEN_MSG_ICON                                                        \
     SCREEN_MSG_Y(46, ui_text.mid_str, TITLE_FONT_LG, EL_ICON)

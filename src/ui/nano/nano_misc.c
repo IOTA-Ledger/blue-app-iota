@@ -74,7 +74,7 @@ void write_display(const char *string, UI_TEXT_POS pos)
 
 #ifdef TARGET_NANOS
 // Checks for custom glyphs that require their own screen
-static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
+static void check_special_glyph(UI_GLYPH_TYPES_NANO g)
 {
     switch (g) {
     case GLYPH_IOTA:
@@ -90,7 +90,7 @@ static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
 #endif
 
 // Turns a single glyph on or off
-void glyph_on(UI_GLYPH_TYPES_NANOS g)
+void glyph_on(UI_GLYPH_TYPES_NANO g)
 {
 #ifdef TARGET_NANOS
     if (g < TOTAL_GLYPHS)
@@ -112,7 +112,7 @@ static void clear_text()
 #endif
 }
 
-static void glyph_off(UI_GLYPH_TYPES_NANOS g)
+static void glyph_off(UI_GLYPH_TYPES_NANO g)
 {
 #ifdef TARGET_NANOS
     if (g < TOTAL_GLYPHS) {
@@ -148,7 +148,7 @@ void clear_display()
 }
 
 // turns on 2 glyphs (often glyph on left + right)
-void display_glyphs(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2)
+void display_glyphs(UI_GLYPH_TYPES_NANO g1, UI_GLYPH_TYPES_NANO g2)
 {
     clear_glyphs();
 
@@ -158,7 +158,7 @@ void display_glyphs(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2)
 }
 
 // combine glyphs with bars along top for confirm
-void display_glyphs_confirm(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2)
+void display_glyphs_confirm(UI_GLYPH_TYPES_NANO g1, UI_GLYPH_TYPES_NANO g2)
 {
     clear_glyphs();
 
