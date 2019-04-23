@@ -33,8 +33,6 @@ void display_main_menu()
 #else
         display_glyphs_confirm(GLYPH_IOTA, GLYPH_NONE);
 #endif
-
-
         write_display("IOTA", MID);
         break;
 

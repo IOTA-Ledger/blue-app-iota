@@ -98,45 +98,7 @@ void glyph_on(UI_GLYPH_TYPES_NANOS g)
     else
         check_special_glyph(g);
 #else
-    // To hide glyphs we only overwrite the first byte
-    // each glyph is already pre-initialized, so we only
-    // need to copy back in the first byte of each glyph
-    // to toggle it on
-    switch (g) {
-    case GLYPH_IOTA:
-        memcpy(ui_state.glyphX[GLYPH_IOTA], &C_x_iota_main_logo, 1);
-        break;
-    case GLYPH_LOAD:
-        memcpy(ui_state.glyphX[GLYPH_LOAD], &C_x_icon_load, 1);
-        break;
-    case GLYPH_DASH:
-        memcpy(ui_state.glyphX[GLYPH_DASH], &C_x_icon_dash, 1);
-        break;
-    case GLYPH_BACK:
-        memcpy(ui_state.glyphX[GLYPH_BACK], &C_x_icon_back, 1);
-        break;
-    case GLYPH_INFO:
-        memcpy(ui_state.glyphX[GLYPH_INFO], &C_x_icon_info, 1);
-        break;
-    case GLYPH_CHECK:
-        memcpy(ui_state.glyphX[GLYPH_CHECK], &C_x_icon_check, 1);
-        break;
-    case GLYPH_CROSS:
-        memcpy(ui_state.glyphX[GLYPH_CROSS], &C_x_icon_cross, 1);
-        break;
-    // UI on X is more intuitive to use L/R instead of U/D
-    case GLYPH_UP:
-        memcpy(ui_state.glyphX[GLYPH_UP], &C_x_icon_left, 1);
-        break;
-    case GLYPH_DOWN:
-        memcpy(ui_state.glyphX[GLYPH_DOWN], &C_x_icon_right, 1);
-        break;
-    case GLYPH_CONFIRM:
-        memcpy(ui_state.glyphX[GLYPH_CONFIRM], &C_x_icon_less, 1);
-        break;
-    default:
-        return;
-    }
+    ui_state.glyphs |= 1 << g;
 #endif
 }
 
@@ -150,7 +112,6 @@ static void clear_text()
 #endif
 }
 
-
 static void glyph_off(UI_GLYPH_TYPES_NANOS g)
 {
 #ifdef TARGET_NANOS
@@ -158,7 +119,7 @@ static void glyph_off(UI_GLYPH_TYPES_NANOS g)
         ui_glyphs.glyph[g] = '.';
     }
 #else
-    ui_state.glyphX[g][0] = 0;
+    ui_state.glyphs &= ~(1 << g);
 #endif
 }
 
@@ -172,7 +133,6 @@ static void clear_glyphs()
     glyph_off(GLYPH_LOAD);
     glyph_off(GLYPH_DASH);
 #ifdef TARGET_NANOX
-    // X specific glyphs to turn off
     glyph_off(GLYPH_IOTA);
     glyph_off(GLYPH_BACK);
     glyph_off(GLYPH_INFO);

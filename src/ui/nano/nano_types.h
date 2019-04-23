@@ -2,6 +2,7 @@
 #define NANO_TYPES_H
 
 #include <stdint.h>
+#include "os_io_seproxyhal.h"
 #include "iota/bundle.h"
 
 /// length of one text line
@@ -47,6 +48,9 @@ typedef enum {
 // TODO rename NANOS to NANO (separated into #defines)
 #define UI_SCREENS_NANO UI_SCREENS_NANOX
 
+// TODO Sub this in
+#define bagl_icon_sz sizeof(bagl_icon_details_s)
+
 // UI SCREENS
 typedef enum {
     SCREEN_TITLE,
@@ -59,6 +63,17 @@ typedef enum {
 // cover warnings from other files that don't pertain to NANOX
 // TODO leave/fix?
 #define UI_GLYPH_TYPES_NANOS UI_GLYPH_TYPES_NANOX
+
+#define GLYPH_IOTA_FLAG 1 << GLYPH_IOTA
+#define GLYPH_BACK_FLAG 1 << GLYPH_BACK
+#define GLYPH_DASH_FLAG 1 << GLYPH_DASH
+#define GLYPH_INFO_FLAG 1 << GLYPH_INFO
+#define GLYPH_LOAD_FLAG 1 << GLYPH_LOAD
+#define GLYPH_APPROVE_FLAG 1 << GLYPH_APPROVE
+#define GLYPH_DENY_FLAG 1 << GLYPH_DENY
+#define GLYPH_UP_FLAG 1 << GLYPH_UP
+#define GLYPH_DOWN_FLAG 1 << GLYPH_DOWN
+#define GLYPH_CONFIRM_FLAG 1 << GLYPH_CONFIRM
 
 // GLYPH TYPES
 typedef enum {
@@ -74,6 +89,30 @@ typedef enum {
     GLYPH_CONFIRM,
     GLYPH_NONE
 } UI_GLYPH_TYPES_NANOX;
+
+// TODO group better?
+typedef enum {
+    EL_IOTA,
+    EL_BACK,
+    EL_DASH,
+    EL_INFO,
+    EL_LOAD,
+    EL_CHECK,
+    EL_CROSS,
+    EL_UP,   // maps to left
+    EL_DOWN, // maps to right
+    EL_CONFIRM,
+    EL_NONE,
+    EL_TITLE,
+    EL_BIP,
+    EL_ADDR,
+    EL_ICON,
+    EL_ICON_MULTI,
+    EL_CLEAR
+} UI_EL_USERIDS_X;
+
+// TODO use GLYPH_NUM instead of GLYPH_NONE for sz
+#define GLYPH_NUM GLYPH_NONE
 
 #endif // TARGET_NANOS/X
 

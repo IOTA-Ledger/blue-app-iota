@@ -6,6 +6,7 @@
 #include "nano_buttons.h"
 #include "nano_types.h"
 
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
 static void nano_transition_state(unsigned int button_mask);
 static void nano_build_display();
@@ -40,17 +41,50 @@ BUTTON_FUNCTION(bip)
 BUTTON_FUNCTION(icon)
 BUTTON_FUNCTION(icon_multi)
 
+BUTTON_FUNCTION(omega)
+
 #endif // TARGET_NANOS/X
+
+const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
+{
+    if (!CHECK_BIT(ui_state.glyphs, element->component.userid) &&
+        element->component.userid != EL_CLEAR)
+        return NULL;
+    else
+        return element;
+}
 
 void nano_set_screen(UI_SCREENS_NANO s)
 {
+    ui_state.glyphs = 0;
+
     current_screen = s;
+
+    switch (s) {
+    case SCREEN_TITLE:
+        ui_state.glyphs |= 1 << EL_TITLE;
+        break;
+    case SCREEN_BIP:
+        ui_state.glyphs |= 1 << EL_BIP;
+        break;
+    case SCREEN_ADDR:
+        ui_state.glyphs |= 1 << EL_ADDR;
+        break;
+    case SCREEN_ICON:
+        ui_state.glyphs |= 1 << EL_ICON;
+        break;
+    case SCREEN_ICON_MULTI:
+        ui_state.glyphs |= 1 << EL_ICON_MULTI;
+        break;
+    default:
+        return;
+    }
 }
 
 static void nano_render()
 {
-    switch (current_screen) {
 #ifdef TARGET_NANOS
+    switch (current_screen) {
     case SCREEN_TITLE:
         UX_DISPLAY(bagl_ui_title_screen, NULL);
         break;
@@ -66,26 +100,12 @@ static void nano_render()
     case SCREEN_BACK:
         UX_DISPLAY(bagl_ui_back_screen, NULL);
         break;
-#else
-    case SCREEN_TITLE:
-        UX_DISPLAY(bagl_ui_title_screen, NULL);
-        break;
-    case SCREEN_BIP:
-        UX_DISPLAY(bagl_ui_bip_screen, NULL);
-        break;
-    case SCREEN_ADDR:
-        UX_DISPLAY(bagl_ui_addr_screen, NULL);
-        break;
-    case SCREEN_ICON:
-        UX_DISPLAY(bagl_ui_icon_screen, NULL);
-        break;
-    case SCREEN_ICON_MULTI:
-        UX_DISPLAY(bagl_ui_icon_multi_screen, NULL);
-        break;
-#endif
     default:
         THROW(INVALID_PARAMETER);
     }
+#else
+    UX_DISPLAY(bagl_ui_omega_screen, ux_element_preprocessor);
+#endif
 }
 
 static void nano_ctx_initialize()
@@ -104,17 +124,6 @@ void ui_init()
 
 #ifdef TARGET_NANOS
     ui_glyphs.glyph[TOTAL_GLYPHS] = '\0';
-#else // Initialize all of the glyphs into memory
-    memcpy(ui_state.glyphX[GLYPH_IOTA], &C_x_iota_main_logo, 20);
-    memcpy(ui_state.glyphX[GLYPH_LOAD], &C_x_icon_load, 20);
-    memcpy(ui_state.glyphX[GLYPH_DASH], &C_x_icon_dash, 20);
-    memcpy(ui_state.glyphX[GLYPH_BACK], &C_x_icon_back, 20);
-    memcpy(ui_state.glyphX[GLYPH_INFO], &C_x_icon_info, 20);
-    memcpy(ui_state.glyphX[GLYPH_CHECK], &C_x_icon_check, 20);
-    memcpy(ui_state.glyphX[GLYPH_CROSS], &C_x_icon_cross, 20);
-    memcpy(ui_state.glyphX[GLYPH_UP], &C_x_icon_left, 20);
-    memcpy(ui_state.glyphX[GLYPH_DOWN], &C_x_icon_right, 20);
-    memcpy(ui_state.glyphX[GLYPH_CONFIRM], &C_x_icon_less, 20);
 #endif
 
     ui_display_main_menu();
@@ -126,7 +135,7 @@ void ui_display_main_menu()
     clear_display();
     state_go(STATE_MAIN_MENU, 0);
     backup_state();
-
+    
     nano_build_display();
     nano_render();
     ui_force_draw();
