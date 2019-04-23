@@ -98,7 +98,7 @@ void glyph_on(UI_GLYPH_TYPES_NANOS g)
     else
         check_special_glyph(g);
 #else
-    ui_state.glyphs |= 1 << g;
+    FLAG_ON(ui_glyphs.glyphs, g);
 #endif
 }
 
@@ -119,7 +119,7 @@ static void glyph_off(UI_GLYPH_TYPES_NANOS g)
         ui_glyphs.glyph[g] = '.';
     }
 #else
-    ui_state.glyphs &= ~(1 << g);
+    FLAG_OFF(ui_glyphs.glyphs, g);
 #endif
 }
 

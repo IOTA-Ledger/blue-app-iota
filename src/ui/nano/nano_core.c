@@ -6,12 +6,8 @@
 #include "nano_buttons.h"
 #include "nano_types.h"
 
-#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
-
 static void nano_transition_state(unsigned int button_mask);
 static void nano_build_display();
-
-UI_SCREENS_NANO current_screen;
 
 UI_TEXT_CTX_NANO ui_text;
 UI_GLYPH_CTX_NANO ui_glyphs;
@@ -21,6 +17,8 @@ UI_STATE_CTX_NANO ui_state;
 
 #include "s_screens.h"
 #include "s_elements.h"
+
+UI_SCREENS_NANO current_screen;
 
 // macros for button functions
 BUTTON_FUNCTION(title)
@@ -34,20 +32,14 @@ BUTTON_FUNCTION(back)
 #include "x_screens.h"
 #include "x_elements.h"
 
-// macros for button functions
-BUTTON_FUNCTION(title)
-BUTTON_FUNCTION(addr)
-BUTTON_FUNCTION(bip)
-BUTTON_FUNCTION(icon)
-BUTTON_FUNCTION(icon_multi)
-
+// macros for button function
 BUTTON_FUNCTION(omega)
 
 #endif // TARGET_NANOS/X
 
 const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
 {
-    if (!CHECK_BIT(ui_state.glyphs, element->component.userid) &&
+    if (!CHECK_BIT(ui_glyphs.glyphs, element->component.userid) &&
         element->component.userid != EL_CLEAR)
         return NULL;
     else
@@ -56,29 +48,31 @@ const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
 
 void nano_set_screen(UI_SCREENS_NANO s)
 {
-    ui_state.glyphs = 0;
-
+#ifdef TARGET_NANOS
     current_screen = s;
+#else
+    ui_glyphs.glyphs = 0;
 
     switch (s) {
     case SCREEN_TITLE:
-        ui_state.glyphs |= 1 << EL_TITLE;
+        FLAG_ON(ui_glyphs.glyphs, EL_TITLE);
         break;
     case SCREEN_BIP:
-        ui_state.glyphs |= 1 << EL_BIP;
+        FLAG_ON(ui_glyphs.glyphs, EL_BIP);
         break;
     case SCREEN_ADDR:
-        ui_state.glyphs |= 1 << EL_ADDR;
+        FLAG_ON(ui_glyphs.glyphs, EL_ADDR);
         break;
     case SCREEN_ICON:
-        ui_state.glyphs |= 1 << EL_ICON;
+        FLAG_ON(ui_glyphs.glyphs, EL_ICON);
         break;
     case SCREEN_ICON_MULTI:
-        ui_state.glyphs |= 1 << EL_ICON_MULTI;
+        FLAG_ON(ui_glyphs.glyphs, EL_ICON_MULTI);
         break;
     default:
         return;
     }
+#endif
 }
 
 static void nano_render()
@@ -135,7 +129,7 @@ void ui_display_main_menu()
     clear_display();
     state_go(STATE_MAIN_MENU, 0);
     backup_state();
-    
+
     nano_build_display();
     nano_render();
     ui_force_draw();

@@ -62,8 +62,8 @@
 // TODO REMOVE or get working
 // -- Confirm bars along top
 #define SCREEN_GLYPH_CONFIRM                                                   \
-    {{BAGL_ICON, EL_CONFIRM, 13, 6, 8, 1, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},        \
-     (const char *)&C_x_icon_less,                                           \
+    {{BAGL_ICON, EL_CONFIRM, 13, 6, 8, 1, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
+     (const char *)&C_x_icon_less,                                             \
      0,                                                                        \
      0,                                                                        \
      0,                                                                        \
@@ -72,72 +72,80 @@
      NULL},                                                                    \
                                                                                \
     {                                                                          \
-        {BAGL_ICON, EL_CONFIRM, 107, 6, 8, 1, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            (const char *)&C_x_icon_less, 0, 0, 0, NULL, NULL, NULL          \
+        {BAGL_ICON, EL_CONFIRM, 107,      6,        8, 1, 0,                   \
+         0,         0,          0xFFFFFF, 0x000000, 0, 0},                     \
+            (const char *)&C_x_icon_less, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Up arrow on left
 #define SCREEN_GLYPH_UP                                                        \
     {                                                                          \
-        {BAGL_ICON, EL_UP, 3, 29, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_x_icon_left, 0, 0, 0, NULL, NULL, NULL               \
+        {BAGL_ICON, EL_UP, 3, 29, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
+            (const char *)&C_x_icon_left, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Down arrow on right
 #define SCREEN_GLYPH_DOWN                                                      \
     {                                                                          \
-        {BAGL_ICON, EL_DOWN, 117, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},   \
-            (const char *)&C_x_icon_right, 0, 0, 0, NULL, NULL, NULL             \
+        {                                                                      \
+            BAGL_ICON, EL_DOWN, 117,      29,       8, 6, 0,                   \
+            0,         0,       0xFFFFFF, 0x000000, 0, 0},                     \
+            (const char *)&C_x_icon_right, 0, 0, 0, NULL, NULL, NULL           \
     }
 
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
-        {BAGL_ICON, EL_IOTA, 0, 12, 128, 40, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
-            (const char *)&C_x_iota_logo, 0, 0, 0, NULL, NULL, NULL             \
+        {                                                                      \
+            BAGL_ICON, EL_IOTA, 0,        12,       128, 40, 0,                \
+            0,         0,       0xFFFFFF, 0x000000, 0,   0},                   \
+            (const char *)&C_x_iota_logo, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Loading icon on left
 #define SCREEN_GLYPH_LOAD                                                      \
     {                                                                          \
-        {BAGL_ICON, EL_LOAD, 57, 6, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            (const char *)&C_x_icon_load, 0, 0, 0, NULL, NULL, NULL             \
+        {BAGL_ICON, EL_LOAD, 57, 6, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
+            (const char *)&C_x_icon_load, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_DASH                                                      \
     {                                                                          \
-        {BAGL_ICON, EL_DASH, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            (const char *)&C_x_icon_dash, 0, 0, 0, NULL, NULL, NULL             \
+        {BAGL_ICON, EL_DASH, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0}, \
+            (const char *)&C_x_icon_dash, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK                                                      \
     {                                                                          \
-        {BAGL_ICON, EL_BACK, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            (const char *)&C_x_icon_back, 0, 0, 0, NULL, NULL, NULL             \
+        {BAGL_ICON, EL_BACK, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0}, \
+            (const char *)&C_x_icon_back, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_INFO                                                      \
     {                                                                          \
-        {BAGL_ICON, EL_INFO, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            (const char *)&C_x_icon_info, 0, 0, 0, NULL, NULL, NULL             \
+        {BAGL_ICON, EL_INFO, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0}, \
+            (const char *)&C_x_icon_info, 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_CHECK                                                     \
     {                                                                          \
-        {BAGL_ICON, EL_CHECK, 57,       14,       8, 6, 0,                  \
-         0,         0,           0xFFFFFF, 0x000000, 0, 0},                    \
+        {                                                                      \
+            BAGL_ICON, EL_CHECK, 57,       14,       8, 6, 0,                  \
+            0,         0,        0xFFFFFF, 0x000000, 0, 0},                    \
             (const char *)&C_x_icon_check, 0, 0, 0, NULL, NULL, NULL           \
     }
 
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_CROSS                                                     \
     {                                                                          \
-        {BAGL_ICON, EL_CROSS, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            (const char *)&C_x_icon_cross, 0, 0, 0, NULL, NULL, NULL            \
+        {                                                                      \
+            BAGL_ICON, EL_CROSS, 57,       14,       8, 6, 0,                  \
+            0,         0,        0xFFFFFF, 0x000000, 0, 0},                    \
+            (const char *)&C_x_icon_cross, 0, 0, 0, NULL, NULL, NULL           \
     }
 
 // -- Define all screen glyphs

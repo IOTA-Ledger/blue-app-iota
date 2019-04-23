@@ -15,6 +15,10 @@
 
 #define BUTTON_BAD 255
 
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
+#define FLAG_ON(var, pos) var |= 1 << pos
+#define FLAG_OFF(var, pos) var &= ~(1 << pos)
+
 // TODO rename something better?
 // Different positions a text can have
 typedef enum { TOP_H, TOP, MID, BOT, BOT_H, POS_X } UI_TEXT_POS;
@@ -48,10 +52,7 @@ typedef enum {
 // TODO rename NANOS to NANO (separated into #defines)
 #define UI_SCREENS_NANO UI_SCREENS_NANOX
 
-// TODO Sub this in
-#define bagl_icon_sz sizeof(bagl_icon_details_s)
-
-// UI SCREENS
+// UI SCREEN TYPES - these map onto omega screen elements
 typedef enum {
     SCREEN_TITLE,
     SCREEN_ICON,
@@ -63,17 +64,6 @@ typedef enum {
 // cover warnings from other files that don't pertain to NANOX
 // TODO leave/fix?
 #define UI_GLYPH_TYPES_NANOS UI_GLYPH_TYPES_NANOX
-
-#define GLYPH_IOTA_FLAG 1 << GLYPH_IOTA
-#define GLYPH_BACK_FLAG 1 << GLYPH_BACK
-#define GLYPH_DASH_FLAG 1 << GLYPH_DASH
-#define GLYPH_INFO_FLAG 1 << GLYPH_INFO
-#define GLYPH_LOAD_FLAG 1 << GLYPH_LOAD
-#define GLYPH_APPROVE_FLAG 1 << GLYPH_APPROVE
-#define GLYPH_DENY_FLAG 1 << GLYPH_DENY
-#define GLYPH_UP_FLAG 1 << GLYPH_UP
-#define GLYPH_DOWN_FLAG 1 << GLYPH_DOWN
-#define GLYPH_CONFIRM_FLAG 1 << GLYPH_CONFIRM
 
 // GLYPH TYPES
 typedef enum {
@@ -90,7 +80,7 @@ typedef enum {
     GLYPH_NONE
 } UI_GLYPH_TYPES_NANOX;
 
-// TODO group better?
+// Element ID's
 typedef enum {
     EL_IOTA,
     EL_BACK,
@@ -109,10 +99,7 @@ typedef enum {
     EL_ICON,
     EL_ICON_MULTI,
     EL_CLEAR
-} UI_EL_USERIDS_X;
-
-// TODO use GLYPH_NUM instead of GLYPH_NONE for sz
-#define GLYPH_NUM GLYPH_NONE
+} UI_EL_IDS_X;
 
 #endif // TARGET_NANOS/X
 
@@ -174,9 +161,13 @@ typedef struct UI_TEXT_CTX_NANO {
 } UI_TEXT_CTX_NANO;
 
 typedef struct UI_GLYPH_CTX_NANO {
-
+#ifdef TARGET_NANOS
     // flags for turning on/off certain glyphs
     char glyph[TOTAL_GLYPHS + 1];
+#else
+    // flag for which glyphs are shown
+    unsigned int glyphs;
+#endif
 
 } UI_GLYPH_CTX_NANO;
 
@@ -193,14 +184,6 @@ typedef struct UI_STATE_CTX_NANO {
 
     uint8_t backup_state;
     uint8_t backup_menu_idx;
-
-    // TODO figure out why I can't remove glyphs, or move glyphX into glyph
-#ifdef TARGET_NANOX
-    // flag for which glyphs are shown
-    unsigned int glyphs;
-
-    char glyphX[GLYPH_NONE][20];
-#endif
 
 } UI_STATE_CTX_NANO;
 
