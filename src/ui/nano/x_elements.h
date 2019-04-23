@@ -54,76 +54,11 @@
 
 #define SCREEN_BOLD_LINE SCREEN_MSG_Y(38, ui_text.mid_str, TITLE_FONT_LG)
 
-// -- Title screen top message
-#define SCREEN_MSG_TOP                                                         \
-    {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 26, 128, 64, 0, 0, 0, 0xFFFFFF,       \
-         0x000000,      DEFAULT_FONT, 0},                                      \
-            ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
-    }
-
-// -- Title screen top message
-#define SCREEN_MSG_TOP_BOLD                                                    \
-    {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 26, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
-         DEFAULT_FONT_BOLD, 0},                                                \
-            ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
-    }
-
-// -- Title screen bottom message
-#define SCREEN_MSG_BOT                                                         \
-    {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 50, 128, 64, 0, 0, 0, 0xFFFFFF,       \
-         0x000000,      DEFAULT_FONT, 0},                                      \
-            ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
-    }
-
-// -- Title screen bottom message
-#define SCREEN_MSG_BOT_BOLD                                                    \
-    {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 50, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
-         DEFAULT_FONT_BOLD, 0},                                                \
-            ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
-    }
-
-// -- Menu screen top message half off screen
-#define SCREEN_MSG_TOP_HALF                                                    \
-    {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 26, 128, 64, 0, 0, 0, 0xFFFFFF,       \
-         0x000000,      DEFAULT_FONT, 0},                                      \
-            ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
-    }
-
-// -- Menu screen middle message
-#define SCREEN_MSG_MID                                                         \
-    {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 36, 128, 64, 0, 0, 0, 0xFFFFFF, 0x000000, \
-         DEFAULT_FONT_BOLD, 0},                                                \
-            ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
-    }
-
-// -- Menu screen bot message half off screen
-#define SCREEN_MSG_BOT_HALF                                                    \
-    {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 50, 128, 64, 0, 0, 0, 0xFFFFFF,       \
-         0x000000,      DEFAULT_FONT, 0},                                      \
-            ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
-    }
-
-// TODO remove
-// -- Underline for "IOTA"
-#define SCREEN_UNDERLINE                                                       \
-    {                                                                          \
-        {BAGL_RECTANGLE, 0x00,     48,       48, 33, 1, 0, 0,                  \
-         BAGL_FILL,      0xFFFFFF, 0x000000, 0,  0},                           \
-            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
-    }
-
 // TODO REMOVE
 // -- Confirm bars along top
 #define SCREEN_GLYPH_CONFIRM                                                   \
     {{BAGL_ICON, 0x00, 13, 6, 8, 1, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},        \
-     ui_state.icon[GLYPH_CONFIRM],                                             \
+     ui_state.glyph[GLYPH_CONFIRM],                                             \
      0,                                                                        \
      0,                                                                        \
      0,                                                                        \
@@ -133,70 +68,70 @@
                                                                                \
     {                                                                          \
         {BAGL_ICON, 0x00, 107, 6, 8, 1, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            ui_state.icon[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL            \
+            ui_state.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL            \
     }
 
 // -- Up arrow on left
 #define SCREEN_GLYPH_UP                                                        \
     {                                                                          \
         {BAGL_ICON, 0x00, 3, 29, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            ui_state.icon[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL                 \
+            ui_state.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL                 \
     }
 
 // -- Down arrow on right
 #define SCREEN_GLYPH_DOWN                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 117, 29, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},   \
-            ui_state.icon[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL               \
+            ui_state.glyph[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL               \
     }
 
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 5, 13, 118, 46, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
-            ui_state.icon[GLYPH_IOTA], 0, 0, 0, NULL, NULL, NULL               \
+            ui_state.glyph[GLYPH_IOTA], 0, 0, 0, NULL, NULL, NULL               \
     }
 
 // -- Loading icon on left
 #define SCREEN_GLYPH_LOAD                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 57, 6, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
-            ui_state.icon[GLYPH_LOAD], 0, 0, 0, NULL, NULL, NULL               \
+            ui_state.glyph[GLYPH_LOAD], 0, 0, 0, NULL, NULL, NULL               \
     }
 
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_DASH                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            ui_state.icon[GLYPH_DASH], 0, 0, 0, NULL, NULL, NULL               \
+            ui_state.glyph[GLYPH_DASH], 0, 0, 0, NULL, NULL, NULL               \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            ui_state.icon[GLYPH_BACK], 0, 0, 0, NULL, NULL, NULL               \
+            ui_state.glyph[GLYPH_BACK], 0, 0, 0, NULL, NULL, NULL               \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_INFO                                                      \
     {                                                                          \
         {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            ui_state.icon[GLYPH_INFO], 0, 0, 0, NULL, NULL, NULL               \
+            ui_state.glyph[GLYPH_INFO], 0, 0, 0, NULL, NULL, NULL               \
     }
 
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_CHECK                                                     \
     {                                                                          \
         {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            ui_state.icon[GLYPH_CHECK], 0, 0, 0, NULL, NULL, NULL              \
+            ui_state.glyph[GLYPH_CHECK], 0, 0, 0, NULL, NULL, NULL              \
     }
 
 // -- Dashboard icon on left
 #define SCREEN_GLYPH_CROSS                                                     \
     {                                                                          \
         {BAGL_ICON, 0x00, 57, 14, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},    \
-            ui_state.icon[GLYPH_CROSS], 0, 0, 0, NULL, NULL, NULL              \
+            ui_state.glyph[GLYPH_CROSS], 0, 0, 0, NULL, NULL, NULL              \
     }
 
 // -- Define all screen glyphs

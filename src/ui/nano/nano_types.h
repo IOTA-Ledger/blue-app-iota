@@ -31,21 +31,6 @@ typedef enum {
     SCREEN_BACK
 } UI_SCREENS_NANOS;
 
-// UI STATES
-typedef enum {
-    STATE_MAIN_MENU,
-    STATE_IGNORE,
-    STATE_ABOUT,
-    STATE_VERSION,
-    STATE_MORE_INFO,
-    STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
-    STATE_DISP_ADDR,     // Host displays pubkey on ledger
-    STATE_TX_ADDR,       // Display full address in TX
-    STATE_PROMPT_TX,
-    STATE_BIP_PATH,
-    STATE_EXIT = 255
-} UI_STATES_NANOS;
-
 // GLYPH TYPES
 typedef enum {
     GLYPH_CONFIRM,
@@ -65,51 +50,11 @@ typedef enum {
 // UI SCREENS
 typedef enum {
     SCREEN_TITLE,
-    SCREEN_TITLE_BOLD,
-    SCREEN_MENU,
-    SCREEN_IOTA,
-    SCREEN_BACK,
-    SCREEN_DASH,
-    SCREEN_LOAD,
-    SCREEN_UP,
-    SCREEN_DN,
-    SCREEN_UPDN,
-    SCREEN_CONF,
-    SCREEN_UPCONF,
-    SCREEN_DNCONF,
-    SCREEN_UPDNCONF,
     SCREEN_ICON,
     SCREEN_ICON_MULTI,
     SCREEN_BIP,
     SCREEN_ADDR
 } UI_SCREENS_NANOX;
-
-// UI STATES
-typedef enum {
-    STATE_MAIN_MENU,
-    STATE_IGNORE,
-    STATE_ABOUT,
-    STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
-    STATE_DISP_ADDR,     // Host displays pubkey on ledger
-    STATE_TX_ADDR,       // Display full address in TX
-    STATE_PROMPT_TX,
-    STATE_BIP_PATH,
-    STATE_EXIT = 255
-} UI_STATES_NANOX;
-
-#define GLYPH_IOTA_FLAG                                                        \
-    1 << GLYPH_IOTA | GLYPH_UP_FLAG | GLYPH_DOWN_FLAG | GLYPH_CONFIRM_FLAG
-#define GLYPH_BACK_FLAG 1 << GLYPH_BACK | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
-#define GLYPH_DASH_FLAG 1 << GLYPH_DASH | GLYPH_UP_FLAG | GLYPH_CONFIRM_FLAG
-#define GLYPH_INFO_FLAG 1 << GLYPH_INFO
-#define GLYPH_LOAD_FLAG 1 << GLYPH_LOAD
-#define GLYPH_CHECK_FLAG 1 << GLYPH_CHECK
-#define GLYPH_CROSS_FLAG 1 << GLYPH_CROSS
-#define GLYPH_UP_FLAG 1 << GLYPH_UP
-#define GLYPH_DOWN_FLAG 1 << GLYPH_DOWN
-#define GLYPH_CONFIRM_FLAG 1 << GLYPH_CONFIRM
-// When adding new glyphs increment GLYPH_NON_FLAG_OFF
-#define GLYPH_NONE_FLAG_OFF 0x2FF
 
 // cover warnings from other files that don't pertain to NANOX
 // TODO leave/fix?
@@ -140,6 +85,21 @@ typedef enum {
 
 #define MENU_TX_APPROVE tx_array_sz - 2
 #define MENU_TX_DENY tx_array_sz - 1
+
+// UI STATES
+typedef enum {
+    STATE_MAIN_MENU,
+    STATE_IGNORE,
+    STATE_ABOUT,
+    STATE_VERSION,
+    STATE_MORE_INFO,
+    STATE_DISP_ADDR_CHK, // Abbreviated address with Checksum
+    STATE_DISP_ADDR,     // Host displays pubkey on ledger
+    STATE_TX_ADDR,       // Display full address in TX
+    STATE_PROMPT_TX,
+    STATE_BIP_PATH,
+    STATE_EXIT = 255
+} UI_STATES_NANO;
 
 // Main menu entries
 typedef enum {
@@ -172,7 +132,7 @@ typedef struct UI_GLYPH_CTX_NANO {
 
     // flags for turning on/off certain glyphs
     char glyph[TOTAL_GLYPHS + 1];
-
+    
 } UI_GLYPH_CTX_NANO;
 
 typedef struct UI_STATE_CTX_NANO {
@@ -192,8 +152,8 @@ typedef struct UI_STATE_CTX_NANO {
 #ifdef TARGET_NANOX
     // flag for which glyphs are shown
     unsigned int glyphs;
-
-    char icon[GLYPH_NONE][20];
+    
+    char glyph[GLYPH_NONE][20];
 #endif
 
 } UI_STATE_CTX_NANO;

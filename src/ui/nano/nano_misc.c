@@ -72,6 +72,7 @@ void write_display(const char *string, UI_TEXT_POS pos)
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
 
+#ifdef TARGET_NANOS
 // Checks for custom glyphs that require their own screen
 static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
 {
@@ -86,6 +87,7 @@ static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
         return;
     }
 }
+#endif
 
 // Turns a single glyph on or off
 void glyph_on(UI_GLYPH_TYPES_NANOS g)
@@ -103,34 +105,34 @@ void glyph_on(UI_GLYPH_TYPES_NANOS g)
     // to toggle it on
     switch (g) {
     case GLYPH_IOTA:
-        memcpy(ui_state.icon[GLYPH_IOTA], &C_x_iota_main_logo, 1);
+        memcpy(ui_state.glyph[GLYPH_IOTA], &C_x_iota_main_logo, 1);
         break;
     case GLYPH_LOAD:
-        memcpy(ui_state.icon[GLYPH_LOAD], &C_x_icon_load, 1);
+        memcpy(ui_state.glyph[GLYPH_LOAD], &C_x_icon_load, 1);
         break;
     case GLYPH_DASH:
-        memcpy(ui_state.icon[GLYPH_DASH], &C_x_icon_dash, 1);
+        memcpy(ui_state.glyph[GLYPH_DASH], &C_x_icon_dash, 1);
         break;
     case GLYPH_BACK:
-        memcpy(ui_state.icon[GLYPH_BACK], &C_x_icon_back, 1);
+        memcpy(ui_state.glyph[GLYPH_BACK], &C_x_icon_back, 1);
         break;
     case GLYPH_INFO:
-        memcpy(ui_state.icon[GLYPH_INFO], &C_x_icon_info, 1);
+        memcpy(ui_state.glyph[GLYPH_INFO], &C_x_icon_info, 1);
         break;
     case GLYPH_CHECK:
-        memcpy(ui_state.icon[GLYPH_CHECK], &C_x_icon_check, 1);
+        memcpy(ui_state.glyph[GLYPH_CHECK], &C_x_icon_check, 1);
         break;
     case GLYPH_CROSS:
-        memcpy(ui_state.icon[GLYPH_CROSS], &C_x_icon_cross, 1);
+        memcpy(ui_state.glyph[GLYPH_CROSS], &C_x_icon_cross, 1);
         break;
     case GLYPH_UP:
-        memcpy(ui_state.icon[GLYPH_UP], &C_x_icon_up, 1);
+        memcpy(ui_state.glyph[GLYPH_UP], &C_x_icon_up, 1);
         break;
     case GLYPH_DOWN:
-        memcpy(ui_state.icon[GLYPH_DOWN], &C_x_icon_down, 1);
+        memcpy(ui_state.glyph[GLYPH_DOWN], &C_x_icon_down, 1);
         break;
     case GLYPH_CONFIRM:
-        memcpy(ui_state.icon[GLYPH_CONFIRM], &C_x_icon_less, 1);
+        memcpy(ui_state.glyph[GLYPH_CONFIRM], &C_x_icon_less, 1);
         break;
     default:
         return;
@@ -170,16 +172,16 @@ static void clear_glyphs()
     ui_state.glyphs = 0;
 
     // Hide glyphs by just tweaking the first byte
-    ui_state.icon[GLYPH_IOTA][0] = 0;
-    ui_state.icon[GLYPH_LOAD][0] = 0;
-    ui_state.icon[GLYPH_DASH][0] = 0;
-    ui_state.icon[GLYPH_BACK][0] = 0;
-    ui_state.icon[GLYPH_INFO][0] = 0;
-    ui_state.icon[GLYPH_CHECK][0] = 0;
-    ui_state.icon[GLYPH_CROSS][0] = 0;
-    ui_state.icon[GLYPH_UP][0] = 0;
-    ui_state.icon[GLYPH_DOWN][0] = 0;
-    ui_state.icon[GLYPH_CONFIRM][0] = 0;
+    ui_state.glyph[GLYPH_IOTA][0] = 0;
+    ui_state.glyph[GLYPH_LOAD][0] = 0;
+    ui_state.glyph[GLYPH_DASH][0] = 0;
+    ui_state.glyph[GLYPH_BACK][0] = 0;
+    ui_state.glyph[GLYPH_INFO][0] = 0;
+    ui_state.glyph[GLYPH_CHECK][0] = 0;
+    ui_state.glyph[GLYPH_CROSS][0] = 0;
+    ui_state.glyph[GLYPH_UP][0] = 0;
+    ui_state.glyph[GLYPH_DOWN][0] = 0;
+    ui_state.glyph[GLYPH_CONFIRM][0] = 0;
 #endif
 }
 
