@@ -15,10 +15,6 @@
 
 #define BUTTON_BAD 255
 
-#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
-#define FLAG_ON(var, pos) var |= 1 << pos
-#define FLAG_OFF(var, pos) var &= ~(1 << pos)
-
 // Different positions text can appear at -
 // TOP_H and BOT_H are "half off the screen" elements on the S
 // to give a scrollable menu effect. POS_X is a fourth
@@ -49,6 +45,10 @@ typedef enum {
 } UI_GLYPH_TYPES_NANO;
 
 #else // TARGET_NANOS/X
+
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
+#define FLAG_ON(var, pos) var |= 1 << pos
+#define FLAG_OFF(var, pos) var &= ~(1 << pos)
 
 // UI SCREEN TYPES - these map onto omega screen elements
 typedef enum {

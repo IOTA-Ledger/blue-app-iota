@@ -2,7 +2,7 @@
 #include "api.h"
 #include <string.h>
 
-#if defined TARGET_BLUE
+#ifdef TARGET_BLUE
 #include "blue/blue_types.h"
 #define MENU_IDX_BREAK blue_ui_state.menu_idx
 #else

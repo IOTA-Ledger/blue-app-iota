@@ -14,7 +14,7 @@ static uint16_t timer;
 
 void ui_force_draw()
 {
-#ifdef TARGET_NANOS
+#ifndef TARGET_NANOX
     bool ux_done = false;
     while (!ux_done) {
         io_seproxyhal_general_status();

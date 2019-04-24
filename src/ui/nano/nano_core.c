@@ -6,6 +6,12 @@
 #include "nano_buttons.h"
 #include "nano_types.h"
 
+#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
+#define TARGET_NANO
+#endif
+
+#ifdef TARGET_NANO
+
 static void nano_transition_state(unsigned int button_mask);
 static void nano_build_display();
 
@@ -35,8 +41,6 @@ BUTTON_FUNCTION(back)
 // macros for button function
 BUTTON_FUNCTION(omega)
 
-#endif // TARGET_NANOS/X
-
 const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
 {
     if (!CHECK_BIT(ui_glyphs.glyphs, element->component.userid) &&
@@ -45,6 +49,8 @@ const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
     else
         return element;
 }
+
+#endif // TARGET_NANOS/X
 
 void nano_set_screen(UI_SCREENS_NANO s)
 {
@@ -435,3 +441,5 @@ static void nano_transition_state(unsigned int button_mask)
     // render new display
     nano_render();
 }
+
+#endif // TARGET_NANO
