@@ -72,33 +72,10 @@ void write_display(const char *string, UI_TEXT_POS pos)
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
 
-#ifdef TARGET_NANOS
-// Checks for custom glyphs that require their own screen
-static void check_special_glyph(UI_GLYPH_TYPES_NANO g)
-{
-    switch (g) {
-    case GLYPH_IOTA:
-        nano_set_screen(SCREEN_IOTA);
-        break;
-    case GLYPH_BACK:
-        nano_set_screen(SCREEN_BACK);
-        break;
-    default:
-        return;
-    }
-}
-#endif
-
 // Turns a single glyph on or off
 void glyph_on(UI_GLYPH_TYPES_NANO g)
 {
-#ifdef TARGET_NANOS
-    if (g < TOTAL_GLYPHS)
-        ui_glyphs.glyph[g] = '\0';
-    else
-        check_special_glyph(g);
-#endif
-    FLAG_ON(ui_glyphs.glyphs, g);
+    FLAG_ON(g);
 }
 
 static void clear_text()
@@ -111,31 +88,21 @@ static void clear_text()
 #endif
 }
 
-static void glyph_off(UI_GLYPH_TYPES_NANO g)
-{
-#ifdef TARGET_NANOS
-    if (g < TOTAL_GLYPHS) {
-        ui_glyphs.glyph[g] = '.';
-    }
-#endif
-    FLAG_OFF(ui_glyphs.glyphs, g);
-}
-
-
 static void clear_glyphs()
 {
     // turn off all glyphs
-    glyph_off(GLYPH_CONFIRM);
-    glyph_off(GLYPH_UP);
-    glyph_off(GLYPH_DOWN);
-    glyph_off(GLYPH_LOAD);
-    glyph_off(GLYPH_DASH);
-#ifdef TARGET_NANOX
-    glyph_off(GLYPH_IOTA);
-    glyph_off(GLYPH_BACK);
-    glyph_off(GLYPH_INFO);
-    glyph_off(GLYPH_CHECK);
-    glyph_off(GLYPH_CROSS);
+    FLAG_OFF(GLYPH_UP);
+    FLAG_OFF(GLYPH_DOWN);
+    FLAG_OFF(GLYPH_LOAD);
+    FLAG_OFF(GLYPH_DASH);
+    FLAG_OFF(GLYPH_IOTA);
+    FLAG_OFF(GLYPH_BACK);
+#ifdef TARGET_NANOS
+    FLAG_OFF(GLYPH_CONFIRM);
+#else // NANOX
+    FLAG_OFF(GLYPH_INFO);
+    FLAG_OFF(GLYPH_CHECK);
+    FLAG_OFF(GLYPH_CROSS);
 #endif
 }
 
@@ -161,7 +128,9 @@ void display_glyphs_confirm(UI_GLYPH_TYPES_NANO g1, UI_GLYPH_TYPES_NANO g2)
     clear_glyphs();
 
     // turn on ones we want
+#ifdef TARGET_NANOS
     glyph_on(GLYPH_CONFIRM);
+#endif
     glyph_on(g1);
     glyph_on(g2);
 }

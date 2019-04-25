@@ -58,24 +58,6 @@
 #define SCREEN_MSG_ICON_MULTILINE_2                                            \
     SCREEN_MSG_Y(56, ui_text.bot_str, TITLE_FONT_LG, EL_ICON_MULTI)
 
-// TODO REMOVE or get working
-// -- Confirm bars along top
-#define SCREEN_GLYPH_CONFIRM                                                   \
-    {{BAGL_ICON, EL_CONFIRM, 13, 6, 8, 1, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
-     (const char *)&C_x_icon_less,                                             \
-     0,                                                                        \
-     0,                                                                        \
-     0,                                                                        \
-     NULL,                                                                     \
-     NULL,                                                                     \
-     NULL},                                                                    \
-                                                                               \
-    {                                                                          \
-        {BAGL_ICON, EL_CONFIRM, 107,      6,        8, 1, 0,                   \
-         0,         0,          0xFFFFFF, 0x000000, 0, 0},                     \
-            (const char *)&C_x_icon_less, 0, 0, 0, NULL, NULL, NULL            \
-    }
-
 // -- Up arrow on left
 #define SCREEN_GLYPH_UP                                                        \
     {                                                                          \
@@ -151,8 +133,7 @@
 #define SCREEN_GLYPHS_ALL                                                      \
     SCREEN_GLYPH_IOTA, SCREEN_GLYPH_LOAD, SCREEN_GLYPH_DASH,                   \
         SCREEN_GLYPH_BACK, SCREEN_GLYPH_INFO, SCREEN_GLYPH_CHECK,              \
-        SCREEN_GLYPH_CROSS, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN,                \
-        SCREEN_GLYPH_CONFIRM
+        SCREEN_GLYPH_CROSS, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN
 
 // -- Define button functions with specific names
 #define BUTTON_FUNCTION(name)                                                  \

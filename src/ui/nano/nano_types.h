@@ -15,9 +15,9 @@
 
 #define BUTTON_BAD 255
 
-#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
-#define FLAG_ON(var, pos) var |= 1 << pos
-#define FLAG_OFF(var, pos) var &= ~(1 << pos)
+#define CHECK_BIT(pos) (ui_state.glyphs & (1 << (pos)))
+#define FLAG_ON(pos) ui_state.glyphs |= (1 << pos)
+#define FLAG_OFF(pos) ui_state.glyphs &= ~(1 << pos)
 
 // Different positions text can appear at -
 // TOP_H and BOT_H are "half off the screen" elements on the S
@@ -66,10 +66,6 @@ typedef enum {
 
 #else // TARGET_NANOS/X
 
-#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
-#define FLAG_ON(var, pos) var |= 1 << pos
-#define FLAG_OFF(var, pos) var &= ~(1 << pos)
-
 // UI SCREEN TYPES - these map onto omega screen elements
 typedef enum {
     SCREEN_TITLE,
@@ -90,7 +86,6 @@ typedef enum {
     GLYPH_CROSS,
     GLYPH_UP,   // maps to left
     GLYPH_DOWN, // maps to right
-    GLYPH_CONFIRM,
     GLYPH_NONE
 } UI_GLYPH_TYPES_NANO;
 
@@ -105,7 +100,6 @@ typedef enum {
     EL_CROSS,
     EL_UP,   // maps to left
     EL_DOWN, // maps to right
-    EL_CONFIRM,
     EL_NONE,
     EL_TITLE,
     EL_BIP,
@@ -174,14 +168,6 @@ typedef struct UI_TEXT_CTX_NANO {
 
 } UI_TEXT_CTX_NANO;
 
-typedef struct UI_GLYPH_CTX_NANO {
-    // flags for turning on/off certain glyphs
-    char glyph[TOTAL_GLYPHS + 1];
-    // flag for which glyphs are shown
-    unsigned int glyphs;
-
-} UI_GLYPH_CTX_NANO;
-
 typedef struct UI_STATE_CTX_NANO {
 
     // tx information
@@ -196,10 +182,12 @@ typedef struct UI_STATE_CTX_NANO {
     uint8_t backup_state;
     uint8_t backup_menu_idx;
 
+    // flag for which glyphs are shown
+    unsigned int glyphs;
+
 } UI_STATE_CTX_NANO;
 
 extern UI_TEXT_CTX_NANO ui_text;
-extern UI_GLYPH_CTX_NANO ui_glyphs;
 extern UI_STATE_CTX_NANO ui_state;
 
 #endif // NANO_TYPES_H

@@ -86,7 +86,7 @@
 #define SCREEN_GLYPH_CONFIRM                                                   \
     {{BAGL_ICON, EL_CONFIRM, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,      \
       BAGL_GLYPH_ICON_LESS},                                                   \
-     &ui_glyphs.glyph[GLYPH_CONFIRM],                                          \
+     NULL,                                                                     \
      0,                                                                        \
      0,                                                                        \
      0,                                                                        \
@@ -108,7 +108,7 @@
          0x000000,                                                             \
          0,                                                                    \
          BAGL_GLYPH_ICON_LESS},                                                \
-            &ui_glyphs.glyph[GLYPH_CONFIRM], 0, 0, 0, NULL, NULL, NULL         \
+            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
 // -- Up arrow on left
@@ -128,7 +128,7 @@
             0x000000,                                                          \
             0,                                                                 \
             BAGL_GLYPH_ICON_UP},                                               \
-            &ui_glyphs.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL              \
+            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
 // -- Down arrow on right
@@ -147,7 +147,7 @@
          0x000000,                                                             \
          0,                                                                    \
          BAGL_GLYPH_ICON_DOWN},                                                \
-            &ui_glyphs.glyph[GLYPH_DOWN], 0, 0, 0, NULL, NULL, NULL            \
+            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
 // -- Loading icon on left
@@ -166,7 +166,7 @@
          0x000000,                                                             \
          0,                                                                    \
          BAGL_GLYPH_ICON_LOADING_BADGE},                                       \
-            &ui_glyphs.glyph[GLYPH_LOAD], 0, 0, 0, NULL, NULL, NULL            \
+            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
 // -- Dashboard icon on left
@@ -185,7 +185,7 @@
          0x000000,                                                             \
          0,                                                                    \
          BAGL_GLYPH_ICON_DASHBOARD_BADGE},                                     \
-            &ui_glyphs.glyph[GLYPH_DASH], 0, 0, 0, NULL, NULL, NULL            \
+            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
 // -- IOTA icon on left
@@ -205,7 +205,8 @@
 // -- Define all screen glyphs
 #define SCREEN_GLYPHS_ALL                                                      \
     SCREEN_GLYPH_CONFIRM, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN,                  \
-        SCREEN_GLYPH_LOAD, SCREEN_GLYPH_DASH
+        SCREEN_GLYPH_LOAD, SCREEN_GLYPH_DASH, SCREEN_GLYPH_BACK,               \
+        SCREEN_GLYPH_IOTA, SCREEN_UNDERLINE
 
 // -- Define button functions with specific names
 #define BUTTON_FUNCTION(name)                                                  \

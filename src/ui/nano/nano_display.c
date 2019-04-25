@@ -80,7 +80,6 @@ void display_about()
         write_display("Version", TOP);
         write_display(APPVERSION, BOT);
         display_glyphs_confirm(GLYPH_DOWN, GLYPH_NONE);
-        // TODO - remove display_glyphs_confirm?
         break;
 
     case MENU_ABOUT_MORE_INFO:
@@ -194,6 +193,9 @@ void display_addr()
 #ifdef TARGET_NANOS
     nano_set_screen(SCREEN_MENU);
     write_text_array(msg, MENU_ADDR_LEN);
+
+    // glyph on to avoid overwriting write_text_array
+    glyph_on(GLYPH_CONFIRM);
 #else
     nano_set_screen(SCREEN_ADDR);
     // Write whole addr on 2 screens
@@ -212,9 +214,6 @@ void display_addr()
         write_display(msg + 147, POS_X);
     }
 #endif
-
-    // glyph on to avoid overwriting write_text_array
-    glyph_on(GLYPH_CONFIRM);
 
     // special overrides
 
