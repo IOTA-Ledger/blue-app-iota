@@ -121,68 +121,79 @@ void display_more_info()
 #endif // TARGET_NANOS
 }
 
+static void display_bip_path_string()
+{
+    clear_display();
+
+#ifdef TARGET_NANOS
+    nano_set_screen(SCREEN_TITLE);
+
+    // start the string in the top row
+    char *msg = ui_text.top_str;
+#else
+    nano_set_screen(SCREEN_BIP);
+    write_display("BIP32 Path:", TOP);
+
+    // start the string in the middle row
+    char *msg = ui_text.mid_str;
+#endif
+
+    // the longest possible path "2c'/107a'/ffffffff'/
+    // ffffffff'/ffffffff'" fits exactly into two rows
+    size_t chars_written = 0;
+    for (unsigned int i = 0; i < api.bip32_path_length; i++) {
+        snprintf(msg + chars_written, TEXT_LEN - chars_written, "%x",
+                 api.bip32_path[i] & 0x7fffffff);
+        chars_written = strnlen(msg, TEXT_LEN);
+
+        // write apostroph if hardnend
+        if (api.bip32_path[i] & (1u << 31)) {
+            msg[chars_written++] = '\'';
+        }
+
+        // write the separator only if not last element
+        if (i < api.bip32_path_length - 1) {
+            msg[chars_written++] = '|';
+        }
+
+        // inc row, if there might be not enough space for the next level
+        if (chars_written > TEXT_LEN - 11 && msg != ui_text.bot_str) {
+            // terminate the current line
+            if (chars_written < TEXT_LEN) {
+                msg[chars_written] = '\0';
+            }
+
+            // move to first position of bottom row
+            msg = ui_text.bot_str;
+            chars_written = 0;
+        }
+    }
+
+    // terminate the current line
+    if (chars_written < TEXT_LEN) {
+        msg[chars_written] = '\0';
+    }
+
+    display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
+}
+
 void display_bip_path()
 {
+#ifdef TARGET_NANOS
     if (ui_state.menu_idx == 0) {
         clear_display();
-#ifdef TARGET_NANOS
         nano_set_screen(SCREEN_MENU);
 
         write_display("BIP32 Path:", MID);
         display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
     }
     else {
-        clear_display();
-        nano_set_screen(SCREEN_TITLE);
-        char *msg = ui_text.top_str;
-#else
-        nano_set_screen(SCREEN_BIP);
-        write_display("BIP32 Path:", TOP);
-        char *msg = ui_text.mid_str;
-#endif
-
-
-        int row = 0;
-        size_t chars_written = 0;
-        for (unsigned int i = 0; i < api.bip32_path_length; i++) {
-
-            // this cannot happen, as
-            // "2c'/107a'/ffffffff'/\nffffffff'/ffffffff'" fits exactly into two
-            // rows
-            if (row > 1) {
-                THROW(INVALID_STATE);
-            }
-
-            snprintf(msg + chars_written, TEXT_LEN - chars_written, "%x",
-                     api.bip32_path[i] & 0x7fffffff);
-            chars_written = strnlen(msg, TEXT_LEN);
-
-            // write apostroph if hardnend
-            if (api.bip32_path[i] & (1u << 31)) {
-                msg[chars_written++] = '\'';
-            }
-
-            // write the separator only if not last element
-            if (i < api.bip32_path_length - 1) {
-                msg[chars_written++] = '|';
-            }
-
-            // inc row, if there might be not enough space for the next level
-            if (chars_written > TEXT_LEN - 11) {
-                msg[chars_written] = '\0';
-                row++;
-                msg = ui_text.bot_str;
-                chars_written = 0;
-            }
-        }
-
-        // make sure that the current row is terminated
-        if (row <= 1) {
-            msg[chars_written] = '\0';
-        }
-
-        display_glyphs_confirm(GLYPH_UP, GLYPH_NONE);
+        display_bip_path_string();
     }
+#else
+    // display the path directly
+    display_bip_path_string();
+#endif
 }
 
 void display_addr()
