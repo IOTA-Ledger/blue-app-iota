@@ -19,6 +19,15 @@ UI_TEXT_CTX_NANO ui_text;
 UI_GLYPH_CTX_NANO ui_glyphs;
 UI_STATE_CTX_NANO ui_state;
 
+const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
+{
+    if (!CHECK_BIT(ui_glyphs.glyphs, element->component.userid) &&
+        element->component.userid != EL_CLEAR)
+        return NULL;
+    else
+        return element;
+}
+
 #ifdef TARGET_NANOS
 
 #include "s_screens.h"
@@ -38,28 +47,33 @@ BUTTON_FUNCTION(back)
 #include "x_screens.h"
 #include "x_elements.h"
 
-// macros for button function
-BUTTON_FUNCTION(omega)
-
-const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
-{
-    if (!CHECK_BIT(ui_glyphs.glyphs, element->component.userid) &&
-        element->component.userid != EL_CLEAR)
-        return NULL;
-    else
-        return element;
-}
 
 #endif // TARGET_NANOS/X
+
+// macros for button function
+BUTTON_FUNCTION(omega)
 
 void nano_set_screen(UI_SCREENS_NANO s)
 {
 #ifdef TARGET_NANOS
     current_screen = s;
-#else
+#endif
     ui_glyphs.glyphs = 0;
 
     switch (s) {
+#ifdef TARGET_NANOS
+    case SCREEN_TITLE:
+        FLAG_ON(ui_glyphs.glyphs, EL_TITLE);
+        break;
+    case SCREEN_TITLE_BOLD:
+        FLAG_ON(ui_glyphs.glyphs, EL_TITLE_BOLD);
+        break;
+    case SCREEN_MENU:
+    case SCREEN_IOTA:
+    case SCREEN_BACK:
+        FLAG_ON(ui_glyphs.glyphs, EL_MENU);
+        break;
+#else
     case SCREEN_TITLE:
         FLAG_ON(ui_glyphs.glyphs, EL_TITLE);
         break;
@@ -75,10 +89,10 @@ void nano_set_screen(UI_SCREENS_NANO s)
     case SCREEN_ICON_MULTI:
         FLAG_ON(ui_glyphs.glyphs, EL_ICON_MULTI);
         break;
+#endif
     default:
         return;
     }
-#endif
 }
 
 static void nano_render()
@@ -86,19 +100,19 @@ static void nano_render()
 #ifdef TARGET_NANOS
     switch (current_screen) {
     case SCREEN_TITLE:
-        UX_DISPLAY(bagl_ui_title_screen, NULL);
+        UX_DISPLAY(bagl_ui_title_screen, ux_element_preprocessor);
         break;
     case SCREEN_TITLE_BOLD:
-        UX_DISPLAY(bagl_ui_title_bold_screen, NULL);
+        UX_DISPLAY(bagl_ui_title_bold_screen, ux_element_preprocessor);
         break;
     case SCREEN_MENU:
-        UX_DISPLAY(bagl_ui_menu_screen, NULL);
+        UX_DISPLAY(bagl_ui_menu_screen, ux_element_preprocessor);
         break;
     case SCREEN_IOTA:
-        UX_DISPLAY(bagl_ui_iota_screen, NULL);
+        UX_DISPLAY(bagl_ui_iota_screen, ux_element_preprocessor);
         break;
     case SCREEN_BACK:
-        UX_DISPLAY(bagl_ui_back_screen, NULL);
+        UX_DISPLAY(bagl_ui_back_screen, ux_element_preprocessor);
         break;
     default:
         THROW(INVALID_PARAMETER);

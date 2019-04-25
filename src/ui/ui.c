@@ -3,6 +3,7 @@
 #include "os_io_seproxyhal.h"
 #include "api.h"
 #include "iota/addresses.h"
+#include "nano/nano_core.h"
 
 #define TICKS_PER_SECOND 10
 
@@ -10,39 +11,22 @@
 #define UI_TIMEOUT_SECONDS 3
 #define UI_TIMEOUT_INTERACTIVE_SECONDS 100
 
+#define WAIT_EVENT()                                                           \
+    io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,                         \
+                           sizeof(G_io_seproxyhal_spi_buffer), 0)
+
 static uint16_t timer;
 
 void ui_force_draw()
 {
-#ifndef TARGET_NANOX
-    bool ux_done = false;
-    while (!ux_done) {
-        io_seproxyhal_general_status();
-        io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
-                               sizeof(G_io_seproxyhal_spi_buffer), 0);
-
-        // manually handle events
-        switch (G_io_seproxyhal_spi_buffer[0]) {
-        case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-            if (UX_DISPLAYED()) {
-                ux_done = true;
-                break;
-            }
-            else {
-                UX_DISPLAYED_EVENT();
-            }
-            break;
-        default:
-            // ignore any other event
-            break;
-        }
+    while (!UX_DISPLAYED()) {
+        UX_DISPLAY_NEXT_ELEMENT();
+        WAIT_EVENT();
     }
 
     // now everything is in the buffer, the next general status renders it
     io_seproxyhal_general_status();
-    io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,
-                           sizeof(G_io_seproxyhal_spi_buffer), 0);
-#endif
+    WAIT_EVENT();
 }
 
 void ui_timeout_tick()

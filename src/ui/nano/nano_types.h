@@ -15,6 +15,10 @@
 
 #define BUTTON_BAD 255
 
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
+#define FLAG_ON(var, pos) var |= 1 << pos
+#define FLAG_OFF(var, pos) var &= ~(1 << pos)
+
 // Different positions text can appear at -
 // TOP_H and BOT_H are "half off the screen" elements on the S
 // to give a scrollable menu effect. POS_X is a fourth
@@ -43,6 +47,22 @@ typedef enum {
     GLYPH_IOTA,
     GLYPH_BACK
 } UI_GLYPH_TYPES_NANO;
+
+// GLYPH TYPES
+typedef enum {
+    EL_CONFIRM,
+    EL_UP,
+    EL_DOWN,
+    EL_DASH,
+    EL_LOAD,
+    EL_NONE, // glyphs after none require special screens
+    EL_IOTA,
+    EL_BACK,
+    EL_TITLE,
+    EL_TITLE_BOLD,
+    EL_MENU,
+    EL_CLEAR
+} UI_ELEMENT_IDS;
 
 #else // TARGET_NANOS/X
 
@@ -93,7 +113,7 @@ typedef enum {
     EL_ICON,
     EL_ICON_MULTI,
     EL_CLEAR
-} UI_EL_IDS_X;
+} UI_ELEMENT_IDS;
 
 #endif // TARGET_NANOS/X
 
@@ -155,13 +175,10 @@ typedef struct UI_TEXT_CTX_NANO {
 } UI_TEXT_CTX_NANO;
 
 typedef struct UI_GLYPH_CTX_NANO {
-#ifdef TARGET_NANOS
     // flags for turning on/off certain glyphs
     char glyph[TOTAL_GLYPHS + 1];
-#else
     // flag for which glyphs are shown
     unsigned int glyphs;
-#endif
 
 } UI_GLYPH_CTX_NANO;
 

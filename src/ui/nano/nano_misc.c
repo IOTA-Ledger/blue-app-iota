@@ -97,9 +97,8 @@ void glyph_on(UI_GLYPH_TYPES_NANO g)
         ui_glyphs.glyph[g] = '\0';
     else
         check_special_glyph(g);
-#else
-    FLAG_ON(ui_glyphs.glyphs, g);
 #endif
+    FLAG_ON(ui_glyphs.glyphs, g);
 }
 
 static void clear_text()
@@ -118,9 +117,8 @@ static void glyph_off(UI_GLYPH_TYPES_NANO g)
     if (g < TOTAL_GLYPHS) {
         ui_glyphs.glyph[g] = '.';
     }
-#else
-    FLAG_OFF(ui_glyphs.glyphs, g);
 #endif
+    FLAG_OFF(ui_glyphs.glyphs, g);
 }
 
 

@@ -13,7 +13,7 @@
 // -- Clear screen
 #define SCREEN_CLEAR                                                           \
     {                                                                          \
-        {BAGL_RECTANGLE, 0x00,     0,        0, 128, 32, 0, 0,                 \
+        {BAGL_RECTANGLE, EL_CLEAR, 0,        0, 128, 32, 0, 0,                 \
          BAGL_FILL,      0x000000, 0xFFFFFF, 0, 0},                            \
             NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
@@ -21,7 +21,7 @@
 // -- Title screen top message
 #define SCREEN_MSG_TOP                                                         \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 13, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+        {BAGL_LABELINE, EL_TITLE,     0, 13, 128, 32, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -29,15 +29,15 @@
 // -- Title screen top message
 #define SCREEN_MSG_TOP_BOLD                                                    \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 13, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
-         DEFAULT_FONT_BOLD, 0},                                                \
+        {BAGL_LABELINE, EL_TITLE_BOLD,     0, 13, 128, 32, 0, 0, 0, 0xFFFFFF,  \
+         0x000000,      DEFAULT_FONT_BOLD, 0},                                 \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Title screen bottom message
 #define SCREEN_MSG_BOT                                                         \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 25, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+        {BAGL_LABELINE, EL_TITLE,     0, 25, 128, 32, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -45,15 +45,15 @@
 // -- Title screen bottom message
 #define SCREEN_MSG_BOT_BOLD                                                    \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 25, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
-         DEFAULT_FONT_BOLD, 0},                                                \
+        {BAGL_LABELINE, EL_TITLE_BOLD,     0, 25, 128, 32, 0, 0, 0, 0xFFFFFF,  \
+         0x000000,      DEFAULT_FONT_BOLD, 0},                                 \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen top message half off screen
 #define SCREEN_MSG_TOP_HALF                                                    \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 3, 128, 32, 0, 0, 0, 0xFFFFFF,        \
+        {BAGL_LABELINE, EL_MENU,      0, 3, 128, 32, 0, 0, 0, 0xFFFFFF,        \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.top_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -61,15 +61,15 @@
 // -- Menu screen middle message
 #define SCREEN_MSG_MID                                                         \
     {                                                                          \
-        {BAGL_LABELINE,     0x01, 0, 19, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000, \
-         DEFAULT_FONT_BOLD, 0},                                                \
+        {BAGL_LABELINE, EL_MENU,           0, 19, 128, 32, 0, 0, 0, 0xFFFFFF,  \
+         0x000000,      DEFAULT_FONT_BOLD, 0},                                 \
             ui_text.mid_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
 
 // -- Menu screen bot message half off screen
 #define SCREEN_MSG_BOT_HALF                                                    \
     {                                                                          \
-        {BAGL_LABELINE, 0x01,         0, 36, 128, 32, 0, 0, 0, 0xFFFFFF,       \
+        {BAGL_LABELINE, EL_MENU,      0, 36, 128, 32, 0, 0, 0, 0xFFFFFF,       \
          0x000000,      DEFAULT_FONT, 0},                                      \
             ui_text.bot_str, 0, 0, 0, NULL, NULL, NULL                         \
     }
@@ -77,14 +77,14 @@
 // -- Underline for "IOTA"
 #define SCREEN_UNDERLINE                                                       \
     {                                                                          \
-        {BAGL_RECTANGLE, 0x00,     48,       22, 33, 1, 0, 0,                  \
+        {BAGL_RECTANGLE, EL_IOTA,  48,       22, 33, 1, 0, 0,                  \
          BAGL_FILL,      0xFFFFFF, 0x000000, 0,  0},                           \
             NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
 // -- Confirm bars along top
 #define SCREEN_GLYPH_CONFIRM                                                   \
-    {{BAGL_ICON, 0x00, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,            \
+    {{BAGL_ICON, EL_CONFIRM, 3, -3, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,      \
       BAGL_GLYPH_ICON_LESS},                                                   \
      &ui_glyphs.glyph[GLYPH_CONFIRM],                                          \
      0,                                                                        \
@@ -96,7 +96,7 @@
                                                                                \
     {                                                                          \
         {BAGL_ICON,                                                            \
-         0x00,                                                                 \
+         EL_CONFIRM,                                                           \
          117,                                                                  \
          -3,                                                                   \
          8,                                                                    \
@@ -114,8 +114,20 @@
 // -- Up arrow on left
 #define SCREEN_GLYPH_UP                                                        \
     {                                                                          \
-        {BAGL_ICON,         0x00, 3, 12, 7, 7, 0, 0, 0, 0x000000, 0x000000, 0, \
-         BAGL_GLYPH_ICON_UP},                                                  \
+        {                                                                      \
+            BAGL_ICON,                                                         \
+            EL_UP,                                                             \
+            3,                                                                 \
+            12,                                                                \
+            7,                                                                 \
+            7,                                                                 \
+            0,                                                                 \
+            0,                                                                 \
+            0,                                                                 \
+            0x000000,                                                          \
+            0x000000,                                                          \
+            0,                                                                 \
+            BAGL_GLYPH_ICON_UP},                                               \
             &ui_glyphs.glyph[GLYPH_UP], 0, 0, 0, NULL, NULL, NULL              \
     }
 
@@ -123,7 +135,7 @@
 #define SCREEN_GLYPH_DOWN                                                      \
     {                                                                          \
         {BAGL_ICON,                                                            \
-         0x00,                                                                 \
+         EL_DOWN,                                                              \
          117,                                                                  \
          13,                                                                   \
          8,                                                                    \
@@ -142,7 +154,7 @@
 #define SCREEN_GLYPH_LOAD                                                      \
     {                                                                          \
         {BAGL_ICON,                                                            \
-         0x00,                                                                 \
+         EL_LOAD,                                                              \
          9,                                                                    \
          12,                                                                   \
          8,                                                                    \
@@ -161,7 +173,7 @@
 #define SCREEN_GLYPH_DASH                                                      \
     {                                                                          \
         {BAGL_ICON,                                                            \
-         0x00,                                                                 \
+         EL_DASH,                                                              \
          24,                                                                   \
          12,                                                                   \
          8,                                                                    \
@@ -179,14 +191,14 @@
 // -- IOTA icon on left
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 18, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
+        {BAGL_ICON, EL_IOTA, 18, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
             (const char *)&C_icon_iota, 0, 0, 0, NULL, NULL, NULL              \
     }
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK                                                      \
     {                                                                          \
-        {BAGL_ICON, 0x00, 24, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},     \
+        {BAGL_ICON, EL_BACK, 24, 8, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0, 0},  \
             (const char *)&C_icon_back, 0, 0, 0, NULL, NULL, NULL              \
     }
 
