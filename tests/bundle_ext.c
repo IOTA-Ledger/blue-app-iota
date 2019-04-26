@@ -1,6 +1,6 @@
 #include "test_common.h"
-#include "iota/conversion.h"
 // include the c-file to be able to test static functions
+#include "iota/conversion.c"
 #include "iota/bundle.c"
 
 // Hash relevant content of one transaction
@@ -10,6 +10,13 @@ typedef struct TX_ENTRY {
     char tag[27];
     uint32_t timestamp;
 } TX_ENTRY;
+
+static void bytes_to_trits(const unsigned char *bytes, trit_t *trits)
+{
+    tryte_t trytes[NUM_HASH_TRYTES];
+    bytes_to_trytes(bytes, trytes);
+    trytes_to_trits(trytes, trits, NUM_HASH_TRYTES);
+}
 
 static void increment_trit_aera(trit_t *trits, unsigned int start_trit,
                                 unsigned int num_trits)

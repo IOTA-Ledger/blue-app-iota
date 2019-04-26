@@ -27,22 +27,14 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
 
 unsigned int iota_dispatch()
 {
-    // if it does not start with the magic byte, return error
-    if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
-        THROW(SW_CLA_NOT_SUPPORTED);
-        return 0;
-    }
-
     const uint8_t p1 = G_io_apdu_buffer[OFFSET_P1];
     const unsigned int len = G_io_apdu_buffer[OFFSET_P3];
-    unsigned char *input_data = G_io_apdu_buffer + OFFSET_CDATA;
+    const unsigned char *input_data = G_io_apdu_buffer + OFFSET_CDATA;
 
     // check second byte for instruction
     switch (G_io_apdu_buffer[OFFSET_INS]) {
     case INS_NONE:
         return 0;
-    case INS_SET_SEED:
-        return api_set_seed(p1, input_data, len);
     case INS_PUBKEY:
         return api_pubkey(p1, input_data, len);
     case INS_TX:

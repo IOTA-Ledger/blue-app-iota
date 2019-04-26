@@ -6,14 +6,13 @@
 #include "test_common.h"
 #include "api.h"
 
-#define BUFFER_LEN 10000
-#define LAST_TX_INDEX 5
-#define NUM_INPUTS 2
+#define BUFFER_LEN 20000
+#define MAX_TX_INDEX 7
 
 #define SCNs27 "[NOPQRSTUVWXYZ9ABCDEFGHIJKLM]"
 
 void test_for_each_bundle(const char *file_name,
-                          void (*test)(char *, TX_INPUT *, char *,
+                          void (*test)(char *, int, TX_INPUT *, int, char *,
                                        char[][SIGNATURE_LENGTH]))
 {
     char path_name[BUFFER_LEN];
@@ -25,23 +24,24 @@ void test_for_each_bundle(const char *file_name,
     }
 
     char line[BUFFER_LEN];
-    unsigned int line_num = 0;
     while (fgets(line, sizeof(line), file) != NULL) {
-
-        if (++line_num == 1) {
-            continue;
-        }
-
         char seed[NUM_HASH_TRYTES];
-        TX_INPUT tx[LAST_TX_INDEX + 1];
+        unsigned int security;
+        unsigned int last_index;
+        TX_INPUT tx[MAX_TX_INDEX + 1];
 
         int offset = 0;
 
         int scanned;
-        sscanf(line, "%81" SCNs27 ",%n", seed, &scanned);
+        sscanf(line, "%81" SCNs27 ",%u,%u,%n", seed, &security, &last_index,
+               &scanned);
         offset += scanned;
 
-        for (int i = 0; i <= LAST_TX_INDEX; i++) {
+        if (last_index >= MAX_BUNDLE_SIZE) {
+            fail_msg("Max bundle index violated.");
+        }
+
+        for (unsigned int i = 0; i <= last_index; i++) {
             sscanf(line + offset,
                    "%81" SCNs27 ",%" SCNu32 ",%" SCNd64 ",%27" SCNs27
                    ",%" SCNu32 ",%n",
@@ -49,7 +49,7 @@ void test_for_each_bundle(const char *file_name,
                    &tx[i].timestamp, &scanned);
 
             tx[i].current_index = i;
-            tx[i].last_index = LAST_TX_INDEX;
+            tx[i].last_index = last_index;
 
             offset += scanned;
         }
@@ -58,13 +58,14 @@ void test_for_each_bundle(const char *file_name,
         sscanf(line + offset, "%81" SCNs27 ",%n", bundle_hash, &scanned);
         offset += scanned;
 
-        char signatures[NUM_INPUTS][SIGNATURE_LENGTH];
-        for (int i = 0; i < NUM_INPUTS; i++) {
-            sscanf(line + offset, "%4374" SCNs27 ",%n", signatures[i],
+        const int num_inputs = (last_index - 1) / security;
+        char signatures[num_inputs][SIGNATURE_LENGTH];
+        for (int i = 0; i < num_inputs; i++) {
+            sscanf(line + offset, "%6561" SCNs27 ",%n", signatures[i],
                    &scanned);
             offset += scanned;
         }
 
-        test(seed, tx, bundle_hash, signatures);
+        test(seed, security, tx, last_index, bundle_hash, signatures);
     }
 }

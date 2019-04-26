@@ -1,4 +1,4 @@
-#include "aux.h"
+#include "misc.h"
 #include <string.h>
 #include "common.h"
 

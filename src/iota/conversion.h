@@ -24,7 +24,16 @@ void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len);
  *  @return true, if an overflow occured and the given integer could not be
             completely represented with this number of trits, false otherwise.
  */
-bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
+bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits);
+
+/** @brief Converts a single unsigned integer into its ternary representation.
+ *  @param value signed integer to convert
+ *  @param trits target trit array
+ *  @param num_trits number of trits to convert
+ *  @return true, if an overflow occured and the given integer could not be
+            completely represented with this number of trits, false otherwise.
+ */
+bool u32_to_trits(const uint32_t value, trit_t *trits, unsigned int num_trits);
 
 /** @brief Converts a balanced ternary number into a big-endian binary integer.
  *  The input must consist of exactly one 243-trit chunk and is converted into
@@ -33,12 +42,6 @@ bool int64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
  *  @param bytes target byte array
  */
 void trits_to_bytes(const trit_t *trits, unsigned char *bytes);
-
-/** @brief Converts a big-endian binary integer into ternary representation.
- *  @param bytes input big-endian 48-byte integers
- *  @param trits target trit array
- */
-void bytes_to_trits(const unsigned char *bytes, trit_t *trits);
 
 /** @brief Converts a big-endian binary integer into a balanced ternary number
  *         in tryte (3-trit) representation.
@@ -58,17 +61,6 @@ void bytes_to_trytes(const unsigned char *bytes, tryte_t *trytes);
  */
 void chars_to_bytes(const char *chars, unsigned char *bytes,
                     unsigned int chars_len);
-
-/** @brief Converts an array of chars into a balanced ternary number
- *         in tryte (3-trit) representation.
- *  The input must consist of multiples of 81-char chunks, each chunk is
- *  converted into a big-endian 48-byte integer
- *  @param chars_in base-27 encoded ternary number
- *  @param trytes_out target tryte array
- *  @param len length of the input
- */
-int chars_to_trytes(const char chars_in[], tryte_t trytes_out[],
-                    unsigned int len);
 
 /** @brief Converts a big-endian binary integer into a balanced ternary number
  *         in base-27 encoding.

@@ -6,11 +6,11 @@
 #include "kerl.h"
 
 // pointer to the first byte of the current transaction
-#define TX_BYTES(C) ((C)->bytes + (C)->current_tx_index * 96)
+#define TX_BYTES(C) ((C)->bytes + (C)->current_tx_index * (2 * NUM_HASH_BYTES))
 
 void bundle_initialize(BUNDLE_CTX *ctx, uint8_t last_tx_index)
 {
-    if (last_tx_index < 1 || last_tx_index >= MAX_BUNDLE_INDEX_SZ) {
+    if (last_tx_index < 1 || last_tx_index >= MAX_BUNDLE_SIZE) {
         THROW(INVALID_PARAMETER);
     }
 
@@ -41,11 +41,11 @@ static void create_bundle_bytes(int64_t value, const char *tag,
 {
     trit_t bundle_essence_trits[243] = {0};
 
-    int64_to_trits(value, bundle_essence_trits, 81);
+    s64_to_trits(value, bundle_essence_trits, 81);
     chars_to_trits(tag, bundle_essence_trits + 81, 27);
-    int64_to_trits(timestamp, bundle_essence_trits + 162, 27);
-    int64_to_trits(current_tx_index, bundle_essence_trits + 189, 27);
-    int64_to_trits(last_tx_index, bundle_essence_trits + 216, 27);
+    u32_to_trits(timestamp, bundle_essence_trits + 162, 27);
+    u32_to_trits(current_tx_index, bundle_essence_trits + 189, 27);
+    u32_to_trits(last_tx_index, bundle_essence_trits + 216, 27);
 
     // now we have exactly one chunk of 243 trits
     trits_to_bytes(bundle_essence_trits, bytes);
@@ -137,7 +137,7 @@ static bool validate_address(const unsigned char *addr_bytes,
     unsigned char computed_addr[48];
     get_public_addr(seed_bytes, idx, security, computed_addr);
 
-    return (memcmp(addr_bytes, computed_addr, 48) == 0);
+    return (os_memcmp(addr_bytes, computed_addr, 48) == 0);
 }
 
 /** @return Whether all values sum up to zero. */
@@ -165,9 +165,9 @@ static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
                 if (i + j > ctx->last_tx_index || ctx->values[i + j] != 0) {
                     return false;
                 }
-                if (memcmp(input_addr_bytes,
-                           bundle_get_address_bytes(ctx, i + j),
-                           NUM_HASH_BYTES) != 0) {
+                if (os_memcmp(input_addr_bytes,
+                              bundle_get_address_bytes(ctx, i + j),
+                              NUM_HASH_BYTES) != 0) {
                     return false;
                 }
             }
@@ -232,8 +232,8 @@ static bool validate_address_reuse(const BUNDLE_CTX *ctx)
 
         for (uint8_t j = i + 1; j <= ctx->last_tx_index; j++) {
             if (ctx->values[j] != 0 &&
-                memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
-                       NUM_HASH_BYTES) == 0) {
+                os_memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
+                          NUM_HASH_BYTES) == 0) {
                 return false;
             }
         }

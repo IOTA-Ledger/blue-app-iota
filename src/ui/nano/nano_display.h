@@ -1,7 +1,6 @@
-#ifndef UI_DISPLAY_H
-#define UI_DISPLAY_H
+#ifndef NANO_DISPLAY_H
+#define NANO_DISPLAY_H
 
-void display_init(void);
 void display_main_menu(void);
 void display_about(void);
 void display_version(void);
@@ -13,4 +12,4 @@ void display_tx_addr(void);  // display address in tx
 void display_prompt_tx(void);
 void display_unknown_state(void);
 
-#endif // UI_DISPLAY_H
+#endif // NANO_DISPLAY_H

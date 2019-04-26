@@ -18,12 +18,9 @@ static void test_get_app_config(void **state)
 
     unsigned char input[0]; // no input
 
-    GET_APP_CONFIG_OUTPUT output = {0};
-    output.app_flags = APP_FLAGS;
-    output.app_version_major = APPVERSION_MAJOR;
-    output.app_version_minor = APPVERSION_MINOR;
-    output.app_version_patch = APPVERSION_PATCH;
-
+    const GET_APP_CONFIG_OUTPUT output = {APPVERSION_MAJOR, APPVERSION_MINOR,
+                                          APPVERSION_PATCH, MAX_BUNDLE_SIZE,
+                                          APP_FLAGS};
     EXPECT_API_DATA_OK(get_app_config, 0, input, output);
 }
 

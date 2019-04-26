@@ -5,7 +5,7 @@
 
 #define NUM_RANDOM_TESTS 10000
 
-static void test_int64_to_trits_zero(void **state)
+static void test_s64_to_trits_zero(void **state)
 {
     UNUSED(state);
 
@@ -13,13 +13,13 @@ static void test_int64_to_trits_zero(void **state)
     static const trit_t expected_trits[42] = {0};
 
     trit_t trits_out[42];
-    bool result = int64_to_trits(input_value, trits_out, 42);
+    bool result = s64_to_trits(input_value, trits_out, 42);
 
     assert_false(result);
     assert_memory_equal(trits_out, expected_trits, 42);
 }
 
-static void test_int64_to_trits_one(void **state)
+static void test_s64_to_trits_one(void **state)
 {
     UNUSED(state);
 
@@ -28,13 +28,13 @@ static void test_int64_to_trits_one(void **state)
     memset(expected_trits, 1, 40);
 
     trit_t trits_out[40];
-    bool result = int64_to_trits(input_value, trits_out, 40);
+    bool result = s64_to_trits(input_value, trits_out, 40);
 
     assert_false(result);
     assert_memory_equal(trits_out, expected_trits, 40);
 }
 
-static void test_int64_to_trits_neg_one(void **state)
+static void test_s64_to_trits_neg_one(void **state)
 {
     UNUSED(state);
 
@@ -43,20 +43,78 @@ static void test_int64_to_trits_neg_one(void **state)
     memset(expected_trits, -1, 40);
 
     trit_t trits_out[40];
-    bool result = int64_to_trits(input_value, trits_out, 40);
+    bool result = s64_to_trits(input_value, trits_out, 40);
 
     assert_false(result);
     assert_memory_equal(trits_out, expected_trits, 40);
 }
 
-static void test_int64_to_trits_overflow(void **state)
+static void test_s64_to_trits_overflow(void **state)
 {
     UNUSED(state);
 
     static const int64_t input_value = 6078832729528464401;
 
     trit_t trits_out[40];
-    bool result = int64_to_trits(input_value, trits_out, 40);
+    bool result = s64_to_trits(input_value, trits_out, 40);
+
+    assert_true(result);
+}
+
+static void test_s64_to_trits_int_min(void **state)
+{
+    UNUSED(state);
+
+    static const int64_t input_value = INT64_MIN;
+    static const trit_t expected_trits[41] = {
+        1,  0,  0,  -1, 1, 0,  1,  -1, -1, 0,  1,  0,  1, 0,
+        -1, 0,  -1, 0,  1, -1, -1, 1,  1,  -1, 0,  -1, 1, 0,
+        0,  -1, -1, -1, 0, 0,  -1, -1, -1, 1,  -1, 1,  -1};
+
+    trit_t trits_out[41];
+    bool result = s64_to_trits(input_value, trits_out, 41);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 41);
+}
+
+static void test_u32_to_trits_zero(void **state)
+{
+    UNUSED(state);
+
+    static const uint32_t input_value = 0;
+    static const trit_t expected_trits[21] = {0};
+
+    trit_t trits_out[21];
+    bool result = u32_to_trits(input_value, trits_out, 21);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 21);
+}
+
+static void test_u32_to_trits_one(void **state)
+{
+    UNUSED(state);
+
+    static const uint32_t input_value = 1743392200; // \sum_{i=0}^{19} 3^i
+    trit_t expected_trits[20];
+    memset(expected_trits, 1, 20);
+
+    trit_t trits_out[20];
+    bool result = u32_to_trits(input_value, trits_out, 20);
+
+    assert_false(result);
+    assert_memory_equal(trits_out, expected_trits, 20);
+}
+
+static void test_u32_to_trits_overflow(void **state)
+{
+    UNUSED(state);
+
+    static const uint32_t input_value = 1743392201;
+
+    trit_t trits_out[20];
+    bool result = u32_to_trits(input_value, trits_out, 20);
 
     assert_true(result);
 }
@@ -151,6 +209,17 @@ static void test_all_zero(void **state)
     assert_chars_equal(chars, ZERO_CHARS);
 }
 
+static void test_all_one(void **state)
+{
+    UNUSED(state);
+
+    static const char ONE_CHARS[NUM_HASH_TRYTES] =
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+        "MMMMMMMMMMM";
+
+    test_chars_via_bytes(ONE_CHARS);
+}
+
 static void test_all_neg_one(void **state)
 {
     UNUSED(state);
@@ -164,7 +233,7 @@ static void test_all_neg_one(void **state)
 
 static void test_random_chars_via_bytes(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     srand(2);
     for (uint i = 0; i < NUM_RANDOM_TESTS; i++) {
@@ -178,11 +247,16 @@ static void test_random_chars_via_bytes(void **state)
 int main(void)
 {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_int64_to_trits_zero),
-        cmocka_unit_test(test_int64_to_trits_one),
-        cmocka_unit_test(test_int64_to_trits_neg_one),
-        cmocka_unit_test(test_int64_to_trits_overflow),
+        cmocka_unit_test(test_s64_to_trits_zero),
+        cmocka_unit_test(test_s64_to_trits_one),
+        cmocka_unit_test(test_s64_to_trits_neg_one),
+        cmocka_unit_test(test_s64_to_trits_overflow),
+        cmocka_unit_test(test_s64_to_trits_int_min),
+        cmocka_unit_test(test_u32_to_trits_zero),
+        cmocka_unit_test(test_u32_to_trits_one),
+        cmocka_unit_test(test_u32_to_trits_overflow),
         cmocka_unit_test(test_all_zero),
+        cmocka_unit_test(test_all_one),
         cmocka_unit_test(test_all_neg_one),
         cmocka_unit_test(test_random_bytes_via_chars),
         cmocka_unit_test(test_random_chars_via_bytes)};

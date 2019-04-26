@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "api.h"
 #include "seed.h"
-#include "storage.h"
 #include "iota/bundle.h"
 #include "ui/ui.h"
 #include "keccak/sha3.h"
@@ -32,6 +31,15 @@ void ui_display_signing()
 {
 }
 
+void ui_timeout_start(bool interactive)
+{
+    UNUSED(interactive);
+}
+
+void ui_timeout_stop()
+{
+}
+
 void ui_display_address(const unsigned char *addr_bytes)
 {
     UNUSED(addr_bytes);
@@ -50,9 +58,8 @@ void ui_restore()
 {
 }
 
-bool storage_is_initialized()
+void ui_reset()
 {
-    return true;
 }
 
 __attribute__((weak)) void seed_derive_from_bip32(const unsigned int *path,

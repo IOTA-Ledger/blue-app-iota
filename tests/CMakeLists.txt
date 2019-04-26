@@ -29,6 +29,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow -Wcast-align -Wmissin
 # enable compilation on host
 add_definitions(
     -DNO_BOLOS
+    -DTARGET_NANOS
     -DKERL_TEST_FOLDER="${CMAKE_SOURCE_DIR}/kerl-spec/test_vectors"
     -DTEST_FOLDER="${CMAKE_SOURCE_DIR}/test_vectors"
 )
@@ -41,7 +42,7 @@ add_library(iota-ledger SHARED
     "../src/iota/signing.c"
     "../src/keccak/sha3.c"
     "../src/api.c"
-    "../src/aux.c"
+    "../src/misc.c"
     "test_mocks.c"
 )
 
@@ -65,15 +66,11 @@ add_executable(signing_test signing_test.c)
 target_link_libraries(signing_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(signing_test ${CMAKE_CURRENT_BINARY_DIR}/signing_test)
 
-add_executable(set_seed_test set_seed_test.c)
-target_link_libraries(set_seed_test ${CMOCKA_LIBRARIES} iota-ledger)
-add_test(set_seed_test ${CMAKE_CURRENT_BINARY_DIR}/set_seed_test)
-
-add_executable(pubkey_test pubkey_test.c)
+add_executable(pubkey_test pubkey_test.c test_seed.c)
 target_link_libraries(pubkey_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(pubkey_test ${CMAKE_CURRENT_BINARY_DIR}/pubkey_test)
 
-add_executable(tx_test tx_test.c transaction_file.c)
+add_executable(tx_test tx_test.c test_seed.c transaction_file.c)
 target_link_libraries(tx_test ${CMOCKA_LIBRARIES} iota-ledger)
 add_test(tx_test ${CMAKE_CURRENT_BINARY_DIR}/tx_test)
 

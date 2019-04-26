@@ -4,17 +4,21 @@
 #include <stdbool.h>
 #include "iota_types.h"
 
-#define MAX_NUM_INPUT_TX 2
-
-// one output, input plus remainder txs
-#define MAX_BUNDLE_INDEX_SZ (1 + MAX_NUM_INPUT_TX * MAX_SECURITY_LEVEL + 1)
+// the largest bundle size due to memory limitations per device
+#ifdef TARGET_NANOS
+#define MAX_BUNDLE_SIZE 8
+#elif defined TARGET_NANOX
+#define MAX_BUNDLE_SIZE 10
+#else // BLUE
+#define MAX_BUNDLE_SIZE 20
+#endif // TARGET_NANOS/X/BLUE
 
 typedef struct BUNDLE_CTX {
     // bundle_bytes holds all of the bundle information in byte encoding
-    unsigned char bytes[MAX_BUNDLE_INDEX_SZ * 2 * NUM_HASH_BYTES];
+    unsigned char bytes[MAX_BUNDLE_SIZE * 2 * NUM_HASH_BYTES];
 
-    int64_t values[MAX_BUNDLE_INDEX_SZ];
-    uint32_t indices[MAX_BUNDLE_INDEX_SZ];
+    int64_t values[MAX_BUNDLE_SIZE];
+    uint32_t indices[MAX_BUNDLE_SIZE];
 
     uint8_t current_tx_index;
     uint8_t last_tx_index;
