@@ -29,6 +29,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow -Wcast-align -Wmissin
 # enable compilation on host
 add_definitions(
     -DNO_BOLOS
+    -DTARGET_NANOS
     -DKERL_TEST_FOLDER="${CMAKE_SOURCE_DIR}/kerl-spec/test_vectors"
     -DTEST_FOLDER="${CMAKE_SOURCE_DIR}/test_vectors"
 )
