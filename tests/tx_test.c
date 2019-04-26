@@ -578,7 +578,8 @@ static void test_bundle_too_large(void **state)
         SET_SEED_TX_INPUT input;
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
-        input.tx.last_index = 8;
+        // increase the bundle beyond the max size
+        input.tx.last_index = MAX_BUNDLE_SIZE;
 
         EXPECT_API_EXCEPTION(tx, P1_FIRST, input);
     }
