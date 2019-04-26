@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
-#define TX_TYPE_TEXT_LEN 23
-#define ABBRV_VAL_TEXT_LEN 9
-#define FULL_VAL_TEXT_LEN 24
-#define BIP_TEXT_LEN 34
+#define TX_TYPE_TEXT_LEN 24
+#define ABBRV_VAL_TEXT_LEN 11
+#define FULL_VAL_TEXT_LEN 26
+#define BIP_TEXT_LEN 36
 
 // Address chunks after being broken up
 #define CHUNK1 0
