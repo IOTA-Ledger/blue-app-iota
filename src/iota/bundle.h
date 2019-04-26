@@ -4,13 +4,14 @@
 #include <stdbool.h>
 #include "iota_types.h"
 
-// the largest bundle size due to memory limitations
+// the largest bundle size due to memory limitations per device
 #ifdef TARGET_NANOS
-// the Blue/X have more internal memory to store transactions
 #define MAX_BUNDLE_SIZE 8
-#else
+#elif defined TARGET_NANOX
+#define MAX_BUNDLE_SIZE 10
+#else // BLUE
 #define MAX_BUNDLE_SIZE 20
-#endif // TARGET_BLUE
+#endif // TARGET_NANOS/X/BLUE
 
 typedef struct BUNDLE_CTX {
     // bundle_bytes holds all of the bundle information in byte encoding
