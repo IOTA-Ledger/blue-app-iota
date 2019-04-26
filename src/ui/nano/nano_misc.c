@@ -1,10 +1,11 @@
-#include "nanos_misc.h"
 #include <string.h>
-#include "ui.h"
-#include "api.h"
-#include "nanos_core.h"
-#include "ui_common.h"
 #include "iota/addresses.h"
+#include "glyphs.h"
+#include "api.h"
+#include "ui.h"
+#include "ui_common.h"
+#include "nano_misc.h"
+#include "nano_core.h"
 
 // go to state with menu index
 void state_go(uint8_t state, uint8_t idx)
@@ -48,6 +49,10 @@ static char *get_str_buffer(UI_TEXT_POS pos)
         return ui_text.bot_str;
     case MID:
         return ui_text.mid_str;
+#ifdef TARGET_NANOX
+    case POS_X:
+        return ui_text.x_str;
+#endif
     default:
         THROW(INVALID_PARAMETER);
     }
@@ -67,28 +72,10 @@ void write_display(const char *string, UI_TEXT_POS pos)
 
 /* --------- STATE RELATED FUNCTIONS ----------- */
 
-// Checks for custom glyphs that require their own screen
-static void check_special_glyph(UI_GLYPH_TYPES_NANOS g)
-{
-    switch (g) {
-    case GLYPH_IOTA:
-        nanos_set_screen(SCREEN_IOTA);
-        break;
-    case GLYPH_BACK:
-        nanos_set_screen(SCREEN_BACK);
-        break;
-    default:
-        return;
-    }
-}
-
 // Turns a single glyph on or off
-void glyph_on(UI_GLYPH_TYPES_NANOS g)
+void glyph_on(UI_GLYPH_TYPES_NANO g)
 {
-    if (g < TOTAL_GLYPHS)
-        ui_glyphs.glyph[g] = '\0';
-    else
-        check_special_glyph(g);
+    FLAG_ON(g);
 }
 
 static void clear_text()
@@ -96,23 +83,27 @@ static void clear_text()
     write_display(NULL, TOP);
     write_display(NULL, MID);
     write_display(NULL, BOT);
-}
-
-static void glyph_off(UI_GLYPH_TYPES_NANOS g)
-{
-    if (g < TOTAL_GLYPHS) {
-        ui_glyphs.glyph[g] = '.';
-    }
+#ifdef TARGET_NANOX
+    write_display(NULL, POS_X);
+#endif
 }
 
 static void clear_glyphs()
 {
     // turn off all glyphs
-    glyph_off(GLYPH_CONFIRM);
-    glyph_off(GLYPH_UP);
-    glyph_off(GLYPH_DOWN);
-    glyph_off(GLYPH_LOAD);
-    glyph_off(GLYPH_DASH);
+    FLAG_OFF(GLYPH_UP);
+    FLAG_OFF(GLYPH_DOWN);
+    FLAG_OFF(GLYPH_LOAD);
+    FLAG_OFF(GLYPH_DASH);
+    FLAG_OFF(GLYPH_IOTA);
+    FLAG_OFF(GLYPH_BACK);
+#ifdef TARGET_NANOS
+    FLAG_OFF(GLYPH_CONFIRM);
+#else // NANOX
+    FLAG_OFF(GLYPH_INFO);
+    FLAG_OFF(GLYPH_CHECK);
+    FLAG_OFF(GLYPH_CROSS);
+#endif
 }
 
 void clear_display()
@@ -122,7 +113,7 @@ void clear_display()
 }
 
 // turns on 2 glyphs (often glyph on left + right)
-void display_glyphs(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2)
+void display_glyphs(UI_GLYPH_TYPES_NANO g1, UI_GLYPH_TYPES_NANO g2)
 {
     clear_glyphs();
 
@@ -132,12 +123,14 @@ void display_glyphs(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2)
 }
 
 // combine glyphs with bars along top for confirm
-void display_glyphs_confirm(UI_GLYPH_TYPES_NANOS g1, UI_GLYPH_TYPES_NANOS g2)
+void display_glyphs_confirm(UI_GLYPH_TYPES_NANO g1, UI_GLYPH_TYPES_NANO g2)
 {
     clear_glyphs();
 
     // turn on ones we want
+#ifdef TARGET_NANOS
     glyph_on(GLYPH_CONFIRM);
+#endif
     glyph_on(g1);
     glyph_on(g2);
 }
@@ -147,6 +140,7 @@ void write_text_array(const char *array, uint8_t len)
     clear_display();
     clear_glyphs();
 
+#ifdef TARGET_NANOS
     if (ui_state.menu_idx > 0) {
         write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
         glyph_on(GLYPH_UP);
@@ -158,6 +152,23 @@ void write_text_array(const char *array, uint8_t len)
         write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
         glyph_on(GLYPH_DOWN);
     }
+#else
+    if (ui_state.menu_idx > 0) {
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
+        glyph_on(GLYPH_UP);
+    }
+
+    write_display(array + (TEXT_LEN * ui_state.menu_idx), MID);
+
+    if (ui_state.menu_idx < len - 2) {
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
+        glyph_on(GLYPH_DOWN);
+    }
+    if (ui_state.menu_idx < len - 1) {
+        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 2)), POS_X);
+        glyph_on(GLYPH_DOWN);
+    }
+#endif
 }
 
 /* --------- FUNCTIONS FOR DISPLAYING BALANCE ----------- */

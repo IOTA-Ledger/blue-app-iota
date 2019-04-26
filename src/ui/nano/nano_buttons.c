@@ -1,14 +1,13 @@
-#include "nanos_buttons.h"
 #include <string.h>
 #include "common.h"
-
-#include "ui.h"
-#include "nanos_types.h"
-#include "nanos_misc.h"
-#include "ui_common.h"
-
 #include "api.h"
 #include "iota/addresses.h"
+#include "ui.h"
+#include "ui_common.h"
+#include "nano_buttons.h"
+#include "nano_misc.h"
+#include "nano_types.h"
+
 
 int8_t button_main_menu(uint8_t button_mask)
 {
@@ -40,7 +39,7 @@ int8_t button_about(uint8_t button_mask)
 
     if (button_mask == BUTTON_B) {
         switch (ui_state.menu_idx) {
-
+#ifdef TARGET_NANOS
         case MENU_ABOUT_VERSION:
             state_go(STATE_VERSION, 0);
             return -1;
@@ -48,7 +47,7 @@ int8_t button_about(uint8_t button_mask)
         case MENU_ABOUT_MORE_INFO:
             state_go(STATE_MORE_INFO, 0);
             return -1;
-
+#endif
         case MENU_ABOUT_BACK:
             state_go(STATE_MAIN_MENU, MENU_MAIN_ABOUT);
             return -1;
@@ -81,7 +80,7 @@ int8_t button_more_info(uint8_t button_mask)
 
 int8_t button_bip_path(uint8_t button_mask)
 {
-    uint8_t array_sz = 1;
+    uint8_t array_sz = MENU_BIP_LAST;
 
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         // we came from tx
@@ -104,7 +103,7 @@ int8_t button_bip_path(uint8_t button_mask)
 
 int8_t button_disp_addr(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_ADDR_LEN - 1;
+    uint8_t array_sz = MENU_ADDR_LAST;
 
     if (button_mask == BUTTON_L && ui_state.menu_idx == 0) {
         state_go(STATE_DISP_ADDR_CHK, 0);
@@ -132,7 +131,7 @@ void button_disp_addr_chk(uint8_t button_mask)
 
 int8_t button_tx_addr(uint8_t button_mask)
 {
-    uint8_t array_sz = MENU_ADDR_LEN - 1;
+    uint8_t array_sz = MENU_ADDR_LAST;
 
     // If the backup menu idx is 1, it's the output addr so don't go to bip path
     if (button_mask == BUTTON_R && ui_state.menu_idx == MENU_ADDR_LAST &&

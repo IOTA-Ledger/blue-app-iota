@@ -5,7 +5,14 @@
 
 // define global SDK variables
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
+
+#ifdef TARGET_NANOX
+#include "ux.h"
+ux_state_t G_ux;
+bolos_ux_params_t G_ux_params;
+#else  // NANOS/BLUE
 ux_state_t ux;
+#endif // TARGET_NANOX
 
 static void IOTA_main()
 {
@@ -190,6 +197,11 @@ __attribute__((section(".boot"))) int main(void)
                 // deactivate usb before activating
                 USB_power(false);
                 USB_power(true);
+
+#ifdef HAVE_BLE
+                BLE_power(false, NULL);
+                BLE_power(true, "Nano X");
+#endif // HAVE_BLE
 
                 IOTA_main();
             }

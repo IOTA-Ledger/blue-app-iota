@@ -6,7 +6,7 @@
 #include "blue/blue_types.h"
 #define MENU_IDX_BREAK blue_ui_state.menu_idx
 #else
-#include "nanos/nanos_types.h"
+#include "nano/nano_types.h"
 #define MENU_IDX_BREAK ui_state.menu_idx / 2
 #endif // TARGET_BLUE
 

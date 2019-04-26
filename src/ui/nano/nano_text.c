@@ -1,7 +1,7 @@
-#include "nanos_text.h"
-#include "nanos_types.h"
-#include "iota/addresses.h"
 #include <string.h>
+#include "iota/addresses.h"
+#include "nano_text.h"
+#include "nano_types.h"
 
 /* ----------- BUILDING MENU / TEXT ARRAY ------------- */
 void get_main_menu(char *msg)
