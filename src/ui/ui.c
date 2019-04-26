@@ -20,19 +20,19 @@ static uint16_t timer;
 void ui_force_draw()
 {
     bool display_event_occurred = false;
-    
+
     while (!UX_DISPLAYED()) {
         UX_DISPLAY_NEXT_ELEMENT();
         WAIT_EVENT();
         display_event_occurred = true;
     }
 
-    if(display_event_occurred && !io_seproxyhal_spi_is_status_sent()) {
-        // now everything is in the buffer, the next general status renders it
-            io_seproxyhal_general_status();
+    // this is only necessary, if anything has actually been displayed
+    if (display_event_occurred) {
+        // if everything is in the buffer, the next general status renders it
+        io_seproxyhal_general_status();
+        WAIT_EVENT();
     }
-    
-    WAIT_EVENT();
 }
 
 void ui_timeout_tick()
