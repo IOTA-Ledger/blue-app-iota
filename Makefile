@@ -81,10 +81,10 @@ DEFINES += U2F_PROXY_MAGIC=\"IOT\"
 DEFINES += HAVE_IO_U2F HAVE_U2F
 
 # Development flags
-#APP_LOAD_PARAMS += --path "44'/01'"
-#DEFINES += HAVE_BOLOS_APP_STACK_CANARY HAVE_PRINTF PRINTF=screen_printf
+APP_LOAD_PARAMS += --path "44'/01'"
+DEFINES += HAVE_BOLOS_APP_STACK_CANARY HAVE_PRINTF PRINTF=screen_printf
 # Release flags
-DEFINES += BOLOS_RELEASE PRINTF\(...\)=
+# DEFINES += BOLOS_RELEASE PRINTF\(...\)=
 
 # Compiler, assembler, and linker
 
@@ -127,8 +127,3 @@ include $(BOLOS_SDK)/Makefile.glyphs
 
 # Import generic rules from the SDK
 include $(BOLOS_SDK)/Makefile.rules
-
-
-
-listvariants:
-	@echo VARIANTS COIN iota
