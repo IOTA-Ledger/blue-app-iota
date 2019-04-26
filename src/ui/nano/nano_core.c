@@ -104,7 +104,6 @@ void ui_display_main_menu()
 
     nano_build_display();
     nano_render();
-    ui_force_draw();
 }
 
 void ui_display_getting_addr()
