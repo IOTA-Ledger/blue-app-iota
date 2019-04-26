@@ -5,11 +5,11 @@
 #include "iota_types.h"
 
 // the largest bundle size due to memory limitations
-#ifdef TARGET_BLUE
-// the Blue has more internal memory to store transactions
-#define MAX_BUNDLE_SIZE 20
-#else
+#ifdef TARGET_NANOS
+// the Blue/X have more internal memory to store transactions
 #define MAX_BUNDLE_SIZE 8
+#else
+#define MAX_BUNDLE_SIZE 20
 #endif // TARGET_BLUE
 
 typedef struct BUNDLE_CTX {
