@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NANOS_SDK_VERSION=master # use tag, when available
+NANOS_SDK_VERSION=nanos-1553
 BLUE_SDK_VERSION=blue-r21.1
 
 export BOLOS_ENV=`realpath ../bolos-devenv`
