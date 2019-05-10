@@ -8,9 +8,11 @@
 // state bit flags
 #define BUNDLE_INITIALIZED (1 << 0)
 #define BUNDLE_FINALIZED (1 << 1)
-#define SIGNING_STARTED (1 << 2)
+#define SIGNING_INITIALIZED (1 << 2)
+#define SIGNING_STARTED (1 << 3)
 
 #define IO_STRUCT struct __attribute__((packed, may_alias))
+
 typedef struct API_CTX {
     /// BIP32 path used for seed derivation
     uint32_t bip32_path[BIP32_PATH_MAX_LEN];
@@ -20,10 +22,13 @@ typedef struct API_CTX {
 
     unsigned char seed_bytes[NUM_HASH_BYTES]; ///< IOTA seed
 
-    BUNDLE_CTX bundle_ctx;
-    SIGNING_CTX signing_ctx;
+    unsigned int state_flags; ///< flags representing the current api state
 
-    unsigned int state_flags;
+    // the bundle and the signing context share the same memory
+    union {
+        BUNDLE_CTX bundle;
+        SIGNING_CTX signing;
+    } ctx;
 } API_CTX;
 
 /// global context with everything related to the current api state
@@ -42,7 +47,8 @@ SET_SEED_INPUT;
 
 #define PUBKEY_REQUIRED_STATE 0
 #define PUBKEY_FORBIDDEN_STATE                                                 \
-    (BUNDLE_INITIALIZED | BUNDLE_FINALIZED | SIGNING_STARTED)
+    (BUNDLE_INITIALIZED | BUNDLE_FINALIZED | SIGNING_INITIALIZED |             \
+     SIGNING_STARTED)
 
 typedef IO_STRUCT PUBKEY_INPUT
 {
@@ -57,7 +63,7 @@ typedef IO_STRUCT PUBKEY_OUTPUT
 PUBKEY_OUTPUT;
 
 #define TX_REQUIRED_STATE 0
-#define TX_FORBIDDEN_STATE (BUNDLE_FINALIZED)
+#define TX_FORBIDDEN_STATE (BUNDLE_FINALIZED | SIGNING_INITIALIZED)
 
 typedef IO_STRUCT TX_INPUT
 {

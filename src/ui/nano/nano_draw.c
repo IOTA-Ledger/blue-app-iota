@@ -288,7 +288,7 @@ static void nano_draw_bundle_address(void)
 {
     // buffer the address of the current transaction
     const unsigned char *addr_bytes =
-        bundle_get_address_bytes(&api.bundle_ctx, ui_state_get_tx_index());
+        bundle_get_address_bytes(&api.ctx.bundle, ui_state_get_tx_index());
     os_memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_BYTES);
 
     nano_draw_address_digest();
@@ -299,7 +299,7 @@ static void nano_draw_bundle_value(void)
     nano_draw_screen(SCREEN_TITLE);
 
     const unsigned int tx_index = ui_state_get_tx_index();
-    int64_t val = api.bundle_ctx.values[tx_index];
+    int64_t val = api.ctx.bundle.bundle.values[tx_index];
 
     // display the title line on the top
 
@@ -307,13 +307,13 @@ static void nano_draw_bundle_value(void)
     if (ui_state.menu_idx == get_menu_bundle_len() - 4) {
         // write the last index along with "change"
         const uint32_t idx =
-            api.bundle_ctx.indices[api.bundle_ctx.last_tx_index];
+            api.ctx.bundle.bundle.indices[api.ctx.bundle.bundle.last_tx_index];
         snprintf(nano_get_text_buffer(TOP), TEXT_LEN, "Change: [%u]", idx);
     }
     // input tx
     else if (val < 0) {
         // write the currentindex along with "input"
-        const uint32_t idx = api.bundle_ctx.indices[tx_index];
+        const uint32_t idx = api.ctx.bundle.bundle.indices[tx_index];
         snprintf(nano_get_text_buffer(TOP), TEXT_LEN, "Input: [%u]", idx);
 
         val = -val;

@@ -13,17 +13,25 @@
 #define MAX_BUNDLE_SIZE 20
 #endif // TARGET_NANOS/X/BLUE
 
-typedef struct BUNDLE_CTX {
-    // bundle_bytes holds all of the bundle information in byte encoding
-    unsigned char bytes[MAX_BUNDLE_SIZE * 2 * NUM_HASH_BYTES];
-
+typedef struct BUNDLE_INFO {
+    /// transaction values
     int64_t values[MAX_BUNDLE_SIZE];
+    /// trasaction address indices
     uint32_t indices[MAX_BUNDLE_SIZE];
 
     uint8_t current_tx_index;
     uint8_t last_tx_index;
+} BUNDLE_INFO;
 
-    unsigned char hash[NUM_HASH_BYTES]; // bundle hash, when finalized
+typedef struct BUNDLE_CTX {
+    /// shared bundle information
+    BUNDLE_INFO bundle;
+
+    /// bundle_bytes holds all of the bundle information in byte encoding
+    unsigned char bytes[MAX_BUNDLE_SIZE * 2 * NUM_HASH_BYTES];
+
+    /// bundle hash, when finalized
+    unsigned char hash[NUM_HASH_BYTES];
 } BUNDLE_CTX;
 
 enum BundleRetCode {
@@ -126,7 +134,7 @@ uint8_t bundle_get_num_value_txs(const BUNDLE_CTX *ctx);
  */
 static inline bool bundle_has_open_txs(const BUNDLE_CTX *ctx)
 {
-    return ctx->current_tx_index <= ctx->last_tx_index;
+    return ctx->bundle.current_tx_index <= ctx->bundle.last_tx_index;
 }
 
 #endif // BUNDLE_H

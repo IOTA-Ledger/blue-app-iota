@@ -20,9 +20,9 @@ void break_address()
 
 static uint8_t last_non_meta_tx_idx()
 {
-    uint8_t tx_idx = api.bundle_ctx.last_tx_index;
+    uint8_t tx_idx = api.ctx.bundle.bundle.last_tx_index;
     // there will always be 2+ non-metas (required output + input)
-    while (api.bundle_ctx.values[tx_idx] == 0) {
+    while (api.ctx.bundle.bundle.values[tx_idx] == 0) {
         tx_idx--;
     }
 
@@ -44,7 +44,7 @@ bool second_last_tx()
 
 void update_tx_type()
 {
-    blue_ui_state.val = api.bundle_ctx.values[ui_state_get_tx_index()];
+    blue_ui_state.val = api.ctx.bundle.bundle.values[ui_state_get_tx_index()];
 
     // first tx is output
     if (blue_ui_state.menu_idx == 0) {
@@ -56,13 +56,15 @@ void update_tx_type()
             os_memcpy(blue_ui_state.tx_type, "Input: \0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
                      TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
-                     (unsigned int)api.bundle_ctx.indices[ui_state_get_tx_index()]);
+                     (unsigned int)api.ctx.bundle.bundle
+                         .indices[ui_state_get_tx_index()]);
         }
         else {
             os_memcpy(blue_ui_state.tx_type, "Change:\0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
                      TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
-                     (unsigned int)api.bundle_ctx.indices[ui_state_get_tx_index()]);
+                     (unsigned int)api.ctx.bundle.bundle
+                         .indices[ui_state_get_tx_index()]);
         }
     }
 }
@@ -78,7 +80,7 @@ static void update_tx_val()
 static void update_tx_addr()
 {
     const unsigned char *addr_bytes =
-        bundle_get_address_bytes(&api.bundle_ctx, ui_state_get_tx_index());
+        bundle_get_address_bytes(&api.ctx.bundle, ui_state_get_tx_index());
 
     get_address_with_checksum(addr_bytes, blue_ui_state.addr);
     // break up the address for use on separate lines

@@ -103,9 +103,9 @@ unsigned int ui_state_get_tx_index()
 {
     unsigned int i = 0;
 
-    for (unsigned int j = 0; j <= api.bundle_ctx.last_tx_index; j++) {
+    for (unsigned int j = 0; j <= api.ctx.bundle.bundle.last_tx_index; j++) {
         // ignore meta tx
-        if (api.bundle_ctx.values[j] != 0) {
+        if (api.ctx.bundle.bundle.values[j] != 0) {
             if (i++ == MENU_IDX_BREAK) {
                 return j;
             }

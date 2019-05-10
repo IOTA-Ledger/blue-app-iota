@@ -3,6 +3,14 @@
 #include "conversion.h"
 #include "kerl.h"
 
+void signing_initialize(SIGNING_CTX *ctx, const BUNDLE_INFO *bundle_info,
+                        const tryte_t *normalized_hash)
+{
+    // source and destination can potentially overlap
+    os_memmove(&ctx->bundle, bundle_info, sizeof(BUNDLE_INFO));
+    os_memcpy(ctx->hash, normalized_hash, NUM_HASH_TRYTES);
+}
+
 static void initialize_state(const unsigned char *seed_bytes,
                              uint32_t address_idx, unsigned char *state)
 {
@@ -15,17 +23,23 @@ static void initialize_state(const unsigned char *seed_bytes,
     kerl_squeeze_final_chunk(&sha, state);
 }
 
-void signing_initialize(SIGNING_CTX *ctx, uint8_t tx_index,
-                        const unsigned char *seed_bytes, uint32_t address_idx,
-                        uint8_t security, const tryte_t *normalized_hash)
+void signing_start(SIGNING_CTX *ctx, uint8_t tx_index,
+                   const unsigned char *seed_bytes, uint8_t security)
 {
-    os_memset(ctx, 0, sizeof(SIGNING_CTX));
+    if (tx_index > ctx->bundle.last_tx_index) {
+        THROW_PARAMETER("tx_idx");
+    }
+    if (!IN_RANGE(security, MIN_SECURITY_LEVEL, MAX_SECURITY_LEVEL)) {
+        THROW_PARAMETER("security");
+    }
 
-    initialize_state(seed_bytes, address_idx, ctx->state);
+    ctx->fragment_index = 0;
     ctx->last_fragment = NUM_SIGNATURE_FRAGMENTS(security) - 1;
     ctx->tx_index = tx_index;
 
-    os_memcpy(ctx->hash, normalized_hash, 81);
+    const uint32_t address_idx = ctx->bundle.indices[tx_index];
+
+    initialize_state(seed_bytes, address_idx, ctx->state);
 }
 
 static void generate_signature_fragment(unsigned char *state,

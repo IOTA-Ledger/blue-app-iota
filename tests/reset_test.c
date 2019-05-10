@@ -22,8 +22,8 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
 
 static void assert_bundle_reset(void)
 {
-    assert_all_zero(&api.bundle_ctx, sizeof(api.bundle_ctx));
-    assert_all_zero(&api.signing_ctx, sizeof(api.signing_ctx));
+    assert_all_zero(&api.ctx.bundle, sizeof(api.ctx.bundle));
+    assert_all_zero(&api.ctx.signing, sizeof(api.ctx.signing));
     assert_int_equal(api.state_flags, 0);
 }
 
