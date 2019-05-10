@@ -3,23 +3,13 @@
 
 #include <stdbool.h>
 
-/* To create a new generic UI screen -
- - #define new STATE_ [ui_types.h]
- - Add entries in ui_build_display and ui_handle_button [ui.c]
- - Create display/button functions [ui_display.c/ui_buttons.c]
-
- - If text menu screen, also do:
- - #define Size of Menu [ui_types.h]
- - Create msg to display [ui_text.c] */
-
 void ui_force_draw(void);
 
 void ui_timeout_tick(void);
 void ui_timeout_start(bool interactive);
 void ui_timeout_stop(void);
 
-// the following implementation are different for Blue and Nano S
-
+// the following implementation are different for Blue and Nano
 void ui_init(void);
 void ui_display_main_menu(void);
 void ui_display_getting_addr(void);

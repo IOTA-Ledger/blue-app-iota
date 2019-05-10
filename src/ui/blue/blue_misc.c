@@ -35,7 +35,7 @@ bool second_last_tx()
     // increment menu_idx and check if it == change tx
     blue_ui_state.menu_idx++;
 
-    bool retval = (menu_to_tx_idx() == last_non_meta_tx_idx());
+    bool retval = (ui_state_get_tx_index() == last_non_meta_tx_idx());
     // set menu_idx back
     blue_ui_state.menu_idx--;
 
@@ -44,7 +44,7 @@ bool second_last_tx()
 
 void update_tx_type()
 {
-    blue_ui_state.val = api.bundle_ctx.values[menu_to_tx_idx()];
+    blue_ui_state.val = api.bundle_ctx.values[ui_state_get_tx_index()];
 
     // first tx is output
     if (blue_ui_state.menu_idx == 0) {
@@ -56,29 +56,29 @@ void update_tx_type()
             os_memcpy(blue_ui_state.tx_type, "Input: \0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
                      TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
-                     (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
+                     (unsigned int)api.bundle_ctx.indices[ui_state_get_tx_index()]);
         }
         else {
             os_memcpy(blue_ui_state.tx_type, "Change:\0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
                      TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
-                     (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
+                     (unsigned int)api.bundle_ctx.indices[ui_state_get_tx_index()]);
         }
     }
 }
 
 static void update_tx_val()
 {
-    write_readable_val(blue_ui_state.val, blue_ui_state.abbrv_val,
-                       ABBRV_VAL_TEXT_LEN);
-    write_full_val(blue_ui_state.val, blue_ui_state.full_val,
-                   FULL_VAL_TEXT_LEN);
+    format_value_short(blue_ui_state.full_val, ABBRV_VAL_TEXT_LEN,
+                       blue_ui_state.val);
+    format_value_full(blue_ui_state.full_val, FULL_VAL_TEXT_LEN,
+                      blue_ui_state.val);
 }
 
 static void update_tx_addr()
 {
     const unsigned char *addr_bytes =
-        bundle_get_address_bytes(&api.bundle_ctx, menu_to_tx_idx());
+        bundle_get_address_bytes(&api.bundle_ctx, ui_state_get_tx_index());
 
     get_address_with_checksum(addr_bytes, blue_ui_state.addr);
     // break up the address for use on separate lines

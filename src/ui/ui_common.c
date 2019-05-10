@@ -10,11 +10,16 @@
 #define MENU_IDX_BREAK ui_state.menu_idx / 2
 #endif // TARGET_BLUE
 
-/// the different IOTA units
-const char IOTA_UNITS[][3] = {"i", "Ki", "Mi", "Gi", "Ti", "Pi"};
+/// the largest power of 10 that still fits into int32
+#define MAX_INT_DEC INT64_C(1000000000)
 
-/// groups the string by adding a comma every 3 chars from the right
-size_t str_add_commas(char *dst, const char *src, size_t num_len)
+/// the different IOTA units
+static const char IOTA_UNITS[][3] = {"i", "Ki", "Mi", "Gi", "Ti", "Pi"};
+// the max number of iota units
+#define MAX_IOTA_UNIT ARRAY_SIZE(IOTA_UNITS)
+
+/// Groups the string by adding a comma every 3 chars from the right.
+static size_t str_add_commas(char *dst, const char *src, size_t num_len)
 {
     char *p_dst = dst;
     const char *p_src = src;
@@ -36,7 +41,10 @@ size_t str_add_commas(char *dst, const char *src, size_t num_len)
     return (p_dst - dst);
 }
 
-size_t snprint_int64(char *s, size_t n, int64_t val)
+/** @brief Writes signed integer to string.
+ *  @return the number of chars that have been written
+ */
+static size_t format_s64(char *s, const size_t n, const int64_t val)
 {
     // we cannot display the full range of int64 with this function
     if (ABS(val) >= MAX_INT_DEC * MAX_INT_DEC) {
@@ -54,52 +62,27 @@ size_t snprint_int64(char *s, size_t n, int64_t val)
     return strnlen(s, n);
 }
 
-uint8_t menu_to_tx_idx(void)
+void format_value_full(char *s, const unsigned int n, const int64_t val)
 {
-    uint8_t i = 0, j = 0;
+    char buffer[n];
 
-    // break at different points for blue vs nanos
-    // nanos has 2 screens per tx blue has 1
-    while (j <= api.bundle_ctx.last_tx_index && i <= MENU_IDX_BREAK) {
-        if (api.bundle_ctx.values[j] != 0) {
-            i++;
-        }
-        j++;
-    }
+    const size_t num_len = format_s64(buffer, sizeof(buffer), val);
+    const size_t num_len_comma = num_len + (num_len - 1) / 3;
 
-    // j cannot be 0, because <=, so even if last_idx and menu_idx are 0,
-    // it will still execute once (incrementing j in the process).
-
-    // j will be incremented one beyond our desired index
-    return j - 1;
-}
-
-// display full amount in base iotas without commas Ex. 3040981551 i
-void write_full_val(int64_t val, char *dest, unsigned int len)
-{
-    // nano_s will pass length of 21 for buffersize
-    char buffer[len];
-    bool is_nanos = (len == 21);
-
-    const size_t num_len = snprint_int64(buffer, sizeof buffer, val);
-
-    // numbers shorter will have at most 3 commas and fit the text length
-    // only worry about it if on nanos screen
-    if (num_len > 13 && is_nanos) {
-        snprintf(dest, len, "%s %s", buffer, IOTA_UNITS[0]);
+    // if the length with commas plus the unit does not fit
+    if (num_len_comma + 3 > n) {
+        snprintf(s, n, "%s %s", buffer, IOTA_UNITS[0]);
     }
     else {
-        const size_t chars_written = str_add_commas(dest, buffer, num_len);
-        snprintf(dest + chars_written, len - chars_written, " %s",
-                 IOTA_UNITS[0]);
+        const size_t chars_written = str_add_commas(s, buffer, num_len);
+        snprintf(s + chars_written, n - chars_written, " %s", IOTA_UNITS[0]);
     }
 }
 
-// displays brief amount with units Ex. 3.040 Gi
-void write_readable_val(int64_t val, char *dest, unsigned int len)
+void format_value_short(char *s, const unsigned int n, int64_t val)
 {
     if (ABS(val) < 1000) {
-        snprintf(dest, len, "%d %s", (int)(val), IOTA_UNITS[0]);
+        snprintf(s, n, "%d %s", (int)(val), IOTA_UNITS[0]);
         return;
     }
 
@@ -108,10 +91,26 @@ void write_readable_val(int64_t val, char *dest, unsigned int len)
         val /= 1000;
         base++;
     }
-    if (base >= sizeof(IOTA_UNITS) / sizeof(IOTA_UNITS[0])) {
+    if (base >= MAX_IOTA_UNIT) {
         THROW(INVALID_PARAMETER);
     }
 
-    snprintf(dest, len, "%d.%03d %s", (int)(val / 1000), (int)(ABS(val) % 1000),
+    snprintf(s, n, "%d.%03d %s", (int)(val / 1000), (int)(ABS(val) % 1000),
              IOTA_UNITS[base]);
+}
+
+unsigned int ui_state_get_tx_index()
+{
+    unsigned int i = 0;
+
+    for (unsigned int j = 0; j <= api.bundle_ctx.last_tx_index; j++) {
+        // ignore meta tx
+        if (api.bundle_ctx.values[j] != 0) {
+            if (i++ == MENU_IDX_BREAK) {
+                return j;
+            }
+        }
+    }
+
+    THROW_PARAMETER("menu_idx");
 }

@@ -99,6 +99,11 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
 /* ----------------------------------------------------------------------- */
 
 #include "os.h"
+
+#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
+#define TARGET_NANO
+#endif
+
 #endif // ifdef NO_BOLOS
 
 /* ----------------------------------------------------------------------- */
@@ -112,18 +117,30 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
 // additional supported features
 #define APP_FLAGS 0
 
+#define MEMCLEAR(x) os_memset(&x, 0, sizeof(x))
+
+/// Throws INVALID_PARAMETER exception with addition debug info.
+#define THROW_PARAMETER(x)                                                     \
+    ({                                                                         \
+        PRINTF("invalid " x " in " __FILE__ ":%d\n", __LINE__);                \
+        THROW(INVALID_PARAMETER);                                              \
+    })
+
+/// Devide x by y and round up.
 #define CEILING(x, y)                                                          \
     ({                                                                         \
         typeof(y) _y = (y);                                                    \
         (((x) + _y - 1) / _y);                                                 \
     })
 
-#define ABS(a)                                                                 \
+/// Absolute value of x.
+#define ABS(x)                                                                 \
     ({                                                                         \
-        typeof(a) _a = (a);                                                    \
-        _a < 0 ? -_a : _a;                                                     \
+        typeof(x) _x = (x);                                                    \
+        _x < 0 ? -_x : _x;                                                     \
     })
 
+/// Assigns the value of src to dest and returns whether there was an overflow.
 #define ASSIGN(dest, src)                                                      \
     ({                                                                         \
         typeof(src) _x = (src);                                                \
@@ -131,12 +148,18 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
         (_x == _y && ((_x < 1) == (_y < 1)) ? (void)((dest) = _y), 1 : 0);     \
     })
 
+/// Returns whether x is min <= x <= max.
 #define IN_RANGE(x, min, max)                                                  \
     ({                                                                         \
         typeof(x) _x = (x);                                                    \
         (_x >= (min) && _x <= (max));                                          \
     })
 
-#define MEMCLEAR(x) os_memset(&x, 0, sizeof(x))
+/// Typesafe array size computation.
+#define ARRAY_SIZE(arr)                                                        \
+    (sizeof(arr) / sizeof((arr)[0]) +                                          \
+     sizeof(typeof(int[1 - 2 * !!__builtin_types_compatible_p(                 \
+                                   typeof(arr), typeof(&arr[0]))])) *          \
+         0)
 
 #endif // COMMON_H

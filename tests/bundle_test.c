@@ -108,8 +108,7 @@ static void test_one_tx_bundle(void **state)
          10, "999999999999999999999999999", 0}};
 
     BUNDLE_CTX bundle_ctx;
-    expect_assert_failure(
-        bundle_create(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx));
+    expect_assert_failure(bundle_create(txs, ARRAY_SIZE(txs), &bundle_ctx));
 }
 
 static void test_bundle_hash(void **state)
@@ -130,7 +129,7 @@ static void test_bundle_hash(void **state)
                             "CVGHYJDJWXAFNWRGUUPULXOCEJDBUVD";
 
     BUNDLE_CTX bundle_ctx;
-    bundle_create(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
+    bundle_create(txs, ARRAY_SIZE(txs), &bundle_ctx);
 
     compute_hash(&bundle_ctx);
 
@@ -161,7 +160,7 @@ static void test_bundle_finalize(void **state)
     const unsigned int exp_tag_increment = 404;
 
     BUNDLE_CTX bundle_ctx;
-    bundle_create(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
+    bundle_create(txs, ARRAY_SIZE(txs), &bundle_ctx);
 
     const uint32_t tag_increment = bundle_finalize(&bundle_ctx);
     assert_int_equal(tag_increment, exp_tag_increment);
@@ -190,7 +189,7 @@ static void test_max_value_txs_bundle_finalize(void **state)
     const unsigned int exp_tag_increment = 79;
 
     BUNDLE_CTX bundle_ctx;
-    bundle_create(txs, sizeof(txs) / sizeof(TX_ENTRY), &bundle_ctx);
+    bundle_create(txs, ARRAY_SIZE(txs), &bundle_ctx);
 
     const uint32_t tag_increment = bundle_finalize(&bundle_ctx);
     assert_int_equal(tag_increment, exp_tag_increment);

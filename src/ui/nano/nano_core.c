@@ -1,95 +1,120 @@
+#include "common.h"
 #include "iota/addresses.h"
 #include "glyphs.h"
 #include "ui.h"
 #include "nano_misc.h"
-#include "nano_display.h"
+#include "nano_draw.h"
 #include "nano_buttons.h"
 #include "nano_types.h"
-
-#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
-#define TARGET_NANO
-#endif
 
 #ifdef TARGET_NANO
 #include "nano_screens.h"
 
 #ifdef TARGET_NANOS
 #include "s_elements.h"
-#else // NANOX
+#else
 #include "x_elements.h"
 #endif
 
 static void nano_transition_state(unsigned int button_mask);
-static void nano_build_display();
 
 UI_TEXT_CTX_NANO ui_text;
 UI_STATE_CTX_NANO ui_state;
 
-const bagl_element_t *ux_element_preprocessor(const bagl_element_t *element)
+/// Check whether the draw flag for the given element is set.
+static bool check_element_flag(UI_ELEMENTS_NANO element)
 {
-    if (!CHECK_BIT(element->component.userid) &&
-        element->component.userid != EL_CLEAR)
-        return NULL;
-    else
-        return element;
+    if (element >= NUM_UI_ELEMENTS) {
+        THROW_PARAMETER("element");
+    }
+
+    return ui_state.flags.elements & (1U << element);
 }
 
-// macros for button function
-BUTTON_FUNCTION(omega)
-
-void nano_set_screen(UI_SCREENS_NANO s)
+static const bagl_element_t *element_preprocessor(const bagl_element_t *element)
 {
-    ui_state.glyphs = 0;
+    // return the element as is, if it is enabled
+    if (check_element_flag(element->component.userid)) {
+        return element;
+    }
 
-    switch (s) {
+    return NULL;
+}
+
+static unsigned int
+bagl_ui_omega_screen_button(unsigned int button_mask,
+                            unsigned int button_mask_counter)
+{
+    UNUSED(button_mask_counter);
+
+    nano_transition_state(button_mask);
+    return 0;
+}
+
+static void nano_display(void)
+{
+    UX_DISPLAY(bagl_ui_omega_screen, element_preprocessor);
+}
+
+static void nano_draw_state(void)
+{
+    switch (ui_state.state) {
+    case STATE_MAIN_MENU:
+        nano_draw_main_menu();
+        break;
+
+    case STATE_ABOUT:
+        nano_draw_about();
+        break;
+
 #ifdef TARGET_NANOS
-    case SCREEN_TITLE:
-        FLAG_ON(EL_TITLE);
+    case STATE_VERSION:
+        nano_draw_version();
         break;
-    case SCREEN_TITLE_BOLD:
-        FLAG_ON(EL_TITLE_BOLD);
-        break;
-    case SCREEN_MENU:
-    case SCREEN_IOTA:
-    case SCREEN_BACK:
-        FLAG_ON(EL_MENU);
-        break;
-#else // NANOX
-    case SCREEN_TITLE:
-        FLAG_ON(EL_TITLE);
-        break;
-    case SCREEN_BIP:
-        FLAG_ON(EL_BIP);
-        break;
-    case SCREEN_ADDR:
-        FLAG_ON(EL_ADDR);
-        break;
-    case SCREEN_ICON:
-        FLAG_ON(EL_ICON);
-        break;
-    case SCREEN_ICON_MULTI:
-        FLAG_ON(EL_ICON_MULTI);
+
+    case STATE_MORE_INFO:
+        nano_draw_more_info();
         break;
 #endif
-    default:
+
+    case STATE_BIP_PATH:
+        nano_draw_bip_path();
+        break;
+
+    case STATE_BUNDLE_ADDR:
+        nano_draw_bundle_addr();
+        break;
+
+    case STATE_ADDRESS_FULL:
+        nano_draw_address_full();
+        break;
+
+    case STATE_ADDRESS_DIGEST:
+        nano_draw_address_digest();
+        break;
+
+    case STATE_BUNDLE:
+        nano_draw_bundle();
+        break;
+
+    case STATE_IGNORE:
         return;
+
+    default:
+        THROW_PARAMETER("state");
     }
 }
 
-static void nano_render()
+static void set_and_draw_state(UI_STATES_NANO state)
 {
-    UX_DISPLAY(bagl_ui_omega_screen, ux_element_preprocessor);
-}
-
-static void nano_ctx_initialize()
-{
-    MEMCLEAR(ui_text);
-    MEMCLEAR(ui_state);
+    nano_state_set(state, 0);
+    nano_draw_state();
 }
 
 void ui_init()
 {
-    nano_ctx_initialize();
+    MEMCLEAR(ui_text);
+    MEMCLEAR(ui_state);
     ui_timeout_stop();
 
     ui_display_main_menu();
@@ -98,140 +123,77 @@ void ui_init()
 // Entry points for main to modify display
 void ui_display_main_menu()
 {
-    clear_display();
-    state_go(STATE_MAIN_MENU, 0);
-    backup_state();
+    set_and_draw_state(STATE_MAIN_MENU);
+    nano_state_backup();
 
-    nano_build_display();
-    nano_render();
+    nano_display();
 }
 
 void ui_display_getting_addr()
 {
-    clear_display();
+    nano_state_set_ignore();
+    nano_draw_getting_addr();
 
-#ifdef TARGET_NANOS
-    nano_set_screen(SCREEN_TITLE_BOLD);
-    write_display("    Generating", TOP);
-    write_display("     Address...", BOT);
-#else
-    nano_set_screen(SCREEN_ICON_MULTI);
-    write_display("Generating", TOP);
-    write_display("Address...", BOT);
-#endif
-
-    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
-
-    backup_state();
-
-    ui_state.state = STATE_IGNORE;
-
-    nano_render();
+    nano_display();
     ui_force_draw();
 }
 
 void ui_display_validating()
 {
-    clear_display();
+    nano_state_set_ignore();
+    nano_draw_validating();
 
-#ifdef TARGET_NANOS
-    nano_set_screen(SCREEN_MENU);
-    write_display("    Validating...", MID);
-#else
-    write_display("Validating...", MID);
-#endif
-
-    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
-
-    backup_state();
-
-    ui_state.state = STATE_IGNORE;
-
-    nano_render();
+    nano_display();
     ui_force_draw();
 }
 
 void ui_display_recv()
 {
-    clear_display();
+    nano_state_set_ignore();
+    nano_draw_receiving();
 
-#ifdef TARGET_NANOS
-    nano_set_screen(SCREEN_TITLE_BOLD);
-    write_display("    Receiving", TOP);
-    write_display("      Transaction...", BOT);
-#else
-    nano_set_screen(SCREEN_ICON_MULTI);
-    write_display("Receiving", TOP);
-    write_display("Transaction...", BOT);
-#endif
-
-    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
-
-    backup_state();
-
-    ui_state.state = STATE_IGNORE;
-
-    nano_render();
+    nano_display();
     ui_force_draw();
 }
 
 void ui_display_signing()
 {
-    clear_display();
+    nano_state_set_ignore();
+    nano_draw_signing();
 
-#ifdef TARGET_NANOS
-    nano_set_screen(SCREEN_TITLE_BOLD);
-    write_display("    Signing", TOP);
-    write_display("      Transaction...", BOT);
-#else
-    nano_set_screen(SCREEN_ICON_MULTI);
-    write_display("Signing", TOP);
-    write_display("Transaction...", BOT);
-#endif
-
-    display_glyphs(GLYPH_LOAD, GLYPH_NONE);
-
-    backup_state();
-
-    ui_state.state = STATE_IGNORE;
-
-    nano_render();
+    nano_display();
     ui_force_draw();
 }
 
 void ui_display_address(const unsigned char *addr_bytes)
 {
-    get_address_with_checksum(addr_bytes, ui_state.addr);
-    state_go(STATE_DISP_ADDR_CHK, 0);
+    // write the address trytes into the UI state
+    os_memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_TRYTES);
 
-    nano_build_display();
-    nano_render();
+    set_and_draw_state(STATE_ADDRESS_DIGEST);
+    nano_display();
     ui_force_draw();
 }
 
 void ui_sign_tx()
 {
-    state_go(STATE_PROMPT_TX, 0);
-
-    nano_build_display();
-    nano_render();
+    set_and_draw_state(STATE_BUNDLE);
+    nano_display();
 }
 
 void ui_reset()
 {
-    state_go(STATE_MAIN_MENU, 0);
-
-    nano_build_display();
-    nano_render();
+    set_and_draw_state(STATE_MAIN_MENU);
+    nano_display();
     ui_force_draw();
 }
 
 void ui_restore()
 {
-    restore_state();
+    nano_state_restore();
+    nano_draw_state();
 
-    nano_build_display();
-    nano_render();
+    nano_display();
     ui_force_draw();
 }
 
@@ -242,20 +204,17 @@ bool ui_lock_forbidden(void)
         // BIP Path could be in tx or disp_addr
         // (backup state will tell us which)
     case STATE_BIP_PATH:
-        if (ui_state.backup_state != STATE_PROMPT_TX)
+        if (ui_state.nano_state_backup != STATE_BUNDLE)
             return false;
-    case STATE_PROMPT_TX:
-    case STATE_TX_ADDR:
+    case STATE_BUNDLE:
+    case STATE_BUNDLE_ADDR:
         return true;
     default:
         return false;
     }
 }
 
-/* -------------------- SCREEN BUTTON FUNCTIONS ---------------
- ---------------------------------------------------------------
- --------------------------------------------------------------- */
-static uint8_t nano_translate_mask(unsigned int button_mask)
+static UI_BUTTON_PRESS translate_button_mask(const unsigned int button_mask)
 {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT:
@@ -269,142 +228,84 @@ static uint8_t nano_translate_mask(unsigned int button_mask)
     }
 }
 
-static void nano_handle_button(uint8_t button_mask)
+static void nano_handle_button(const UI_BUTTON_PRESS button_press)
 {
-    int8_t array_sz;
+    int array_sz;
 
     switch (ui_state.state) {
-        /* ------------ STATE MAIN MENU -------------- */
     case STATE_MAIN_MENU:
-        array_sz = button_main_menu(button_mask);
+        array_sz = button_main_menu(button_press);
         break;
-        /* ------------ STATE ABOUT -------------- */
+
     case STATE_ABOUT:
-        array_sz = button_about(button_mask);
+        array_sz = button_about(button_press);
         break;
+
 #ifdef TARGET_NANOS
-        /* ------------ STATE VERSION -------------- */
     case STATE_VERSION:
-        button_version(button_mask);
+        button_version(button_press);
         return;
-        /* ------------ STATE MORE INFO -------------- */
+
     case STATE_MORE_INFO:
-        array_sz = button_more_info(button_mask);
+        array_sz = button_more_info(button_press);
         break;
 #endif
-        /* ------------ STATE BIP PATH -------------- */
+
     case STATE_BIP_PATH:
-        array_sz = button_bip_path(button_mask);
+        array_sz = button_bip_path(button_press);
         break;
-        /* ------------ STATE DISPLAY_ADDRESS -------------- */
-    case STATE_DISP_ADDR:
-        array_sz = button_disp_addr(button_mask);
+
+    case STATE_ADDRESS_FULL:
+        array_sz = button_address_full(button_press);
         break;
-        /* ------------ STATE DISPLAY CHECKSUM -------------- */
-    case STATE_DISP_ADDR_CHK:
-        button_disp_addr_chk(button_mask);
+
+    case STATE_ADDRESS_DIGEST:
+        button_address_digest(button_press);
         return;
-        /* ------------ STATE MENU_TX_ADDRESS -------------- */
-    case STATE_TX_ADDR:
-        array_sz = button_tx_addr(button_mask);
+
+    case STATE_BUNDLE_ADDR:
+        array_sz = button_bundle_addr(button_press);
         break;
-        /* ------------ PROMPT TX INFO *DYNAMIC-MENU* -------------- */
-    case STATE_PROMPT_TX:
-        button_prompt_tx(button_mask);
+
+    case STATE_BUNDLE:
+        button_bundle(button_press);
         return;
+
     case STATE_IGNORE:
         return;
-        /* ------------ DEFAULT -------------- */
-    default: // this would be an unkown state/error
-        ui_state.menu_idx = 0;
-        return;
-    }
 
-    // incr/decr menu index
-    if (array_sz >= 0)
-        button_handle_menu_idx(button_mask, array_sz);
-}
-
-/* ----------------------------------------------------
- ------------------------------------------------------
- Default display options per state
- ------------------------------------------------------
- --------------------------------------------------- */
-static void nano_build_display()
-{
-    switch (ui_state.state) {
-        /* ------------ MAIN MENU -------------- */
-    case STATE_MAIN_MENU:
-        display_main_menu();
-        break;
-        /* ------------ ABOUT -------------- */
-    case STATE_ABOUT:
-        display_about();
-        break;
-#ifdef TARGET_NANOS
-        /* ------------ VERSION -------------- */
-    case STATE_VERSION:
-        display_version();
-        break;
-        /* ------------ MORE INFO -------------- */
-    case STATE_MORE_INFO:
-        display_more_info();
-        break;
-#endif
-        /* ------------ BIP PATH ------------ */
-    case STATE_BIP_PATH:
-        display_bip_path();
-        break;
-        /* ------------ DISPLAY TX ADDRESS -------------- */
-    case STATE_TX_ADDR:
-        display_tx_addr();
-        break;
-        /* ------------ DISPLAY ADDRESS MENU -------------- */
-    case STATE_DISP_ADDR:
-        display_addr();
-        break;
-        /* ------------ DISPLAY ADDRESS CHECKSUM -------------- */
-    case STATE_DISP_ADDR_CHK:
-        display_addr_chk();
-        break;
-        /* ------------ PROMPT TX *DNYMANIC-MENU -------------- */
-    case STATE_PROMPT_TX:
-        display_prompt_tx();
-        break;
-        /* ------------ IGNORE STATE -------------- */
-    case STATE_IGNORE:
-        return;
-        /* ------------ UNKNOWN STATE -------------- */
     default:
-        display_unknown_state();
-        break;
+        THROW_PARAMETER("state");
+    }
+
+    // incr or decr ui_state.menu_idx
+    if (array_sz >= 0) {
+        if (button_press == BUTTON_L) {
+            ui_state.menu_idx = MAX(0, ui_state.menu_idx - 1);
+        }
+        else if (button_press == BUTTON_R) {
+            ui_state.menu_idx = MIN(array_sz, ui_state.menu_idx + 1);
+        }
     }
 }
 
-/* ----------------------------------------------------
- ------------------------------------------------------
- ------- MAIN BUTTON LOGIC -------
- Every button press calls transition_state
- ------------------------------------------------------
- --------------------------------------------------- */
 static void nano_transition_state(unsigned int button_mask)
 {
-    uint8_t translated_mask = nano_translate_mask(button_mask);
-
+    const UI_BUTTON_PRESS button_press = translate_button_mask(button_mask);
     // make sure we only transition on valid button presses
-    if (translated_mask == BUTTON_BAD)
+    if (button_press == BUTTON_BAD) {
         return;
+    }
 
-    nano_handle_button(translated_mask);
-
-    nano_build_display();
-
-    if (ui_state.state == STATE_EXIT)
+    nano_handle_button(button_press);
+    if (ui_state.state == STATE_EXIT) {
         // Go back to the dashboard
         os_sched_exit(0);
+    }
 
-    // render new display
-    nano_render();
+    // display the new state
+    nano_draw_state();
+    nano_display();
 }
 
 #endif // TARGET_NANO

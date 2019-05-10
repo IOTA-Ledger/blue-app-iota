@@ -13,7 +13,7 @@
 #define IO_STRUCT struct __attribute__((packed, may_alias))
 typedef struct API_CTX {
     /// BIP32 path used for seed derivation
-    unsigned int bip32_path[BIP32_PATH_MAX_LEN];
+    uint32_t bip32_path[BIP32_PATH_MAX_LEN];
     uint8_t bip32_path_length;
 
     uint8_t security; ///< used security level

@@ -1,257 +1,244 @@
+#include "nano_misc.h"
 #include <string.h>
 #include "iota/addresses.h"
 #include "glyphs.h"
-#include "api.h"
 #include "ui.h"
 #include "ui_common.h"
-#include "nano_misc.h"
-#include "nano_core.h"
 
 // go to state with menu index
-void state_go(uint8_t state, uint8_t idx)
+void nano_state_set(UI_STATES_NANO state, uint8_t idx)
 {
     ui_state.state = state;
     ui_state.menu_idx = idx;
 }
 
-void backup_state()
+void nano_state_set_ignore()
 {
-    ui_state.backup_state = ui_state.state;
+    nano_state_backup();
+    ui_state.state = STATE_IGNORE;
+}
+
+void nano_state_backup()
+{
+    ui_state.nano_state_backup = ui_state.state;
     ui_state.backup_menu_idx = ui_state.menu_idx;
 }
 
-void restore_state()
+void nano_state_restore()
 {
-    state_go(ui_state.backup_state, ui_state.backup_menu_idx);
+    nano_state_set(ui_state.nano_state_backup, ui_state.backup_menu_idx);
 
-    ui_state.backup_state = STATE_MAIN_MENU;
+    ui_state.nano_state_backup = STATE_MAIN_MENU;
     ui_state.backup_menu_idx = 0;
 }
 
-void abbreviate_addr(char *dest, const char *src)
+void nano_draw_screen(const UI_SCREENS_NANO screen)
 {
-    // copy the abbreviated address over
-    strncpy(dest, src, 4);
-    strncpy(dest + 4, " ... ", 5);
-    strncpy(dest + 9, src + 77, 4);
-    dest[13] = '\0';
-}
+    // reset all screen elements
+    ui_state.flags.elements = 0;
+    // reset all text
+    MEMCLEAR(ui_text);
 
-/** @brief Returns buffer for corresponding position. */
-static char *get_str_buffer(UI_TEXT_POS pos)
-{
-    switch (pos) {
-    case TOP_H:
-    case TOP:
-        return ui_text.top_str;
-    case BOT:
-    case BOT_H:
-        return ui_text.bot_str;
-    case MID:
-        return ui_text.mid_str;
-#ifdef TARGET_NANOX
-    case POS_X:
-        return ui_text.x_str;
+    // always draw the element to clear the screen
+    NANO_DRAW_ELEMENTS(EL_CLEAR);
+
+    switch (screen) {
+    case SCREEN_TITLE:
+        NANO_DRAW_ELEMENTS(EL_TITLE);
+        break;
+    case SCREEN_ICON:
+        NANO_DRAW_ELEMENTS(EL_ICON);
+        break;
+    case SCREEN_ICON_MULTI:
+        NANO_DRAW_ELEMENTS(EL_ICON_MULTI);
+        break;
+#ifdef TARGET_NANOS
+    case SCREEN_MENU:
+        NANO_DRAW_ELEMENTS(EL_MENU);
+        break;
+#else
+    case SCREEN_BIP:
+        NANO_DRAW_ELEMENTS(EL_BIP);
+        break;
+    case SCREEN_ADDR:
+        NANO_DRAW_ELEMENTS(EL_ADDR);
+        break;
 #endif
     default:
-        THROW(INVALID_PARAMETER);
+        THROW_PARAMETER("screen");
     }
 }
 
-void write_display(const char *string, UI_TEXT_POS pos)
+void nano_draw_text(const char *text, UI_TEXT_POS pos)
 {
-    char *msg = get_str_buffer(pos);
+    char *msg = nano_get_text_buffer(pos);
 
     // NULL value sets line blank
-    if (string == NULL) {
+    if (text == NULL) {
         msg[0] = '\0';
         return;
     }
-    snprintf(msg, TEXT_LEN, "%s", string);
+
+    snprintf(msg, TEXT_LEN, "%s", text);
 }
 
-/* --------- STATE RELATED FUNCTIONS ----------- */
-
-// Turns a single glyph on or off
-void glyph_on(UI_GLYPH_TYPES_NANO g)
+void nano_draw_menu_text(const char text[][TEXT_LEN], const unsigned int rows)
 {
-    FLAG_ON(g);
-}
-
-static void clear_text()
-{
-    write_display(NULL, TOP);
-    write_display(NULL, MID);
-    write_display(NULL, BOT);
-#ifdef TARGET_NANOX
-    write_display(NULL, POS_X);
-#endif
-}
-
-static void clear_glyphs()
-{
-    // turn off all glyphs
-    FLAG_OFF(GLYPH_UP);
-    FLAG_OFF(GLYPH_DOWN);
-    FLAG_OFF(GLYPH_LOAD);
-    FLAG_OFF(GLYPH_DASH);
-    FLAG_OFF(GLYPH_IOTA);
-    FLAG_OFF(GLYPH_BACK);
 #ifdef TARGET_NANOS
-    FLAG_OFF(GLYPH_CONFIRM);
-#else // NANOX
-    FLAG_OFF(GLYPH_INFO);
-    FLAG_OFF(GLYPH_CHECK);
-    FLAG_OFF(GLYPH_CROSS);
-#endif
-}
-
-void clear_display()
-{
-    clear_text();
-    clear_glyphs();
-}
-
-// turns on 2 glyphs (often glyph on left + right)
-void display_glyphs(UI_GLYPH_TYPES_NANO g1, UI_GLYPH_TYPES_NANO g2)
-{
-    clear_glyphs();
-
-    // turn on ones we want
-    glyph_on(g1);
-    glyph_on(g2);
-}
-
-// combine glyphs with bars along top for confirm
-void display_glyphs_confirm(UI_GLYPH_TYPES_NANO g1, UI_GLYPH_TYPES_NANO g2)
-{
-    clear_glyphs();
-
-    // turn on ones we want
-#ifdef TARGET_NANOS
-    glyph_on(GLYPH_CONFIRM);
-#endif
-    glyph_on(g1);
-    glyph_on(g2);
-}
-
-void write_text_array(const char *array, uint8_t len)
-{
-    clear_display();
-    clear_glyphs();
-
-#ifdef TARGET_NANOS
-    if (ui_state.menu_idx > 0) {
-        write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
-        glyph_on(GLYPH_UP);
+    // display 1 full and 2 half rows on the Nano S
+    int row = ui_state.menu_idx - 1;
+    if (row >= 0) {
+        nano_draw_text(text[row], TOP_H);
+        NANO_DRAW_ELEMENTS(EL_UP);
     }
 
-    write_display(array + (TEXT_LEN * ui_state.menu_idx), MID);
+    row++;
+    nano_draw_text(text[row], MID);
 
-    if (ui_state.menu_idx < len - 1) {
-        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
-        glyph_on(GLYPH_DOWN);
+    row++;
+    if ((unsigned int)row < rows) {
+        nano_draw_text(text[row], BOT_H);
+        NANO_DRAW_ELEMENTS(EL_DOWN);
     }
 #else
-    if (ui_state.menu_idx > 0) {
-        write_display(array + (TEXT_LEN * (ui_state.menu_idx - 1)), TOP_H);
-        glyph_on(GLYPH_UP);
+    // display 4 full rows on the Nano X
+    const UI_TEXT_POS text_pos[] = {TOP, MID, BOT, POS_X};
+    const unsigned int num_pos = ARRAY_SIZE(text_pos);
+
+    const unsigned int row = ui_state.menu_idx * num_pos;
+    for (unsigned int i = 0; i < num_pos; i++) {
+        if (row + i >= rows) {
+            break;
+        }
+        nano_draw_text(text[row + i], text_pos[i]);
     }
 
-    write_display(array + (TEXT_LEN * ui_state.menu_idx), MID);
-
-    if (ui_state.menu_idx < len - 2) {
-        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 1)), BOT_H);
-        glyph_on(GLYPH_DOWN);
+    // only show up glyph if one row was left out
+    if (row > 0) {
+        NANO_DRAW_ELEMENTS(EL_UP);
     }
-    if (ui_state.menu_idx < len - 1) {
-        write_display(array + (TEXT_LEN * (ui_state.menu_idx + 2)), POS_X);
-        glyph_on(GLYPH_DOWN);
+    // only show down glyph if one row is still remaining
+    if (row + num_pos < rows) {
+        NANO_DRAW_ELEMENTS(EL_DOWN);
     }
 #endif
 }
 
-/* --------- FUNCTIONS FOR DISPLAYING BALANCE ----------- */
-
-// displays full/readable value based on the ui_state
-static bool display_value(int64_t val, UI_TEXT_POS pos)
+void format_value(const int64_t val, char text[TEXT_LEN])
 {
-    if (ui_state.display_full_value || ABS(val) < 1000) {
-        write_full_val(val, get_str_buffer(pos), TEXT_LEN);
+    if (ui_state.flags.full_value || ABS(val) < 1000) {
+        format_value_full(text, TEXT_LEN_VALUE + 1, val);
     }
     else {
-        write_readable_val(val, get_str_buffer(pos), TEXT_LEN);
+        format_value_short(text, TEXT_LEN, val);
     }
-
-    // return whether a shortened version is possible
-    return ABS(val) >= 1000;
 }
 
-// swap between full value and readable value
-void value_convert_readability()
+void format_address_abbrev(const char *addr, char text[TEXT_LEN])
 {
-    ui_state.display_full_value = !ui_state.display_full_value;
+    const char sep[] = " ... ";
+    const size_t sep_len = sizeof(sep) - 1; // don't count termination
+    const size_t chunk_len =
+        MIN(TEXT_LEN_ADDRESS_ABBREV - sep_len, NUM_HASH_TRYTES) / 2;
+
+    strncpy(text, addr, chunk_len);
+    strncpy(text + chunk_len, sep, sep_len);
+    strncpy(text + chunk_len + sep_len, addr + NUM_HASH_TRYTES - chunk_len,
+            chunk_len);
+
+    const size_t abbrev_len = 2 * chunk_len + sep_len;
+    if (abbrev_len < TEXT_LEN) {
+        text[abbrev_len] = '\0';
+    }
 }
 
-void display_advanced_tx_value()
+void format_address_checksum(const char *addr, char text[TEXT_LEN])
 {
-    ui_state.val = api.bundle_ctx.values[menu_to_tx_idx()];
+    char buffer[NUM_CHECKSUM_TRYTES + 1] = {0};
+    strncpy(buffer, addr + NUM_HASH_TRYTES, NUM_CHECKSUM_TRYTES);
 
-    if (ui_state.val > 0) { // outgoing tx
-        // -1 is deny, -2 approve, -3 addr, -4 val of change
-        if (ui_state.menu_idx == get_tx_arr_sz() - 4) {
-            char msg[TEXT_LEN];
-            // write the index along with Change
-            snprintf(msg, sizeof msg, "Change: [%u]",
-                     (unsigned int)
-                         api.bundle_ctx.indices[api.bundle_ctx.last_tx_index]);
+    snprintf(text, TEXT_LEN, "Chk: %s", buffer);
+}
 
-            write_display(msg, TOP);
+void format_address_full(const char *addr, char text[][TEXT_LEN])
+{
+    const char *end = addr + NUM_ADDRESS_TRYTES;
+
+    unsigned int row = 0;
+    unsigned int pos = 0;
+    while (addr < end) {
+        // increase row, if next chunk does not fit
+        if (pos + 1 + MENU_ADDR_CHUNK_LEN > TEXT_LEN_ADDRESS_FULL) {
+            row++;
+            pos = 0;
         }
-        else
-            write_display("Output:", TOP);
-    }
-    else {
-        // input tx (skip meta)
-        char msg[TEXT_LEN];
-        snprintf(msg, sizeof msg, "Input: [%u]",
-                 (unsigned int)api.bundle_ctx.indices[menu_to_tx_idx()]);
+        // print space to separate chunks
+        if (pos > 0) {
+            text[row][pos++] = ' ';
+        }
 
-        write_display(msg, TOP);
-        ui_state.val = -ui_state.val;
-    }
+        strncpy(text[row] + pos, addr, MIN(end - addr, MENU_ADDR_CHUNK_LEN));
+        pos += MENU_ADDR_CHUNK_LEN;
+        addr += MENU_ADDR_CHUNK_LEN;
 
-    // display_value returns true if readable form is possible
-    if (display_value(ui_state.val, BOT))
-        display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
-    else
-        display_glyphs(GLYPH_UP, GLYPH_DOWN);
+        // assure zero termination
+        text[row][pos] = '\0';
+    }
 }
 
-void display_advanced_tx_address()
+void format_bip_path(const API_CTX *api, char text[2][TEXT_LEN])
 {
-    const unsigned char *addr_bytes =
-        bundle_get_address_bytes(&api.bundle_ctx, menu_to_tx_idx());
+    // the highest bit marks an hardened element
+    const uint32_t hardened_bit = 1U << 31;
 
-    get_address_with_checksum(addr_bytes, ui_state.addr);
+    // the longest possible path "2c'/107a'/ffffffff'/
+    // ffffffff'/ffffffff'" fits exactly into two rows
+    unsigned int row = 0;
+    size_t chars_written = 0;
+    for (unsigned int i = 0; i < api->bip32_path_length; i++) {
+        const bool is_hardened = (api->bip32_path[i] & hardened_bit);
+        const bool is_last = (i == api->bip32_path_length - 1);
 
-    char abbrv[14];
-    abbreviate_addr(abbrv, ui_state.addr);
+        // increase row, if there might be not enough space for this element
+        if (chars_written + 8 + (is_hardened ? 1 : 0) + (is_last ? 0 : 1) + 1 >
+            TEXT_LEN) {
+            // terminate the current line
+            text[row][chars_written] = '\0';
 
-    write_display(abbrv, TOP);
-    write_display("Chk: ", BOT);
+            // this should not happen as two rows are enough to fit any bip path
+            if (row > 0) {
+                THROW(INVALID_STATE);
+            }
+            // move to first position of next row
+            row++;
+            chars_written = 0;
+        }
 
-    // copy the remaining 9 chars in the buffer
-    memcpy(ui_text.bot_str + 5, ui_state.addr + 81, 9);
+        // write the element as hex
+        snprintf(text[row] + chars_written, TEXT_LEN - chars_written, "%x",
+                 api->bip32_path[i] & ~hardened_bit);
+        chars_written = strnlen(text[row], TEXT_LEN);
 
-    display_glyphs_confirm(GLYPH_UP, GLYPH_DOWN);
+        // write apostroph if hardened
+        if (is_hardened) {
+            text[row][chars_written++] = '\'';
+        }
+        // write the separator only if not last element
+        if (!is_last) {
+            text[row][chars_written++] = '|';
+        }
+    }
+
+    // terminate the current line
+    text[row][chars_written] = '\0';
 }
 
-uint8_t get_tx_arr_sz()
+uint8_t get_menu_bundle_len()
 {
     uint8_t counter = 0;
 
     for (unsigned int i = 0; i <= api.bundle_ctx.last_tx_index; i++) {
+        // ignore meta tx
         if (api.bundle_ctx.values[i] != 0) {
             counter++;
         }
