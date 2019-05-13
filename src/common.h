@@ -15,7 +15,8 @@
 #define APPVERSION_MINOR 0xFF
 #define APPVERSION_PATCH 0xFF
 
-void throw_exception(const char *expression, const char *file, int line);
+void throw_exception(const char *expression, const char *file, int line)
+    __attribute__((noreturn));
 
 #define THROW(x) throw_exception(#x, __FILE__, __LINE__)
 

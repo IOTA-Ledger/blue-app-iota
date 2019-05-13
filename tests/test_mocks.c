@@ -9,6 +9,7 @@
 void throw_exception(const char *expression, const char *file, int line)
 {
     mock_assert(false, expression, file, line);
+    abort(); // avoid compiler warning
 }
 
 void ui_display_main_menu()

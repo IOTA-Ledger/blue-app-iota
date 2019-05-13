@@ -124,7 +124,6 @@ static bool display_address(uint8_t p1)
         // invalid p1 value
         THROW(SW_INCORRECT_P1P2);
     }
-    return false; // avoid compiler warnings
 }
 
 NO_INLINE
@@ -174,7 +173,6 @@ static bool first_tx(uint8_t p1)
         // invalid p1 value
         THROW(SW_INCORRECT_P1P2);
     }
-    return false; // avoid compiler warnings
 }
 
 static bool has_reference_transaction(uint8_t current_index)
