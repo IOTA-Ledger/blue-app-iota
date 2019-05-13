@@ -14,6 +14,13 @@ bolos_ux_params_t G_ux_params;
 ux_state_t ux;
 #endif // TARGET_NANOX
 
+/// Returns true, if the device is not locked
+static bool device_is_unlocked(void)
+{
+    // this is the precise usage suggested by the SDK
+    return os_global_pin_is_validated() == BOLOS_UX_OK;
+}
+
 static void IOTA_main()
 {
     volatile unsigned int flags = 0;
@@ -30,7 +37,7 @@ static void IOTA_main()
                 const unsigned int rx = io_exchange(CHANNEL_APDU | flags, 0);
 
                 // the device must not be locked
-                if (!os_global_pin_is_validated()) {
+                if (!device_is_unlocked()) {
                     THROW(SW_DEVICE_IS_LOCKED);
                 }
 
