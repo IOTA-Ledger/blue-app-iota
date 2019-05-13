@@ -69,10 +69,10 @@ void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
  *  @param value transaction signed value
  *  @param tag transaction tag in base-27 encoding must be exactly 27 char long
  *  @param timestamp transaction timestamp
- *  @return index of the just finalized transaction.
+ *  @return index of the just added transaction.
  */
-uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
-                       uint32_t timestamp);
+uint8_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
+                      uint32_t timestamp);
 
 /** @brief Finalizes the bundle, if it has a valid bundle hash.
  *  A bundle is valid, if a) values sum up to 0 b) the index of each input
@@ -82,7 +82,7 @@ uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
  *  @param change_tx_index the index of the change transaction
  *  @param seed_bytes seed used for the addresses
  *  @param security security level used for the addresses
- *  @return true if the bundle is valid, false otherwise
+ *  @return 0 if the bundle is valid
  */
 int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
                                const unsigned char *seed_bytes,
@@ -114,6 +114,11 @@ void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes);
  *  @return true, if transaction is an input, false otherwise
  */
 bool bundle_is_input_tx(const BUNDLE_CTX *ctx, uint8_t tx_index);
+
+/** @brief Returns the number of value transactions in the bundle.
+ *  @param ctx the bundle context used
+ */
+uint8_t bundle_get_num_value_txs(const BUNDLE_CTX *ctx);
 
 /** @brief Returns whether there are still transactions missing in the bundle.
  *  @param ctx the bundle context used

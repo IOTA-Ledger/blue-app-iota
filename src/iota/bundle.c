@@ -51,8 +51,8 @@ static void create_bundle_bytes(int64_t value, const char *tag,
     trits_to_bytes(bundle_essence_trits, bytes);
 }
 
-uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
-                       uint32_t timestamp)
+uint8_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
+                      uint32_t timestamp)
 {
     if (!bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
@@ -325,7 +325,6 @@ const unsigned char *bundle_get_hash(const BUNDLE_CTX *ctx)
     if (bundle_has_open_txs(ctx)) {
         THROW(INVALID_STATE);
     }
-    // TODO check that the bundle has already been finalized
 
     return ctx->hash;
 }
@@ -343,4 +342,20 @@ bool bundle_is_input_tx(const BUNDLE_CTX *ctx, uint8_t tx_index)
     }
 
     return ctx->values[tx_index] < 0;
+}
+
+uint8_t bundle_get_num_value_txs(const BUNDLE_CTX *ctx)
+{
+    if (bundle_has_open_txs(ctx)) {
+        THROW(INVALID_STATE);
+    }
+
+    unsigned int count = 0;
+    for (unsigned int i = 0; i <= ctx->last_tx_index; i++) {
+        if (ctx->values[i] != 0) {
+            count++;
+        }
+    }
+
+    return count;
 }

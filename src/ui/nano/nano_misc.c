@@ -235,14 +235,7 @@ void format_bip_path(const API_CTX *api, char text[2][TEXT_LEN])
 
 uint8_t get_menu_bundle_len()
 {
-    uint8_t counter = 0;
+    const uint8_t num_value_txs = bundle_get_num_value_txs(&api.bundle_ctx);
 
-    for (unsigned int i = 0; i <= api.bundle_ctx.last_tx_index; i++) {
-        // ignore meta tx
-        if (api.bundle_ctx.values[i] != 0) {
-            counter++;
-        }
-    }
-
-    return (counter * 2) + 2;
+    return (num_value_txs * 2) + 2;
 }
