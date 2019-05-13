@@ -119,13 +119,6 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
 
 #define MEMCLEAR(x) os_memset(&x, 0, sizeof(x))
 
-/// Throws INVALID_PARAMETER exception with addition debug info.
-#define THROW_PARAMETER(x)                                                     \
-    ({                                                                         \
-        PRINTF("invalid " x " in " __FILE__ ":%d\n", __LINE__);                \
-        THROW(INVALID_PARAMETER);                                              \
-    })
-
 /// Devide x by y and round up.
 #define CEILING(x, y)                                                          \
     ({                                                                         \
@@ -161,5 +154,23 @@ static inline void cx_hash(cx_hash_t *hash, int mode, const unsigned char *in,
      sizeof(typeof(int[1 - 2 * !!__builtin_types_compatible_p(                 \
                                    typeof(arr), typeof(&arr[0]))])) *          \
          0)
+
+/// Throws an error together with a debug message
+#define THROW_MSG(msg, error)                                                  \
+    ({                                                                         \
+        PRINTF(msg " in %s: %d\n", __FILE__, __LINE__);                        \
+        THROW((error));                                                        \
+    })
+
+/// Throws INVALID_PARAMETER exception with addition debug info
+#define THROW_PARAMETER(x) THROW_MSG("invalid " x, INVALID_PARAMETER)
+
+/// Throws provided error, if condition does not apply
+#define VALIDATE(cond, error)                                                  \
+    ({                                                                         \
+        if (!(cond)) {                                                         \
+            THROW_MSG("validation error", error);                              \
+        }                                                                      \
+    })
 
 #endif // COMMON_H
