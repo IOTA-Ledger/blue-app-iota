@@ -256,7 +256,7 @@ NO_INLINE
 static void io_send_unfinished_bundle(void)
 {
     TX_OUTPUT output;
-    os_memset(&output, 0, sizeof(TX_OUTPUT));
+    MEMCLEAR(output);
     output.finalized = false;
 
     io_send(&output, sizeof(output), SW_OK);
