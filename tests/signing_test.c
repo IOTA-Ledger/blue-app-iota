@@ -113,8 +113,11 @@ static void generate_signature(const unsigned char *seed_bytes,
     SIGNING_CTX ctx;
     unsigned char signature_fragment[SIGNATURE_FRAGMENT_SIZE * NUM_HASH_BYTES];
 
-    signing_initialize(&ctx, 0, seed_bytes, address_idx, security,
-                       NORMALIZED_HASH);
+    // initialize a minimal bundle info only with the address index
+    const BUNDLE_INFO bundle_info = {.indices = {address_idx}};
+    signing_initialize(&ctx, &bundle_info, NORMALIZED_HASH);
+
+    signing_start(&ctx, 0, seed_bytes, security);
 
     for (int i = 0; i < NUM_SIGNATURE_FRAGMENTS(security); i++) {
 

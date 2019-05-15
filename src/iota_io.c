@@ -25,14 +25,14 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, length);
 }
 
-unsigned int iota_dispatch()
+unsigned int iota_dispatch(const uint8_t ins, const uint8_t p1,
+                           const uint8_t p2, const uint8_t len,
+                           const unsigned char *input_data)
 {
-    const uint8_t p1 = G_io_apdu_buffer[OFFSET_P1];
-    const unsigned int len = G_io_apdu_buffer[OFFSET_P3];
-    const unsigned char *input_data = G_io_apdu_buffer + OFFSET_CDATA;
+    UNUSED(p2);
 
     // check second byte for instruction
-    switch (G_io_apdu_buffer[OFFSET_INS]) {
+    switch (ins) {
     case INS_NONE:
         return 0;
     case INS_PUBKEY:

@@ -135,14 +135,4 @@
         SCREEN_GLYPH_BACK, SCREEN_GLYPH_INFO, SCREEN_GLYPH_CHECK,              \
         SCREEN_GLYPH_CROSS, SCREEN_GLYPH_UP, SCREEN_GLYPH_DOWN
 
-// -- Define button functions with specific names
-#define BUTTON_FUNCTION(name)                                                  \
-    static unsigned int bagl_ui_##name##_screen_button(                        \
-        unsigned int button_mask, unsigned int button_mask_counter)            \
-    {                                                                          \
-        nano_transition_state(button_mask);                                    \
-                                                                               \
-        return 0;                                                              \
-    }
-
 #endif // X_ELEMENTS_H

@@ -14,6 +14,17 @@ bolos_ux_params_t G_ux_params;
 ux_state_t ux;
 #endif // TARGET_NANOX
 
+// APDU header present in every input
+typedef IO_STRUCT APDU_HEADER
+{
+    uint8_t cla;
+    uint8_t ins;
+    uint8_t p1;
+    uint8_t p2;
+    uint8_t p3;
+}
+APDU_HEADER;
+
 /// Returns true, if the device is not locked
 static bool device_is_unlocked(void)
 {
@@ -28,6 +39,7 @@ static void IOTA_main()
     ui_init();
     io_initialize();
 
+    // Exchange APDUs until EXCEPTION_IO_RESET is thrown
     for (;;) {
         BEGIN_TRY
         {
@@ -36,22 +48,27 @@ static void IOTA_main()
                 // data is always sent separatly
                 const unsigned int rx = io_exchange(CHANNEL_APDU | flags, 0);
 
-                // the device must not be locked
-                if (!device_is_unlocked()) {
-                    THROW(SW_DEVICE_IS_LOCKED);
+                // when no APDU received, trigger a reset
+                if (rx == 0) {
+                    THROW(EXCEPTION_IO_RESET);
                 }
 
-                // check header consistency
-                if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
-                    THROW(SW_CLA_NOT_SUPPORTED);
-                }
-                if (rx < OFFSET_P3 ||
-                    rx < G_io_apdu_buffer[OFFSET_P3] + OFFSET_P3) {
-                    THROW(SW_INCORRECT_LENGTH_P3);
-                }
+                // the device must not be locked
+                VALIDATE(device_is_unlocked(), SW_DEVICE_IS_LOCKED);
+
+                // check header validity
+                VALIDATE(rx >= sizeof(APDU_HEADER), SW_INCORRECT_LENGTH);
+
+                const APDU_HEADER *header = (APDU_HEADER *)G_io_apdu_buffer;
+                VALIDATE(header->cla == CLA, SW_CLA_NOT_SUPPORTED);
+                VALIDATE(rx == header->p3 + sizeof(APDU_HEADER),
+                         SW_INCORRECT_LENGTH_P3);
+
+                unsigned char *data = G_io_apdu_buffer + sizeof(APDU_HEADER);
 
                 // handle iota apdu commands
-                flags = iota_dispatch();
+                flags = iota_dispatch(header->ins, header->p1, header->p2,
+                                      header->p3, data);
             }
             CATCH(EXCEPTION_IO_RESET)
             {
@@ -61,12 +78,15 @@ static void IOTA_main()
             {
                 unsigned short sw;
 
-                switch (e & 0xF000) {
-                case 0x6000:
-                case 0x9000:
+                // SW_OK must not be thrown
+                if (e == SW_OK) {
+                    sw = INVALID_STATE;
+                }
+                // expected errors start with 0x6
+                if ((e & 0xF000) == 0x6000) {
                     sw = e;
-                    break;
-                default:
+                }
+                else {
                     sw = SW_UNKNOWN | (e & 0x0FF);
                 }
 

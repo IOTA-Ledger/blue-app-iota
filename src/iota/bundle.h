@@ -6,24 +6,32 @@
 
 // the largest bundle size due to memory limitations per device
 #ifdef TARGET_NANOS
-#define MAX_BUNDLE_SIZE 8
+#define MAX_BUNDLE_SIZE 10
 #elif defined TARGET_NANOX
 #define MAX_BUNDLE_SIZE 10
 #else // BLUE
 #define MAX_BUNDLE_SIZE 20
 #endif // TARGET_NANOS/X/BLUE
 
-typedef struct BUNDLE_CTX {
-    // bundle_bytes holds all of the bundle information in byte encoding
-    unsigned char bytes[MAX_BUNDLE_SIZE * 2 * NUM_HASH_BYTES];
-
+typedef struct BUNDLE_INFO {
+    /// transaction values
     int64_t values[MAX_BUNDLE_SIZE];
+    /// trasaction address indices
     uint32_t indices[MAX_BUNDLE_SIZE];
 
     uint8_t current_tx_index;
     uint8_t last_tx_index;
+} BUNDLE_INFO;
 
-    unsigned char hash[NUM_HASH_BYTES]; // bundle hash, when finalized
+typedef struct BUNDLE_CTX {
+    /// shared bundle information
+    BUNDLE_INFO bundle;
+
+    /// bundle_bytes holds all of the bundle information in byte encoding
+    unsigned char bytes[MAX_BUNDLE_SIZE * 2 * NUM_HASH_BYTES];
+
+    /// bundle hash, when finalized
+    unsigned char hash[NUM_HASH_BYTES];
 } BUNDLE_CTX;
 
 enum BundleRetCode {
@@ -69,10 +77,10 @@ void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
  *  @param value transaction signed value
  *  @param tag transaction tag in base-27 encoding must be exactly 27 char long
  *  @param timestamp transaction timestamp
- *  @return index of the just finalized transaction.
+ *  @return index of the just added transaction.
  */
-uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
-                       uint32_t timestamp);
+uint8_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
+                      uint32_t timestamp);
 
 /** @brief Finalizes the bundle, if it has a valid bundle hash.
  *  A bundle is valid, if a) values sum up to 0 b) the index of each input
@@ -82,7 +90,7 @@ uint32_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
  *  @param change_tx_index the index of the change transaction
  *  @param seed_bytes seed used for the addresses
  *  @param security security level used for the addresses
- *  @return true if the bundle is valid, false otherwise
+ *  @return 0 if the bundle is valid
  */
 int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
                                const unsigned char *seed_bytes,
@@ -115,13 +123,18 @@ void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes);
  */
 bool bundle_is_input_tx(const BUNDLE_CTX *ctx, uint8_t tx_index);
 
+/** @brief Returns the number of value transactions in the bundle.
+ *  @param ctx the bundle context used
+ */
+uint8_t bundle_get_num_value_txs(const BUNDLE_CTX *ctx);
+
 /** @brief Returns whether there are still transactions missing in the bundle.
  *  @param ctx the bundle context used
  *  @return true, if transactions are missing, false if the bundle is complete
  */
 static inline bool bundle_has_open_txs(const BUNDLE_CTX *ctx)
 {
-    return ctx->current_tx_index <= ctx->last_tx_index;
+    return ctx->bundle.current_tx_index <= ctx->bundle.last_tx_index;
 }
 
 #endif // BUNDLE_H

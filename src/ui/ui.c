@@ -3,7 +3,6 @@
 #include "os_io_seproxyhal.h"
 #include "api.h"
 #include "iota/addresses.h"
-#include "nano/nano_core.h"
 
 #define TICKS_PER_SECOND 10
 

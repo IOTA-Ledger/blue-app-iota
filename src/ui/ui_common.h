@@ -4,15 +4,25 @@
 #include <string.h>
 #include <stdint.h>
 
-/// the largest power of 10 that still fits into int32
-#define MAX_INT_DEC INT64_C(1000000000)
+/** @brief Returns the tx index corresponding to the current menu entry.
+ *  Meta transactions, i.e. transactions with 0-value, are skipped.
+ */
+unsigned int ui_state_get_tx_index(void);
 
-extern const char IOTA_UNITS[6][3];
+/** @brief Writes formatted value in base iotas without commas to string.
+ *  Ex. 3040981551 i
+ *  @param s Pointer to a buffer where the resulting C-string is stored
+ *  @param n Maximum number of bytes to be used in the buffer
+ *  @param val Signed value to be formated
+ */
+void format_value_full(char *s, unsigned int n, int64_t val);
 
-size_t str_add_commas(char *dst, const char *src, size_t num_len);
-size_t snprint_int64(char *s, size_t n, int64_t val);
-uint8_t menu_to_tx_idx(void);
-void write_full_val(int64_t val, char *dest, unsigned int len);
-void write_readable_val(int64_t val, char *dest, unsigned int len);
+/** @brief Writes formatted value in short form with units.
+ *  Ex. 3.040 Gi
+ *  @param s Pointer to a buffer where the resulting C-string is stored
+ *  @param n Maximum number of bytes to be used in the buffer
+ *  @param val Signed value to be formated
+ */
+void format_value_short(char *s, unsigned int n, int64_t val);
 
 #endif // UI_COMMON_H

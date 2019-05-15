@@ -1,12 +1,17 @@
 #ifndef IOTA_IO_H
 #define IOTA_IO_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #define BIP32_PATH_MIN_LEN 2
 #define BIP32_PATH_MAX_LEN 5
 
 void io_initialize(void);
 void io_send(const void *ptr, unsigned int length, unsigned short sw);
-unsigned int iota_dispatch(void);
+
+unsigned int iota_dispatch(uint8_t ins, uint8_t p1, uint8_t p2, uint8_t len,
+                           const unsigned char *input_data);
 
 /* ---  CLA  --- */
 
@@ -31,17 +36,6 @@ unsigned int iota_dispatch(void);
 
 #define P1_FIRST 0x00
 #define P1_MORE 0x80
-
-/* ---  APDU offsets  --- */
-
-enum {
-    OFFSET_CLA = 0,
-    OFFSET_INS,
-    OFFSET_P1,
-    OFFSET_P2,
-    OFFSET_P3,
-    OFFSET_CDATA
-};
 
 /* ---  SW return codes  --- */
 
