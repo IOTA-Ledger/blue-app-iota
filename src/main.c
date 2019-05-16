@@ -28,8 +28,11 @@ APDU_HEADER;
 /// Returns true, if the device is not locked
 static bool device_is_unlocked(void)
 {
-    // this is the precise usage suggested by the SDK
+#if CX_APILEVEL >= 9
     return os_global_pin_is_validated() == BOLOS_UX_OK;
+#else
+    return os_global_pin_is_validated();
+#endif
 }
 
 static void IOTA_main()
@@ -99,6 +102,7 @@ static void IOTA_main()
                     // reset states and UI
                     api_initialize();
                     ui_reset();
+                    io_timeout_reset();
                 }
 
                 // send the error code
@@ -168,12 +172,9 @@ unsigned char io_event(unsigned char channel)
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        ui_timeout_tick();
-        // do not forward the ticker_event when the transaction is shown
-        if (ui_lock_forbidden()) {
-            break;
-        }
-        // fallthrough
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
+                        { io_timeout_callback(UX_ALLOWED); });
+        break;
 
     default:
         UX_DEFAULT_EVENT();
