@@ -1,13 +1,12 @@
 const fs = require("fs");
-const { composeAPI } = require("@iota/core");
+const { createPrepareTransfers, generateAddress } = require('@iota/core');
 const { asTransactionObject } = require("@iota/transaction-converter");
 
 const NUM_BUNDLES = 100;
-const MAX_BUNDLE_SIZE = 8;
+const MAX_BUNDLE_SIZE = 10;
 
-const iota = composeAPI({
-  provider: "https://field.deviota.com:443"
-});
+// prepare transfers offline
+const prepareTransfers = createPrepareTransfers(undefined, Date.now());
 
 function randomInt(min, max, excluding) {
   let value;
@@ -29,20 +28,12 @@ function randomTrytes(length) {
   return text;
 }
 
-async function getAddress(seed, index, security) {
-  addresses = await iota.getNewAddress(seed, {
-    index,
-    security,
-    checksum: false,
-    total: 1
-  });
-  return addresses[0];
+function getAddress(seed, index, security) {
+  return generateAddress(seed, index, security, false)
 }
 
 async function addAddresses(inputs, seed, security) {
-  const addresses = await Promise.all(
-    inputs.map(async input => await getAddress(seed, input.keyIndex, security))
-  );
+  const addresses = inputs.map(input => getAddress(seed, input.keyIndex, security));
   return inputs.map((input, i) => {
     return {
       address: addresses[i],
@@ -74,15 +65,15 @@ async function getTxInputs(
     }
   ];
 
-  const txs = (await iota.prepareTransfers(seed, transfers, {
+  const txs = (await prepareTransfers(seed, transfers, {
     inputs: inputs,
-    address: change_address,
+    remainderAddress: change_address,
     security
   })).map(t => asTransactionObject(t));
   txs.reverse();
 
   const signatures = [];
-  for (let i = 1; i < txs.length - 1; ) {
+  for (let i = 1; i < txs.length - 1;) {
     let signature = "";
     for (let j = 0; j < security; j++) {
       signature += txs[i++].signatureMessageFragment;
