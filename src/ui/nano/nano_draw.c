@@ -245,6 +245,9 @@ void nano_draw_address_digest()
     format_address_abbrev(addr, nano_get_text_buffer(TOP));
     format_address_checksum(addr, nano_get_text_buffer(BOT));
 
+    if (ui_state.state == STATE_BUNDLE)
+        NANO_DRAW_ELEMENTS(EL_UP);
+
 #ifdef TARGET_NANOS
     NANO_DRAW_ELEMENTS(EL_DOWN, EL_CONFIRM);
 #else
@@ -315,8 +318,6 @@ static void nano_draw_bundle_value(void)
         // write the currentindex along with "input"
         const uint32_t idx = api.ctx.bundle.bundle.indices[tx_index];
         snprintf(nano_get_text_buffer(TOP), TEXT_LEN, "Input: [%u]", idx);
-
-        val = -val;
     }
     // outgoing tx
     else {

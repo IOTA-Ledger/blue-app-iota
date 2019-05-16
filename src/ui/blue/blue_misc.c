@@ -71,7 +71,7 @@ void update_tx_type()
 
 static void update_tx_val()
 {
-    format_value_short(blue_ui_state.full_val, ABBRV_VAL_TEXT_LEN,
+    format_value_short(blue_ui_state.abbrv_val, ABBRV_VAL_TEXT_LEN,
                        blue_ui_state.val);
     format_value_full(blue_ui_state.full_val, FULL_VAL_TEXT_LEN,
                       blue_ui_state.val);

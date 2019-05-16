@@ -5,7 +5,7 @@
 #include "iota/bundle.h"
 
 #define TX_TYPE_TEXT_LEN 24
-#define ABBRV_VAL_TEXT_LEN 11
+#define ABBRV_VAL_TEXT_LEN 12
 #define FULL_VAL_TEXT_LEN 26
 #define BIP_TEXT_LEN 36
 
