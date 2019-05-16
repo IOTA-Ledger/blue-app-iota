@@ -115,7 +115,6 @@ void ui_init()
 {
     MEMCLEAR(ui_text);
     MEMCLEAR(ui_state);
-    ui_timeout_stop();
 
     ui_display_main_menu();
 }
@@ -195,23 +194,6 @@ void ui_restore()
 
     nano_display();
     ui_force_draw();
-}
-
-bool ui_lock_forbidden(void)
-{
-    // forbid app from locking during transaction (rely on tx timeout)
-    switch (ui_state.state) {
-        // BIP Path could be in tx or disp_addr
-        // (backup state will tell us which)
-    case STATE_BIP_PATH:
-        if (ui_state.nano_state_backup != STATE_BUNDLE)
-            return false;
-    case STATE_BUNDLE:
-    case STATE_BUNDLE_ADDR:
-        return true;
-    default:
-        return false;
-    }
 }
 
 static UI_BUTTON_PRESS translate_button_mask(const unsigned int button_mask)

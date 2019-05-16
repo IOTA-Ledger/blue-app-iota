@@ -19,7 +19,6 @@ static void blue_ctx_initialize()
 void ui_init()
 {
     blue_ctx_initialize();
-    ui_timeout_stop();
 
     UX_SET_STATUS_BAR_COLOR(COLOUR_WHITE, COLOUR_GREEN);
     ui_display_main_menu();
@@ -102,14 +101,6 @@ void ui_restore()
         break;
     }
     ui_force_draw();
-}
-
-bool ui_lock_forbidden()
-{
-    if (blue_ui_state.state == STATE_TX)
-        return true;
-    else
-        return false;
 }
 
 #endif // TARGET_BLUE

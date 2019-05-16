@@ -13,6 +13,13 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw);
 unsigned int iota_dispatch(uint8_t ins, uint8_t p1, uint8_t p2, uint8_t len,
                            const unsigned char *input_data);
 
+/// Sets the IO timeout to the given ms.
+void io_timeout_set(unsigned int ms);
+/// Resets and stops the IO timeout.
+void io_timeout_reset(void);
+// Callback to be called on timeout.
+void io_timeout_callback(bool ux_allowed);
+
 /* ---  CLA  --- */
 
 #define CLA 0x7A

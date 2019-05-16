@@ -32,15 +32,6 @@ void ui_display_signing()
 {
 }
 
-void ui_timeout_start(bool interactive)
-{
-    UNUSED(interactive);
-}
-
-void ui_timeout_stop()
-{
-}
-
 void ui_display_address(const unsigned char *addr_bytes)
 {
     UNUSED(addr_bytes);
@@ -87,4 +78,13 @@ __attribute__((weak)) void io_send(const void *ptr, unsigned int length,
     char msg[100];
     snprintf(msg, 100, "%s should not be called", __FUNCTION__);
     mock_assert(false, msg, __FILE__, __LINE__);
+}
+
+void io_timeout_set(const unsigned int ms)
+{
+    mock_assert(ms > 0, "invalid ms", __FILE__, __LINE__);
+}
+
+void io_timeout_reset()
+{
 }

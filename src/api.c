@@ -11,6 +11,10 @@
 #include "iota/seed.h"
 #include "iota/signing.h"
 
+// ms until timeout; must not be > 1min to avoid locking before timeout
+#define TIMEOUT_MS 3000               // 3 sec
+#define TIMEOUT_USER_BUNDLE_MS 100000 // 100 sec
+
 #define CHECK_STATE(state, INS)                                                \
     ((((state)&INS##_REQUIRED_STATE) != INS##_REQUIRED_STATE) ||               \
      ((state)&INS##_FORBIDDEN_STATE))
@@ -27,7 +31,7 @@
 /// global variable storing all data needed across multiple api calls
 API_CTX api;
 
-void api_initialize(void)
+void api_initialize()
 {
     MEMCLEAR(api);
 }
@@ -38,7 +42,6 @@ static void reset_bundle(void)
     MEMCLEAR(api.ctx.bundle);
     MEMCLEAR(api.ctx.signing);
     api.state_flags = 0;
-    ui_timeout_stop();
 }
 
 /** @brief Checks whether the given path differes from the stored path. */
@@ -283,8 +286,6 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     }
 
     ui_display_recv();
-    // reset next transaction timer
-    ui_timeout_start(false);
 
     if (first) {
         if (!IN_RANGE(input->last_index, 1, MAX_BUNDLE_SIZE - 1)) {
@@ -328,13 +329,16 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
     // perfectly valid bundle
     if (!bundle_has_open_txs(&api.ctx.bundle)) {
         // start interactive timeout
-        ui_timeout_start(true);
+        io_timeout_set(TIMEOUT_USER_BUNDLE_MS);
         ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
 
+    // set timeout for the next tx to receive
+    io_timeout_set(TIMEOUT_MS);
     // as the bundle is not yet complete, we cannot compute the hash yet
     io_send_unfinished_bundle();
+
     return 0;
 }
 
@@ -395,18 +399,21 @@ unsigned int api_sign(uint8_t p1, const unsigned char *input_data,
 
     // temporary screen during signing process
     ui_display_signing();
-    ui_timeout_start(false);
 
     SIGN_OUTPUT output;
     output.fragments_remaining =
         next_signature_fragment(&api.ctx.signing, output.signature_fragment);
 
+    // set timeout for the next fragment to be querried
+    if (output.fragments_remaining) {
+        io_timeout_set(TIMEOUT_MS);
+    }
     io_send(&output, sizeof(output), SW_OK);
 
+    // signing is finished
     if (!output.fragments_remaining) {
-
-        // signing is finished
         api.state_flags &= ~SIGNING_STARTED;
+        io_timeout_reset();
         ui_display_main_menu();
     }
 
@@ -425,6 +432,7 @@ static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
 
 void user_sign_tx()
 {
+    io_timeout_reset();
     ui_display_validating();
 
     const int retcode = bundle_validating_finalize(
@@ -475,6 +483,7 @@ unsigned int api_reset(uint8_t p1, const unsigned char *input_data,
 
     reset_bundle();
     ui_reset();
+    io_timeout_reset();
 
     io_send(NULL, 0, SW_OK);
     return 0;
