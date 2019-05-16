@@ -119,6 +119,9 @@ For the Ledger Nano S:
 
 - Two bars along the top (just below the buttons) indicates that there is a double press function available (generally confirm/toggle or back). We will be working to ensure this function is always intuitive.
 
+For the Ledger Nano X:
+- Behavior is the same as the Nano S. Graphically there are no confirmation bars along the top (but double pressing the buttons still confirms/toggles).
+
 For the Ledger Blue:
 - The Ledger Blue uses a touchscreen, thus all you need to do is tap the buttons on the screen.
 
@@ -138,7 +141,7 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
 
     When generating a transaction for the Ledger to sign, you will scroll through each transaction before signing off on the bundle. The transaction information will come up in order (while scrolling from left to right). 
     
-    On the Ledger Nano S, the first screen will display the tx type (output, input, or change), as well as the amount. The next screen will display the corresponding address for said transaction. This will repeat until all transactions have been displayed, then you can select "Approve" or "Deny".
+    On the Ledger Nano S/X, the first screen will display the tx type (output, input, or change), as well as the amount. The next screen will display the corresponding address for said transaction. This will repeat until all transactions have been displayed, then you can select "Approve" or "Deny".
     
     On the Ledger Blue each transaction entry in a bundle will fit on the screen, use the next button until you've confirmed all transactions and then select approve if everything is correct.
 
@@ -164,9 +167,9 @@ All warnings on the Ledger are there for a reason, **MAKE SURE TO READ THEM** an
 
 ### Limitations of Ledger Hardware Wallets
 
-Due to the memory limitations of both the Ledger Nano S and the Ledger Blue, the transaction bundles have certain restrictions. The Ledger Nano S can only accept a transaction with a maximum bundle size of 8 and the Ledger Blue is limited to a maximum bundle size of 20.
+Due to the memory limitations of the Ledger Nano S/X and the Ledger Blue, the transaction bundles have certain restrictions. The Ledger Nano S/X can only accept a transaction with a maximum bundle size of 10 and the Ledger Blue is limited to a maximum bundle size of 20.
 
-An output and a change transaction each only require 1 bundle entry, however every input transaction requires the same number of bundle entries as the security level being used on the seed. Thus if using a Ledger Nano S you could have 1 output + 3 inputs (security level 2) + 1 change transaction and this would take up all 8 bundle entries. For security level 3 you could only have 1 output + 2 inputs + 1 change transaction.
+An output and a change transaction each only require 1 bundle entry, however every input transaction requires the same number of bundle entries as the security level being used on the seed. Thus if using a Ledger Nano S or X you could have 1 output + 4 inputs (security level 2) + 1 change transaction and this would take up all 10 bundle entries. For security level 3 you could only have 1 output + 2 inputs + 1 change transaction, or 1 output + 3 inputs without a change transaction.
 
 *Security level 2 is the default security level.*
 
@@ -231,13 +234,16 @@ See: [APDU API Specification](/docs/specification.md)
 ## Contributing
 
 ### Donations
-Would you like to donate to help the development team? Send some IOTA to the following address:
+This is a community project, done in our spare time for the betterment of the IOTA ecosystem and community.
+Donating is not required, but is greatly appreciated. If you would like to donate please send some IOTA to the following address:
 ```
-ADLJXS9SKYQKMVQFXR9JDUUJHJWGDNWHQZMDGJFGZOX9BZEKDSXBSPZTTWEYPTNM9OZMYDQWZXFHRTXRCOITXAGCJZ
+TLCZOGKIARUQRBSJYSUTXVQYKPTOYOMQAUWUGBOCJJFQSXELFPEDF9LKDCUVKYDVGCJTCRANLOZJJKKNBEKVDHCJ9B
 ```
 ![IOTA Ledger Donation](resources/ledger_donation.png)
 
-Please know that the donations made to this address will be shared with everyone who contributes (the contributions has to be worth something, of course)
+Please know that the donations made to this address will be shared with everyone who meaningfully contributes to the project.
+
+Thanks!
 
 ### As a developer
 Would you like to contribute as a dev? Please check out our [Discord channel](https://discord.gg/U3qRjZj) to contact us!
