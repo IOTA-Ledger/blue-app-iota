@@ -5,6 +5,7 @@
 #include "api.h"
 #include "iota/addresses.h"
 #include "iota/bundle.h"
+#include "macros.h"
 #include "os.h"
 #include "ui/blue/blue_types.h"
 #include "ui/ui_common.h"
@@ -60,14 +61,14 @@ void update_tx_type()
         if (blue_ui_state.val < 0) {
             os_memcpy(blue_ui_state.tx_type, "Input: \0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
-                     TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
+                     TEXT_LEN_TX_TYPE - TX_TYPE_SPLIT, "Idx: %u",
                      (unsigned int)api.ctx.bundle.bundle
                          .indices[ui_state_get_tx_index()]);
         }
         else {
             os_memcpy(blue_ui_state.tx_type, "Change:\0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
-                     TX_TYPE_TEXT_LEN - TX_TYPE_SPLIT, "Idx: %u",
+                     TEXT_LEN_TX_TYPE - TX_TYPE_SPLIT, "Idx: %u",
                      (unsigned int)api.ctx.bundle.bundle
                          .indices[ui_state_get_tx_index()]);
         }
@@ -76,10 +77,10 @@ void update_tx_type()
 
 static void update_tx_val()
 {
-    format_value_short(blue_ui_state.abbrv_val, ABBRV_VAL_TEXT_LEN,
-                       blue_ui_state.val);
-    format_value_full(blue_ui_state.full_val, FULL_VAL_TEXT_LEN,
-                      blue_ui_state.val);
+    format_value_short(blue_ui_state.abbrv_val, TEXT_LEN_VALUE_ABBREV,
+                       ABS(blue_ui_state.val));
+    format_value_full(blue_ui_state.full_val, TEXT_LEN_VALUE_FULL,
+                      ABS(blue_ui_state.val));
 }
 
 static void update_tx_addr()
@@ -108,10 +109,10 @@ void write_bip_path()
     for (unsigned int i = 0; i < api.bip32_path_length; i++) {
 
         snprintf(blue_ui_state.bip32_path + chars_written,
-                 BIP_TEXT_LEN - chars_written, "%x",
+                 TEXT_LEN_BIP_PATH - chars_written, "%x",
                  api.bip32_path[i] & 0x7fffffff);
 
-        chars_written = strnlen(blue_ui_state.bip32_path, BIP_TEXT_LEN);
+        chars_written = strnlen(blue_ui_state.bip32_path, TEXT_LEN_BIP_PATH);
 
         // write apostroph if hardnend
         if (api.bip32_path[i] & (1u << 31)) {

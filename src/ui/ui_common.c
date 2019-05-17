@@ -70,8 +70,8 @@ void format_value_full(char *s, const unsigned int n, const int64_t val)
 {
     char buffer[n];
 
-    const size_t num_len = format_s64(buffer, sizeof(buffer), ABS(val));
-    const size_t num_len_comma = num_len + (num_len - 1) / 3;
+    const size_t num_len = format_s64(buffer, sizeof(buffer), val);
+    const size_t num_len_comma = num_len + (num_len - (val < 0 ? 2 : 1)) / 3;
 
     // if the length with commas plus the unit does not fit
     if (num_len_comma + 3 > n) {
@@ -86,7 +86,7 @@ void format_value_full(char *s, const unsigned int n, const int64_t val)
 void format_value_short(char *s, const unsigned int n, int64_t val)
 {
     if (ABS(val) < 1000) {
-        snprintf(s, n, "%d %s", (int)(ABS(val)), IOTA_UNITS[0]);
+        snprintf(s, n, "%d %s", (int)(val), IOTA_UNITS[0]);
         return;
     }
 
@@ -99,7 +99,7 @@ void format_value_short(char *s, const unsigned int n, int64_t val)
         THROW(INVALID_PARAMETER);
     }
 
-    snprintf(s, n, "%d.%03d %s", (int)(ABS(val) / 1000), (int)(ABS(val) % 1000),
+    snprintf(s, n, "%d.%03d %s", (int)(val / 1000), (int)(ABS(val) % 1000),
              IOTA_UNITS[base]);
 }
 

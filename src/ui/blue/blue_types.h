@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include "iota/bundle.h"
 
-#define TX_TYPE_TEXT_LEN 24
-#define ABBRV_VAL_TEXT_LEN 12
-#define FULL_VAL_TEXT_LEN 26
-#define BIP_TEXT_LEN 36
+#define TEXT_LEN_TX_TYPE 24
+#define TEXT_LEN_VALUE_ABBREV 12
+#define TEXT_LEN_VALUE_FULL 26
+#define TEXT_LEN_BIP_PATH 36
 
 // Address chunks after being broken up
 #define CHUNK1 0
@@ -31,14 +31,14 @@ typedef struct UI_STATE_CTX_BLUE {
     // tx information
     int64_t val;
 
-    char tx_type[TX_TYPE_TEXT_LEN]; // Output/Input[]/Change[]:
+    char tx_type[TEXT_LEN_TX_TYPE]; // Output/Input[]/Change[]:
 
-    char abbrv_val[ABBRV_VAL_TEXT_LEN]; // 1.566 Ki
-    char full_val[FULL_VAL_TEXT_LEN];   // 1,566,091 i
+    char abbrv_val[TEXT_LEN_VALUE_ABBREV]; // 1.566 Ki
+    char full_val[TEXT_LEN_VALUE_FULL];    // 1,566,091 i
 
     char addr[94];
 
-    char bip32_path[BIP_TEXT_LEN];
+    char bip32_path[TEXT_LEN_BIP_PATH];
 
     uint8_t state;
     uint8_t menu_idx;
