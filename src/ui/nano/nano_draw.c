@@ -245,8 +245,9 @@ void nano_draw_address_digest()
     format_address_abbrev(addr, nano_get_text_buffer(TOP));
     format_address_checksum(addr, nano_get_text_buffer(BOT));
 
-    if (ui_state.state == STATE_BUNDLE)
+    if (ui_state.state == STATE_BUNDLE) {
         NANO_DRAW_ELEMENTS(EL_UP);
+    }
 
 #ifdef TARGET_NANOS
     NANO_DRAW_ELEMENTS(EL_DOWN, EL_CONFIRM);

@@ -52,11 +52,11 @@ static size_t format_s64(char *s, const size_t n, const int64_t val)
     }
 
     if (ABS(val) < MAX_INT_DEC) {
-        snprintf(s, n, "%d", (int)ABS(val));
+        snprintf(s, n, "%d", (int)val);
     }
     else {
         // emulate printing of integers larger than 32 bit
-        snprintf(s, n, "%d%09d", (int)(ABS(val) / MAX_INT_DEC),
+        snprintf(s, n, "%d%09d", (int)(val / MAX_INT_DEC),
                  (int)(ABS(val) % MAX_INT_DEC));
     }
     return strnlen(s, n);
@@ -66,7 +66,7 @@ void format_value_full(char *s, const unsigned int n, const int64_t val)
 {
     char buffer[n];
 
-    const size_t num_len = format_s64(buffer, sizeof(buffer), val);
+    const size_t num_len = format_s64(buffer, sizeof(buffer), ABS(val));
     const size_t num_len_comma = num_len + (num_len - 1) / 3;
 
     // if the length with commas plus the unit does not fit
@@ -82,7 +82,7 @@ void format_value_full(char *s, const unsigned int n, const int64_t val)
 void format_value_short(char *s, const unsigned int n, int64_t val)
 {
     if (ABS(val) < 1000) {
-        snprintf(s, n, "%d %s", (int)ABS(val), IOTA_UNITS[0]);
+        snprintf(s, n, "%d %s", (int)(ABS(val)), IOTA_UNITS[0]);
         return;
     }
 
