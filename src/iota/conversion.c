@@ -1,7 +1,7 @@
 #include "conversion.h"
 #include <limits.h>
 #include <stdint.h>
-#include "common.h"
+#include "os.h"
 
 #define UINT32_WIDTH 32
 #define NUM_TRYTE_VALUES (MAX_TRYTE_VALUE - MIN_TRYTE_VALUE + 1)

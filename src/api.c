@@ -1,11 +1,10 @@
 #include "api.h"
-#include "common.h"
+#include "macros.h"
 #include "misc.h"
 #include "iota_io.h"
 #include "ui/ui.h"
+#include "os.h"
 #include <string.h>
-
-// iota-related stuff
 #include "iota/conversion.h"
 #include "iota/addresses.h"
 #include "iota/seed.h"
@@ -21,7 +20,7 @@
 
 #define GET_INPUT(input_data, len, INS)                                        \
     ({                                                                         \
-        if (len < sizeof(INS##_INPUT))                                         \
+        if ((len) < sizeof(INS##_INPUT))                                       \
             THROW(SW_INCORRECT_LENGTH);                                        \
         if (CHECK_STATE(api.state_flags, INS))                                 \
             THROW(SW_COMMAND_NOT_ALLOWED);                                     \

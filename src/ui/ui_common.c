@@ -1,6 +1,10 @@
 #include "ui_common.h"
-#include "api.h"
+#include <stdint.h>
+#include <stddef.h>
 #include <string.h>
+#include "api.h"
+#include "macros.h"
+#include "os.h"
 
 #ifdef TARGET_BLUE
 #include "blue/blue_types.h"

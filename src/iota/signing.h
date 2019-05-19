@@ -11,7 +11,7 @@
 #define SIGNATURE_FRAGMENT_SIZE 3
 
 // the maximum number of chunks is SEC_LVL*27
-#define NUM_SIGNATURE_FRAGMENTS(s) (CEILING(s * 27, SIGNATURE_FRAGMENT_SIZE))
+#define NUM_SIGNATURE_FRAGMENTS(s) (CEILING((s)*27, SIGNATURE_FRAGMENT_SIZE))
 
 typedef struct SIGNING_CTX {
     BUNDLE_INFO bundle;            ///< shared bundle info used for signing

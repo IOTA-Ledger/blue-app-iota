@@ -1,16 +1,11 @@
-#include "test_common.h"
+#include <stddef.h>
 #include <stdio.h>
+#include <string.h>
+#include "test_common.h"
 #include "api.h"
-#include "seed.h"
+#include "iota/seed.h"
 #include "iota/bundle.h"
 #include "ui/ui.h"
-#include "keccak/sha3.h"
-
-void throw_exception(const char *expression, const char *file, int line)
-{
-    mock_assert(false, expression, file, line);
-    abort(); // avoid compiler warning
-}
 
 void ui_display_main_menu()
 {
@@ -37,9 +32,6 @@ void ui_display_address(const unsigned char *addr_bytes)
     UNUSED(addr_bytes);
 }
 
-// forward declaration
-void user_sign_tx(void);
-
 void ui_sign_tx()
 {
     // the user signs everything
@@ -60,11 +52,12 @@ __attribute__((weak)) void seed_derive_from_bip32(const unsigned int *path,
 {
     UNUSED(path);
     UNUSED(pathLength);
-    UNUSED(seed_bytes);
 
     char msg[100];
     snprintf(msg, 100, "%s should not be called", __FUNCTION__);
     mock_assert(false, msg, __FILE__, __LINE__);
+
+    memset(seed_bytes, 0, NUM_HASH_BYTES); // avoid linter warning
 }
 
 __attribute__((weak)) void io_send(const void *ptr, unsigned int length,

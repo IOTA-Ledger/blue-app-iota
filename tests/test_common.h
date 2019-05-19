@@ -1,25 +1,15 @@
 #ifndef TEST_COMMON_H
 #define TEST_COMMON_H
 
-#include <stdbool.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
-// include for safe redefines
-#include <assert.h>
-#include "common.h"
-#include "test_vectors.h"
 
-#include "iota_types.h"
-
-#ifndef KERL_TEST_FOLDER
-#define KERL_TEST_FOLDER "kerl-spec/test_vectors"
-#endif
-
-#ifndef TEST_FOLDER
-#define TEST_FOLDER "test_vectors"
-#endif
+#include <assert.h> // include for safe redefines
+#include "macros.h"
+#include "iota/iota_types.h"
 
 #define MAX_NUM_HASHES 5
 
@@ -34,7 +24,7 @@
 #undef assert
 #define assert(X) mock_assert((int)(X), #X, __FILE__, __LINE__)
 
-static inline void assert_all_zero(const void *a, size_t size)
+static inline void assert_all_zero(const void *a, const size_t size)
 {
     if (size > 0) {
         assert_int_equal(((char *)a)[0], 0);

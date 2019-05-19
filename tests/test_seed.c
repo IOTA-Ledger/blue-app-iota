@@ -1,5 +1,9 @@
-#include "test_seed.h"
-#include "iota/conversion.h"
+#include <stdint.h>
+#include <string.h>
+#include "api_tests.h"
+#include "test_common.h"
+#include "test_vectors.h"
+#include "os.h"
 
 static const uint32_t FULL_PATH[BIP32_PATH_LENGTH] = BIP32_PATH;
 
@@ -7,7 +11,7 @@ void expect_command_with_seed_ok(const void *seed_input, size_t seed_size);
 void expect_command_with_seed_exception(const void *seed_input,
                                         size_t seed_size);
 
-void test_valid_security_levels(void **state)
+static inline void test_valid_security_levels(void **state)
 {
     UNUSED(state);
 
@@ -29,7 +33,7 @@ void test_valid_security_levels(void **state)
     }
 }
 
-void test_security_level_zero(void **state)
+static inline void test_security_level_zero(void **state)
 {
     UNUSED(state);
 
@@ -39,7 +43,7 @@ void test_security_level_zero(void **state)
     expect_command_with_seed_exception(&input, sizeof(input));
 }
 
-void test_security_level_four(void **state)
+static inline void test_security_level_four(void **state)
 {
     UNUSED(state);
 
@@ -49,7 +53,7 @@ void test_security_level_four(void **state)
     expect_command_with_seed_exception(&input, sizeof(input));
 }
 
-void test_valid_path_lengths(void **state)
+static inline void test_valid_path_lengths(void **state)
 {
     UNUSED(state);
 
@@ -64,7 +68,7 @@ void test_valid_path_lengths(void **state)
         {
             uint8_t security;
             uint32_t bip32_path_length;
-            uint32_t bip32_path[length];
+            uint32_t bip32_path[5];
         }
         input;
         input.security = 2;
@@ -75,11 +79,13 @@ void test_valid_path_lengths(void **state)
         expect_memory(seed_derive_from_bip32, path, input.bip32_path,
                       length * sizeof(input.bip32_path[0]));
 
-        expect_command_with_seed_ok(&input, sizeof(input));
+        expect_command_with_seed_ok(&input,
+                                    sizeof(SET_SEED_INPUT) +
+                                        length * sizeof(input.bip32_path[0]));
     }
 }
 
-void test_seed_recompute_on_path_length_change(void **state)
+static inline void test_seed_recompute_on_path_length_change(void **state)
 {
     UNUSED(state);
 
@@ -95,7 +101,7 @@ void test_seed_recompute_on_path_length_change(void **state)
             uint32_t bip32_path_length;
             uint32_t bip32_path[BIP32_PATH_MIN_LEN];
         }
-        input = {0};
+        input = {};
         input.security = 2;
         input.bip32_path_length = BIP32_PATH_MIN_LEN;
         memcpy(&input.bip32_path, FULL_PATH,
@@ -115,7 +121,7 @@ void test_seed_recompute_on_path_length_change(void **state)
             uint32_t bip32_path_length;
             uint32_t bip32_path[BIP32_PATH_MAX_LEN];
         }
-        input = {0};
+        input = {};
         input.security = 2;
         input.bip32_path_length = BIP32_PATH_MAX_LEN;
         memcpy(&input.bip32_path, FULL_PATH,
@@ -130,7 +136,7 @@ void test_seed_recompute_on_path_length_change(void **state)
     }
 }
 
-void test_path_length_zero(void **state)
+static inline void test_path_length_zero(void **state)
 {
     UNUSED(state);
 
@@ -142,11 +148,11 @@ void test_path_length_zero(void **state)
         uint32_t bip32_path_length;
         uint32_t bip32_path[0];
     }
-    input = {2, 0};
+    input = {2, 0, {}};
     expect_command_with_seed_exception(&input, sizeof(input));
 }
 
-void test_path_length_six(void **state)
+static inline void test_path_length_six(void **state)
 {
     UNUSED(state);
 
@@ -162,7 +168,7 @@ void test_path_length_six(void **state)
     expect_command_with_seed_exception(&input, sizeof(input));
 }
 
-void test_seed_recompute_on_path_change(void **state)
+static inline void test_seed_recompute_on_path_change(void **state)
 {
     UNUSED(state);
 

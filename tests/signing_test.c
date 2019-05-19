@@ -1,7 +1,11 @@
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 #include "test_common.h"
 #include "iota/conversion.h"
 #include "iota/signing.h"
 #include "iota/bundle.c"
+#include "iota/iota_types.h"
 
 #define MAX_SECURITY 3
 #define MAX_SIGNATURE_LENGTH ((MAX_SECURITY)*27 * (NUM_HASH_TRYTES))

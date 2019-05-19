@@ -1,11 +1,13 @@
-#include "test_common.h"
-#include <stdint.h>
+#include <stddef.h>
 #include <string.h>
 #include "api_tests.h"
-#include "api.h"
+#include "test_common.h"
+#include "test_vectors.h"
 #include "transaction_file.h"
+#include "os.h"
+#include "api.h"
 #include "iota/conversion.h"
-#include "iota/signing.h"
+#include "iota/iota_types.h"
 
 void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
                             unsigned char *seed_bytes)
@@ -72,7 +74,7 @@ static void test_unfinalized_bundle(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, 2, &input);
         memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);

@@ -1,5 +1,5 @@
 #include "hash_file.h"
-#include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include "test_common.h"
@@ -31,7 +31,7 @@ void test_for_each_line(const char *file_name, void (*test)(char **))
 
     FILE *file;
     if ((file = fopen(path_name, "r")) == NULL) {
-        fail_msg("Could not open file.");
+        fail_msg("Could not open file %s", path_name);
     }
 
     char line[BUFFER_LEN];

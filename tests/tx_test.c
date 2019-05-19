@@ -1,17 +1,18 @@
-#include "test_common.h"
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include "api_tests.h"
-#include "test_seed.h"
+#include "test_common.h"
+#include "test_vectors.h"
 #include "transaction_file.h"
+#include "os.h"
 #include "api.h"
 #include "misc.h"
 #include "iota/conversion.h"
+#include "iota/iota_types.h"
 // include the c-file to be able to test static functions
 #include "bundle_ext.c"
-
-void expect_command_with_seed_ok(const void *seed_input, size_t seed_size);
-void expect_command_with_seed_exception(const void *seed_input,
-                                        size_t seed_size);
+#include "test_seed.c"
 
 void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
                             unsigned char *seed_bytes)
@@ -36,19 +37,19 @@ void expect_command_with_seed_ok(const void *seed_input, size_t seed_size)
         memcpy(input, seed_input, seed_size);
         memcpy(input + seed_size, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     {
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, PETER_VECTOR.bundle[1], output);
     }
     {
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         strncpy(output.bundle_hash, PETER_VECTOR.bundle_hash, 81);
         output.finalized = true;
 
@@ -171,13 +172,13 @@ static void test_payment_higher_than_balance(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     { // input transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[1], output);
@@ -210,13 +211,13 @@ static void test_payment_lower_than_balance(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     { // input transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[1], output);
@@ -250,13 +251,13 @@ static void test_invalid_input_address_index(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     { // input transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[1], output);
@@ -293,7 +294,7 @@ static void test_tx_index_twice(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
@@ -327,7 +328,7 @@ static void test_missing_meta_tx(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
@@ -360,13 +361,13 @@ static void test_missing_meta_tx_with_change(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     { // input transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[1], output);
@@ -392,7 +393,7 @@ static void test_meta_tx_without_reference(void **state)
         input.tx.current_index = tx_index++;
         input.tx.last_index = last_index;
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
@@ -436,19 +437,19 @@ static void test_invalid_change_index(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     { // input transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[1], output);
     }
     { // meta transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[2], output);
@@ -481,13 +482,13 @@ static void test_output_address_reuses_input(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     { // input transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[1], output);
@@ -530,19 +531,19 @@ static void test_change_index_low(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &txs[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     { // input transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[1], output);
     }
     { // meta transaction
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, txs[2], output);
@@ -604,7 +605,7 @@ static void test_bundle_with_second_seed_tx(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);

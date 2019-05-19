@@ -1,7 +1,8 @@
-#include "test_common.h"
-#include <stdio.h>
+#include <stddef.h>
 #include <string.h>
 #include "hash_file.h"
+#include "test_common.h"
+#include "os.h"
 #include "iota/conversion.h"
 #include "iota/kerl.h"
 
@@ -38,7 +39,7 @@ static void test_kerl(const char *input, const size_t length,
 
 static void test_peter_seed(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     test_kerl(
         "PETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETERPETER"
@@ -50,7 +51,7 @@ static void test_peter_seed(void **state)
 
 static void test_243_neg_one(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     test_kerl(
         "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
@@ -62,7 +63,7 @@ static void test_243_neg_one(void **state)
 
 static void test_242_neg_one(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     test_kerl(
         "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
@@ -74,7 +75,7 @@ static void test_242_neg_one(void **state)
 
 static void test_input_with_243trits(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     test_kerl(
         "EMIDYNHBWMBCXVDEFOFWINXTERALUKYYPPHKP9JJFGJEIUY9MUDVNFZHMMWZUYUSWAIOWE"
@@ -86,7 +87,7 @@ static void test_input_with_243trits(void **state)
 
 static void test_output_with_more_than_243trits(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     test_kerl(
         "9MIDYNHBWMBCXVDEFOFWINXTERALUKYYPPHKP9JJFGJEIUY9MUDVNFZHMMWZUYUSWAIOWE"
@@ -99,7 +100,7 @@ static void test_output_with_more_than_243trits(void **state)
 
 static void test_input_output_with_more_than_243trits(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
     test_kerl(
         "G9JYBOMPUXHYHKSNRNMMSSZCSHOFYOYNZRSZMAAYWDYEIMVVOGKPJBVBM9TDPULSFUNMTV"
@@ -111,43 +112,38 @@ static void test_input_output_with_more_than_243trits(void **state)
         "GGUWJONK9GBCDUIMAYMMQX");
 }
 
+static void test_1(char *hashes[])
+{
+    test_kerl(hashes[0], NUM_HASH_TRITS, hashes[1]);
+}
+
 static void test_generate_trytes_and_hashes(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
-    void test(char *hashes[])
-    {
-        test_kerl(hashes[0], NUM_HASH_TRITS, hashes[1]);
-    }
-
-    test_for_each_line("generateTrytesAndHashes", test);
+    test_for_each_line("generateTrytesAndHashes", test_1);
 }
 
 static void test_generate_multi_trytes_and_hash(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
-    void test(char *hashes[])
-    {
-        test_kerl(hashes[0], NUM_HASH_TRITS, hashes[1]);
-    }
+    test_for_each_line("generateMultiTrytesAndHash", test_1);
+}
 
-    test_for_each_line("generateMultiTrytesAndHash", test);
+static void test_3(char *hashes[])
+{
+    char str[1024];
+    snprintf(str, sizeof(str), "%s%s%s", hashes[1], hashes[2], hashes[3]);
+
+    test_kerl(hashes[0], 3 * NUM_HASH_TRITS, str);
 }
 
 static void test_generate_trytes_and_multi_squeeze(void **state)
 {
-    (void)state; // unused
+    UNUSED(state);
 
-    void test(char *hashes[])
-    {
-        char str[1024];
-        snprintf(str, sizeof(str), "%s%s%s", hashes[1], hashes[2], hashes[3]);
-
-        test_kerl(hashes[0], 3 * NUM_HASH_TRITS, str);
-    }
-
-    test_for_each_line("generateTrytesAndMultiSqueeze", test);
+    test_for_each_line("generateTrytesAndMultiSqueeze", test_3);
 }
 
 int main(void)

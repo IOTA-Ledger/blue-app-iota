@@ -1,7 +1,8 @@
-#include "test_common.h"
-#include <string.h>
-#include "test_vectors.h"
+#include <stdint.h>
 #include "hash_file.h"
+#include "test_common.h"
+#include "test_vectors.h"
+#include "os.h"
 #include "iota/addresses.h"
 #include "iota/conversion.h"
 
@@ -94,16 +95,16 @@ static void test_word_overflow_seed_level_two(void **state)
     test_vector(state, &WORD_OVERFLOW_VECTOR, 2);
 }
 
+static void test(char *hashes[])
+{
+    for (uint32_t idx = 0; idx < 4; idx++) {
+        test_address(hashes[0], idx, 2, false, hashes[idx + 1]);
+    }
+}
+
 static void test_n_addresses_for_seed(void **state)
 {
     UNUSED(state);
-
-    void test(char *hashes[])
-    {
-        for (uint32_t idx = 0; idx < 4; idx++) {
-            test_address(hashes[0], idx, 2, false, hashes[idx + 1]);
-        }
-    }
 
     test_for_each_line("generateNAddressesForSeed", test);
 }

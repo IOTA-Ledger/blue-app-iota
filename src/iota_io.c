@@ -1,5 +1,5 @@
 #include "iota_io.h"
-#include "common.h"
+#include "macros.h"
 #include "os_io_seproxyhal.h"
 #include "api.h"
 

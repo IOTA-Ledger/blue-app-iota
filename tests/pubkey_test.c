@@ -1,13 +1,13 @@
-#include "test_common.h"
+#include <stddef.h>
 #include <string.h>
-#include "test_seed.h"
 #include "api_tests.h"
+#include "test_common.h"
+#include "test_vectors.h"
 #include "api.h"
 #include "iota/conversion.h"
-
-void expect_command_with_seed_ok(const void *seed_input, size_t seed_size);
-void expect_command_with_seed_exception(const void *seed_input,
-                                        size_t seed_size);
+#include "iota/iota_types.h"
+// include the c-file to be able to test static functions
+#include "test_seed.c"
 
 void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
                             unsigned char *seed_bytes)

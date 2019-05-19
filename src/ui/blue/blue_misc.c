@@ -1,8 +1,12 @@
 #include "blue_misc.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 #include "blue_types.h"
 #include "ui_common.h"
 #include "api.h"
 #include "iota/addresses.h"
+#include "os.h"
 
 // address stored is continuous chunk,
 // break it up to display on separate lines

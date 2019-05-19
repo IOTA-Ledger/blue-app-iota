@@ -5,7 +5,10 @@
 #ifndef KERL_H
 #define KERL_H
 
-#include "common.h"
+#include "os.h"
+
+/// Size of the kerl hash in bytes.
+#define KERL_HASH_SIZE (CX_SHA384_SIZE)
 
 /** @brief Initializes the context for Kerl.
  *  @param sha3 the SHA context used.

@@ -1,13 +1,12 @@
 #include "transaction_file.h"
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
-#include <inttypes.h>
 #include "test_common.h"
 #include "api.h"
+#include "iota/iota_types.h"
 
 #define BUFFER_LEN 20000
-#define MAX_TX_INDEX 7
 
 #define SCNs27 "[NOPQRSTUVWXYZ9ABCDEFGHIJKLM]"
 
@@ -25,16 +24,15 @@ void test_for_each_bundle(const char *file_name,
 
     char line[BUFFER_LEN];
     while (fgets(line, sizeof(line), file) != NULL) {
-        char seed[NUM_HASH_TRYTES];
+        char seed[NUM_HASH_TRYTES] = {};
         unsigned int security;
         unsigned int last_index;
-        TX_INPUT tx[MAX_TX_INDEX + 1];
+        TX_INPUT tx[MAX_BUNDLE_SIZE] = {};
 
         int offset = 0;
 
         int scanned;
-        sscanf(line, "%81" SCNs27 ",%u,%u,%n", seed, &security, &last_index,
-               &scanned);
+        sscanf(line, "%81c,%u,%u,%n", seed, &security, &last_index, &scanned);
         offset += scanned;
 
         if (last_index >= MAX_BUNDLE_SIZE) {
@@ -43,8 +41,7 @@ void test_for_each_bundle(const char *file_name,
 
         for (unsigned int i = 0; i <= last_index; i++) {
             sscanf(line + offset,
-                   "%81" SCNs27 ",%" SCNu32 ",%" SCNd64 ",%27" SCNs27
-                   ",%" SCNu32 ",%n",
+                   "%81c,%" SCNu32 ",%" SCNd64 ",%27c,%" SCNu32 ",%n",
                    tx[i].address, &tx[i].address_idx, &tx[i].value, tx[i].tag,
                    &tx[i].timestamp, &scanned);
 
@@ -55,14 +52,15 @@ void test_for_each_bundle(const char *file_name,
         }
 
         char bundle_hash[NUM_HASH_TRYTES];
-        sscanf(line + offset, "%81" SCNs27 ",%n", bundle_hash, &scanned);
+        sscanf(line + offset, "%81c,%n", bundle_hash, &scanned);
         offset += scanned;
 
         const int num_inputs = (last_index - 1) / security;
         char signatures[num_inputs][SIGNATURE_LENGTH];
         for (int i = 0; i < num_inputs; i++) {
-            sscanf(line + offset, "%6561" SCNs27 ",%n", signatures[i],
-                   &scanned);
+            char buffer[SIGNATURE_LENGTH + 1] = {};
+            sscanf(line + offset, "%6561" SCNs27 ",%n", buffer, &scanned);
+            strncpy(signatures[i], buffer, SIGNATURE_LENGTH);
             offset += scanned;
         }
 

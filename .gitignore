@@ -71,3 +71,8 @@ dep/
 # ignore compiled glyphs
 src/glyphs.c
 src/glyphs.h
+
+# ignore dev environment
+dev/*
+!dev/sdk/
+

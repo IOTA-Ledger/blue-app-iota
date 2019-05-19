@@ -1,5 +1,5 @@
 #include "signing.h"
-#include "common.h"
+#include "macros.h"
 #include "conversion.h"
 #include "kerl.h"
 

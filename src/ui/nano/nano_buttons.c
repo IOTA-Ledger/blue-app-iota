@@ -1,6 +1,6 @@
 #include "nano_buttons.h"
 #include <string.h>
-#include "common.h"
+#include "macros.h"
 #include "api.h"
 #include "iota/addresses.h"
 #include "ui.h"

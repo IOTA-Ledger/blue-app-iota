@@ -1,6 +1,11 @@
-#include "os_io_seproxyhal.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "api.h"
 #include "iota_io.h"
+#include "macros.h"
+#include "os.h"
+#include "os_io_seproxyhal.h"
 #include "ui/ui.h"
 
 // define global SDK variables

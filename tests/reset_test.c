@@ -1,6 +1,10 @@
-#include "test_common.h"
+#include <stddef.h>
 #include "api_tests.h"
+#include "test_common.h"
+#include "test_vectors.h"
+#include "api.h"
 #include "iota/conversion.h"
+#include "iota/iota_types.h"
 // include the c-file to be able to test static functions
 #include "api.c"
 
@@ -97,7 +101,7 @@ static void test_reset_bundle(void **state)
         SET_SEED_IN_INPUT(PETER_VECTOR.seed, security, &input);
         memcpy(&input.tx, &PETER_VECTOR.bundle[0], sizeof(TX_INPUT));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
@@ -125,19 +129,19 @@ static void test_reset_bundle(void **state)
         will_return_maybe(seed_derive_from_bip32,
                           cast_ptr_to_largest_integral_type(PETER_VECTOR.seed));
 
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_FIRST, input, output);
     }
     {
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         output.finalized = false;
 
         EXPECT_API_DATA_OK(tx, P1_MORE, PETER_VECTOR.bundle[1], output);
     }
     {
-        TX_OUTPUT output = {0};
+        TX_OUTPUT output = {};
         strncpy(output.bundle_hash, PETER_VECTOR.bundle_hash, 81);
         output.finalized = true;
 

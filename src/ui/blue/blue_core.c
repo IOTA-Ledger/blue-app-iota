@@ -5,6 +5,7 @@
 #include "blue_misc.h"
 #include "glyphs.h"
 #include "ui.h"
+#include "macros.h"
 #include "iota/addresses.h"
 
 #ifdef TARGET_BLUE

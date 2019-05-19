@@ -1,4 +1,4 @@
-#include "common.h"
+#include "macros.h"
 #include "iota/addresses.h"
 #include "glyphs.h"
 #include "ui.h"
@@ -7,14 +7,14 @@
 #include "nano_buttons.h"
 #include "nano_types.h"
 
-#ifdef TARGET_NANO
+#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
 #include "nano_screens.h"
 
 #ifdef TARGET_NANOS
 #include "s_elements.h"
 #else
 #include "x_elements.h"
-#endif
+#endif // TARGET_NANOS
 
 static void nano_transition_state(unsigned int button_mask);
 
@@ -290,4 +290,4 @@ static void nano_transition_state(unsigned int button_mask)
     nano_display();
 }
 
-#endif // TARGET_NANO
+#endif

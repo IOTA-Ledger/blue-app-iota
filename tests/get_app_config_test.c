@@ -1,5 +1,6 @@
-#include "test_common.h"
 #include "api_tests.h"
+#include "test_common.h"
+#include "os.h"
 #include "api.h"
 
 void io_send(const void *ptr, unsigned int length, unsigned short sw)

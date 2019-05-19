@@ -40,7 +40,7 @@ matrix:
     - make
     - make test
     after_success:
-    - bash <(curl -s https://codecov.io/bash) -x gcov-8
+    - bash <(curl -s https://codecov.io/bash) -R "$TRAVIS_BUILD_DIR" -x gcov-8
 
   - name: "Address Sanitizer"
     addons:
