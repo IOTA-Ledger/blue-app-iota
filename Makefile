@@ -1,6 +1,6 @@
 #*******************************************************************************
-#   Ledger Blue
-#   (c) 2016 Ledger
+#   Ledger App
+#   (c) 2017 Ledger
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 #*******************************************************************************
 
 ifeq ($(BOLOS_SDK),)
-$(error BOLOS_SDK is not set)
+    $(error Environment variable BOLOS_SDK is not set)
 endif
 include $(BOLOS_SDK)/Makefile.defines
-
-# Main app configuration
 
 APPNAME = "IOTA"
 APPVERSION_MAJOR = 0
@@ -30,64 +28,82 @@ APPVERSION = $(APPVERSION_MAJOR).$(APPVERSION_MINOR).$(APPVERSION_PATCH)
 APP_LOAD_PARAMS = --path "44'/4218'" --appFlags 0x240 $(COMMON_LOAD_PARAMS)
 
 ifeq ($(TARGET_NAME),TARGET_BLUE)
-ICONNAME = blue_app_iota.gif
+    ICONNAME = blue_app_iota.gif
+else ifeq ($(TARGET_NAME),TARGET_NANOX)
+    ICONNAME = nanox_app_iota.gif
+else ifeq ($(TARGET_NAME),TARGET_NANOS)
+    ICONNAME = nanos_app_iota.gif
 else
-    ifeq ($(TARGET_NAME),TARGET_NANOX)
-ICONNAME = nanox_app_iota.gif
-    else
-ICONNAME = nanos_app_iota.gif
-    endif
+    $(error unexpected target: $(TARGET_NAME))
 endif
 
-# Build configuration
 
-APP_SOURCE_PATH += src
-SDK_SOURCE_PATH += lib_stusb lib_stusb_impl
+################
+# Default rule #
+################
+all: default
+
+############
+# Platform #
+############
+
+DEFINES += $(DEFINES_LIB)
+
+DEFINES += OS_IO_SEPROXYHAL
+DEFINES += HAVE_BAGL HAVE_SPRINTF
+DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=6 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
+DEFINES += LEDGER_MAJOR_VERSION=$(APPVERSION_MAJOR) LEDGER_MINOR_VERSION=$(APPVERSION_MINOR) LEDGER_PATCH_VERSION=$(APPVERSION_PATCH)
+
+# U2F
+DEFINES += HAVE_U2F HAVE_IO_U2F
+DEFINES += U2F_PROXY_MAGIC=\"IOT\"
+DEFINES += USB_SEGMENT_SIZE=64
+DEFINES += BLE_SEGMENT_SIZE=32 #max MTU, min 20
+
+# WebUSB
+WEBUSB_URL = www.ledgerwallet.com
+DEFINES += HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
 
 DEFINES += APPVERSION_MAJOR=$(APPVERSION_MAJOR)
 DEFINES += APPVERSION_MINOR=$(APPVERSION_MINOR)
 DEFINES += APPVERSION_PATCH=$(APPVERSION_PATCH)
 DEFINES += APPVERSION=\"$(APPVERSION)\"
 
-DEFINES += HAVE_BAGL HAVE_SPRINTF
-DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=6 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
 
-# Nanox defines
 ifeq ($(TARGET_NAME),TARGET_NANOX)
-DEFINES += OS_IO_SEPROXYHAL IO_SEPROXYHAL_BUFFER_SIZE_B=300
-DEFINES += HAVE_GLO096
-DEFINES += HAVE_BAGL BAGL_WIDTH=128 BAGL_HEIGHT=64
-DEFINES += HAVE_BAGL_ELLIPSIS # long label truncation feature
-DEFINES += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
-DEFINES += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
-DEFINES += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
+    DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=300
+    DEFINES += HAVE_BLE BLE_COMMAND_TIMEOUT_MS=2000
+    DEFINES += HAVE_BLE_APDU # basic ledger apdu transport over BLE
 
-# libux
-SDK_SOURCE_PATH += lib_ux
-DEFINES += HAVE_UX_FLOW
+    DEFINES += HAVE_GLO096
+    DEFINES += HAVE_BAGL BAGL_WIDTH=128 BAGL_HEIGHT=64
+    DEFINES += HAVE_BAGL_ELLIPSIS # long label truncation feature
+    DEFINES += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
+    DEFINES += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
+    DEFINES += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
+    DEFINES += HAVE_UX_FLOW
+else
+    DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=128
+endif
 
-# BLE support
-DEFINES += HAVE_BLE BLE_COMMAND_TIMEOUT_MS=2000
-DEFINES += HAVE_BLE_APDU # basic ledger apdu transport over BLE
-SDK_SOURCE_PATH += lib_blewbxx lib_blewbxx_impl
-else # Nanos/Blue
-DEFINES += OS_IO_SEPROXYHAL IO_SEPROXYHAL_BUFFER_SIZE_B=128
-endif # TARGET_NANOX
+DEBUG = 1
+ifneq ($(DEBUG),0)
+    # Development flags
+    APP_LOAD_PARAMS += --path "44'/01'"
+    DEFINES += HAVE_BOLOS_APP_STACK_CANARY
+    ifeq ($(TARGET_NAME),TARGET_NANOX)
+        DEFINES += HAVE_PRINTF PRINTF=mcu_usb_printf
+    else
+        DEFINES += HAVE_PRINTF PRINTF=screen_printf
+    endif
+else
+    # Release flags
+    DEFINES += PRINTF\(...\)=
+endif
 
-# U2F support
-SDK_SOURCE_PATH += lib_u2f
-DEFINES += USB_SEGMENT_SIZE=64
-DEFINES += U2F_PROXY_MAGIC=\"IOT\"
-DEFINES += HAVE_IO_U2F HAVE_U2F
-
-# Development flags
-APP_LOAD_PARAMS += --path "44'/01'"
-DEFINES += HAVE_BOLOS_APP_STACK_CANARY HAVE_PRINTF PRINTF=screen_printf
-# Release flags
-# DEFINES += BOLOS_RELEASE PRINTF\(...\)=
-
-# Compiler, assembler, and linker
-
+##############
+#  Compiler  #
+##############
 ifneq ($(BOLOS_ENV),)
 $(info BOLOS_ENV=$(BOLOS_ENV))
 CLANGPATH := $(BOLOS_ENV)/clang-arm-fropi/bin/
@@ -112,9 +128,17 @@ LD := $(GCCPATH)arm-none-eabi-gcc
 LDFLAGS += -O3 -Os
 LDLIBS += -lm -lgcc -lc
 
-# Main rules
+# import rules to compile glyphs(/pone)
+include $(BOLOS_SDK)/Makefile.glyphs
 
-all: default
+### variables processed by the common makefile.rules of the SDK to grab source files and include dirs
+APP_SOURCE_PATH += src
+SDK_SOURCE_PATH += lib_stusb lib_stusb_impl lib_u2f
+
+ifeq ($(TARGET_NAME),TARGET_NANOX)
+    SDK_SOURCE_PATH += lib_blewbxx lib_blewbxx_impl
+    SDK_SOURCE_PATH += lib_ux
+endif
 
 load: all
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
@@ -122,8 +146,13 @@ load: all
 delete:
 	python -m ledgerblue.deleteApp $(COMMON_DELETE_PARAMS)
 
-# import rules to compile glyphs(/pone)
-include $(BOLOS_SDK)/Makefile.glyphs
-
-# Import generic rules from the SDK
+# import generic rules from the sdk
 include $(BOLOS_SDK)/Makefile.rules
+
+#add dependency on custom makefile filename
+dep/%.d: %.c Makefile
+
+
+
+listvariants:
+	@echo VARIANTS COIN iota
