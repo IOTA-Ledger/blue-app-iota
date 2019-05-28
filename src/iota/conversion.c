@@ -1,6 +1,7 @@
-#include "conversion.h"
+#include "iota/conversion.h"
 #include <limits.h>
 #include <stdint.h>
+#include "iota/iota_types.h"
 #include "os.h"
 
 #define UINT32_WIDTH 32

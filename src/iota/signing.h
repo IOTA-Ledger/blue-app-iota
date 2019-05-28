@@ -2,8 +2,9 @@
 #define SIGNING_H
 
 #include <stdbool.h>
-#include "iota_types.h"
-#include "bundle.h"
+#include <stdint.h>
+#include "iota/bundle.h"
+#include "iota/iota_types.h"
 
 // the number of chunks in one signature fragment
 // this can be changed to any multiple of 3 up to 27

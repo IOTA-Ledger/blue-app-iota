@@ -2,7 +2,7 @@
 #define IOTA_TYPES_H
 
 #include <stdint.h>
-#include "kerl.h"
+#include "iota/kerl.h"
 
 typedef int8_t trit_t;
 typedef int8_t tryte_t;

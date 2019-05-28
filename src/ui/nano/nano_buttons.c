@@ -1,11 +1,11 @@
-#include "nano_buttons.h"
-#include <string.h>
-#include "macros.h"
+#include "ui/nano/nano_buttons.h"
+#include <stdbool.h>
+#include <stdint.h>
 #include "api.h"
-#include "iota/addresses.h"
-#include "ui.h"
-#include "ui_common.h"
-#include "nano_misc.h"
+#include "iota_io.h"
+#include "macros.h"
+#include "ui/nano/nano_misc.h"
+#include "os.h"
 
 int button_main_menu(const UI_BUTTON_PRESS button_press)
 {

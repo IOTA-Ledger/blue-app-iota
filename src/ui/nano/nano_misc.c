@@ -1,10 +1,11 @@
-#include "nano_misc.h"
+#include "ui/nano/nano_misc.h"
+#include <stdbool.h>
 #include <string.h>
-#include "iota/addresses.h"
-#include "glyphs.h"
-#include "ui.h"
-#include "ui_common.h"
+#include "iota/bundle.h"
+#include "iota/iota_types.h"
 #include "macros.h"
+#include "os.h"
+#include "ui/ui_common.h"
 
 // go to state with menu index
 void nano_state_set(UI_STATES_NANO state, uint8_t idx)

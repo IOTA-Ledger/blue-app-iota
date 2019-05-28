@@ -1,9 +1,9 @@
 #ifndef BLUE_SCREENS_H
 #define BLUE_SCREENS_H
 
-#include "blue_elements.h"
-#include "blue_buttons.h"
-#include "blue_types.h"
+#include "ui/blue/blue_elements.h"
+#include "ui/blue/blue_buttons.h"
+#include "ui/blue/blue_types.h"
 #include "api.h"
 #include "glyphs.h"
 

@@ -2,7 +2,8 @@
 #define BUNDLE_H
 
 #include <stdbool.h>
-#include "iota_types.h"
+#include <stdint.h>
+#include "iota/iota_types.h"
 
 // the largest bundle size due to memory limitations per device
 #ifdef TARGET_NANOS

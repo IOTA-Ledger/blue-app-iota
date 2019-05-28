@@ -1,7 +1,7 @@
 #ifndef NANO_BUTTONS_H
 #define NANO_BUTTONS_H
 
-#include "nano_types.h"
+#include "ui/nano/nano_types.h"
 
 int button_main_menu(UI_BUTTON_PRESS button_press);
 int button_about(UI_BUTTON_PRESS button_press);

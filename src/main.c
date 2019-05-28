@@ -5,7 +5,9 @@
 #include "iota_io.h"
 #include "macros.h"
 #include "os.h"
+#include "os_apilevel.h"
 #include "os_io_seproxyhal.h"
+#include "seproxyhal_protocol.h"
 #include "ui/ui.h"
 
 // define global SDK variables
@@ -13,6 +15,7 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 #ifdef TARGET_NANOX
 #include "ux.h"
+
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 #else  // NANOS/BLUE

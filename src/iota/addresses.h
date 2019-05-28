@@ -1,7 +1,7 @@
 #ifndef ADDRESSES_H
 #define ADDRESSES_H
 
-#include "iota_types.h"
+#include <stdint.h>
 
 /** @brief Computes the public address.
  *  @parm seed_bytes the seed as big-endian 48-byte integer

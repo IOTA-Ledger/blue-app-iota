@@ -1,8 +1,6 @@
-#include "ui.h"
-#include <string.h>
+#include "ui/ui.h"
+#include <stdbool.h>
 #include "os_io_seproxyhal.h"
-#include "api.h"
-#include "iota/addresses.h"
 
 #define WAIT_EVENT()                                                           \
     io_seproxyhal_spi_recv(G_io_seproxyhal_spi_buffer,                         \

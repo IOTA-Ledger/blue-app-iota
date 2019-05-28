@@ -1,9 +1,11 @@
-#include "bundle.h"
+#include "iota/bundle.h"
 #include <string.h>
+#include "iota/addresses.h"
+#include "iota/conversion.h"
+#include "iota/iota_types.h"
+#include "iota/kerl.h"
 #include "macros.h"
-#include "addresses.h"
-#include "conversion.h"
-#include "kerl.h"
+#include "os.h"
 
 // pointer to the first byte of the current transaction
 #define TX_BYTES(C)                                                            \

@@ -1,5 +1,6 @@
-#include "kerl.h"
-#include "conversion.h"
+#include "iota/kerl.h"
+#include <stddef.h>
+#include "iota/conversion.h"
 #include "os.h"
 
 void kerl_initialize(cx_sha3_t *sha3)

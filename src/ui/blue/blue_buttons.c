@@ -1,11 +1,13 @@
-#include "blue_buttons.h"
+#include "ui/blue/blue_buttons.h"
+#include <stddef.h>
+#include "api.h"
+#include "iota_io.h"
 #include "os.h"
 #include "os_io_seproxyhal.h"
-#include "blue_screens.h"
-#include "blue_types.h"
-#include "blue_misc.h"
-#include "glyphs.h"
-#include "ui.h"
+#include "ui/blue/blue_misc.h"
+#include "ui/blue/blue_screens.h"
+#include "ui/blue/blue_types.h"
+#include "ui/ui.h"
 
 const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e)
 {

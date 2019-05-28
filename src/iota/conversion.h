@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "iota_types.h"
+#include "iota/iota_types.h"
 
 /** @brief Converts a balanced ternary number in base-27 encoding into its
  *         trit representation.

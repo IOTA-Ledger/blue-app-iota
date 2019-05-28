@@ -1,8 +1,7 @@
-#include "seed.h"
-#include "macros.h"
-#include "iota_types.h"
-#include "conversion.h"
-#include "kerl.h"
+#include "iota/seed.h"
+#include "iota/iota_types.h"
+#include "iota/kerl.h"
+#include "os.h"
 
 #define NUM_KEY_BYTES 32
 #define NUM_CHAIN_BYTES 32

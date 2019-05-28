@@ -1,14 +1,16 @@
 #include "api.h"
-#include "macros.h"
-#include "misc.h"
-#include "iota_io.h"
-#include "ui/ui.h"
-#include "os.h"
 #include <string.h>
-#include "iota/conversion.h"
 #include "iota/addresses.h"
+#include "iota/bundle.h"
+#include "iota/conversion.h"
+#include "iota/iota_types.h"
 #include "iota/seed.h"
 #include "iota/signing.h"
+#include "iota_io.h"
+#include "macros.h"
+#include "misc.h"
+#include "os.h"
+#include "ui/ui.h"
 
 // ms until timeout; must not be > 1min to avoid locking before timeout
 #define TIMEOUT_MS 3000               // 3 sec

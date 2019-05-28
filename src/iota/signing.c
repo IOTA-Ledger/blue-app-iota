@@ -1,7 +1,10 @@
-#include "signing.h"
+#include "iota/signing.h"
+#include "iota/bundle.h"
+#include "iota/conversion.h"
+#include "iota/iota_types.h"
+#include "iota/kerl.h"
 #include "macros.h"
-#include "conversion.h"
-#include "kerl.h"
+#include "os.h"
 
 void signing_initialize(SIGNING_CTX *ctx, const BUNDLE_INFO *bundle_info,
                         const tryte_t *normalized_hash)

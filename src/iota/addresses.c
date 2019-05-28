@@ -1,8 +1,8 @@
-#include "addresses.h"
-#include <string.h>
+#include "iota/addresses.h"
+#include "iota/conversion.h"
+#include "iota/iota_types.h"
+#include "iota/kerl.h"
 #include "macros.h"
-#include "conversion.h"
-#include "kerl.h"
 #include "os.h"
 
 static void digest_single_chunk(unsigned char *key_fragment,
