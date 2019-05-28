@@ -61,7 +61,7 @@ PUBKEY_INPUT;
 
 typedef IO_STRUCT PUBKEY_OUTPUT
 {
-    char address[81];
+    char address[NUM_HASH_TRYTES];
 }
 PUBKEY_OUTPUT;
 
@@ -70,10 +70,10 @@ PUBKEY_OUTPUT;
 
 typedef IO_STRUCT TX_INPUT
 {
-    char address[81];
+    char address[NUM_HASH_TRYTES];
     uint32_t address_idx;
     int64_t value;
-    char tag[27];
+    char tag[NUM_TAG_TRYTES];
     uint32_t current_index;
     uint32_t last_index;
     uint32_t timestamp;
@@ -83,7 +83,7 @@ TX_INPUT;
 typedef IO_STRUCT TX_OUTPUT
 {
     bool finalized;
-    char bundle_hash[81];
+    char bundle_hash[NUM_HASH_TRYTES];
 }
 TX_OUTPUT;
 
@@ -98,7 +98,7 @@ SIGN_INPUT;
 
 typedef IO_STRUCT SIGN_OUTPUT
 {
-    char signature_fragment[SIGNATURE_FRAGMENT_SIZE * 81];
+    char signature_fragment[SIGNATURE_FRAGMENT_SIZE * NUM_HASH_TRYTES];
     bool fragments_remaining;
 }
 SIGN_OUTPUT;

@@ -7,6 +7,10 @@
 #include "macros.h"
 #include "os.h"
 
+// Field widths in bundle essence
+#define NUM_VALUE_TRITS 81
+#define NUM_INDEX_TRITS 27
+
 // pointer to the first byte of the current transaction
 #define TX_BYTES(C)                                                            \
     ((C)->bytes + (C)->bundle.current_tx_index * (2 * NUM_HASH_BYTES))
@@ -28,7 +32,7 @@ void bundle_set_external_address(BUNDLE_CTX *ctx, const char *address)
     }
 
     unsigned char *bytes_ptr = TX_BYTES(ctx);
-    chars_to_bytes(address, bytes_ptr, 81);
+    chars_to_bytes(address, bytes_ptr, NUM_HASH_TRYTES);
 }
 
 void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
@@ -38,17 +42,36 @@ void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
     ctx->bundle.indices[ctx->bundle.current_tx_index] = index;
 }
 
-static void create_bundle_bytes(int64_t value, const char *tag,
-                                uint32_t timestamp, uint8_t current_tx_index,
-                                uint8_t last_tx_index, unsigned char *bytes)
-{
-    trit_t bundle_essence_trits[243] = {};
+/// Convert integer to trits and return number of trits written
+#define int_to_trits(x, trits, num_trits)                                      \
+    ({                                                                         \
+        _Generic((x), int64_t                                                  \
+                 : s64_to_trits, uint32_t                                      \
+                 : u32_to_trits)(x, trits, num_trits);                         \
+        num_trits;                                                             \
+    })
 
-    s64_to_trits(value, bundle_essence_trits, 81);
-    chars_to_trits(tag, bundle_essence_trits + 81, 27);
-    u32_to_trits(timestamp, bundle_essence_trits + 162, 27);
-    u32_to_trits(current_tx_index, bundle_essence_trits + 189, 27);
-    u32_to_trits(last_tx_index, bundle_essence_trits + 216, 27);
+// Convert the tag to trits
+static unsigned int tag_to_trits(const char *tag, trit_t *trits)
+{
+    chars_to_trits(tag, trits, NUM_TAG_TRYTES);
+    return NUM_TAG_TRYTES * TRITS_PER_TRYTE;
+}
+
+static void create_bundle_bytes(int64_t value, const char *tag,
+                                uint32_t timestamp, uint32_t current_tx_index,
+                                uint32_t last_tx_index, unsigned char *bytes)
+{
+    trit_t bundle_essence_trits[NUM_HASH_TRITS] = {};
+
+    unsigned int pos = 0;
+    pos += int_to_trits(value, bundle_essence_trits + pos, NUM_VALUE_TRITS);
+    pos += tag_to_trits(tag, bundle_essence_trits + pos);
+    pos += int_to_trits(timestamp, bundle_essence_trits + pos, NUM_INDEX_TRITS);
+    pos += int_to_trits(current_tx_index, bundle_essence_trits + pos,
+                        NUM_INDEX_TRITS);
+    pos += int_to_trits(last_tx_index, bundle_essence_trits + pos,
+                        NUM_INDEX_TRITS);
 
     // now we have exactly one chunk of 243 trits
     trits_to_bytes(bundle_essence_trits, bytes);
@@ -65,7 +88,7 @@ uint8_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
 
     // the combined trits make up the second part
     create_bundle_bytes(value, tag, timestamp, ctx->bundle.current_tx_index,
-                        ctx->bundle.last_tx_index, bytes_ptr + 48);
+                        ctx->bundle.last_tx_index, bytes_ptr + NUM_HASH_BYTES);
 
     // store the binary value
     ctx->bundle.values[ctx->bundle.current_tx_index] = value;
@@ -102,11 +125,11 @@ static inline int increment_tryte(int max, tryte_t *tryte)
 static void normalize_hash_fragment(tryte_t *fragment_trytes)
 {
     int sum = 0;
-    for (unsigned int j = 0; j < 27; j++) {
+    for (unsigned int j = 0; j < MAX_UNBALANCED_TRYTE_VALUE; j++) {
         sum += fragment_trytes[j];
     }
 
-    for (unsigned int j = 0; j < 27; j++) {
+    for (unsigned int j = 0; j < MAX_UNBALANCED_TRYTE_VALUE; j++) {
         if (sum > 0) {
             sum -= decrement_tryte(sum, &fragment_trytes[j]);
         }
@@ -122,7 +145,7 @@ static void normalize_hash_fragment(tryte_t *fragment_trytes)
 static inline void normalize_hash(tryte_t *hash_trytes)
 {
     for (unsigned int i = 0; i < 3; i++) {
-        normalize_hash_fragment(hash_trytes + i * 27);
+        normalize_hash_fragment(hash_trytes + i * MAX_UNBALANCED_TRYTE_VALUE);
     }
 }
 
@@ -137,10 +160,10 @@ static bool validate_address(const unsigned char *addr_bytes,
                              const unsigned char *seed_bytes, uint32_t idx,
                              unsigned int security)
 {
-    unsigned char computed_addr[48];
-    get_public_addr(seed_bytes, idx, security, computed_addr);
+    unsigned char expected_addr_bytes[NUM_HASH_BYTES];
+    get_public_addr(seed_bytes, idx, security, expected_addr_bytes);
 
-    return (os_memcmp(addr_bytes, computed_addr, 48) == 0);
+    return (os_memcmp(addr_bytes, expected_addr_bytes, NUM_HASH_BYTES) == 0);
 }
 
 /** @return Whether all values sum up to zero. */
@@ -271,10 +294,10 @@ static int validate_bundle(const BUNDLE_CTX *ctx, uint8_t change_tx_index,
 NO_INLINE
 static bool validate_hash(const BUNDLE_CTX *ctx)
 {
-    tryte_t hash_trytes[81];
+    tryte_t hash_trytes[NUM_HASH_TRYTES];
     normalize_hash_bytes(ctx->hash, hash_trytes);
 
-    if (memchr(hash_trytes, MAX_TRYTE_VALUE, 81) != NULL) {
+    if (memchr(hash_trytes, MAX_TRYTE_VALUE, NUM_HASH_TRYTES) != NULL) {
         return false;
     }
 
@@ -307,7 +330,7 @@ int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
     compute_hash(ctx);
     if (!validate_hash(ctx)) {
         // if the hash is invalid, reset it to zero
-        os_memset(ctx->hash, 0, 48);
+        os_memset(ctx->hash, 0, NUM_HASH_BYTES);
         return UNSECURE_HASH;
     }
 

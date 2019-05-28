@@ -134,7 +134,7 @@ NO_INLINE
 static void io_send_address(const unsigned char *addr_bytes)
 {
     PUBKEY_OUTPUT output;
-    bytes_to_chars(addr_bytes, output.address, 48);
+    bytes_to_chars(addr_bytes, output.address, NUM_HASH_BYTES);
 
     io_send(&output, sizeof(output), SW_OK);
 }
@@ -151,7 +151,7 @@ unsigned int api_pubkey(uint8_t p1, const unsigned char *input_data,
 
     ui_display_getting_addr();
 
-    unsigned char addr_bytes[48];
+    unsigned char addr_bytes[NUM_HASH_BYTES];
     get_public_addr(api.seed_bytes, input->address_idx, api.security,
                     addr_bytes);
 
@@ -232,9 +232,9 @@ static void add_tx(const TX_INPUT *input)
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    char padded_tag[27];
-    rpad_chars(padded_tag, input->tag, 27);
-    if (!validate_chars(padded_tag, 27)) {
+    char padded_tag[NUM_TAG_TRYTES];
+    rpad_chars(padded_tag, input->tag, NUM_TAG_TRYTES);
+    if (!validate_chars(padded_tag, NUM_TAG_TRYTES)) {
         // invalid tag
         THROW(SW_COMMAND_INVALID_DATA);
     }
@@ -309,7 +309,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_INVALID_DATA);
     }
 
-    if (!validate_chars(input->address, 81)) {
+    if (!validate_chars(input->address, NUM_HASH_TRYTES)) {
         // invalid address
         THROW(SW_COMMAND_INVALID_DATA);
     }
@@ -355,11 +355,11 @@ static void initialize_signing(void)
 
 static bool next_signature_fragment(SIGNING_CTX *ctx, char *signature_fragment)
 {
-    unsigned char fragment_bytes[SIGNATURE_FRAGMENT_SIZE * 48];
+    unsigned char fragment_bytes[SIGNATURE_FRAGMENT_SIZE * NUM_HASH_BYTES];
     signing_next_fragment(ctx, fragment_bytes);
 
     bytes_to_chars(fragment_bytes, signature_fragment,
-                   SIGNATURE_FRAGMENT_SIZE * 48);
+                   SIGNATURE_FRAGMENT_SIZE * NUM_HASH_BYTES);
 
     return signing_has_next_fragment(ctx);
 }
@@ -426,7 +426,7 @@ static void io_send_bundle_hash(const BUNDLE_CTX *ctx)
 {
     TX_OUTPUT output;
     output.finalized = true;
-    bytes_to_chars(bundle_get_hash(ctx), output.bundle_hash, 48);
+    bytes_to_chars(bundle_get_hash(ctx), output.bundle_hash, NUM_HASH_BYTES);
 
     io_send(&output, sizeof(output), SW_OK);
 }

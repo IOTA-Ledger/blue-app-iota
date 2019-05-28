@@ -60,7 +60,7 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
     init_shas(seed_bytes, idx, &key_sha, &digest_sha, buffer);
 
     for (unsigned int i = 0; i < security; i++) {
-        for (unsigned int j = 0; j < 27; j++) {
+        for (unsigned int j = 0; j < MAX_UNBALANCED_TRYTE_VALUE; j++) {
             // use address output array as a temp Kerl state storage
             unsigned char *state = address_bytes;
 
