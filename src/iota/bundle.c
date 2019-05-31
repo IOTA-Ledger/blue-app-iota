@@ -1,9 +1,11 @@
-#include "bundle.h"
+#include "iota/bundle.h"
 #include <string.h>
-#include "common.h"
-#include "addresses.h"
-#include "conversion.h"
-#include "kerl.h"
+#include "iota/addresses.h"
+#include "iota/conversion.h"
+#include "iota/iota_types.h"
+#include "iota/kerl.h"
+#include "macros.h"
+#include "os.h"
 
 // pointer to the first byte of the current transaction
 #define TX_BYTES(C)                                                            \
@@ -40,7 +42,7 @@ static void create_bundle_bytes(int64_t value, const char *tag,
                                 uint32_t timestamp, uint8_t current_tx_index,
                                 uint8_t last_tx_index, unsigned char *bytes)
 {
-    trit_t bundle_essence_trits[243] = {0};
+    trit_t bundle_essence_trits[243] = {};
 
     s64_to_trits(value, bundle_essence_trits, 81);
     chars_to_trits(tag, bundle_essence_trits + 81, 27);

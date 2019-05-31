@@ -1,6 +1,9 @@
-[submodule "tests/kerl-spec"]
-	path = tests/kerl-spec
-	url = https://github.com/iotaledger/kerl
-[submodule "contrib/blue-app-iota-loader"]
-	path = contrib/blue-app-iota-loader
-	url = https://github.com/IOTA-Ledger/blue-app-iota-loader.git
+[submodule "dev/sdk/blue-secure-sdk"]
+	path = dev/sdk/blue-secure-sdk
+	url = https://github.com/LedgerHQ/blue-secure-sdk.git
+[submodule "dev/sdk/nanos-secure-sdk"]
+	path = dev/sdk/nanos-secure-sdk
+	url = https://github.com/LedgerHQ/nanos-secure-sdk.git
+[submodule "tests"]
+	path = tests
+	url = https://github.com/IOTA-Ledger/ledger-app-iota-tests.git

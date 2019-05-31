@@ -2,8 +2,9 @@
 #define SIGNING_H
 
 #include <stdbool.h>
-#include "iota_types.h"
-#include "bundle.h"
+#include <stdint.h>
+#include "iota/bundle.h"
+#include "iota/iota_types.h"
 
 // the number of chunks in one signature fragment
 // this can be changed to any multiple of 3 up to 27
@@ -11,7 +12,7 @@
 #define SIGNATURE_FRAGMENT_SIZE 3
 
 // the maximum number of chunks is SEC_LVL*27
-#define NUM_SIGNATURE_FRAGMENTS(s) (CEILING(s * 27, SIGNATURE_FRAGMENT_SIZE))
+#define NUM_SIGNATURE_FRAGMENTS(s) (CEILING((s)*27, SIGNATURE_FRAGMENT_SIZE))
 
 typedef struct SIGNING_CTX {
     BUNDLE_INFO bundle;            ///< shared bundle info used for signing

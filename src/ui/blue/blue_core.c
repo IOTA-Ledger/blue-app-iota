@@ -1,11 +1,13 @@
-#include "os.h"
-#include "os_io_seproxyhal.h"
-#include "blue_screens.h"
-#include "blue_types.h"
-#include "blue_misc.h"
-#include "glyphs.h"
-#include "ui.h"
+#include <stddef.h>
 #include "iota/addresses.h"
+#include "macros.h"
+#include "os_io_seproxyhal.h"
+#include "ui/blue/blue_buttons.h"
+#include "ui/blue/blue_elements.h"
+#include "ui/blue/blue_misc.h"
+#include "ui/blue/blue_screens.h"
+#include "ui/blue/blue_types.h"
+#include "ui/ui.h"
 
 #ifdef TARGET_BLUE
 

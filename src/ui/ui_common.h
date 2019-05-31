@@ -1,7 +1,6 @@
 #ifndef UI_COMMON_H
 #define UI_COMMON_H
 
-#include <string.h>
 #include <stdint.h>
 
 /** @brief Returns the tx index corresponding to the current menu entry.

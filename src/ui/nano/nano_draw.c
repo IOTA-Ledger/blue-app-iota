@@ -1,11 +1,15 @@
-#include "nano_draw.h"
-#include <string.h>
+#include "ui/nano/nano_draw.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include "api.h"
 #include "iota/addresses.h"
-#include "ui_common.h"
-#include "nano_misc.h"
-#include "nano_types.h"
+#include "iota/bundle.h"
+#include "iota/iota_types.h"
+#include "macros.h"
+#include "os.h"
+#include "ui/nano/nano_misc.h"
+#include "ui/nano/nano_types.h"
+#include "ui/ui_common.h"
 
 void nano_draw_main_menu()
 {

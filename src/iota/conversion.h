@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "iota_types.h"
+#include "iota/iota_types.h"
 
 /** @brief Converts a balanced ternary number in base-27 encoding into its
  *         trit representation.
@@ -24,7 +24,7 @@ void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len);
  *  @return true, if an overflow occured and the given integer could not be
             completely represented with this number of trits, false otherwise.
  */
-bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits);
+bool s64_to_trits(int64_t value, trit_t *trits, unsigned int num_trits);
 
 /** @brief Converts a single unsigned integer into its ternary representation.
  *  @param value signed integer to convert
@@ -33,7 +33,7 @@ bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits);
  *  @return true, if an overflow occured and the given integer could not be
             completely represented with this number of trits, false otherwise.
  */
-bool u32_to_trits(const uint32_t value, trit_t *trits, unsigned int num_trits);
+bool u32_to_trits(uint32_t value, trit_t *trits, unsigned int num_trits);
 
 /** @brief Converts a balanced ternary number into a big-endian binary integer.
  *  The input must consist of exactly one 243-trit chunk and is converted into

@@ -1,48 +1,81 @@
 language: c
-sudo: required
 dist: xenial
-addons:
-  apt:
-    packages:
-      - lcov
-before_install:
-- wget https://cmocka.org/files/1.1/cmocka-1.1.3.tar.xz
-- tar -xf cmocka-1.1.3.tar.xz
-- cd cmocka-1.1.3
+git:
+  quite: true
+  depth: 3
+
+env:
+  global:
+  - CTEST_OUTPUT_ON_FAILURE=TRUE
+  - CTEST_PARALLEL_LEVEL=2
+
+before_script:
+- cd tests
 - mkdir build
 - cd build
-- cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug .. && make && sudo make install
-- cd ../..
-- rm -rf cmocka-1.1.3
-script:
-- echo "Running tests"
-- cd tests && mkdir build && cd build && cmake -DSUPPORT_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug .. && make && make test_coverage
-after_success:
-- bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
-- cd ../..
-before_deploy:
-- docker run -v $(pwd):/ledger ubuntu:18.04 /bin/bash -c "cd /ledger; ./contrib/docker_travis_build.sh"
-- echo "Importing keys"
-- openssl aes-256-cbc -K $encrypted_0982fdaf61f1_key -iv $encrypted_0982fdaf61f1_iv -in contrib/private.key.enc -out contrib/private.key -d
-- gpg --import ./contrib/private.key
-- echo "Packing nanos-app"
-- gpg --detach-sign -au IOTA-Ledger nanos-bin/app.hex
-- zip -j nanos-app-${TRAVIS_TAG}.zip nanos-bin/app.hex nanos-bin/app.hex.asc
-- echo "Packing loader-python"
-- zip -j loader-python-nanos-${TRAVIS_TAG}.zip nanos-bin/app.hex contrib/blue-app-iota-loader/README.md contrib/blue-app-iota-loader/install_app.py contrib/blue-app-iota-loader/get_ledger_version.py contrib/blue-app-iota-loader/delete_app.py
-- echo "Packing blue-app"
-- gpg --detach-sign -au IOTA-Ledger blue-bin/app.hex
-- zip -j blue-app-${TRAVIS_TAG}.zip blue-bin/app.hex blue-bin/app.hex.asc
-deploy:
-  provider: releases
-  api_key:
-    secure: ByI0wx09OxD4vDxNqQxrShNjm996QweatkhSRpdwRXNy8BX3wz+SJ3rKqmLYLyPOytD3+7UpUZSE55xQIbqJRbfpX0Ri81veS2oWzD6uwm4ic6K1ig3IsG9AGHC7Mj05oxZNY11HFsNKOQzJQ7sdaiUZnppv9vB3UNbKZ0Ng8V/iPShtLj8UFWmlogqZahfqoAJBqc5t5XfaHGm+lZVEg2C1nQKyV1vev5gpdPg6vqDQtWScPL1Ky+nuu6jXElfop+0QbefB4HRrvryM6DQClhqSzMCYvhMVwYTjsRYNPpNIyR6ygCs+DFdj9prLFkLJ6PQbJ4M3oRtMrfVuxo4l82a2h2yyO3RZ9fgX+uslTzCDR3q78JYi3yxFxj8V5UTB7CslNkEvtwrit8zqabupf517Rogl6MjQPgEUNxa9idrd1NDMroCG8C6HAhrfnO+4YR0asi3R4bj2jXRud0mrWStGkubhgjNm2aFNWJ0B9GLPDXHjf3KVrvgJoB98DbT9A2u390djo26wr8rLdkKCB24cvXF/4k9sRCqPVYdBqlZDbStM+4NkGIjvdkKw5VOklVlpa+B4bID4n85D9t7KqaoxS8B7BD2jy9mx4o+/hWGXSiSTaQ6tO3NgTdFf/1NIHP1RknMnsNsbHZK84p5/rIvGMsuHaNkAuFVRUXoXhbA=
-  file:
-  - nanos-app-${TRAVIS_TAG}.zip
-  - blue-app-${TRAVIS_TAG}.zip
-  - loader-python-nanos-${TRAVIS_TAG}.zip
-  skip_cleanup: true
-  on:
-    repo: IOTA-Ledger/blue-app-iota
-    branch: beta
-    tags: true
+
+matrix:
+  fast_finish: true
+  include:
+
+  - name: "Clang 4.0"
+    addons:
+      apt:
+        packages:
+        - clang-4.0
+    script:
+    - cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER="clang-4.0" ..
+    - make
+    - make test
+
+  - name: "Codecov"
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - gcc-8
+    script:
+    - cmake -DCMAKE_BUILD_TYPE=COVERAGE -DCMAKE_C_COMPILER="gcc-8" ..
+    - make
+    - make test
+    after_success:
+    - bash <(curl -s https://codecov.io/bash) -R "$TRAVIS_BUILD_DIR" -x gcov-8
+
+  - name: "Address Sanitizer"
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - gcc-8
+    script:
+    - cmake -DCMAKE_BUILD_TYPE=ASAN -DCMAKE_C_COMPILER="gcc-8" ..
+    - make
+    - make test
+
+  - name: "Build Nano S"
+    services:
+    - docker
+    before_script:
+    script:
+    - |
+      docker run \
+      -v $(pwd):/root/project \
+      -e BOLOS_ENV=/opt/bolos \
+      -e BOLOS_SDK=/root/project/dev/sdk/nanos-secure-sdk \
+      zondax/ledger-docker-bolos \
+      make -C /root/project
+
+  - name: "Build Blue"
+    services:
+    - docker
+    before_script:
+    script:
+    - |
+      docker run \
+      -v $(pwd):/root/project \
+      -e BOLOS_ENV=/opt/bolos \
+      -e BOLOS_SDK=/root/project/dev/sdk/blue-secure-sdk \
+      zondax/ledger-docker-bolos \
+      make -C /root/project

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "common.h"
+#include "macros.h"
 #include "iota/iota_types.h"
 
 /// length of one text line

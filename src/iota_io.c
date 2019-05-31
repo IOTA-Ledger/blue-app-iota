@@ -1,7 +1,7 @@
 #include "iota_io.h"
-#include "common.h"
-#include "os_io_seproxyhal.h"
 #include "api.h"
+#include "os.h"
+#include "os_io_seproxyhal.h"
 
 extern unsigned char G_io_apdu_buffer[IO_APDU_BUFFER_SIZE];
 

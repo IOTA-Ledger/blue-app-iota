@@ -1,6 +1,6 @@
 #include "misc.h"
 #include <string.h>
-#include "common.h"
+#include "os.h"
 
 #define PAD_CHAR '9'
 

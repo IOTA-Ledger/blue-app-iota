@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 #include "api.h"
-#include "nano_types.h"
+#include "macros.h"
+#include "ui/nano/nano_types.h"
 
 void nano_state_set(UI_STATES_NANO state, uint8_t idx);
 void nano_state_set_ignore(void);

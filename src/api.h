@@ -1,9 +1,12 @@
 #ifndef API_H
 #define API_H
 
-#include "iota_io.h"
-#include "iota/signing.h"
+#include <stdbool.h>
+#include <stdint.h>
 #include "iota/bundle.h"
+#include "iota/iota_types.h"
+#include "iota/signing.h"
+#include "iota_io.h"
 
 // state bit flags
 #define BUNDLE_INITIALIZED (1 << 0)

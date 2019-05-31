@@ -1,6 +1,10 @@
-#include "ui_common.h"
-#include "api.h"
+#include "ui/ui_common.h"
+#include <stdint.h>
 #include <string.h>
+#include "api.h"
+#include "iota/bundle.h"
+#include "macros.h"
+#include "os.h"
 
 #ifdef TARGET_BLUE
 #include "blue/blue_types.h"

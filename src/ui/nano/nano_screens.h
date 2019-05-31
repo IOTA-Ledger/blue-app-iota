@@ -5,7 +5,7 @@
 
 #ifdef TARGET_NANOS
 
-#include "s_elements.h"
+#include "ui/nano/s_elements.h"
 
 // screen for displaying back icon
 static const bagl_element_t bagl_ui_omega_screen[] = {
@@ -13,7 +13,7 @@ static const bagl_element_t bagl_ui_omega_screen[] = {
 
 #else // NANOX
 
-#include "x_elements.h"
+#include "ui/nano/x_elements.h"
 
 static const bagl_element_t bagl_ui_omega_screen[] = {
     SCREEN_CLEAR,

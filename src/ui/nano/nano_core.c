@@ -1,20 +1,23 @@
-#include "common.h"
-#include "iota/addresses.h"
-#include "glyphs.h"
-#include "ui.h"
-#include "nano_misc.h"
-#include "nano_draw.h"
-#include "nano_buttons.h"
-#include "nano_types.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include "bagl.h"
+#include "iota/iota_types.h"
+#include "macros.h"
+#include "os.h"
+#include "os_io_seproxyhal.h"
+#include "ui/nano/nano_buttons.h"
+#include "ui/nano/nano_draw.h"
+#include "ui/nano/nano_misc.h"
+#include "ui/nano/nano_types.h"
+#include "ui/ui.h"
 
-#ifdef TARGET_NANO
-#include "nano_screens.h"
+#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
+#include "ui/nano/nano_screens.h"
 
 #ifdef TARGET_NANOS
-#include "s_elements.h"
 #else
-#include "x_elements.h"
-#endif
+#include "ui/nano/x_elements.h"
+#endif // TARGET_NANOS
 
 static void nano_transition_state(unsigned int button_mask);
 
@@ -290,4 +293,4 @@ static void nano_transition_state(unsigned int button_mask)
     nano_display();
 }
 
-#endif // TARGET_NANO
+#endif

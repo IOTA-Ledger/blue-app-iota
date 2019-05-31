@@ -1,8 +1,10 @@
-#include "seed.h"
-#include "common.h"
-#include "iota_types.h"
-#include "conversion.h"
-#include "kerl.h"
+#include "iota/seed.h"
+#include "iota/iota_types.h"
+#include "iota/kerl.h"
+#include "os.h"
+
+#define NUM_KEY_BYTES 32
+#define NUM_CHAIN_BYTES 32
 
 /** @brief Computes a valid IOTA seed based on the provided entropy.
  *  @param n number of entropy bytes
@@ -33,9 +35,9 @@ void seed_derive_from_bip32(const unsigned int *path, unsigned int pathLength,
                             unsigned char *seed_bytes)
 {
     // we only care about privateKey and chain to use as entropy for the seed
-    unsigned char entropy[64];
+    unsigned char entropy[NUM_KEY_BYTES + NUM_CHAIN_BYTES];
     os_perso_derive_node_bip32(CX_CURVE_256K1, (unsigned int *)path, pathLength,
-                               entropy, entropy + 32);
+                               entropy, entropy + NUM_KEY_BYTES);
 
     derive_seed_entropy(entropy, sizeof(entropy), seed_bytes);
 }

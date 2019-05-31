@@ -1,9 +1,11 @@
-#include "nano_misc.h"
+#include "ui/nano/nano_misc.h"
+#include <stdbool.h>
 #include <string.h>
-#include "iota/addresses.h"
-#include "glyphs.h"
-#include "ui.h"
-#include "ui_common.h"
+#include "iota/bundle.h"
+#include "iota/iota_types.h"
+#include "macros.h"
+#include "os.h"
+#include "ui/ui_common.h"
 
 // go to state with menu index
 void nano_state_set(UI_STATES_NANO state, uint8_t idx)
@@ -154,7 +156,7 @@ void format_address_abbrev(const char *addr, char text[TEXT_LEN])
 
 void format_address_checksum(const char *addr, char text[TEXT_LEN])
 {
-    char buffer[NUM_CHECKSUM_TRYTES + 1] = {0};
+    char buffer[NUM_CHECKSUM_TRYTES + 1] = {};
     strncpy(buffer, addr + NUM_HASH_TRYTES, NUM_CHECKSUM_TRYTES);
 
     snprintf(text, TEXT_LEN, "Chk: %s", buffer);
