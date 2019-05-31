@@ -11,9 +11,6 @@
 // prefer larger number when possible
 #define SIGNATURE_FRAGMENT_SIZE 3
 
-// the maximum number of chunks is SEC_LVL*27
-#define NUM_SIGNATURE_FRAGMENTS(s) (CEILING((s)*27, SIGNATURE_FRAGMENT_SIZE))
-
 typedef struct SIGNING_CTX {
     BUNDLE_INFO bundle;            ///< shared bundle info used for signing
     tryte_t hash[NUM_HASH_TRYTES]; ///< bundle hash used for signing
@@ -50,7 +47,7 @@ void signing_start(SIGNING_CTX *ctx, uint8_t tx_index,
 unsigned int signing_next_fragment(SIGNING_CTX *ctx,
                                    unsigned char *signature_bytes);
 
-/** @brief Return wether there are remaining signatrue fragments
+/** @brief Returns whether there are remaining signature fragments.
  *  @param ctx the signing context used
  *  @return true, if there is another fragment, false otherwise
  */

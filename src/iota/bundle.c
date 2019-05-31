@@ -98,7 +98,7 @@ uint8_t bundle_add_tx(BUNDLE_CTX *ctx, int64_t value, const char *tag,
 
 static inline int decrement_tryte(int max, tryte_t *tryte)
 {
-    const int slack = *tryte - MIN_TRYTE_VALUE;
+    const int slack = *tryte - TRYTE_MIN;
     if (slack <= 0) {
         return 0;
     }
@@ -111,7 +111,7 @@ static inline int decrement_tryte(int max, tryte_t *tryte)
 
 static inline int increment_tryte(int max, tryte_t *tryte)
 {
-    const int slack = MAX_TRYTE_VALUE - *tryte;
+    const int slack = TRYTE_MAX - *tryte;
     if (slack <= 0) {
         return 0;
     }
@@ -125,11 +125,11 @@ static inline int increment_tryte(int max, tryte_t *tryte)
 static void normalize_hash_fragment(tryte_t *fragment_trytes)
 {
     int sum = 0;
-    for (unsigned int j = 0; j < MAX_UNBALANCED_TRYTE_VALUE; j++) {
+    for (unsigned int j = 0; j < NUM_HASH_FRAGMENT_TRYTES; j++) {
         sum += fragment_trytes[j];
     }
 
-    for (unsigned int j = 0; j < MAX_UNBALANCED_TRYTE_VALUE; j++) {
+    for (unsigned int j = 0; j < NUM_HASH_FRAGMENT_TRYTES; j++) {
         if (sum > 0) {
             sum -= decrement_tryte(sum, &fragment_trytes[j]);
         }
@@ -145,7 +145,7 @@ static void normalize_hash_fragment(tryte_t *fragment_trytes)
 static inline void normalize_hash(tryte_t *hash_trytes)
 {
     for (unsigned int i = 0; i < 3; i++) {
-        normalize_hash_fragment(hash_trytes + i * MAX_UNBALANCED_TRYTE_VALUE);
+        normalize_hash_fragment(hash_trytes + i * NUM_HASH_FRAGMENT_TRYTES);
     }
 }
 
@@ -297,7 +297,7 @@ static bool validate_hash(const BUNDLE_CTX *ctx)
     tryte_t hash_trytes[NUM_HASH_TRYTES];
     normalize_hash_bytes(ctx->hash, hash_trytes);
 
-    if (memchr(hash_trytes, MAX_TRYTE_VALUE, NUM_HASH_TRYTES) != NULL) {
+    if (memchr(hash_trytes, TRYTE_MAX, NUM_HASH_TRYTES) != NULL) {
         return false;
     }
 

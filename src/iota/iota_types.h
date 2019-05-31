@@ -7,12 +7,12 @@
 typedef int8_t trit_t;
 typedef int8_t tryte_t;
 
-#define MIN_TRIT_VALUE (-1)
-#define MAX_TRIT_VALUE 1
+#define TRIT_MIN (-1)
+#define TRIT_MAX 1
 
-#define MIN_TRYTE_VALUE (-13)
-#define MAX_TRYTE_VALUE 13
-#define MAX_UNBALANCED_TRYTE_VALUE 27
+#define TRYTE_MIN (-13)
+#define TRYTE_MAX 13
+#define UTRYTE_MAX 26
 
 #define TRITS_PER_TRYTE 3
 
@@ -27,5 +27,7 @@ typedef int8_t tryte_t;
 #define NUM_CHECKSUM_TRYTES 9
 #define NUM_ADDRESS_TRYTES (NUM_HASH_TRYTES + NUM_CHECKSUM_TRYTES)
 #define NUM_TAG_TRYTES 27
+
+#define NUM_HASH_FRAGMENT_TRYTES 27
 
 #endif // IOTA_TYPES_H
