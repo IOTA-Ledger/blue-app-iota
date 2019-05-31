@@ -18,7 +18,7 @@
 void bundle_initialize(BUNDLE_CTX *ctx, const uint8_t last_tx_index)
 {
     if (last_tx_index < 1 || last_tx_index >= MAX_BUNDLE_SIZE) {
-        THROW(INVALID_PARAMETER);
+        THROW_PARAMETER("last_tx_index");
     }
 
     os_memset(ctx, 0, sizeof(BUNDLE_CTX));
@@ -341,7 +341,7 @@ const unsigned char *bundle_get_address_bytes(const BUNDLE_CTX *ctx,
                                               uint8_t tx_index)
 {
     if (tx_index >= ctx->bundle.current_tx_index) {
-        THROW(INVALID_PARAMETER);
+        THROW_PARAMETER("tx_index");
     }
 
     return ctx->bytes + tx_index * 96;
@@ -365,7 +365,7 @@ void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes)
 bool bundle_is_input_tx(const BUNDLE_CTX *ctx, uint8_t tx_index)
 {
     if (tx_index > ctx->bundle.last_tx_index) {
-        THROW(INVALID_PARAMETER);
+        THROW_PARAMETER("tx_index");
     }
 
     return ctx->bundle.values[tx_index] < 0;
