@@ -1,6 +1,8 @@
 # IOTA App for Ledger Hardware Wallets
 
 [![Build Status](https://travis-ci.org/IOTA-Ledger/blue-app-iota.svg?branch=master)](https://travis-ci.org/IOTA-Ledger/blue-app-iota)
+[![codecov](https://codecov.io/gh/IOTA-Ledger/blue-app-iota/branch/master/graph/badge.svg)](https://codecov.io/gh/IOTA-Ledger/blue-app-iota)
+
 
 Here we try to use natively available crypto logic to create IOTA seeds and sign transactions on the fly.<br>
 
