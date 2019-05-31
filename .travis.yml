@@ -54,18 +54,6 @@ matrix:
     - make
     - make test
 
-  - name: "Undefined Behavior Sanitizer"
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - gcc-8
-    script:
-    - cmake -DCMAKE_BUILD_TYPE=UBSAN -DCMAKE_C_COMPILER="gcc-8" ..
-    - make
-    - make test
-
   - name: "Build Nano S"
     services:
     - docker
