@@ -5,7 +5,6 @@
 #include "os.h"
 
 #define UINT32_WIDTH 32
-#define NUM_TRYTE_VALUES (MAX_TRYTE_VALUE - MIN_TRYTE_VALUE + 1)
 
 // numer of u32 elements in one bigint array
 #define BIGINT_LENGTH 12
@@ -39,7 +38,7 @@ static const uint32_t TRIT_243[BIGINT_LENGTH] = {
 #define TRIT_4 9
 
 // lookup table to convert a single tryte into the corresponding three trits
-static const trit_t TRITS_TABLE[NUM_TRYTE_VALUES][3] = {
+static const trit_t TRITS_TABLE[UTRYTE_MAX + 1][3] = {
     {-1, -1, -1}, {0, -1, -1}, {1, -1, -1}, {-1, 0, -1}, {0, 0, -1}, {1, 0, -1},
     {-1, 1, -1},  {0, 1, -1},  {1, 1, -1},  {-1, -1, 0}, {0, -1, 0}, {1, -1, 0},
     {-1, 0, 0},   {0, 0, 0},   {1, 0, 0},   {-1, 1, 0},  {0, 1, 0},  {1, 1, 0},
@@ -53,7 +52,7 @@ static void trytes_to_trits(const tryte_t *trytes_in, trit_t *trits_out,
                             unsigned int trytes_len)
 {
     for (unsigned int i = 0; i < trytes_len; i++) {
-        const unsigned int idx = *trytes_in++ - MIN_TRYTE_VALUE;
+        const unsigned int idx = *trytes_in++ - TRYTE_MIN;
         const trit_t *trits_mapping = TRITS_TABLE[idx];
 
         *trits_out++ = trits_mapping[0];
@@ -67,8 +66,8 @@ static void trits_to_trytes(const trit_t *trits_in, tryte_t *trytes_out,
 {
     for (unsigned int i = 0; i < trits_len / TRITS_PER_TRYTE; i++) {
         trytes_out[i] = *trits_in++;
-        trytes_out[i] += *trits_in++ * 3;
-        trytes_out[i] += *trits_in++ * 9;
+        trytes_out[i] += *trits_in++ * BASE;
+        trytes_out[i] += *trits_in++ * BASE * BASE;
     }
 }
 
@@ -80,7 +79,7 @@ static void chars_to_trytes(const char *chars_in, tryte_t *trytes_out,
             trytes_out[i] = 0;
         }
         else if (chars_in[i] >= 'N') {
-            trytes_out[i] = chars_in[i] - 'N' + MIN_TRYTE_VALUE;
+            trytes_out[i] = chars_in[i] - 'N' + TRYTE_MIN;
         }
         else {
             trytes_out[i] = chars_in[i] - 'A' + 1;
@@ -92,7 +91,7 @@ static void trytes_to_chars(const tryte_t *trytes_in, char *chars_out,
                             unsigned int trytes_len)
 {
     for (unsigned int i = 0; i < trytes_len; i++) {
-        chars_out[i] = CHARS_TABLE[trytes_in[i] - MIN_TRYTE_VALUE];
+        chars_out[i] = CHARS_TABLE[trytes_in[i] - TRYTE_MIN];
     }
 }
 
@@ -101,10 +100,10 @@ static void trytes_to_chars(const tryte_t *trytes_in, char *chars_out,
  */
 static inline tryte_t tryte_set_last_trit_zero(tryte_t tryte)
 {
-    if (tryte > MAX_TRYTE_VALUE - TRIT_4) {
+    if (tryte > TRYTE_MAX - TRIT_4) {
         return tryte - TRIT_4;
     }
-    if (tryte < MIN_TRYTE_VALUE + TRIT_4) {
+    if (tryte < TRYTE_MIN + TRIT_4) {
         return tryte + TRIT_4;
     }
     return tryte;
@@ -319,7 +318,7 @@ static void bigint_to_trytes_mem(uint32_t *bigint, tryte_t *trytes)
 }
 
 /** @brief Converts bigint consisting of 12 words into an array of bytes.
- *  It is represented using 48bytes in big-endiean, by reversing the order of
+ *  It is represented using 48bytes in big-endian, by reversing the order of
  *  the words. The endianness of the host machine is taken into account.
  */
 static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
@@ -328,23 +327,25 @@ static void bigint_to_bytes(const uint32_t *bigint, unsigned char *bytes)
     for (unsigned int i = BIGINT_LENGTH; i-- > 0; bytes += 4) {
         const uint32_t num = bigint[i];
 
-        bytes[0] = (num >> 24) & 0xFF;
-        bytes[1] = (num >> 16) & 0xFF;
-        bytes[2] = (num >> 8) & 0xFF;
+        bytes[0] = (num >> (3 * CHAR_BIT)) & 0xFF;
+        bytes[1] = (num >> (2 * CHAR_BIT)) & 0xFF;
+        bytes[2] = (num >> (1 * CHAR_BIT)) & 0xFF;
         bytes[3] = (num >> 0) & 0xFF;
     }
 }
 
 /** @brief Converts an array of 48 bytes into a bigint consisting of 12 words.
- *  The bigint is represented using 48bytes in big-endiean. The endianness of
+ *  The bigint is represented using 48bytes in big-endian. The endianness of
  * the host machine is taken into account.
  */
 static void bytes_to_bigint(const unsigned char *bytes, uint32_t *bigint)
 {
     // reverse word order
     for (unsigned int i = BIGINT_LENGTH; i-- > 0; bytes += 4) {
-        bigint[i] = (uint32_t)bytes[0] << 24 | (uint32_t)bytes[1] << 16 |
-                    (uint32_t)bytes[2] << 8 | (uint32_t)bytes[3] << 0;
+        bigint[i] = (uint32_t)bytes[0] << (3 * CHAR_BIT) |
+                    (uint32_t)bytes[1] << (2 * CHAR_BIT) |
+                    (uint32_t)bytes[2] << (1 * CHAR_BIT) |
+                    (uint32_t)bytes[3] << 0;
     }
 }
 

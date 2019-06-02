@@ -1,5 +1,6 @@
 #include "iota_io.h"
 #include "api.h"
+#include "macros.h"
 #include "os.h"
 #include "os_io_seproxyhal.h"
 
@@ -15,7 +16,7 @@ void io_initialize()
 void io_send(const void *ptr, unsigned int length, unsigned short sw)
 {
     if (length + 2 > IO_APDU_BUFFER_SIZE) {
-        THROW(INVALID_PARAMETER);
+        THROW_PARAMETER("length");
     }
 
     os_memcpy(G_io_apdu_buffer, ptr, length);
@@ -50,7 +51,6 @@ unsigned int iota_dispatch(const uint8_t ins, const uint8_t p1,
     // unknown command ??
     default:
         THROW(SW_INS_NOT_SUPPORTED);
-        return 0;
     }
 }
 
@@ -62,7 +62,7 @@ void io_timeout_reset()
 void io_timeout_set(const unsigned int ms)
 {
     if (ms == 0) {
-        THROW(INVALID_PARAMETER);
+        THROW_PARAMETER("ms");
     }
     UX_CALLBACK_SET_INTERVAL(ms);
 }

@@ -7,3 +7,4 @@
 [submodule "tests"]
 	path = tests
 	url = https://github.com/IOTA-Ledger/ledger-app-iota-tests.git
+	branch = master

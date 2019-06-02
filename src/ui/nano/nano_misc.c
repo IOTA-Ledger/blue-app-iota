@@ -126,9 +126,12 @@ void nano_draw_menu_text(const char text[][TEXT_LEN], const unsigned int rows)
 #endif
 }
 
-void format_value(const int64_t val, char text[TEXT_LEN])
+void format_value(int64_t val, char text[TEXT_LEN])
 {
-    if (ui_state.flags.full_value || ABS(val) < 1000) {
+    // always display the absolute value
+    val = ABS(val);
+
+    if (ui_state.flags.full_value || val < 1000) {
         format_value_full(text, TEXT_LEN_VALUE + 1, val);
     }
     else {

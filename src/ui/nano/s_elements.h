@@ -80,7 +80,7 @@
 
 // -- Confirm bars along top
 #define SCREEN_GLYPH_CONFIRM_1                                                 \
-    SCREEN_GLYPH(EL_CONFIRM, 2, 0, BAGL_GLYPH_ICON_LESS)
+    SCREEN_GLYPH(EL_CONFIRM, 3, 0, BAGL_GLYPH_ICON_LESS)
 #define SCREEN_GLYPH_CONFIRM_2                                                 \
     SCREEN_GLYPH(EL_CONFIRM, 120, 0, BAGL_GLYPH_ICON_LESS)
 
@@ -88,7 +88,7 @@
 #define SCREEN_GLYPH_UP SCREEN_GLYPH(EL_UP, 3, 12, BAGL_GLYPH_ICON_UP)
 
 // -- Down arrow on right
-#define SCREEN_GLYPH_DOWN SCREEN_GLYPH(EL_DOWN, 117, 13, BAGL_GLYPH_ICON_DOWN)
+#define SCREEN_GLYPH_DOWN SCREEN_GLYPH(EL_DOWN, 120, 13, BAGL_GLYPH_ICON_DOWN)
 
 // -- Loading icon on left
 #define SCREEN_GLYPH_LOAD                                                      \
