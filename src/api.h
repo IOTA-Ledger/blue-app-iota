@@ -8,9 +8,12 @@
 #include "iota/signing.h"
 #include "iota_io.h"
 
+// additional supported features
+#define APP_FLAGS 0
+
 // state bit flags
 #define BUNDLE_INITIALIZED (1 << 0)
-#define BUNDLE_FINALIZED (1 << 1)
+#define BUNDLE_COMPLETED (1 << 1)
 #define SIGNING_INITIALIZED (1 << 2)
 #define SIGNING_STARTED (1 << 3)
 
@@ -50,7 +53,7 @@ SET_SEED_INPUT;
 
 #define PUBKEY_REQUIRED_STATE 0
 #define PUBKEY_FORBIDDEN_STATE                                                 \
-    (BUNDLE_INITIALIZED | BUNDLE_FINALIZED | SIGNING_INITIALIZED |             \
+    (BUNDLE_INITIALIZED | BUNDLE_COMPLETED | SIGNING_INITIALIZED |             \
      SIGNING_STARTED)
 
 typedef IO_STRUCT PUBKEY_INPUT
@@ -66,7 +69,7 @@ typedef IO_STRUCT PUBKEY_OUTPUT
 PUBKEY_OUTPUT;
 
 #define TX_REQUIRED_STATE 0
-#define TX_FORBIDDEN_STATE (BUNDLE_FINALIZED | SIGNING_INITIALIZED)
+#define TX_FORBIDDEN_STATE (BUNDLE_COMPLETED | SIGNING_INITIALIZED)
 
 typedef IO_STRUCT TX_INPUT
 {
@@ -87,7 +90,7 @@ typedef IO_STRUCT TX_OUTPUT
 }
 TX_OUTPUT;
 
-#define SIGN_REQUIRED_STATE (BUNDLE_FINALIZED)
+#define SIGN_REQUIRED_STATE (BUNDLE_COMPLETED)
 #define SIGN_FORBIDDEN_STATE 0
 
 typedef IO_STRUCT SIGN_INPUT

@@ -328,8 +328,11 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
 
     // perfectly valid bundle
     if (!bundle_has_open_txs(&api.ctx.bundle)) {
+        api.state_flags |= BUNDLE_COMPLETED;
+
         // start interactive timeout
         io_timeout_set(TIMEOUT_USER_BUNDLE_MS);
+        // this throws an exception, if the user denies
         ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
@@ -442,7 +445,6 @@ void user_sign_tx()
         PRINTF("invalidBundle; retcode=%i\n", retcode);
         THROW(SW_INVALID_BUNDLE + retcode);
     }
-    api.state_flags |= BUNDLE_FINALIZED;
 
     io_send_bundle_hash(&api.ctx.bundle);
 }
