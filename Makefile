@@ -86,7 +86,7 @@ else
     DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=128
 endif
 
-DEBUG = 1
+DEBUG = 0
 ifneq ($(DEBUG),0)
     # Development flags
     APP_LOAD_PARAMS += --path "44'/01'"
