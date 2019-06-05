@@ -308,8 +308,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
         // transactions not in the expected order
         THROW(SW_COMMAND_INVALID_DATA);
     }
-
-    if (!validate_chars(input->address, NUM_HASH_TRYTES)) {
+    if (!validate_chars_exact(input->address, NUM_HASH_TRYTES)) {
         // invalid address
         THROW(SW_COMMAND_INVALID_DATA);
     }
