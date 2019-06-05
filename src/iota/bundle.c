@@ -38,6 +38,10 @@ void bundle_set_external_address(BUNDLE_CTX *ctx, const char *address)
 void bundle_set_internal_address(BUNDLE_CTX *ctx, const char *address,
                                  uint32_t index)
 {
+    if (!bundle_has_open_txs(ctx)) {
+        THROW(INVALID_STATE);
+    }
+
     bundle_set_external_address(ctx, address);
     ctx->bundle.indices[ctx->bundle.current_tx_index] = index;
 }
@@ -178,25 +182,39 @@ static bool validate_balance(const BUNDLE_CTX *ctx)
     return value == 0;
 }
 
+static bool has_valid_meta_txs(const BUNDLE_CTX *ctx, const uint8_t security,
+                               const unsigned char *input_addr_bytes,
+                               const uint8_t input_tx_index)
+{
+    for (uint8_t i = 1; i < security; i++) {
+        const uint8_t index = input_tx_index + i;
+
+        // the meta transaction must be zero-value
+        if (index > ctx->bundle.last_tx_index ||
+            ctx->bundle.values[index] != 0) {
+            return false;
+        }
+        // and have the same address
+        if (os_memcmp(input_addr_bytes, bundle_get_address_bytes(ctx, index),
+                      NUM_HASH_BYTES) != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /** @return Whether every input transaction has meta transactions. */
-static bool validate_meta_txs(const BUNDLE_CTX *ctx, uint8_t security)
+static bool validate_meta_txs(const BUNDLE_CTX *ctx, const uint8_t security)
 {
     for (uint8_t i = 0; i <= ctx->bundle.last_tx_index; i++) {
         // only input transactions have meta transactions
         if (bundle_is_input_tx(ctx, i)) {
+
             const unsigned char *input_addr_bytes =
                 bundle_get_address_bytes(ctx, i);
-
-            for (uint8_t j = 1; j < security; j++) {
-                if (i + j > ctx->bundle.last_tx_index ||
-                    ctx->bundle.values[i + j] != 0) {
-                    return false;
-                }
-                if (os_memcmp(input_addr_bytes,
-                              bundle_get_address_bytes(ctx, i + j),
-                              NUM_HASH_BYTES) != 0) {
-                    return false;
-                }
+            if (!has_valid_meta_txs(ctx, security, input_addr_bytes, i)) {
+                return false;
             }
         }
     }
@@ -364,7 +382,7 @@ void bundle_get_normalized_hash(const BUNDLE_CTX *ctx, tryte_t *hash_trytes)
 
 bool bundle_is_input_tx(const BUNDLE_CTX *ctx, uint8_t tx_index)
 {
-    if (tx_index > ctx->bundle.last_tx_index) {
+    if (tx_index >= ctx->bundle.current_tx_index) {
         THROW_PARAMETER("tx_index");
     }
 
@@ -377,7 +395,7 @@ uint8_t bundle_get_num_value_txs(const BUNDLE_CTX *ctx)
         THROW(INVALID_STATE);
     }
 
-    unsigned int count = 0;
+    uint8_t count = 0;
     for (unsigned int i = 0; i <= ctx->bundle.last_tx_index; i++) {
         if (ctx->bundle.values[i] != 0) {
             count++;

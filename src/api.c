@@ -179,18 +179,25 @@ static bool first_tx(uint8_t p1)
     }
 }
 
-static bool has_reference_transaction(uint8_t current_index)
+/// Checks whether the meta tx at the given index has a potential reference tx.
+static bool has_reference_tx(const uint8_t meta_tx_index)
 {
-    for (uint8_t i = 1; i < api.security; i++) {
-        if (current_index < i ||
-            api.ctx.bundle.bundle.values[current_index - i] > 0) {
+    // allowed max distance to reference transaction
+    const unsigned int reference_tx_limit =
+        MIN(meta_tx_index, api.security - 1);
+
+    for (unsigned int i = 1; i <= reference_tx_limit; i++) {
+        // reference tx cannot be an output transaction
+        if (api.ctx.bundle.bundle.values[meta_tx_index - i] > 0) {
             return false;
         }
-        if (bundle_is_input_tx(&api.ctx.bundle, current_index - i)) {
+        // any input transaction is a potential reference transaction
+        if (api.ctx.bundle.bundle.values[meta_tx_index - i] < 0) {
             return true;
         }
     }
 
+    // no reference transaction
     return false;
 }
 
@@ -212,13 +219,9 @@ static bool validate_tx_order(const TX_INPUT *input)
     }
 
     // a meta transaction must have a valid reference input transaction
-    if (input->value == 0 && current_index > 0 &&
-        current_index < api.ctx.bundle.bundle.last_tx_index) {
-        // this must be a meta transaction
-        if (!has_reference_transaction(current_index)) {
-            PRINTF("tx_order; meta_tx_index=%u\n", current_index);
-            return false;
-        }
+    if (input->value == 0 && !has_reference_tx(current_index)) {
+        PRINTF("tx_order; meta_tx_index=%u\n", current_index);
+        return false;
     }
 
     return true;
