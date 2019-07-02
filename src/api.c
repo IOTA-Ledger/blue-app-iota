@@ -1,5 +1,6 @@
 #include "api.h"
 #include <string.h>
+#include "chars_utils.h"
 #include "iota/addresses.h"
 #include "iota/bundle.h"
 #include "iota/conversion.h"
@@ -8,7 +9,6 @@
 #include "iota/signing.h"
 #include "iota_io.h"
 #include "macros.h"
-#include "misc.h"
 #include "os.h"
 #include "ui/ui.h"
 

@@ -1,5 +1,5 @@
-#ifndef AUX_H
-#define AUX_H
+#ifndef CHARS_UTILS_H
+#define CHARS_UTILS_H
 
 #include <stdbool.h>
 
@@ -24,4 +24,4 @@ bool validate_chars_exact(const char *chars, unsigned int num_chars);
  */
 void rpad_chars(char *destination, const char *source, unsigned int num_chars);
 
-#endif // AUX_H
+#endif // CHARS_UTILS_H
