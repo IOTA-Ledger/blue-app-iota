@@ -38,14 +38,6 @@
             NULL, 0, 0, 0, NULL, NULL, NULL                                    \
     }
 
-// -- Underline for "IOTA"
-#define SCREEN_UNDERLINE                                                       \
-    {                                                                          \
-        {BAGL_RECTANGLE, EL_IOTA,  48,       22, 33, 1, 0, 0,                  \
-         BAGL_FILL,      0xFFFFFF, 0x000000, 0,  0},                           \
-            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
-    }
-
 // -- Title screen top message
 #define SCREEN_MSG_TOP                                                         \
     SCREEN_MSG(EL_TITLE, 0, 13, DEFAULT_FONT, ui_text.top_str)
@@ -99,7 +91,9 @@
     SCREEN_GLYPH(EL_DASH, 25, 15, BAGL_GLYPH_ICON_DASHBOARD_BADGE)
 
 // -- IOTA icon on left
-#define SCREEN_GLYPH_IOTA SCREEN_GLYPH_USER(EL_IOTA, 18, 8, &C_icon_iota)
+#define SCREEN_GLYPH_IOTA                                                      \
+    SCREEN_GLYPH_USER(EL_IOTA, 28, 5, &C_s_iota_logo1),                        \
+        SCREEN_GLYPH_USER(EL_IOTA, 63, 5, &C_s_iota_logo2)
 
 // -- Back icon on left
 #define SCREEN_GLYPH_BACK SCREEN_GLYPH_USER(EL_BACK, 24, 8, &C_icon_back)
@@ -114,6 +108,6 @@
 #define SCREEN_GLYPHS_ALL                                                      \
     SCREEN_GLYPH_CONFIRM_1, SCREEN_GLYPH_CONFIRM_2, SCREEN_GLYPH_UP,           \
         SCREEN_GLYPH_DOWN, SCREEN_GLYPH_LOAD, SCREEN_GLYPH_DASH,               \
-        SCREEN_GLYPH_BACK, SCREEN_GLYPH_IOTA, SCREEN_UNDERLINE
+        SCREEN_GLYPH_BACK, SCREEN_GLYPH_IOTA
 
 #endif // S_ELEMENTS_H
