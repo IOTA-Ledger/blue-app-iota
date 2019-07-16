@@ -78,7 +78,7 @@
 #define SCREEN_GLYPH_IOTA                                                      \
     {                                                                          \
         {                                                                      \
-            BAGL_ICON, EL_IOTA, 0,        12,       128, 40, 0,                \
+            BAGL_ICON, EL_IOTA, 0,        0,        128, 40, 0,                \
             0,         0,       0xFFFFFF, 0x000000, 0,   0},                   \
             (const char *)&C_x_iota_logo, 0, 0, 0, NULL, NULL, NULL            \
     }
