@@ -8,7 +8,7 @@
 static void digest_single_chunk(unsigned char *key_fragment,
                                 cx_sha3_t *digest_sha3, cx_sha3_t *round_sha3)
 {
-    for (int k = 0; k < 26; k++) {
+    for (int k = 0; k < UTRYTE_MAX; k++) {
         kerl_initialize(round_sha3);
         kerl_absorb_chunk(round_sha3, key_fragment);
         kerl_squeeze_final_chunk(round_sha3, key_fragment);
@@ -60,7 +60,7 @@ void get_public_addr(const unsigned char *seed_bytes, uint32_t idx,
     init_shas(seed_bytes, idx, &key_sha, &digest_sha, buffer);
 
     for (unsigned int i = 0; i < security; i++) {
-        for (unsigned int j = 0; j <= UTRYTE_MAX; j++) {
+        for (unsigned int j = 0; j < NUM_HASH_FRAGMENT_TRYTES; j++) {
             // use address output array as a temp Kerl state storage
             unsigned char *state = address_bytes;
 
