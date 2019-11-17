@@ -1,3 +1,4 @@
+#include "bolos_target.h"
 #ifdef TARGET_BLUE
 
 #include <stddef.h>

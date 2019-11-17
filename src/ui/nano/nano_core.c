@@ -1,3 +1,6 @@
+#include "bolos_target.h"
+#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
+
 #include <stdbool.h>
 #include <stddef.h>
 #include "bagl.h"
@@ -8,11 +11,9 @@
 #include "ui/nano/nano_buttons.h"
 #include "ui/nano/nano_draw.h"
 #include "ui/nano/nano_misc.h"
+#include "ui/nano/nano_screens.h"
 #include "ui/nano/nano_types.h"
 #include "ui/ui.h"
-
-#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
-#include "ui/nano/nano_screens.h"
 
 #ifdef TARGET_NANOS
 #else
