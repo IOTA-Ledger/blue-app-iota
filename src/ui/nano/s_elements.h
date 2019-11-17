@@ -12,7 +12,7 @@
     {                                                                          \
         {BAGL_LABELINE, userid,   x,       y, 128 - x, 32, 0, 0, 0,            \
          0xFFFFFF,      0x000000, font_id, 0},                                 \
-            text, 0, 0, 0, NULL, NULL, NULL                                    \
+            text                                                               \
     }
 
 // Screen with internal glyph
@@ -20,14 +20,14 @@
     {                                                                          \
         {BAGL_ICON, userid, x,        y,        0, 0,      0,                  \
          0,         0,      0x000000, 0x000000, 0, icon_id},                   \
-            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
+            NULL                                                               \
     }
 
 // Screen with user defined glyph
 #define SCREEN_GLYPH_USER(userid, x, y, icon_details)                          \
     {                                                                          \
         {BAGL_ICON, userid, x, y, 0, 0, 0, 0, 0, 0x000000, 0x000000, 0, 0},    \
-            (const char *)icon_details, 0, 0, 0, NULL, NULL, NULL              \
+            (const char *)icon_details                                         \
     }
 
 // -- Clear screen
@@ -35,7 +35,7 @@
     {                                                                          \
         {BAGL_RECTANGLE, EL_CLEAR, 0,        0, 128, 32, 0, 0,                 \
          BAGL_FILL,      0x000000, 0xFFFFFF, 0, 0},                            \
-            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
+            NULL                                                               \
     }
 
 // -- Underline for "IOTA"
@@ -43,7 +43,7 @@
     {                                                                          \
         {BAGL_RECTANGLE, EL_IOTA,  48,       22, 33, 1, 0, 0,                  \
          BAGL_FILL,      0xFFFFFF, 0x000000, 0,  0},                           \
-            NULL, 0, 0, 0, NULL, NULL, NULL                                    \
+            NULL                                                               \
     }
 
 // -- Title screen top message

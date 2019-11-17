@@ -1,3 +1,5 @@
+#ifdef TARGET_BLUE
+
 #include <stddef.h>
 #include "iota/addresses.h"
 #include "macros.h"
@@ -8,8 +10,6 @@
 #include "ui/blue/blue_screens.h"
 #include "ui/blue/blue_types.h"
 #include "ui/ui.h"
-
-#ifdef TARGET_BLUE
 
 UI_STATE_CTX_BLUE blue_ui_state;
 

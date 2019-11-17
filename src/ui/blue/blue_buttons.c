@@ -1,3 +1,5 @@
+#ifdef TARGET_BLUE
+
 #include "ui/blue/blue_buttons.h"
 #include <stddef.h>
 #include "api.h"
@@ -87,3 +89,5 @@ BLUE_BUTTON_PROTOTYPE(generating_addr)
 BLUE_BUTTON_PROTOTYPE(validating)
 BLUE_BUTTON_PROTOTYPE(receiving_tx)
 BLUE_BUTTON_PROTOTYPE(signing_tx)
+
+#endif // TARGET_BLUE

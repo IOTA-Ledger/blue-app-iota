@@ -1,3 +1,5 @@
+#ifdef TARGET_BLUE
+
 #include "ui/blue/blue_misc.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -125,3 +127,5 @@ void write_bip_path()
         }
     }
 }
+
+#endif // TARGET_BLUE
