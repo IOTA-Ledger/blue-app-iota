@@ -1,5 +1,6 @@
 #include "api.h"
 #include <string.h>
+#include "chars_utils.h"
 #include "iota/addresses.h"
 #include "iota/bundle.h"
 #include "iota/conversion.h"
@@ -8,7 +9,6 @@
 #include "iota/signing.h"
 #include "iota_io.h"
 #include "macros.h"
-#include "misc.h"
 #include "os.h"
 #include "ui/ui.h"
 
@@ -179,18 +179,25 @@ static bool first_tx(uint8_t p1)
     }
 }
 
-static bool has_reference_transaction(uint8_t current_index)
+/// Checks whether the meta tx at the given index has a potential reference tx.
+static bool has_reference_tx(const uint8_t meta_tx_index)
 {
-    for (uint8_t i = 1; i < api.security; i++) {
-        if (current_index < i ||
-            api.ctx.bundle.bundle.values[current_index - i] > 0) {
+    // allowed max distance to reference transaction
+    const unsigned int reference_tx_limit =
+        MIN(meta_tx_index, api.security - 1);
+
+    for (unsigned int i = 1; i <= reference_tx_limit; i++) {
+        // reference tx cannot be an output transaction
+        if (api.ctx.bundle.bundle.values[meta_tx_index - i] > 0) {
             return false;
         }
-        if (bundle_is_input_tx(&api.ctx.bundle, current_index - i)) {
+        // any input transaction is a potential reference transaction
+        if (api.ctx.bundle.bundle.values[meta_tx_index - i] < 0) {
             return true;
         }
     }
 
+    // no reference transaction
     return false;
 }
 
@@ -212,13 +219,9 @@ static bool validate_tx_order(const TX_INPUT *input)
     }
 
     // a meta transaction must have a valid reference input transaction
-    if (input->value == 0 && current_index > 0 &&
-        current_index < api.ctx.bundle.bundle.last_tx_index) {
-        // this must be a meta transaction
-        if (!has_reference_transaction(current_index)) {
-            PRINTF("tx_order; meta_tx_index=%u\n", current_index);
-            return false;
-        }
+    if (input->value == 0 && !has_reference_tx(current_index)) {
+        PRINTF("tx_order; meta_tx_index=%u\n", current_index);
+        return false;
     }
 
     return true;
@@ -308,8 +311,7 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
         // transactions not in the expected order
         THROW(SW_COMMAND_INVALID_DATA);
     }
-
-    if (!validate_chars(input->address, NUM_HASH_TRYTES)) {
+    if (!validate_chars_exact(input->address, NUM_HASH_TRYTES)) {
         // invalid address
         THROW(SW_COMMAND_INVALID_DATA);
     }
@@ -329,8 +331,11 @@ unsigned int api_tx(uint8_t p1, const unsigned char *input_data,
 
     // perfectly valid bundle
     if (!bundle_has_open_txs(&api.ctx.bundle)) {
+        api.state_flags |= BUNDLE_COMPLETED;
+
         // start interactive timeout
         io_timeout_set(TIMEOUT_USER_BUNDLE_MS);
+        // this throws an exception, if the user denies
         ui_sign_tx();
         return IO_ASYNCH_REPLY;
     }
@@ -443,7 +448,6 @@ void user_sign_tx()
         PRINTF("invalidBundle; retcode=%i\n", retcode);
         THROW(SW_INVALID_BUNDLE + retcode);
     }
-    api.state_flags |= BUNDLE_FINALIZED;
 
     io_send_bundle_hash(&api.ctx.bundle);
 }

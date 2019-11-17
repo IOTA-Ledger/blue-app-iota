@@ -5,9 +5,6 @@
 
 #define NO_INLINE __attribute__((noinline))
 
-// additional supported features
-#define APP_FLAGS 0
-
 /// Turn a symbol into a string.
 #define AS_STRING(x) AS_STRING_INTERNAL(x)
 #define AS_STRING_INTERNAL(x) #x

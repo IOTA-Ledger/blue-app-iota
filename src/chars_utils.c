@@ -1,10 +1,10 @@
-#include "misc.h"
+#include "chars_utils.h"
 #include <string.h>
 #include "os.h"
 
 #define PAD_CHAR '9'
 
-bool validate_chars(const char *chars, unsigned int num_chars)
+bool validate_chars(const char *chars, const unsigned int num_chars)
 {
     const size_t len = strnlen(chars, num_chars);
     for (unsigned int i = 0; i < len; i++) {
@@ -17,7 +17,17 @@ bool validate_chars(const char *chars, unsigned int num_chars)
     return true;
 }
 
-void rpad_chars(char *destination, const char *source, unsigned int num_chars)
+bool validate_chars_exact(const char *chars, const unsigned int num_chars)
+{
+    if (strnlen(chars, num_chars) < num_chars) {
+        return false;
+    }
+
+    return validate_chars(chars, num_chars);
+}
+
+void rpad_chars(char *destination, const char *source,
+                const unsigned int num_chars)
 {
     const size_t len = strnlen(source, num_chars);
     os_memcpy(destination, source, len);
