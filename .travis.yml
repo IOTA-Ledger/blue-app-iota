@@ -1,5 +1,5 @@
 language: c
-dist: xenial
+dist: bionic
 git:
   quite: true
   depth: 3
@@ -31,9 +31,6 @@ matrix:
   - name: "Codecov"
     addons:
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
         - gcc-8
     script:
     - cmake -DCMAKE_BUILD_TYPE=COVERAGE -DCMAKE_C_COMPILER="gcc-8" ..
@@ -45,8 +42,6 @@ matrix:
   - name: "Address Sanitizer"
     addons:
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
         packages:
         - gcc-8
     script:
