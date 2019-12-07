@@ -8,6 +8,7 @@ env:
   global:
   - CTEST_OUTPUT_ON_FAILURE=TRUE
   - CTEST_PARALLEL_LEVEL=2
+  - DOCKER_IMAGE=zondax/ledger-docker-bolos
 
 before_script:
 - cd tests
@@ -31,6 +32,7 @@ matrix:
   - name: "Codecov"
     addons:
       apt:
+        packages:
         - gcc-8
     script:
     - cmake -DCMAKE_BUILD_TYPE=COVERAGE -DCMAKE_C_COMPILER="gcc-8" ..
@@ -52,6 +54,8 @@ matrix:
   - name: "Build Nano S"
     services:
     - docker
+    before_install:
+    - docker pull $DOCKER_IMAGE
     before_script:
     script:
     - |
@@ -60,12 +64,14 @@ matrix:
       -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
       -e BOLOS_SDK=/project/dev/sdk/nanos-secure-sdk \
-      zondax/ledger-docker-bolos \
+      $DOCKER_IMAGE \
       make -C /project
 
   - name: "Build Blue"
     services:
     - docker
+    before_install:
+    - docker pull $DOCKER_IMAGE
     before_script:
     script:
     - |
@@ -74,5 +80,5 @@ matrix:
       -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
       -e BOLOS_SDK=/project/dev/sdk/blue-secure-sdk \
-      zondax/ledger-docker-bolos \
+      $DOCKER_IMAGE \
       make -C /project
