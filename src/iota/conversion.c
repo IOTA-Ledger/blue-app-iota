@@ -216,7 +216,7 @@ static uint32_t bigint_div_u32_mem(uint32_t *a, uint32_t divisor,
     uint32_t remainder = 0;
 
     for (unsigned int i = ms_index + 1; i-- > 0;) {
-        const uint64_t v = (UINT64_C(1) + UINT32_MAX) * remainder + a[i];
+        const uint64_t v = ((uint64_t)remainder << UINT32_WIDTH) | a[i];
 
         remainder = (v % divisor) & UINT32_MAX;
         a[i] = (v / divisor) & UINT32_MAX;
