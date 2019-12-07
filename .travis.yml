@@ -61,6 +61,7 @@ matrix:
     script:
     - |
       docker run \
+      -u $(id -u):$(id -g) \
       -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
       -e BOLOS_SDK=/project/dev/sdk/nanos-secure-sdk \
@@ -74,6 +75,7 @@ matrix:
     script:
     - |
       docker run \
+      -u $(id -u):$(id -g) \
       -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
       -e BOLOS_SDK=/project/dev/sdk/blue-secure-sdk \
