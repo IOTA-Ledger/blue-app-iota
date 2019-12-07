@@ -43,10 +43,12 @@ matrix:
     - bash <(curl -s https://codecov.io/bash) -R "$TRAVIS_BUILD_DIR" -x gcov-8
 
   - name: "Address Sanitizer"
-    before_install:
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    - sudo apt-get -q update
-    - sudo apt-get -y install gcc-8
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - gcc-8
     script:
     - cmake -DCMAKE_BUILD_TYPE=ASAN -DCMAKE_C_COMPILER="gcc-8" ..
     - make
@@ -59,11 +61,11 @@ matrix:
     script:
     - |
       docker run \
-      -v $(pwd):/root/project \
+      -v $(pwd):/home/test/project \
       -e BOLOS_ENV=/opt/bolos \
-      -e BOLOS_SDK=/root/project/dev/sdk/nanos-secure-sdk \
+      -e BOLOS_SDK=/home/test/project/dev/sdk/nanos-secure-sdk \
       zondax/ledger-docker-bolos \
-      make -C /root/project
+      make -C /home/test/project
 
   - name: "Build Blue"
     services:
@@ -72,8 +74,8 @@ matrix:
     script:
     - |
       docker run \
-      -v $(pwd):/root/project \
+      -v $(pwd):/home/test/project \
       -e BOLOS_ENV=/opt/bolos \
-      -e BOLOS_SDK=/root/project/dev/sdk/blue-secure-sdk \
+      -e BOLOS_SDK=/home/test/project/dev/sdk/nanos-secure-sdk \
       zondax/ledger-docker-bolos \
-      make -C /root/project
+      make -C /home/test/project
