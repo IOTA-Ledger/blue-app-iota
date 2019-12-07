@@ -1,5 +1,5 @@
 language: c
-dist: xenial
+dist: bionic
 git:
   quite: true
   depth: 3
@@ -8,6 +8,7 @@ env:
   global:
   - CTEST_OUTPUT_ON_FAILURE=TRUE
   - CTEST_PARALLEL_LEVEL=2
+  - DOCKER_IMAGE=zondax/ledger-docker-bolos
 
 before_script:
 - cd tests
@@ -31,8 +32,6 @@ matrix:
   - name: "Codecov"
     addons:
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
         packages:
         - gcc-8
     script:
@@ -45,8 +44,6 @@ matrix:
   - name: "Address Sanitizer"
     addons:
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
         packages:
         - gcc-8
     script:
@@ -57,25 +54,31 @@ matrix:
   - name: "Build Nano S"
     services:
     - docker
+    before_install:
+    - docker pull $DOCKER_IMAGE
     before_script:
     script:
     - |
       docker run \
-      -v $(pwd):/root/project \
+      -u $(id -u):$(id -g) \
+      -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
-      -e BOLOS_SDK=/root/project/dev/sdk/nanos-secure-sdk \
-      zondax/ledger-docker-bolos \
-      make -C /root/project
+      -e BOLOS_SDK=/project/dev/sdk/nanos-secure-sdk \
+      $DOCKER_IMAGE \
+      make -C /project
 
   - name: "Build Blue"
     services:
     - docker
+    before_install:
+    - docker pull $DOCKER_IMAGE
     before_script:
     script:
     - |
       docker run \
-      -v $(pwd):/root/project \
+      -u $(id -u):$(id -g) \
+      -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
-      -e BOLOS_SDK=/root/project/dev/sdk/blue-secure-sdk \
-      zondax/ledger-docker-bolos \
-      make -C /root/project
+      -e BOLOS_SDK=/project/dev/sdk/blue-secure-sdk \
+      $DOCKER_IMAGE \
+      make -C /project
