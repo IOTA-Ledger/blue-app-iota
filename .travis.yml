@@ -61,11 +61,11 @@ matrix:
     script:
     - |
       docker run \
-      -v $(pwd):/home/test/project \
+      -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
-      -e BOLOS_SDK=/home/test/project/dev/sdk/nanos-secure-sdk \
+      -e BOLOS_SDK=/project/dev/sdk/nanos-secure-sdk \
       zondax/ledger-docker-bolos \
-      make -C /home/test/project
+      make -C /project
 
   - name: "Build Blue"
     services:
@@ -74,8 +74,8 @@ matrix:
     script:
     - |
       docker run \
-      -v $(pwd):/home/test/project \
+      -v $(pwd):/project \
       -e BOLOS_ENV=/opt/bolos \
-      -e BOLOS_SDK=/home/test/project/dev/sdk/nanos-secure-sdk \
+      -e BOLOS_SDK=/project/dev/sdk/blue-secure-sdk \
       zondax/ledger-docker-bolos \
-      make -C /home/test/project
+      make -C /project
