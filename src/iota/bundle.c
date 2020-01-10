@@ -310,12 +310,13 @@ static int validate_bundle(const BUNDLE_CTX *ctx, uint8_t change_tx_index,
 }
 
 NO_INLINE
-static bool validate_hash(const BUNDLE_CTX *ctx)
+static bool validate_hash(const BUNDLE_CTX *ctx, uint8_t security)
 {
     tryte_t hash_trytes[NUM_HASH_TRYTES];
     normalize_hash_bytes(ctx->hash, hash_trytes);
 
-    if (memchr(hash_trytes, TRYTE_MAX, NUM_HASH_TRYTES) != NULL) {
+    if (memchr(hash_trytes, TRYTE_MAX, security * NUM_HASH_FRAGMENT_TRYTES) !=
+        NULL) {
         return false;
     }
 
@@ -346,7 +347,7 @@ int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
     }
 
     compute_hash(ctx);
-    if (!validate_hash(ctx)) {
+    if (!validate_hash(ctx, security)) {
         // if the hash is invalid, reset it to zero
         os_memset(ctx->hash, 0, NUM_HASH_BYTES);
         return UNSECURE_HASH;
