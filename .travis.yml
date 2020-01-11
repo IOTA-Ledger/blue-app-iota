@@ -8,7 +8,7 @@ env:
   global:
   - CTEST_OUTPUT_ON_FAILURE=TRUE
   - CTEST_PARALLEL_LEVEL=2
-  - DOCKER_IMAGE=zondax/ledger-docker-bolos
+  - DOCKER_IMAGE=wollac/ledger-bolos
 
 before_script:
 - cd tests
@@ -19,13 +19,13 @@ matrix:
   fast_finish: true
   include:
 
-  - name: "Clang 4.0"
+  - name: "Clang 7.0"
     addons:
       apt:
         packages:
-        - clang-4.0
+        - clang-7
     script:
-    - cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER="clang-4.0" ..
+    - cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_C_COMPILER="clang-7" ..
     - make
     - make test
 
@@ -62,7 +62,6 @@ matrix:
       docker run \
       -u $(id -u):$(id -g) \
       -v $(pwd):/project \
-      -e BOLOS_ENV=/opt/bolos \
       -e BOLOS_SDK=/project/dev/sdk/nanos-secure-sdk \
       $DOCKER_IMAGE \
       make -C /project
@@ -78,7 +77,6 @@ matrix:
       docker run \
       -u $(id -u):$(id -g) \
       -v $(pwd):/project \
-      -e BOLOS_ENV=/opt/bolos \
       -e BOLOS_SDK=/project/dev/sdk/blue-secure-sdk \
       $DOCKER_IMAGE \
       make -C /project
