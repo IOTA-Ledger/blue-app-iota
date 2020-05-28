@@ -464,6 +464,20 @@ unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
         THROW(SW_COMMAND_NOT_ALLOWED);
     }
 
+    cx_sha3_t sha;
+    unsigned char in[48] = {};
+    unsigned char out[48];
+
+    // hash many times to match the number of hashs for an address
+    for (int i = 0; i < NUM_HASH_FRAGMENT_TRYTES * UTRYTE_MAX; i++) {
+        // kerl_initialize(&sha);
+        cx_keccak_init(&sha, 384);
+        // kerl_absorb_chunk(&sha, in);
+        cx_hash((cx_hash_t *)&sha, 0, in, sizeof(in), NULL, 0);
+        // kerl_squeeze_chunk(&sha, out);
+        cx_hash((cx_hash_t *)&sha, CX_LAST, NULL, 0, out, sizeof(out));
+    }
+
     GET_APP_CONFIG_OUTPUT output;
     output.app_max_bundle_size = MAX_BUNDLE_SIZE;
     output.app_flags = APP_FLAGS;
