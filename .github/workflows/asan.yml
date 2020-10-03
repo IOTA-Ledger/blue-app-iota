@@ -14,9 +14,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install GCC 8
-      run: sudo apt-get install -y gcc-8
-
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
