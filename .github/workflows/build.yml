@@ -18,4 +18,4 @@ jobs:
     - name: Build with ${{ matrix.node-version }}
       run: docker run -u $(id -u):$(id -g) -v $(pwd):/project -e BOLOS_SDK=/project/dev/sdk/${{ matrix.node-version }} $DOCKER_IMAGE make -C /project
       env:
-        key: DOCKER_IMAGE=wollac/ledger-bolos
+        DOCKER_IMAGE: 'wollac/ledger-bolos'
