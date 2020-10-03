@@ -36,7 +36,5 @@ jobs:
       run: ctest -C $BUILD_TYPE
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        directory: ${{runner.workspace}}/build
-        fail_ci_if_error: true
+      shell: bash
+      run: bash <(curl -s https://codecov.io/bash) x gcov-8 -p ${{runner.workspace}}/build -s $GITHUB_WORKSPACE
