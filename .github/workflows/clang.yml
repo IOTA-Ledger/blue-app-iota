@@ -6,7 +6,7 @@ env:
   BUILD_TYPE: RELEASE
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-18.04
 
     steps:
