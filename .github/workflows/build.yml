@@ -15,7 +15,7 @@ jobs:
       with:
         submodules: recursive
         
-    - name: Build with ${{ matrix.node-version }}
-      run: docker run -u $(id -u):$(id -g) -v $(pwd):/project -e BOLOS_SDK=/project/dev/sdk/${{ matrix.node-version }} $DOCKER_IMAGE make -C /project
+    - name: Build with ${{ matrix.sdk-version }}
+      run: docker run -u $(id -u):$(id -g) -v $(pwd):/project -e BOLOS_SDK=/project/dev/sdk/${{ matrix.sdk-version }} $DOCKER_IMAGE make -C /project
       env:
         DOCKER_IMAGE: 'wollac/ledger-bolos'
