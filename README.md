@@ -1,6 +1,7 @@
 # IOTA App for Ledger Hardware Wallets
 
-[![Build Status](https://travis-ci.org/IOTA-Ledger/blue-app-iota.svg?branch=master)](https://travis-ci.org/IOTA-Ledger/blue-app-iota)
+[![license](https://img.shields.io/github/license/IOTA-Ledger/blue-app-iota.svg)](https://github.com/IOTA-Ledger/blue-app-iota/blob/master/LICENSE)
+[![buid status](https://github.com/IOTA-Ledger/blue-app-iota/workflows/Build/badge.svg?branch=master&event=push)](https://github.com/IOTA-Ledger/blue-app-iota/actions)
 [![codecov](https://codecov.io/gh/IOTA-Ledger/blue-app-iota/branch/master/graph/badge.svg)](https://codecov.io/gh/IOTA-Ledger/blue-app-iota)
 
 ***It is strongly recommended to take a few minutes to read this document to make sure you fully understand how IOTA and the Ledger Hardware Wallet works, and how they interact together.***
