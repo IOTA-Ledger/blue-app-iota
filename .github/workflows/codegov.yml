@@ -3,11 +3,11 @@ name: Codecov
 on: [push]
 
 env:
-  BUILD_TYPE: COVERAGE
+  BUILD_TYPE: Coverage
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE/tests -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER="gcc-8"
+      run: cmake $GITHUB_WORKSPACE/tests -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -34,5 +34,5 @@ jobs:
 
     - name: Upload coverage to Codecov
       shell: bash
-      run: bash <(curl -s https://codecov.io/bash) -x gcov-8 -p ${{runner.workspace}}/build -s $GITHUB_WORKSPACE
+      run: bash <(curl -s https://codecov.io/bash) -p ${{runner.workspace}}/build -s $GITHUB_WORKSPACE
   
