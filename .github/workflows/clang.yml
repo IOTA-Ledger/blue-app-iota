@@ -3,11 +3,11 @@ name: Clang 7.0
 on: [push]
 
 env:
-  BUILD_TYPE: RELEASE
+  BUILD_TYPE: Release
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
