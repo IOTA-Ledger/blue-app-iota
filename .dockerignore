@@ -1,5 +1,6 @@
 .*
 dev/
 !dev/sdk/
-tests
-resources
+docs/
+tests/
+resources/
