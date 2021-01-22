@@ -2,6 +2,7 @@
 #define BLUE_BUTTONS_H
 
 #include "os.h"
+#include "ux.h"
 #include "os_io_seproxyhal.h"
 
 const bagl_element_t *bagl_ui_SETTINGS_blue_button(const bagl_element_t *e);
