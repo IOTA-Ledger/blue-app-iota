@@ -20,7 +20,9 @@ ifeq ($(BOLOS_SDK),)
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
-APPNAME = "IOTA"
+# Main app configuration
+
+APPNAME = "IOTA Legacy"
 APPVERSION_MAJOR = 0
 APPVERSION_MINOR = 5
 APPVERSION_PATCH = 6
@@ -155,4 +157,4 @@ dep/%.d: %.c Makefile
 
 
 listvariants:
-	@echo VARIANTS COIN iota
+	@echo VARIANTS COIN iota_legacy
