@@ -57,19 +57,19 @@ void update_tx_type()
 
     // first tx is output
     if (blue_ui_state.menu_idx == 0) {
-        os_memcpy(blue_ui_state.tx_type, "Output:\0", TX_TYPE_SPLIT);
+        memcpy(blue_ui_state.tx_type, "Output:\0", TX_TYPE_SPLIT);
     }
     else {
         // Negative val is input, positive is change
         if (blue_ui_state.val < 0) {
-            os_memcpy(blue_ui_state.tx_type, "Input: \0", TX_TYPE_SPLIT);
+            memcpy(blue_ui_state.tx_type, "Input: \0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
                      TEXT_LEN_TX_TYPE - TX_TYPE_SPLIT, "Idx: %u",
                      (unsigned int)api.ctx.bundle.bundle
                          .indices[ui_state_get_tx_index()]);
         }
         else {
-            os_memcpy(blue_ui_state.tx_type, "Change:\0", TX_TYPE_SPLIT);
+            memcpy(blue_ui_state.tx_type, "Change:\0", TX_TYPE_SPLIT);
             snprintf(&blue_ui_state.tx_type[TX_TYPE_SPLIT],
                      TEXT_LEN_TX_TYPE - TX_TYPE_SPLIT, "Idx: %u",
                      (unsigned int)api.ctx.bundle.bundle

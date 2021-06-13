@@ -176,7 +176,7 @@ void ui_display_signing()
 void ui_display_address(const unsigned char *addr_bytes)
 {
     // write the address trytes into the UI state
-    os_memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_TRYTES);
+    memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_TRYTES);
 
     set_and_draw_state(STATE_ADDRESS_DIGEST);
     nano_display();

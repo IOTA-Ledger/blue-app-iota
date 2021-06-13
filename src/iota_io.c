@@ -9,7 +9,7 @@ extern unsigned char G_io_apdu_buffer[IO_APDU_BUFFER_SIZE];
 
 void io_initialize()
 {
-    os_memset(G_io_apdu_buffer, 0, IO_APDU_BUFFER_SIZE);
+    memset(G_io_apdu_buffer, 0, IO_APDU_BUFFER_SIZE);
     api_initialize();
     io_timeout_reset();
 }
@@ -20,7 +20,7 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
         THROW_PARAMETER("length");
     }
 
-    os_memcpy(G_io_apdu_buffer, ptr, length);
+    memcpy(G_io_apdu_buffer, ptr, length);
 
     G_io_apdu_buffer[length++] = sw >> 8;
     G_io_apdu_buffer[length++] = sw >> 0;

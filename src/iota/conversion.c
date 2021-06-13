@@ -1,6 +1,7 @@
 #include "iota/conversion.h"
 #include <limits.h>
 #include <stdint.h>
+#include <string.h>
 #include "iota/iota_types.h"
 #include "os.h"
 
@@ -250,7 +251,7 @@ static void trytes_to_bigint(const tryte_t *trytes, uint32_t *bigint)
 {
     // initialy there is no non-zero word
     unsigned int ms_index = 0;
-    os_memset(bigint, 0, BIGINT_LENGTH * sizeof(bigint[0]));
+    memset(bigint, 0, BIGINT_LENGTH * sizeof(bigint[0]));
 
     // special case for the last tryte only holding two trits of value
     bigint[0] = tryte_set_last_trit_zero(trytes[NUM_CHUNK_TRYTES - 1]) + 4;
@@ -358,7 +359,7 @@ void chars_to_trits(const char *chars, trit_t *trits, unsigned int chars_len)
 
 bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 {
-    os_memset(trits, 0, num_trits);
+    memset(trits, 0, num_trits);
 
     // nothing to compute for zero value
     if (value == 0) {
@@ -400,7 +401,7 @@ bool s64_to_trits(const int64_t value, trit_t *trits, unsigned int num_trits)
 bool u32_to_trits(const uint32_t value, trit_t *trits, unsigned int num_trits)
 {
     uint32_t v = value;
-    os_memset(trits, 0, num_trits);
+    memset(trits, 0, num_trits);
 
     for (unsigned int i = 0; i < num_trits; i++) {
         if (v == 0) {

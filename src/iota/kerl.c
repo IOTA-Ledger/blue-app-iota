@@ -1,5 +1,6 @@
 #include "iota/kerl.h"
 #include <stddef.h>
+#include <string.h>
 #include "iota/conversion.h"
 #include "os.h"
 
@@ -60,7 +61,7 @@ void kerl_state_squeeze_chunk(cx_sha3_t *sha3, unsigned char *state_bytes,
     cx_hash((cx_hash_t *)sha3, CX_LAST, state_bytes, 0, state_bytes,
             KERL_HASH_SIZE);
 
-    os_memcpy(bytes, state_bytes, KERL_HASH_SIZE);
+    memcpy(bytes, state_bytes, KERL_HASH_SIZE);
     bytes_set_last_trit_zero(bytes);
 
     // flip bytes for multiple squeeze

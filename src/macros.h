@@ -9,7 +9,7 @@
 #define AS_STRING(x) AS_STRING_INTERNAL(x)
 #define AS_STRING_INTERNAL(x) #x
 
-#define MEMCLEAR(x) os_memset(&(x), 0, sizeof(x))
+#define MEMCLEAR(x) memset(&(x), 0, sizeof(x))
 
 /// Devide x by y and round up.
 #define CEILING(x, y)                                                          \

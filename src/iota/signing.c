@@ -1,3 +1,4 @@
+#include <string.h>
 #include "iota/signing.h"
 #include "iota/bundle.h"
 #include "iota/conversion.h"
@@ -10,8 +11,8 @@ void signing_initialize(SIGNING_CTX *ctx, const BUNDLE_INFO *bundle_info,
                         const tryte_t *normalized_hash)
 {
     // source and destination can potentially overlap
-    os_memmove(&ctx->bundle, bundle_info, sizeof(BUNDLE_INFO));
-    os_memcpy(ctx->hash, normalized_hash, NUM_HASH_TRYTES);
+    memmove(&ctx->bundle, bundle_info, sizeof(BUNDLE_INFO));
+    memcpy(ctx->hash, normalized_hash, NUM_HASH_TRYTES);
 }
 
 /// Returns the total number of signature fragments.
@@ -25,7 +26,7 @@ static uint8_t num_fragments(const uint8_t security)
 static void initialize_state(const unsigned char *seed_bytes,
                              uint32_t address_idx, unsigned char *state)
 {
-    os_memcpy(state, seed_bytes, NUM_HASH_BYTES);
+    memcpy(state, seed_bytes, NUM_HASH_BYTES);
     bytes_add_u32_mem(state, address_idx);
 
     cx_sha3_t sha;
