@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "ux.h"
 #include "macros.h"
 #include "iota/iota_types.h"
 

@@ -1,8 +1,10 @@
 #ifndef UI_H
 #define UI_H
 
-/// Displays the current screen without sending an APDU message.
-void ui_force_draw(void);
+#include "bolos_target.h"
+#ifndef TARGET_BLUE
+#include "ux.h"
+#endif
 
 // the following implementation are different for Blue and Nano
 void ui_init(void);

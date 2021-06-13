@@ -9,7 +9,6 @@
 #include "os_io_seproxyhal.h"
 #include "seproxyhal_protocol.h"
 #include "ui/ui.h"
-#include "ux.h"
 
 // define global SDK variables
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
