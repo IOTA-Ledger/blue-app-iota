@@ -1,6 +1,7 @@
 #include "ui/nano/nano_draw.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include "api.h"
 #include "iota/addresses.h"
 #include "iota/bundle.h"
@@ -297,7 +298,7 @@ static void nano_draw_bundle_address(void)
     // buffer the address of the current transaction
     const unsigned char *addr_bytes =
         bundle_get_address_bytes(&api.ctx.bundle, ui_state_get_tx_index());
-    os_memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_BYTES);
+    memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_BYTES);
 
     nano_draw_address_digest();
 }

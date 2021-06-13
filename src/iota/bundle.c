@@ -21,7 +21,7 @@ void bundle_initialize(BUNDLE_CTX *ctx, const uint8_t last_tx_index)
         THROW_PARAMETER("last_tx_index");
     }
 
-    os_memset(ctx, 0, sizeof(BUNDLE_CTX));
+    memset(ctx, 0, sizeof(BUNDLE_CTX));
     ctx->bundle.last_tx_index = last_tx_index;
 }
 
@@ -167,7 +167,7 @@ static bool validate_address(const unsigned char *addr_bytes,
     unsigned char expected_addr_bytes[NUM_HASH_BYTES];
     get_public_addr(seed_bytes, idx, security, expected_addr_bytes);
 
-    return (os_memcmp(addr_bytes, expected_addr_bytes, NUM_HASH_BYTES) == 0);
+    return (memcmp(addr_bytes, expected_addr_bytes, NUM_HASH_BYTES) == 0);
 }
 
 /** @return Whether all values sum up to zero. */
@@ -195,7 +195,7 @@ static bool has_valid_meta_txs(const BUNDLE_CTX *ctx, const uint8_t security,
             return false;
         }
         // and have the same address
-        if (os_memcmp(input_addr_bytes, bundle_get_address_bytes(ctx, index),
+        if (memcmp(input_addr_bytes, bundle_get_address_bytes(ctx, index),
                       NUM_HASH_BYTES) != 0) {
             return false;
         }
@@ -277,7 +277,7 @@ static bool validate_address_reuse(const BUNDLE_CTX *ctx)
 
         for (uint8_t j = i + 1; j <= ctx->bundle.last_tx_index; j++) {
             if (ctx->bundle.values[j] != 0 &&
-                os_memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
+                memcmp(addr_bytes, bundle_get_address_bytes(ctx, j),
                           NUM_HASH_BYTES) == 0) {
                 return false;
             }
@@ -349,7 +349,7 @@ int bundle_validating_finalize(BUNDLE_CTX *ctx, uint8_t change_tx_index,
     compute_hash(ctx);
     if (!validate_hash(ctx, security)) {
         // if the hash is invalid, reset it to zero
-        os_memset(ctx->hash, 0, NUM_HASH_BYTES);
+        memset(ctx->hash, 0, NUM_HASH_BYTES);
         return UNSECURE_HASH;
     }
 

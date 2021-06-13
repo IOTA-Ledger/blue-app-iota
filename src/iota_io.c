@@ -3,12 +3,13 @@
 #include "macros.h"
 #include "os.h"
 #include "os_io_seproxyhal.h"
+#include "ui/ui.h"
 
 extern unsigned char G_io_apdu_buffer[IO_APDU_BUFFER_SIZE];
 
 void io_initialize()
 {
-    os_memset(G_io_apdu_buffer, 0, IO_APDU_BUFFER_SIZE);
+    memset(G_io_apdu_buffer, 0, IO_APDU_BUFFER_SIZE);
     api_initialize();
     io_timeout_reset();
 }
@@ -19,7 +20,7 @@ void io_send(const void *ptr, unsigned int length, unsigned short sw)
         THROW_PARAMETER("length");
     }
 
-    os_memcpy(G_io_apdu_buffer, ptr, length);
+    memcpy(G_io_apdu_buffer, ptr, length);
 
     G_io_apdu_buffer[length++] = sw >> 8;
     G_io_apdu_buffer[length++] = sw >> 0;
@@ -56,7 +57,7 @@ unsigned int iota_dispatch(const uint8_t ins, const uint8_t p1,
 
 void io_timeout_reset()
 {
-    UX_CALLBACK_SET_INTERVAL(0);
+    // UX_CALLBACK_SET_INTERVAL(0);
 }
 
 void io_timeout_set(const unsigned int ms)
@@ -64,7 +65,7 @@ void io_timeout_set(const unsigned int ms)
     if (ms == 0) {
         THROW_PARAMETER("ms");
     }
-    UX_CALLBACK_SET_INTERVAL(ms);
+    // UX_CALLBACK_SET_INTERVAL(ms);
 }
 
 void io_timeout_callback(const bool ux_allowed)

@@ -60,6 +60,11 @@ static void nano_display(void)
     UX_DISPLAY(bagl_ui_omega_screen, element_preprocessor);
 }
 
+static void nano_wait_displayed()
+{
+    UX_WAIT_DISPLAYED()
+}
+
 static void nano_draw_state(void)
 {
     switch (ui_state.state) {
@@ -138,7 +143,7 @@ void ui_display_getting_addr()
     nano_draw_getting_addr();
 
     nano_display();
-    ui_force_draw();
+    nano_wait_displayed();
 }
 
 void ui_display_validating()
@@ -147,7 +152,7 @@ void ui_display_validating()
     nano_draw_validating();
 
     nano_display();
-    ui_force_draw();
+    nano_wait_displayed();
 }
 
 void ui_display_recv()
@@ -156,7 +161,7 @@ void ui_display_recv()
     nano_draw_receiving();
 
     nano_display();
-    ui_force_draw();
+    nano_wait_displayed();
 }
 
 void ui_display_signing()
@@ -165,17 +170,17 @@ void ui_display_signing()
     nano_draw_signing();
 
     nano_display();
-    ui_force_draw();
+    nano_wait_displayed();
 }
 
 void ui_display_address(const unsigned char *addr_bytes)
 {
     // write the address trytes into the UI state
-    os_memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_TRYTES);
+    memcpy(ui_state.buffer.addr_bytes, addr_bytes, NUM_HASH_TRYTES);
 
     set_and_draw_state(STATE_ADDRESS_DIGEST);
     nano_display();
-    ui_force_draw();
+    nano_wait_displayed();
 }
 
 void ui_sign_tx()
@@ -188,7 +193,7 @@ void ui_reset()
 {
     set_and_draw_state(STATE_MAIN_MENU);
     nano_display();
-    ui_force_draw();
+    nano_wait_displayed();
 }
 
 void ui_restore()
@@ -197,7 +202,7 @@ void ui_restore()
     nano_draw_state();
 
     nano_display();
-    ui_force_draw();
+    nano_wait_displayed();
 }
 
 static UI_BUTTON_PRESS translate_button_mask(const unsigned int button_mask)

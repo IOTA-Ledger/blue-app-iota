@@ -30,6 +30,6 @@ void rpad_chars(char *destination, const char *source,
                 const unsigned int num_chars)
 {
     const size_t len = strnlen(source, num_chars);
-    os_memcpy(destination, source, len);
-    os_memset(destination + len, PAD_CHAR, num_chars - len);
+    memcpy(destination, source, len);
+    memset(destination + len, PAD_CHAR, num_chars - len);
 }

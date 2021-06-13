@@ -1,9 +1,6 @@
 #ifndef UI_H
 #define UI_H
 
-/// Displays the current screen without sending an APDU message.
-void ui_force_draw(void);
-
 // the following implementation are different for Blue and Nano
 void ui_init(void);
 void ui_display_main_menu(void);

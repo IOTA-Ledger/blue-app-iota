@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "api.h"
+#include "bolos_target.h"
 #include "iota_io.h"
 #include "macros.h"
 #include "os.h"
@@ -10,12 +11,14 @@
 #include "seproxyhal_protocol.h"
 #include "ui/ui.h"
 
+#ifndef TARGET_BLUE
+#include "ux.h"
+#endif
+
 // define global SDK variables
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 #ifdef TARGET_NANOX
-#include "ux.h"
-
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 #else  // NANOS/BLUE
@@ -162,8 +165,7 @@ void io_seproxyhal_display(const bagl_element_t *element)
 
 unsigned char io_event(unsigned char channel)
 {
-    // nothing done with the event, throw an error on the transport layer if
-    // needed
+    UNUSED(channel);
 
     // can't have more than one tag in the reply, not supported yet.
     switch (G_io_seproxyhal_spi_buffer[0]) {
@@ -180,8 +182,7 @@ unsigned char io_event(unsigned char channel)
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
-                        { io_timeout_callback(UX_ALLOWED); });
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
         break;
 
     default:

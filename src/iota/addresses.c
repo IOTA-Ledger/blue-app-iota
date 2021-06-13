@@ -1,3 +1,4 @@
+#include <string.h>
 #include "iota/addresses.h"
 #include "iota/conversion.h"
 #include "iota/iota_types.h"
@@ -24,7 +25,7 @@ static void init_shas(const unsigned char *seed_bytes, uint32_t idx,
                       unsigned char *buffer)
 {
     // use temp bigint so seed not destroyed
-    os_memcpy(buffer, seed_bytes, NUM_HASH_BYTES);
+    memcpy(buffer, seed_bytes, NUM_HASH_BYTES);
 
     bytes_add_u32_mem(buffer, idx);
 
@@ -101,7 +102,7 @@ void get_address_with_checksum(const unsigned char *address_bytes,
 
     bytes_to_chars(address_bytes, full_address, NUM_HASH_BYTES);
 
-    os_memcpy(full_address + NUM_HASH_TRYTES,
+    memcpy(full_address + NUM_HASH_TRYTES,
               full_checksum + NUM_HASH_TRYTES - NUM_CHECKSUM_TRYTES,
               NUM_CHECKSUM_TRYTES);
 }
