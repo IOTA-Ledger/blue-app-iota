@@ -9,13 +9,12 @@
 #include "os_io_seproxyhal.h"
 #include "seproxyhal_protocol.h"
 #include "ui/ui.h"
+#include "ux.h"
 
 // define global SDK variables
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 #ifdef TARGET_NANOX
-#include "ux.h"
-
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
 #else  // NANOS/BLUE
@@ -180,8 +179,7 @@ unsigned char io_event(unsigned char channel)
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
-                        { io_timeout_callback(UX_ALLOWED); });
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
         break;
 
     default:
