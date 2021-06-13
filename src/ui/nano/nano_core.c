@@ -161,7 +161,7 @@ void ui_display_recv()
     nano_draw_receiving();
 
     nano_display();
-    UX_WAIT_DISPLAYED();
+    nano_wait_displayed();
 }
 
 void ui_display_signing()
@@ -298,7 +298,5 @@ static void nano_transition_state(unsigned int button_mask)
     nano_draw_state();
     nano_display();
 }
-
-
 
 #endif
