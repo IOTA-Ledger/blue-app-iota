@@ -38,13 +38,13 @@ void ui_display_main_menu()
 void ui_display_getting_addr()
 {
     UX_DISPLAY(bagl_ui_generating_addr, NULL);
-    ui_force_draw();
+    UX_WAIT_DISPLAYED();
 }
 
 void ui_display_validating()
 {
     UX_DISPLAY(bagl_ui_validating, NULL);
-    ui_force_draw();
+    UX_WAIT_DISPLAYED();
 }
 
 void ui_display_recv()
@@ -52,7 +52,7 @@ void ui_display_recv()
     if (blue_ui_state.state != STATE_RECV) {
         blue_ui_state.state = STATE_RECV;
         UX_DISPLAY(bagl_ui_receiving_tx, NULL);
-        ui_force_draw();
+        UX_WAIT_DISPLAYED();
     }
 }
 
@@ -61,7 +61,7 @@ void ui_display_signing()
     if (blue_ui_state.state != STATE_SIGN) {
         blue_ui_state.state = STATE_SIGN;
         UX_DISPLAY(bagl_ui_signing_tx, NULL);
-        ui_force_draw();
+        UX_WAIT_DISPLAYED();
     }
 }
 
@@ -70,7 +70,7 @@ void ui_display_address(const unsigned char *addr_bytes)
     get_address_with_checksum(addr_bytes, blue_ui_state.addr);
     break_address();
     UX_DISPLAY(bagl_ui_disp_addr, NULL);
-    ui_force_draw();
+    UX_WAIT_DISPLAYED();
 }
 
 void ui_sign_tx()
@@ -87,7 +87,7 @@ void ui_sign_tx()
 void ui_reset()
 {
     ui_display_main_menu();
-    ui_force_draw();
+    UX_WAIT_DISPLAYED();
 }
 
 void ui_restore()
@@ -103,7 +103,7 @@ void ui_restore()
         ui_display_main_menu();
         break;
     }
-    ui_force_draw();
+    UX_WAIT_DISPLAYED();
 }
 
 #endif // TARGET_BLUE
