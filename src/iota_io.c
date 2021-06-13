@@ -57,7 +57,7 @@ unsigned int iota_dispatch(const uint8_t ins, const uint8_t p1,
 
 void io_timeout_reset()
 {
-    UX_CALLBACK_SET_INTERVAL(0);
+    // UX_CALLBACK_SET_INTERVAL(0);
 }
 
 void io_timeout_set(const unsigned int ms)
@@ -65,7 +65,7 @@ void io_timeout_set(const unsigned int ms)
     if (ms == 0) {
         THROW_PARAMETER("ms");
     }
-    UX_CALLBACK_SET_INTERVAL(ms);
+    // UX_CALLBACK_SET_INTERVAL(ms);
 }
 
 void io_timeout_callback(const bool ux_allowed)

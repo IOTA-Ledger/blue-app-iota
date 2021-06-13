@@ -2,6 +2,7 @@
 #define S_SCREENS_H
 
 #include "glyphs.h"
+#include "ux.h"
 
 #ifdef TARGET_NANOS
 

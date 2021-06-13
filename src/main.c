@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "api.h"
+#include "bolos_target.h"
 #include "iota_io.h"
 #include "macros.h"
 #include "os.h"
@@ -9,6 +10,10 @@
 #include "os_io_seproxyhal.h"
 #include "seproxyhal_protocol.h"
 #include "ui/ui.h"
+
+#ifndef TARGET_BLUE
+#include "ux.h"
+#endif
 
 // define global SDK variables
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
