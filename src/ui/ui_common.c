@@ -6,6 +6,9 @@
 #include "macros.h"
 #include "os.h"
 
+#include "nano/nano_types.h"
+#define MENU_IDX_BREAK ui_state.menu_idx / 2
+
 /// the largest power of 10 that still fits into int32
 #define MAX_INT_DEC INT64_C(1000000000)
 

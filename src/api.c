@@ -467,9 +467,9 @@ unsigned int api_get_app_config(uint8_t p1, const unsigned char *input_data,
     GET_APP_CONFIG_OUTPUT output;
     output.app_max_bundle_size = MAX_BUNDLE_SIZE;
     output.app_flags = APP_FLAGS;
-    output.app_version_major = APPVERSION_MAJOR;
-    output.app_version_minor = APPVERSION_MINOR;
-    output.app_version_patch = APPVERSION_PATCH;
+    output.app_version_major = MAJOR_VERSION;
+    output.app_version_minor = MINOR_VERSION;
+    output.app_version_patch = PATCH_VERSION;
 
     io_send(&output, sizeof(output), SW_OK);
     return 0;

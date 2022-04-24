@@ -88,5 +88,5 @@ cmd="make clean && $build_flag make "
     cmd+="&& make load"
 }
 
-docker run -e BOLOS_SDK="/app/dev/sdk/$BOLOS_SDK" $extra_args --rm -ti -v "$( realpath .. ):/app" ledger-app-builder bash #-c "$cmd"
+docker run -e BOLOS_SDK="/app/dev/sdk/$BOLOS_SDK" $extra_args --rm -ti -v "$( realpath .. ):/app" ledger-app-builder bash -c "$cmd"
 
