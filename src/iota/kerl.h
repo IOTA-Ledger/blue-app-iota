@@ -6,7 +6,11 @@
 #define KERL_H
 
 #include "os.h"
+
+// 0xff at automatic testings
+#if APPVERSION_MAJOR != 0xff
 #include "cx.h"
+#endif
 
 /// Size of the kerl hash in bytes.
 #define KERL_HASH_SIZE (CX_SHA384_SIZE)
