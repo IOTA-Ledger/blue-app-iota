@@ -1,8 +1,8 @@
 # docker
 
 With this docker files you can:
-- run a simulator with a Leder Nano S or X
-- compile the app and load it on a Nano S*
+- run a simulator with a Leder Nano S/S+/X
+- compile the app and load it on a Nano S/S+*
 
 *: Loading an app on a Nano X outside the Ledger app-store is only supported with special developer versions that only could be borrowed from Ledger (with NDA). But for testing purposes, the Nano X is supported in the simulator.
 
@@ -47,11 +47,11 @@ After starting, the simulator listens on port 9999 and can be used without restr
 An emulated display can be viewed by opening the url `http://localhost:5000` in a webbrowser.
 
 
-# Loading the IOTA app on a Ledger Nano S
+# Loading the IOTA app on a Ledger Nano S/S+
 
 To compile and load the IOTA app on a real Ledger Nano S use the following script:
 
 ```
-$ sudo ./load_build_app.sh -m nanos -l
+$ sudo ./build_load_app.sh -m (nanos*|nanosplus) -l
 ```
 
