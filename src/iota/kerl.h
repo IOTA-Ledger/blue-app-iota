@@ -6,6 +6,7 @@
 #define KERL_H
 
 #include "os.h"
+#include "cx.h"
 
 /// Size of the kerl hash in bytes.
 #define KERL_HASH_SIZE (CX_SHA384_SIZE)

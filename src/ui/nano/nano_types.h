@@ -149,7 +149,7 @@ typedef struct UI_TEXT_CTX_NANO {
     char top_str[TEXT_LEN];
     char mid_str[TEXT_LEN];
     char bot_str[TEXT_LEN];
-#ifdef TARGET_NANOX
+#if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
     char x_str[TEXT_LEN];
 #endif
 

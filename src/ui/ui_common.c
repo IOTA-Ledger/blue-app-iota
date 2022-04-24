@@ -6,14 +6,6 @@
 #include "macros.h"
 #include "os.h"
 
-#ifdef TARGET_BLUE
-#include "blue/blue_types.h"
-#define MENU_IDX_BREAK blue_ui_state.menu_idx
-#else
-#include "nano/nano_types.h"
-#define MENU_IDX_BREAK ui_state.menu_idx / 2
-#endif // TARGET_BLUE
-
 /// the largest power of 10 that still fits into int32
 #define MAX_INT_DEC INT64_C(1000000000)
 
