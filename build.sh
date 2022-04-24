@@ -205,11 +205,17 @@ docker run \
     # default Ledger seed
     seed="glory promote mansion idle axis finger extra february uncover one trip resource lawn turtle enact monster seven myth punch hobby comfort wild raise skin"
 
-    [ -f "$testseed.txt" ] && { seed="$( cat "testseed.txt" )"; }
+    [ -f "testseed.txt" ] && { seed="$( cat "testseed.txt" )"; }
 
     [ ! -f "./bin/app.elf" ] && {
         error "binary missing. Something went wrong"
     }
+
+    # get app name and version from Makefile
+    # remove only whitespaces before and after =
+    eval $( grep '^APPNAME' Makefile | sed -e ':loop;s/ =/=/g;s/= /=/g;t loop' )
+    # replace () to {} before eval
+    eval $( grep '^APPVERSION' Makefile | tr -d ' ' | tr '()' '{}' )
 
     { sleep 10; echo -e "\nPlease open your browser: http://localhost:5000\n"; echo; } &
 
@@ -217,6 +223,7 @@ docker run \
         -v "$rpath:/speculos/apps" \
         -p 9999:9999 \
         -p 5000:5000 \
+        -e SPECULOS_APPNAME="$APPNAME:$APPVERSION" \
         --rm \
         -it \
         speculos \
