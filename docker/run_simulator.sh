@@ -84,11 +84,11 @@ echo "device $device selected"
 # default Ledger seed
 seed="glory promote mansion idle axis finger extra february uncover one trip resource lawn turtle enact monster seven myth punch hobby comfort wild raise skin"
 
-[ -f 'testseed.txt' ] && { seed="$( cat testseed.txt )"; }
+[ -f "$rpath/testseed.txt" ] && { seed="$( cat "$rpath/testseed.txt" )"; }
 
 (( $nobuild == 0 )) && "$rpath/build_load_app.sh" -s -m $device || error "building app"
 
-[ ! -f "../bin/app.elf" ] && {
+[ ! -f "$rpath/../bin/app.elf" ] && {
     error "binary missing. Please compile first with\n./build_app.sh -m $device"
 }
 
