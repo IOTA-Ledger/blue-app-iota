@@ -27,6 +27,7 @@
       - [I lost my ledger, what should I do now?](#i-lost-my-ledger-what-should-i-do-now)
   - [Development](#development)
     - [Load the IOTA Ledger app using Docker](#load-the-iota-ledger-app-using-docker)
+    - [Speculos support](#speculos-support)
   - [Specification](#specification)
     - [As a developer](#as-a-developer)
 
@@ -189,14 +190,23 @@ The easist way to load the app without needing to download and prepare a develop
     ```
 - Build the App based on the current version for the Nano S
     ```
-    ./docker/build_load_app.sh -m nanos
+    ./build.sh -m nanos
     ```
 - Connect your Ledger to the PC and unlock it
 - Load the app
     ```
-    ./docker/build_load_app.sh -l -m nanos
+    ./build.sh -l -m nanos
     ```
 - Accept all the messages on the Ledger
+
+### Speculos support
+
+The Speculos simulator can be started by:
+```
+./build.sh -m nanos -s
+```
+
+After starting, speculos provides a website that can be accessed by opening the URL http://localhost:5000 in a web browser.
 
 ## Specification
 
