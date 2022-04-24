@@ -47,8 +47,7 @@ function pull_image {
 whoami="$( whoami )"
 
 [[ "$whoami" == "root" ]] && {
-    echo "please don't run the script as root or with sudo."
-    return 1
+    error "please don't run the script as root or with sudo."
 }
 
 # and if the user has permissions to use docker
@@ -59,7 +58,7 @@ grep -q docker <<< "$( id -Gn $whoami )" || {
     echo "sudo usermod -a -G docker $whoami"
     echo
     echo "after adding, logout and login is required"
-    return 1
+    exit 1
 }
 
 # let's parse argments
