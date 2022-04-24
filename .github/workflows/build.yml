@@ -2,21 +2,18 @@ name: Build
 
 on: [push, pull_request]
 
-env:
-  DOCKER_IMAGE: 'wollac/ledger-bolos'
-
 jobs:  
   build:
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
-        sdk-version: ['nanos-secure-sdk', 'blue-secure-sdk']
+        device: ['nanos', 'nanox', 'nanosplus']
 
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
         
-    - name: Build using ${{ matrix.sdk-version }}
-      run: docker run -u $(id -u):$(id -g) -v $(pwd):/project -e BOLOS_SDK=/project/dev/sdk/${{ matrix.sdk-version }} $DOCKER_IMAGE make -C /project
+    - name: Build using ${{ matrix.device }}
+      run: ./build.sh -m ${{ matrix.device }}

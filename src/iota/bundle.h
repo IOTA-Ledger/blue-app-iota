@@ -8,11 +8,9 @@
 // the largest bundle size due to memory limitations per device
 #ifdef TARGET_NANOS
 #define MAX_BUNDLE_SIZE 10
-#elif defined TARGET_NANOX
+#elif defined (TARGET_NANOX) || defined(TARGET_NANOS2)
 #define MAX_BUNDLE_SIZE 10
-#else // BLUE
-#define MAX_BUNDLE_SIZE 20
-#endif // TARGET_NANOS/X/BLUE
+#endif // TARGET_NANOS/X/
 
 typedef struct BUNDLE_INFO {
     /// transaction values

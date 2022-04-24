@@ -5,6 +5,7 @@
 #include "iota_io.h"
 #include "macros.h"
 #include "os.h"
+#include "ux.h"
 #include "os_apilevel.h"
 #include "os_io_seproxyhal.h"
 #include "seproxyhal_protocol.h"
@@ -13,14 +14,8 @@
 // define global SDK variables
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-#ifdef TARGET_NANOX
-#include "ux.h"
-
 ux_state_t G_ux;
 bolos_ux_params_t G_ux_params;
-#else  // NANOS/BLUE
-ux_state_t ux;
-#endif // TARGET_NANOX
 
 // APDU header present in every input
 typedef IO_STRUCT APDU_HEADER
