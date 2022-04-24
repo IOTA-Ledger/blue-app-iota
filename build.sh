@@ -234,4 +234,4 @@ docker run \
             -m "$model" /speculos/apps/bin/app.elf
 }
 
-        
+exit 0
