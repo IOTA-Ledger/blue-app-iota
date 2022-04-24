@@ -186,7 +186,7 @@ extra_args=""
 
 docker run \
     -e BOLOS_SDK="/app/dev/sdk/$BOLOS_SDK" $extra_args \
-    --rm -ti -v "$rpath:/app" \
+    --rm -v "$rpath:/app" \
     ledger-app-builder \
         bash -c "$cmd" || error "building failed"
 
