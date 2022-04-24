@@ -16,4 +16,4 @@ jobs:
         submodules: recursive
         
     - name: Build using ${{ matrix.device }}
-      run: ./build.sh -m {{ matrix.device }}
+      run: ./build.sh -m ${{ matrix.device }}
