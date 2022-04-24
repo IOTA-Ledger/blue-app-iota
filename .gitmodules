@@ -1,6 +1,10 @@
 [submodule "dev/sdk/nanos-secure-sdk"]
 	path = dev/sdk/nanos-secure-sdk
 	url = https://github.com/LedgerHQ/nanos-secure-sdk.git
+[submodule "tests"]
+	path = tests
+	url = https://github.com/IOTA-Ledger/ledger-app-iota-tests.git
+	branch = master
 [submodule "dev/sdk/nanox-secure-sdk"]
 	path = dev/sdk/nanox-secure-sdk
 	url = https://github.com/LedgerHQ/nanox-secure-sdk
@@ -10,7 +14,3 @@
 [submodule "dev/speculos"]
 	path = dev/speculos
 	url = https://github.com/LedgerHQ/speculos
-[submodule "tests"]
-	path = tests
-	url = https://github.com/IOTA-Ledger/ledger-app-iota-tests.git
-	branch = master
