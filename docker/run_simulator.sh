@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# get real path of script
+rpath="$( dirname $( readlink -f $0 ) )"
+
 IMAGE="ghcr.io/ledgerhq/speculos:latest"
 
 whoami="$( whoami )"
@@ -83,14 +86,14 @@ seed="glory promote mansion idle axis finger extra february uncover one trip res
 
 [ -f 'testseed.txt' ] && { seed="$( cat testseed.txt )"; }
 
-(( $nobuild == 0 )) && ./build_load_app.sh -s -m $device || error "building app"
+(( $nobuild == 0 )) && "$rpath/build_load_app.sh" -s -m $device || error "building app"
 
 [ ! -f "../bin/app.elf" ] && {
     error "binary missing. Please compile first with\n./build_app.sh -m $device"
 }
 
 docker run \
-    -v "$( realpath .. ):/speculos/apps" \
+    -v "$rpath/..:/speculos/apps" \
     -p 9999:9999 \
     -p 5000:5000 \
     --rm \

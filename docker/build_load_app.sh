@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# get real path of script
+rpath="$( dirname $( readlink -f $0 ) )"
+
 # build-image
 IMAGE="ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest"
 
@@ -88,5 +91,6 @@ cmd="make clean && $build_flag make "
     cmd+="&& make load"
 }
 
-docker run -e BOLOS_SDK="/app/dev/sdk/$BOLOS_SDK" $extra_args --rm -ti -v "$( realpath .. ):/app" ledger-app-builder bash -c "$cmd"
+
+docker run -e BOLOS_SDK="/app/dev/sdk/$BOLOS_SDK" $extra_args --rm -ti -v "$rpath/..:/app" ledger-app-builder bash -c "$cmd"
 
