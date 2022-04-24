@@ -167,8 +167,6 @@ build_flags=""
 # if speculos requested, add the flag
 (( $speculos )) && {
     build_flags+="SPECULOS=1 "
-    # set debug when compiling for speculos
-    debug=1
 }
 
 # if debug requested, add the flag
