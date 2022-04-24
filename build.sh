@@ -18,6 +18,10 @@
 rpath="$( dirname $( readlink -f $0 ) )"
 cd $rpath
 
+# use the latest images
+IMAGE_BUILD="ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest"
+IMAGE_SPECULOS="ghcr.io/ledgerhq/speculos:latest"
+
 function error {
     echo "error: $1"
     exit 1
@@ -43,13 +47,13 @@ function pull_image {
 whoami="$( whoami )"
 
 [[ "$whoami" == "root" ]] && {
-    echo "please avoid running the script as root or sudo."
+    echo "please don't run the script as root or with sudo."
     return 1
 }
 
 # and if the user has permissions to use docker
 grep -q docker <<< "$( id -Gn $whoami )" || {
-    echo "user $( whoami ) not in docker group."
+    echo "user $whoami not in docker group."
     echo "to add the user you can use (on Ubuntu):"
     echo
     echo "sudo usermod -a -G docker $whoami"
@@ -118,7 +122,7 @@ esac
 # find SDK version number
 BOLOS_SDK="$device-secure-sdk"
 
-[ ! -d "./dev/sdk/$device-secure-sdk" ] && error "sdk not found"
+[ ! -d "./dev/sdk/$device-secure-sdk" ] && error "sdk not found. Are the submodules initialized?"
 
 # get sdk version from sdk
 sdk="$( grep '^#define BOLOS_VERSION' ./dev/sdk/${device}-secure-sdk/include/bolos_version.h | awk '{ print $ 3}' | tr -d '"' )"
@@ -155,7 +159,7 @@ echo "device $device selected, sdk $sdk found, using cx-lib $cxlib"
 # build the app
 # pull and tag image
 pull_image \
-    "ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest" \
+    "$IMAGE_BUILD" \
     ledger-app-builder || error "couldn't pull image"
 
 build_flags=""
@@ -197,7 +201,7 @@ docker run \
 (( $speculos )) && {
     # pull and tag image
     pull_image \
-        "ghcr.io/ledgerhq/speculos:latest" \
+        "$IMAGE_SPECULOS" \
         speculos || error "couldn't pull image"
 
     # default Ledger seed
@@ -208,6 +212,8 @@ docker run \
     [ ! -f "./bin/app.elf" ] && {
         error "binary missing. Something went wrong"
     }
+
+    { sleep 10; echo -e "\nPlease open your browser: http://localhost:5000\n"; echo; } &
 
     docker run \
         -v "$rpath:/speculos/apps" \
