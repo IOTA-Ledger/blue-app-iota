@@ -121,7 +121,7 @@ esac
 # find SDK version number
 BOLOS_SDK="$device-secure-sdk"
 
-[ ! -d "./dev/sdk/$device-secure-sdk" ] && error "sdk not found. Are the submodules initialized?"
+[ ! -f "./dev/sdk/$device-secure-sdk/Makefile.defines" ] && error "sdk not found. Are the submodules initialized?"
 
 # get sdk version from sdk
 sdk="$( grep '^#define BOLOS_VERSION' ./dev/sdk/${device}-secure-sdk/include/bolos_version.h | awk '{ print $ 3}' | tr -d '"' )"
