@@ -3,6 +3,7 @@
 #include "macros.h"
 #include "os.h"
 #include "os_io_seproxyhal.h"
+#include "ux.h"
 
 extern unsigned char G_io_apdu_buffer[IO_APDU_BUFFER_SIZE];
 

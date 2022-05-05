@@ -1,5 +1,5 @@
 #include "bolos_target.h"
-#if defined(TARGET_NANOS) || defined(TARGET_NANOX)
+#if defined(TARGET_NANOS) || defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -7,6 +7,7 @@
 #include "iota/iota_types.h"
 #include "macros.h"
 #include "os.h"
+#include "ux.h"
 #include "os_io_seproxyhal.h"
 #include "ui/nano/nano_buttons.h"
 #include "ui/nano/nano_draw.h"
